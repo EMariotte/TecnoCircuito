@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 7 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4: cableado, chip con avr8js, circuito eléctrico (MNA), Web Worker y PWM, **las tareas T1 y T2 completas** y **la protoboard**. El 2 quedó validado con el multímetro (`validacion/`), y Efraín dio por validado el prototipo completo. **TecnoBloques ya lo usa en desarrollo** (`npm run app:simulador`). `npm run probar` pasa 10 grupos de pruebas y `test:simulador` de TecnoBloques 24 de 24. Falta la primera etiqueta con `dist/tecnocircuito.js`, para que el simulador llegue al instalador.
+> Actualizado: 7 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4: cableado, chip con avr8js, circuito eléctrico (MNA), Web Worker y PWM, **las tareas T1 y T2 completas** y **la protoboard**. El 2 quedó validado con el multímetro (`validacion/`), y Efraín dio por validado el prototipo completo. **TecnoBloques ya lo usa en desarrollo** (`npm run app:simulador`). `npm run probar` pasa 12 grupos de pruebas (con la netlist de KiCad) y `test:simulador` de TecnoBloques 24 de 24. Falta la primera etiqueta con `dist/tecnocircuito.js`, para que el simulador llegue al instalador.
 
 ---
 
@@ -108,6 +108,7 @@ TecnoCircuito/
 │   ├── trabajador.js     ← el Web Worker: reloj y núcleo en otro hilo (entra al paquete como texto)
 │   ├── nucleo.js         ← chip + circuito + promedio del PWM + entradas (digitalRead, ruido, al aire), sin página
 │   ├── protoboard.js     ← media protoboard: huecos, tiras, dibujo y encaje de las patas (prototipo 4)
+│   ├── kicad.js          ← netlist de KiCad: piezas con su huella y redes (lienzo.exportarNetlist)
 │   ├── motor/            ← MNA, Newton-Raphson, reloj común con el chip
 │   ├── chip/             ← avr8js: puertos, ADC, temporizadores, USART; placas uno/nano/nano_old/mega
 │   ├── componentes/      ← un archivo por componente: vista + modelo eléctrico + modelo lógico
@@ -169,7 +170,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 ## Próxima sesión: retomar desde aquí
 
-**Lo primero (pedido por Efraín el 7 oct):** explicarle cómo funciona **exportar la netlist de KiCad** (formato `.net`, qué lleva cada pieza y cada red, cómo se asignan las huellas) y si **es suficiente para empezar una placa en KiCad**: qué se puede hacer en Pcbnew solo con la netlist y qué falta sin el esquemático. Ver «Ideas para más adelante».
+**Lo primero:** que Efraín pruebe a mano «Archivo → Importar → Netlist» en el editor de placas de KiCad 10 con la netlist de la T1 (instrucciones en `prototipo/LEEME.md`, «Llevar el circuito a KiCad»). La netlist se hizo y se probó el 8 oct (`COMO-FUNCIONA.md`, sección 43), pero ese menú no se puede probar de forma automática.
 
 El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Para avanzar hacen falta estas mediciones y pruebas de Efraín:**
 
@@ -228,8 +229,8 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
 ## Ideas para más adelante (pedidas por Efraín el 7 oct)
 
 - **Esquemático para KiCad,** para que quien quiera hacer una placa de circuito impreso no empiece de cero. Recomendación, en dos pasos:
-  1. **Exportar la netlist de KiCad** (`.net`, el formato S-expression «export»). El simulador ya calcula los nodos (`calcularNodos`), así que es casi directo: cada pieza con su huella (`LED_THT:LED_D5.0mm`, `Resistor_THT:R_Axial_DIN0207…`, y el Uno como `Module:Arduino_UNO_R3`) y cada nodo como una red. En Pcbnew se importa y se empieza a ubicar sin dibujar nada.
-  2. **Después, el esquemático (`.kicad_sch`)** con los símbolos acomodados solos. Es más trabajo, porque hay que ubicar los símbolos y referenciar las librerías de KiCad.
+  1. ✅ **Netlist de KiCad** (8 oct): `src/kicad.js`, `lienzo.exportarNetlist()`, «Llevar a KiCad» en TecnoBloques. Probada con las huellas y los símbolos de KiCad 10. Ver `prototipo/COMO-FUNCIONA.md`, sección 43.
+  2. **Después, el esquemático (`.kicad_sch`)** con **etiquetas en vez de cables:** cada símbolo en una cuadrícula y una etiqueta con el nombre de su red en cada pata. Así no hay que trazar cables. Reutiliza la tabla de huellas y pads de `src/kicad.js`.
 - **Diagrama de flujo del programa,** en TecnoBloques: se arma a partir de los bloques (inicio, acciones, decisiones «si» y repeticiones) y se dibuja como SVG. Sirve para la documentación del proyecto y como evidencia. Está anotado también en el CLAUDE.md de TecnoBloques.
 - Las dos se pueden guardar en SVG, como el circuito (`lienzo.exportarSVG()`), y subir a TecnoRuta.
 - **Diseño de marca de TecnoCircuito:** cuando exista el símbolo, agregarlo a la marca de la imagen SVG («Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima», constante `MARCA_SVG` en `prototipo/src/lienzo.js`).

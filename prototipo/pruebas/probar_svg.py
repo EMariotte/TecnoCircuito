@@ -104,6 +104,13 @@ with sync_playwright() as p:
         pg.get_by_text('Guardar imagen (SVG)').click()
     revisar(descarga.value.suggested_filename == 'circuito.svg', f'el botón descarga «{descarga.value.suggested_filename}»')
 
+    # La netlist de KiCad, desde el botón de la página
+    with pg.expect_download() as descarga:
+        pg.get_by_text('Guardar netlist (KiCad)').click()
+    net = Path(descarga.value.path()).read_text(encoding='utf-8')
+    revisar(descarga.value.suggested_filename == 'circuito.net' and net.startswith('(export\n\t(version "E")') and '(footprint "Module:Arduino_UNO_R3")' in net,
+            f'«Guardar netlist (KiCad)» descarga «{descarga.value.suggested_filename}» con el Uno y {net.count(chr(9) * 2 + "(net" + chr(10))} redes')
+
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))
     nav.close()
 

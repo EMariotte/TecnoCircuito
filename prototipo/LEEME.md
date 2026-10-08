@@ -24,6 +24,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
   - al pasar el mouse por un hueco se ilumina su tira;
   - al mover la protoboard, las piezas encajadas se mueven con ella.
 - **Imagen:** «Guardar imagen (SVG)» descarga el circuito tal como se ve, para documentar un proyecto o como evidencia en TecnoRuta.
+- **KiCad:** «Guardar netlist (KiCad)» descarga `circuito.net`, con las piezas, sus huellas y sus conexiones, para diseñar una placa (ver abajo).
 - **Vista:** la rueda del mouse hace zoom y arrastrar el fondo mueve la vista.
 - **Simulación:**
   - elige el programa (parpadeo, PWM, potenciómetro, botón con pull-down o con pull-up interna, y los dos de validación) y el modo (realista o ideal), y usa Iniciar, Pausar, Reiniciar y Detener;
@@ -44,6 +45,8 @@ npm run construir
 npm run probar        # arma, prueba el motor y el núcleo con Node y corre ocho pruebas en Chromium
 npm run probar:nucleo # solo el núcleo (PWM, potenciómetro, botón, entradas al aire, ruido del ADC), sin navegador
 npm run probar:motor  # solo el motor eléctrico, sin navegador, con la tabla para el multímetro
+npm run probar:kicad  # solo la netlist de KiCad, sin navegador
+python -I pruebas/probar_kicad_pcb.py   # la netlist con las huellas reales de KiCad (se salta si no está instalado)
 npm run medir         # velocidad del chip con Node, sin navegador
 ```
 
@@ -66,6 +69,15 @@ Son dos programas que dan números para comparar con el simulador:
 2. **Entrada al aire:** el pin 2 sin nada conectado. Sube `programas/validar_flotante/validar_flotante.ino` y anota cuántos cambios cuenta en 2 s y el porcentaje en ALTO. Repite acercando la mano al cable o tocando el pin. El simulador cambia en promedio cada 120 ms (unos 16 cambios en 2 s).
 
 Con esos números se ajustan `RUIDO_ADC_V` y `CAMBIO_AL_AIRE_POR_MS` en `src/nucleo.js`. Los mismos programas también corren en el simulador, para compararlos.
+
+## Llevar el circuito a KiCad
+
+1. Arma el circuito (por ejemplo, «Ejemplo en protoboard (T1)») y pulsa «Guardar netlist (KiCad)».
+2. Abre KiCad (probado con la 10.0) y crea un proyecto nuevo. Abre el **editor de placas** (PCB).
+3. **Archivo → Importar → Netlist** (en KiCad en español puede decir «Lista de redes»), elige `circuito.net`, carga la netlist y luego actualiza la placa con los botones de esa ventana.
+4. Las huellas aparecen juntas, con líneas finas entre las patas que van unidas. Ubícalas, dibuja el contorno en la capa `Edge.Cuts` y traza las pistas.
+
+La huella del Uno es el contorno de un **shield**: la placa que se diseña se monta encima del Uno. Cómo funciona: [COMO-FUNCIONA.md](COMO-FUNCIONA.md), sección 43.
 
 ## Cómo está hecho
 

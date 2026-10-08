@@ -421,3 +421,33 @@ Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrado
 - **No cambia la licencia:** la imagen sigue siendo de quien la hace (`NOTICE`). La marca es un recordatorio, no una condición.
 - **Pruebas:** `probar_svg.py` suma 4 comprobaciones: el texto, que cabe, que está en la esquina y que queda debajo del circuito. Pasan las 15.
 - **Contrato:** anotado en `CONTRATO.md` (API y fila de la versión 1). La API no cambia, solo el contenido de la imagen.
+
+## 2026-10-08 — Llevar el circuito a KiCad: la netlist
+
+**Pedido de Efraín:** después de la explicación de la sesión, implementarlo «solo con la netlist, con eso será suficiente por ahora». En el ambiente hay KiCad 10.0, el mismo que está instalado en el PC de desarrollo.
+
+- **`src/kicad.js`** (pura, sin página) escribe la netlist «export» S-expression versión E, el formato del esquemático de KiCad.
+  - Piezas: cada una con su referencia (A1, R1, D1, SW1, RV1), su valor y su huella.
+  - Redes: salen de `calcularNodos()`. La protoboard y los cables desaparecen.
+- **La tabla de huellas y pads se sacó de KiCad 10, no de memoria.** Los pines del Uno salen del símbolo oficial `MCU_Module:Arduino_UNO_R3` y se confirmaron con la posición de cada pad. Hallazgos:
+  - el cátodo del LED es el pad 1;
+  - la huella del botón de 6 mm repite los números 1, 1, 2, 2, igual que nuestras patas unidas por dentro;
+  - el cursor del potenciómetro es el pad 2.
+- **Reglas de las redes:**
+  - del Uno solo entran los pines con cable;
+  - una red necesita dos pads o más;
+  - se nombra por el pin del Uno (`GND`, `+5V`, `D13`) o, si no toca ninguno, `Net-(D1-Pad2)`;
+  - los identificadores son fijos por pieza, así que al reimportar KiCad reconoce las mismas huellas.
+- **API:** `lienzo.exportarNetlist({ nombre })` (contrato 1). La página de prueba tiene «Guardar netlist (KiCad)», y TecnoBloques, «Llevar a KiCad».
+- **Pruebas:**
+  - `npm run probar:kicad` (Node): 17 comprobaciones. La más importante: la T1 en la protoboard y con cables da las mismas 5 redes.
+  - `pruebas/probar_kicad_pcb.py` (con el Python de KiCad, que trae `pcbnew`): 21 comprobaciones.
+    - Cada huella existe y tiene sus pads.
+    - Los 31 pines del Uno caen en el pin correcto del símbolo.
+    - Arma la placa con cada `.net`, como hace «Importar netlist».
+    - El DRC de KiCad ve las conexiones por trazar: 9 en la T1 y 3 en la T2.
+    - Si KiCad no está instalado, se salta.
+  - `probar_svg.py` suma la descarga desde la página, y `test:simulador` de TecnoBloques el botón nuevo.
+- **No se probó a mano** el menú «Archivo → Importar → Netlist» del editor de placas: KiCad no expone ese lector en Python. Queda para Efraín, con las instrucciones de `LEEME.md`.
+- **Licencias:** no se copia nada de las librerías de KiCad. Solo se escriben los nombres de las huellas y los números de pad, y KiCad las busca en sus propias librerías.
+- **Queda para más adelante:** el esquemático `.kicad_sch`, con etiquetas en vez de cables (ver `COMO-FUNCIONA.md`, sección 43).

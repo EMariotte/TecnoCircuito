@@ -83,6 +83,7 @@
     <button type="button" id="limpiar">Empezar de nuevo</button>
     <button type="button" id="copiar">Copiar el circuito</button>
     <button type="button" id="imagen">Guardar imagen (SVG)</button>
+    <button type="button" id="netlist">Guardar netlist (KiCad)</button>
   </div>
   <section class="sim">
     <h2>Simulación <small>· chip y circuito eléctrico</small></h2>
@@ -317,14 +318,17 @@
     }
   };
   // La imagen del circuito, tal como se ve, para la documentación del proyecto o una evidencia en TecnoRuta.
-  $('imagen').onclick = () => {
-    const url = URL.createObjectURL(new Blob([lienzo.exportarSVG()], { type: 'image/svg+xml' }));
-    const a = Object.assign(document.createElement('a'), { href: url, download: 'circuito.svg' });
+  function descargar(texto, tipo, archivo) {
+    const url = URL.createObjectURL(new Blob([texto], { type: tipo }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: archivo });
     document.body.append(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
-  };
+  }
+  $('imagen').onclick = () => descargar(lienzo.exportarSVG(), 'image/svg+xml', 'circuito.svg');
+  // La netlist para KiCad: en el editor de placas, Archivo → Importar → Netlist.
+  $('netlist').onclick = () => descargar(lienzo.exportarNetlist({ nombre: 'Circuito de prueba' }), 'text/plain', 'circuito.net');
   abrir(leer() || INICIAL);
 })();
 </script>

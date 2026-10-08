@@ -688,3 +688,111 @@ Hay dos efectos de paso, y los dos son como en la real:
 - **Mover la protoboard** corre también las piezas que tienen `en`, y sus huecos no cambian. **Borrarla** quita los `en` y los cables a sus huecos.
 - **«+ Agregar»** abre un menú. Va fuera de la barra porque la barra se desplaza de lado y lo cortaría. En el menú, «Protoboard» se apaga si ya hay una.
 - **La barra tiene altura fija** y siempre va en una línea. Si cambiara de alto con lo elegido, la vista se correría bajo el mouse del aprendiz mientras cablea. Las opciones de la pieza elegida se desplazan dentro de su espacio sin tapar el zoom.
+
+## 43. Llevar el circuito a KiCad (la netlist)
+
+> Hecho el 8 de octubre de 2026, a pedido de Efraín: «solo con la netlist, con eso será suficiente por ahora». Probado con KiCad 10.0.3.
+
+Una **netlist** es el circuito sin dibujo: **qué piezas hay** (cada una con su huella, el dibujo físico de sus patas en la placa) y **qué patas están unidas** (cada grupo es una red). KiCad la importa en su editor de placas y desde ahí el aprendiz diseña un **shield**: una placa que se monta encima del Uno con sus piezas soldadas.
+
+```
+  Lo que ve el aprendiz                    Lo que guarda la netlist
+  ────────────────────                     ────────────────────────
+  Uno ──cable── protoboard                 Piezas:  A1 Uno, R1 220, D1 LED, SW1 botón, R2 10k
+        │ tiras, rieles,                   Redes:   D13            = A1.28, R1.2
+        │ cables, colores,                          Net-(D1-Pad2)  = D1.2,  R1.1
+        │ posiciones                                GND            = A1.6,  D1.1, R2.2
+        └──────────────── calcularNodos() ─►        +5V            = A1.5,  SW1.2
+                                                    D2             = A1.17, R2.1, SW1.1
+```
+
+**El simulador ya hacía el trabajo difícil:** `calcularNodos()` es lo mismo que usa el solucionador eléctrico. La protoboard, sus tiras y los cables desaparecen, porque solo son conexiones y quedan dentro de cada red.
+
+### El archivo `.net`
+
+Es el formato «export» S-expression versión «E», el mismo que escribe el esquemático de KiCad (`kicad-cli sch export netlist`):
+
+```lisp
+(export (version "E")
+  (design (source "T1 en protoboard") (date "…") (tool "TecnoCircuito"))
+  (components
+    (comp (ref "D1") (value "LED rojo") (footprint "LED_THT:LED_D5.0mm")
+      (libsource (lib "Device") (part "LED") (description ""))
+      (property (name "TecnoCircuito") (value "led1"))      ← de qué pieza del lienzo viene
+      (sheetpath (names "/") (tstamps "/"))
+      (tstamps "…"))                                         ← fijo por pieza: al reimportar, KiCad reconoce la misma huella
+    …)
+  (nets
+    (net (code "3") (name "GND") (class "Default")
+      (node (ref "A1") (pin "6") (pinfunction "GND2") (pintype "passive"))
+      (node (ref "D1") (pin "1") (pintype "passive"))
+      …)))
+```
+
+### La tabla de huellas y pads (`PIEZAS_KICAD` en [src/kicad.js](src/kicad.js))
+
+Cada pin nuestro tiene que caer en **el número de pad correcto** de la huella. Si no, KiCad no avisa: une la pata equivocada, como un LED al revés que se descubre con la placa ya fabricada.
+
+| Pieza | Ref | Huella de KiCad | Nuestro pin → pad |
+|---|---|---|---|
+| Uno | A1 | `Module:Arduino_UNO_R3` | D0…D13 → 15…28 · A0…A5 → 9…14 · 5V → 5 · 3V3 → 4 · VIN → 8 · GND2, GND3 → 6, 7 · GND1 → 29 · AREF → 30 · SDA, SCL → 31, 32 · IOREF → 2 · RESET → 3 |
+| Resistencia | R | `Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal` | 1 → 1 · 2 → 2 |
+| LED | D | `LED_THT:LED_D5.0mm` | cátodo → 1 (el pad cuadrado) · ánodo → 2 |
+| Botón | SW | `Button_Switch_THT:SW_PUSH_6mm` | 1i, 1d → 1 · 2i, 2d → 2 (la huella repite los números, como nuestras patas unidas por dentro) |
+| Potenciómetro | RV | `Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical` | GND → 1 · SIG → 2 (el cursor) · VCC → 3 |
+
+- **De dónde salió:** del símbolo oficial `MCU_Module:Arduino_UNO_R3` de KiCad 10, que tiene el nombre de cada pin. Se confirmó con la posición de cada pad: el 28 (D13) queda al lado del 29 (GND) y del 30 (AREF), igual que en la placa y en el dibujo de Wokwi.
+- **Licencia:** no copiamos nada de las librerías de KiCad. Solo escribimos el nombre de la huella y el número de cada pad, y KiCad las busca en sus propias librerías.
+
+### Reglas de las redes
+
+- **Del Uno solo entran los pines con un cable.** Son los agujeros que usa el shield. Si el LED va a GND2, entra el pad 6 y no los otros GND.
+- **Una red necesita dos pads o más.** Una pata suelta no lleva red.
+- **El nombre de la red:**
+  - el del pin del Uno que toca (`GND`, `+5V`, `+3V3`, `D13`, `A0`…);
+  - si no toca ninguno, uno automático como el de KiCad: `Net-(D1-Pad2)`;
+  - si toca varios (un corto), manda `GND`, luego `+5V`. La netlist no lo arregla: el simulador ya lo marca como falla.
+- **Se escribe siempre igual:** las piezas y las redes van en orden fijo, así que exportar dos veces el mismo circuito da el mismo texto.
+
+### En KiCad: qué hace el aprendiz
+
+```
+ circuito.net ──► Editor de placas (Pcbnew): Archivo → Importar → Netlist
+                    │
+   1. Aparecen las huellas, amontonadas               ✔ automático
+   2. Líneas finas (ratsnest) dicen qué va con qué    ✔ automático
+   3. Ubicar las piezas                               ✋ el aprendiz
+   4. Dibujar el contorno de la placa                 ✋ el aprendiz
+   5. Trazar las pistas siguiendo las líneas finas    ✋ el aprendiz
+   6. Revisión de reglas (DRC) y archivos Gerber      ✔ KiCad lo verifica
+```
+
+KiCad no deja unir con una pista dos redes distintas. Así, **la placa tiene las mismas conexiones que el circuito que funcionó en el simulador.**
+
+**Lo que no trae, por ser solo netlist:**
+- no hay esquemático, así que no se puede documentar el circuito como diagrama ni correr la revisión eléctrica (ERC);
+- para cambiar el circuito, se cambia en TecnoCircuito y se vuelve a importar. Gracias a los `tstamps` fijos, KiCad actualiza las mismas huellas en vez de duplicarlas.
+
+El esquemático (`.kicad_sch`, con etiquetas en vez de cables) queda para más adelante.
+
+Un detalle del botón: KiCad pide unir también las dos patas «1» entre sí (y las dos «2»), aunque por dentro ya lo están. Es normal en esa huella, y una pista corta lo resuelve.
+
+### Cómo se prueba
+
+```
+ npm run probar:kicad                        python -I pruebas/probar_kicad_pcb.py
+ (Node, sin KiCad)                           (con KiCad instalado; si no, se salta)
+ ─────────────────                           ──────────────────────────────────────
+ · el ejemplo T1 de la página da 5 redes     · cada huella existe en las librerías de KiCad 10
+   exactas                                   · cada pad corresponde al pin del símbolo oficial
+ · con cables o en protoboard, las mismas      (los 31 del Uno, cátodo = K, …)
+   redes                                     · arma la placa con cada .net, como «Importar netlist»
+ · T2, una pieza suelta, un corto, nombres   · el DRC de KiCad ve las conexiones por trazar
+   con comillas                                (9 en la T1, 3 en la T2)
+ · deja los .net y la tabla en
+   pruebas/capturas/kicad/ ─────────────────►
+```
+
+El Python de KiCad trae el módulo `pcbnew`, pero no su lector de netlists. Por eso la prueba carga cada huella y le pone a cada pad su red, que es lo mismo que hace «Importar netlist».
+
+**Lo que solo se puede probar a mano:** el menú «Importar netlist» del editor de placas. Ver [LEEME.md](LEEME.md), «Llevar el circuito a KiCad».

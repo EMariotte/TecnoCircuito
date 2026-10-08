@@ -7,6 +7,7 @@ import '@wokwi/elements/dist/esm/potentiometer-element.js';
 import '@wokwi/elements/dist/esm/pushbutton-element.js';
 import estilos from './lienzo.css';
 import { PLACAS, TIPOS, COLORES_CABLE, CODIGO_COLORES, NOMBRE_COLOR, colorPorDefecto } from './catalogo.js';
+import { netlistKiCad } from './kicad.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -1297,6 +1298,8 @@ export function crearLienzo(elemento, opciones = {}) {
     ponerTema,
     // Contrato 1: el circuito como texto SVG, tal como se ve (para documentar el proyecto o como evidencia).
     exportarSVG,
+    // Contrato 1: el circuito como netlist de KiCad (.net), para empezar una placa en el editor de placas de KiCad.
+    exportarNetlist: (opciones) => netlistKiCad(datos, opciones),
     // Interno (no es parte del contrato): el simulador escucha aquí los botones presionados con el mouse.
     _alPulsar(fn) {
       if (typeof fn === 'function') oyentesPulsar.push(fn);
