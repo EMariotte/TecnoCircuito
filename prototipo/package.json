@@ -1,0 +1,22 @@
+{
+  "name": "tecnocircuito-prototipo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Prototipos de TecnoCircuito: cableado (0) y chip simulado con avr8js (1), sin cálculo eléctrico.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "construir": "node construir.js",
+    "compilar": "node compilar.js",
+    "probar": "npm run construir && npm run probar:motor && npm run probar:nucleo && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas",
+    "probar:motor": "esbuild src/motor/index.js --bundle --format=cjs --platform=node --outfile=pruebas/motor.cjs --log-level=warning && node pruebas/probar_motor.js",
+    "probar:nucleo": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_nucleo.js",
+    "medir": "esbuild src/chip.js --bundle --format=cjs --platform=node --outfile=pruebas/chip.cjs --log-level=warning && node pruebas/medir_chip.js"
+  },
+  "dependencies": {
+    "@wokwi/elements": "1.9.2",
+    "avr8js": "0.21.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

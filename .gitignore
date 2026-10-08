@@ -1,0 +1,32 @@
+# Investigación: documentos privados del proyecto SENNOVA (nunca al repositorio público)
+investigacion/
+
+# Datos de aprendices: registros y tabla de alias (solo en el PC de Efraín)
+datos/
+registros/
+*.jsonl
+!pruebas/fixtures/*.jsonl
+
+# Dependencias (dist/ NO se ignora: dist/tecnocircuito.js se commitea en cada etiqueta)
+node_modules/
+
+# Credenciales
+.env
+.env.*
+.mcp.json
+
+# Herramientas locales
+.vscode/
+__pycache__/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Respaldos locales (zip antes de cambios grandes)
+respaldos/
+
+# Salidas de las pruebas del prototipo (se regeneran con npm run probar)
+prototipo/pruebas/capturas/
+prototipo/pruebas/*.cjs
+prototipo/pruebas/*.log

@@ -1,0 +1,9 @@
+{
+  "descripcion": "Pin 13 en ALTO, resistencia y LED rojo a GND, en la placa real. Medido por Efraín con multímetro el 7 oct 2026. La corriente se calcula como voltaje de la resistencia / resistencia medida.",
+  "criterio": { "voltaje": 0.05, "corriente": 0.10 },
+  "medidas": [
+    { "ohmios_nominal": 220, "ohmios_medido": 215, "v_pin": 4.69, "v_led": 1.95, "v_resistencia": 2.61 },
+    { "ohmios_nominal": 330, "ohmios_medido": 326, "v_pin": 4.78, "v_led": 1.93, "v_resistencia": 2.87 },
+    { "ohmios_nominal": 1000, "ohmios_medido": null, "v_pin": 4.96, "v_led": 1.86, "v_resistencia": 3.10 }
+  ]
+}

@@ -1,0 +1,109 @@
+// Catálogo del prototipo: qué dibujo de @wokwi/elements usa cada pieza, cómo se llaman sus pines
+// en el contrato y qué lee el aprendiz al pasar el mouse por un pin.
+
+export const COLORES_CABLE = {
+  verde: '#2e9e44',
+  rojo: '#d7263d',
+  negro: '#2b2b2b',
+  azul: '#2f6fde',
+  amarillo: '#e8c20c',
+  naranja: '#f28c28',
+  morado: '#8e44ad',
+  blanco: '#f4f4f4',
+};
+
+// Convención del aula: negro a tierra, rojo al positivo, verde para señales.
+export function colorPorDefecto(de, a) {
+  const refs = [de, a];
+  if (refs.some((r) => /^placa\.GND/.test(r))) return 'negro';
+  if (refs.some((r) => /^placa\.(5V|3V3|VIN)$/.test(r))) return 'rojo';
+  return 'verde';
+}
+
+const PWM_UNO = ['3', '5', '6', '9', '10', '11'];
+
+export const PLACAS = {
+  uno: {
+    nombre: 'Arduino Uno',
+    etiqueta: 'wokwi-arduino-uno',
+    // Nombre de @wokwi/elements → nombre del contrato. Cada pin físico tiene nombre propio
+    // (la placa tiene tres GND), porque un cable llega a un agujero concreto.
+    nombrePin(n) {
+      if (/^\d+$/.test(n)) return 'D' + n;
+      if (n.startsWith('GND.')) return 'GND' + n.slice(4);
+      return { '3.3V': '3V3', 'A4.2': 'SDA', 'A5.2': 'SCL' }[n] || n;
+    },
+    rotulo(pin) {
+      if (pin === 'D0') return 'Pin 0 · RX del monitor serial';
+      if (pin === 'D1') return 'Pin 1 · TX del monitor serial';
+      if (/^D\d+$/.test(pin)) return 'Pin ' + pin.slice(1) + (PWM_UNO.includes(pin.slice(1)) ? ' · PWM ~' : '');
+      if (/^A\d$/.test(pin)) return pin + ' · entrada analógica';
+      if (pin.startsWith('GND')) return 'GND · tierra (−)';
+      return {
+        '5V': '5V · positivo (+)',
+        '3V3': '3,3V · positivo (+)',
+        VIN: 'VIN · entrada de la fuente',
+        SDA: 'SDA · I2C (es el mismo A4)',
+        SCL: 'SCL · I2C (es el mismo A5)',
+        AREF: 'AREF · referencia analógica',
+        IOREF: 'IOREF',
+        RESET: 'RESET · reinicia la placa',
+      }[pin] || pin;
+    },
+  },
+};
+
+export const TIPOS = {
+  resistencia: {
+    nombre: 'Resistencia',
+    etiqueta: 'wokwi-resistor',
+    prefijo: 'r',
+    props: { ohmios: 220 },
+    nombrePin: (n) => ({ 1: '1', 2: '2' })[n],
+    rotulo: (pin) => 'pata ' + pin,
+    campo: {
+      prop: 'ohmios',
+      etiqueta: 'Valor',
+      opciones: [[220, '220 Ω'], [330, '330 Ω'], [1000, '1 kΩ'], [10000, '10 kΩ']],
+    },
+    aplicar(el, props) {
+      el.value = String(props.ohmios);
+    },
+  },
+  led: {
+    nombre: 'LED',
+    etiqueta: 'wokwi-led',
+    prefijo: 'led',
+    props: { color: 'rojo' },
+    nombrePin: (n) => ({ A: 'anodo', C: 'catodo' })[n],
+    rotulo: (pin) => ({ anodo: 'ánodo (+), pata larga', catodo: 'cátodo (−), pata corta' })[pin] || pin,
+    campo: {
+      prop: 'color',
+      etiqueta: 'Color',
+      opciones: [['rojo', 'Rojo'], ['verde', 'Verde'], ['amarillo', 'Amarillo'], ['azul', 'Azul'], ['blanco', 'Blanco']],
+    },
+    aplicar(el, props) {
+      el.color = { rojo: 'red', verde: 'green', amarillo: 'yellow', azul: 'blue', blanco: 'white' }[props.color] || 'red';
+    },
+  },
+  // Prototipo 3 (tarea T2). «posicion» va de 0 (perilla hacia GND) a 1 (hacia VCC).
+  potenciometro: {
+    nombre: 'Potenciómetro',
+    etiqueta: 'wokwi-potentiometer',
+    prefijo: 'pot',
+    props: { ohmios: 10000, posicion: 0.5 },
+    nombrePin: (n) => ({ GND: 'GND', SIG: 'SIG', VCC: 'VCC' })[n],
+    rotulo: (pin) => ({ GND: 'GND · va a tierra (−)', SIG: 'SIG · pata del medio: la señal', VCC: 'VCC · va a 5V (+)' })[pin] || pin,
+    campo: {
+      prop: 'ohmios',
+      etiqueta: 'Valor',
+      opciones: [[1000, '1 kΩ'], [10000, '10 kΩ'], [100000, '100 kΩ']],
+    },
+    perilla: { prop: 'posicion', etiqueta: 'Perilla' }, // también se gira con el mouse sobre el dibujo
+    aplicar(el, props) {
+      el.min = 0;
+      el.max = 100;
+      el.value = Math.round((Number(props.posicion) || 0) * 100);
+    },
+  },
+};
