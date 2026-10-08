@@ -1,0 +1,289 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "uno",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": ":CE=8v!Y:}vtxR8`#Zqo",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "SETUP": {
+       "block": {
+        "type": "matriz_iniciar",
+        "id": "Sd3EKhOITF({Ww:%[Sta",
+        "fields": {
+         "DIN": "12",
+         "CLK": "11",
+         "CS": "10",
+         "GIRO": "1",
+         "ESPEJO": true,
+         "BRILLO": 3
+        },
+        "next": {
+         "block": {
+          "type": "otto_iniciar",
+          "id": "HP`_|C%XhHg]7l`ON%ms",
+          "fields": {
+           "YL": "2",
+           "YR": "3",
+           "RL": "4",
+           "RR": "5",
+           "BUZ": "13"
+          },
+          "next": {
+           "block": {
+            "type": "otto_boca_iniciar",
+            "id": "(i[qT9]r0$:wSe6X-gh7",
+            "fields": {
+             "DIN": "A3",
+             "CS": "A2",
+             "CLK": "A1",
+             "GIRO": "2",
+             "BRILLO": 5
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "LOOP": {
+       "block": {
+        "type": "matriz_dibujo",
+        "id": "Dpe2jGpGR@8;E4+clTO(",
+        "fields": {
+         "DIBUJO": "0000000001100110111111111111111101111110001111000001100000000000"
+        },
+        "next": {
+         "block": {
+          "type": "matriz_animacion",
+          "id": "y%iiL$DBEqm{XHT|nuCA",
+          "fields": {
+           "N": "3",
+           "MS": 150,
+           "F0": "0000000001100110111111111111111101111110001111000001100000000000",
+           "F1": "0000000000000000001001000111111001111110001111000001100000000000",
+           "F2": "0011110001000010101001011000000110011001100110010100001000111100"
+          },
+          "next": {
+           "block": {
+            "type": "matriz_texto",
+            "id": "b7T0coS-Oq^?}wws8fX.",
+            "fields": {
+             "VEL": "80"
+            },
+            "inputs": {
+             "V": {
+              "block": {
+               "type": "text",
+               "id": "ojR5,OGMo-o/V{okLdWv",
+               "fields": {
+                "TEXT": "¡Hola, Niño!"
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "matriz_texto",
+              "id": "xm@F:uW%zAxsFl]R@[[f",
+              "fields": {
+               "VEL": "45"
+              },
+              "inputs": {
+               "V": {
+                "block": {
+                 "type": "var_get",
+                 "id": "wgQ7DkaCFcG+tjOJ2B+^",
+                 "fields": {
+                  "VAR": {
+                   "id": "/fr`=,u8gBY.Qw5T0K{b"
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "matriz_punto",
+                "id": "Jy3,M^KC}b_Ao(8}NlNg",
+                "fields": {
+                 "E": "true"
+                },
+                "inputs": {
+                 "X": {
+                  "block": {
+                   "type": "math_number",
+                   "id": "l::^k.Ri?G5*u/5/NtE6",
+                   "fields": {
+                    "NUM": 0
+                   }
+                  }
+                 },
+                 "Y": {
+                  "block": {
+                   "type": "math_number",
+                   "id": "P7a8ghQNU%~_,~6=#y1G",
+                   "fields": {
+                    "NUM": 7
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "matriz_brillo",
+                  "id": "I3;y8KR!%/-.zLhNOTQ0",
+                  "inputs": {
+                   "V": {
+                    "block": {
+                     "type": "math_number",
+                     "id": "]Gt:1kMm.C5*()]7gk=h",
+                     "fields": {
+                      "NUM": 8
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "matriz_borrar",
+                    "id": "M0$m4f87E5@Q)MJhj0{N",
+                    "next": {
+                     "block": {
+                      "type": "otto_boca",
+                      "id": "?P},z~Qo+gsKdeupni7D",
+                      "fields": {
+                       "BOCA": "smile"
+                      },
+                      "next": {
+                       "block": {
+                        "type": "otto_boca_dibujo",
+                        "id": "@G`Y|bd8{1kl2`e$4(#m",
+                        "fields": {
+                         "DIBUJO": "0000000001100110111111111111111101111110001111000001100000000000"
+                        },
+                        "next": {
+                         "block": {
+                          "type": "otto_boca_texto",
+                          "id": "q91__gKhdncf631|gIHG",
+                          "fields": {
+                           "VEL": "100"
+                          },
+                          "inputs": {
+                           "V": {
+                            "block": {
+                             "type": "text",
+                             "id": "x*Rm9.-;*GUuEfXiI=mW",
+                             "fields": {
+                              "TEXT": "Hola Otto, ¿qué tal?"
+                             }
+                            }
+                           }
+                          },
+                          "next": {
+                           "block": {
+                            "type": "otto_boca_punto",
+                            "id": "B5[XG/((i*~URQm}c8Ag",
+                            "fields": {
+                             "E": "false"
+                            },
+                            "inputs": {
+                             "X": {
+                              "block": {
+                               "type": "math_number",
+                               "id": "i+;l*yR9K_Po|SM9iI?|",
+                               "fields": {
+                                "NUM": 1
+                               }
+                              }
+                             },
+                             "Y": {
+                              "block": {
+                               "type": "math_number",
+                               "id": "@k}QOxROHQ}8.=K!QN0@",
+                               "fields": {
+                                "NUM": 2
+                               }
+                              }
+                             }
+                            },
+                            "next": {
+                             "block": {
+                              "type": "otto_boca_brillo",
+                              "id": "(xS9W$Nv0^R5JyBZivvV",
+                              "inputs": {
+                               "V": {
+                                "block": {
+                                 "type": "math_number",
+                                 "id": "r%7fit3yGklfQzX{3@s(",
+                                 "fields": {
+                                  "NUM": 2
+                                 }
+                                }
+                               }
+                              },
+                              "next": {
+                               "block": {
+                                "type": "otto_gesto",
+                                "id": "+HZ$+Ke|ot3*dXm;2}VV",
+                                "fields": {
+                                 "G": "OttoHappy"
+                                },
+                                "next": {
+                                 "block": {
+                                  "type": "otto_boca_borrar",
+                                  "id": "ySk|Wwn2XH.iuk:ykDg9"
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "variables": [
+   {
+    "name": "temperatura",
+    "id": "/fr`=,u8gBY.Qw5T0K{b",
+    "type": "float"
+   }
+  ]
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T02:01:13.145Z"
+}

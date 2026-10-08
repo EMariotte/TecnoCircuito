@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/EMariotte/TecnoCircuito/blob/main/contrato/circuito.schema.json",
+  "title": "Circuito de TecnoCircuito, formato 1 (contrato 1)",
+  "description": "Va en el campo «circuito» del proyecto .tbq.json de TecnoBloques. Es la fuente de los nombres de pines de cada pieza, de los colores de cable y de los huecos de la protoboard. Ver CONTRATO.md, sección 4. Es tolerante con lo nuevo: un tipo de pieza o un campo que no conoce no lo invalida (contrato, secciones 4 y 8). Lo que un esquema no puede revisar (que cada cable llegue a una pieza que existe y a un pin que esa pieza tiene) lo revisa prototipo/pruebas/contrato.js.",
+  "type": "object",
+  "required": ["formato", "placa", "componentes", "cables"],
+  "properties": {
+    "formato": { "const": 1, "description": "Versión del formato del circuito. Si cambia, el paquete abre los formatos viejos y los convierte." },
+    "placa": { "enum": ["uno", "nano", "nano_old", "mega"], "description": "Las mismas claves de PLACAS en TecnoBloques. La placa está fija en el origen (0, 0)." },
+    "componentes": { "type": "array", "items": { "$ref": "#/$defs/componente" } },
+    "cables": { "type": "array", "items": { "$ref": "#/$defs/cable" } },
+    "protoboard": {
+      "description": "Como máximo una. null si no hay.",
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/protoboard" }]
+    }
+  },
+  "$defs": {
+    "numero": { "type": "number" },
+    "punto": {
+      "description": "[x, y] en px del dibujo a escala 1 (0,1 pulgadas = 9,6 px); la y crece hacia abajo.",
+      "type": "array",
+      "prefixItems": [{ "type": "number" }, { "type": "number" }],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "id": {
+      "description": "Identificador de la pieza: sin puntos ni espacios. «placa» y «protoboard» están reservados.",
+      "type": "string",
+      "pattern": "^[^.\\s]+$",
+      "not": { "enum": ["placa", "protoboard"] }
+    },
+    "referencia": {
+      "description": "Un pin: «<id>.<pin>». La placa siempre se llama «placa» y la protoboard «protoboard».",
+      "type": "string",
+      "pattern": "^[^.\\s]+\\.[^.\\s]+$"
+    },
+    "color-cable": {
+      "description": "En el orden del código de colores (0 a 9). «morado» se muestra como violeta.",
+      "enum": ["negro", "marron", "rojo", "naranja", "amarillo", "verde", "azul", "morado", "gris", "blanco"]
+    },
+
+    "pines-placa-uno": {
+      "description": "Cada pin físico tiene nombre propio. GND1, GND2 y GND3 son el mismo nodo, igual que SDA con A4 y SCL con A5.",
+      "enum": [
+        "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13",
+        "A0", "A1", "A2", "A3", "A4", "A5",
+        "GND1", "GND2", "GND3", "5V", "3V3", "VIN", "AREF", "IOREF", "RESET", "SDA", "SCL"
+      ]
+    },
+    "pines-resistencia": { "enum": ["1", "2"] },
+    "pines-led": { "enum": ["anodo", "catodo"] },
+    "pines-potenciometro": { "description": "SIG es el cursor (la pata del medio).", "enum": ["GND", "SIG", "VCC"] },
+    "pines-pulsador": { "description": "Las patas con el mismo número están unidas por dentro; al presionar se une la 1 con la 2.", "enum": ["1i", "1d", "2i", "2d"] },
+    "hueco-media": {
+      "description": "Huecos de la media protoboard de 400 puntos, como vienen impresos. Tiras: a1 … j30. Rieles: s+N, s-N (superiores), i+N, i-N (inferiores), sin las columnas 1, 7, 13, 19 y 25.",
+      "type": "string",
+      "pattern": "^([a-j]([1-9]|[12][0-9]|30)|[si][+-]([2-6]|[89]|1[0-2]|1[4-8]|2[0-4]|2[6-9]|30))$"
+    },
+
+    "protoboard": {
+      "type": "object",
+      "required": ["tipo", "x", "y"],
+      "properties": {
+        "tipo": { "enum": ["media"] },
+        "x": { "$ref": "#/$defs/numero" },
+        "y": { "$ref": "#/$defs/numero" }
+      }
+    },
+    "cable": {
+      "type": "object",
+      "required": ["de", "a"],
+      "properties": {
+        "de": { "$ref": "#/$defs/referencia" },
+        "a": { "$ref": "#/$defs/referencia" },
+        "color": { "$ref": "#/$defs/color-cable" },
+        "puntos": { "description": "Dobleces, en orden desde «de» hasta «a».", "type": "array", "items": { "$ref": "#/$defs/punto" } }
+      }
+    },
+    "en": {
+      "description": "Qué pata va en qué hueco: { \"<pata>\": \"protoboard.<hueco>\" }. Solo vale si hay protoboard. Es lo que manda para la conexión.",
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": "^protoboard\\." }
+    },
+    "componente": {
+      "type": "object",
+      "required": ["id", "tipo", "x", "y"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "tipo": { "type": "string", "description": "Un tipo que esta versión no conoce es válido: se muestra como «desconocido» y no se simula." },
+        "x": { "$ref": "#/$defs/numero" },
+        "y": { "$ref": "#/$defs/numero" },
+        "rot": { "enum": [0, 90, 180, 270], "description": "Gira el dibujo alrededor de su centro, en el sentido del reloj." },
+        "props": { "type": "object" },
+        "en": { "$ref": "#/$defs/en" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "tipo": { "const": "resistencia" } } },
+          "then": {
+            "properties": {
+              "props": { "properties": { "ohmios": { "type": "number", "exclusiveMinimum": 0 } } },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-resistencia" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "led" } } },
+          "then": {
+            "properties": {
+              "props": { "properties": { "color": { "enum": ["rojo", "verde", "amarillo", "azul", "blanco"] } } },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-led" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "potenciometro" } } },
+          "then": {
+            "properties": {
+              "props": {
+                "properties": {
+                  "ohmios": { "type": "number", "exclusiveMinimum": 0 },
+                  "posicion": { "type": "number", "minimum": 0, "maximum": 1, "description": "0 = perilla hacia GND, 1 = hacia VCC." }
+                }
+              },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-potenciometro" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "pulsador" } } },
+          "then": {
+            "properties": {
+              "props": { "properties": { "color": { "enum": ["rojo", "verde", "azul", "amarillo", "blanco", "negro"] } } },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-pulsador" } }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "nano",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": ";qwS5b1G261%8cM#u*%t",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "LOOP": {
+       "block": {
+        "type": "otto_brazos",
+        "id": "n,u]9m_YS6ag4bisJRRW",
+        "fields": {
+         "A": "SAL_IZQ"
+        },
+        "next": {
+         "block": {
+          "type": "otto_caminar",
+          "id": "EpUCO26f=c+@tXM$;AY:",
+          "fields": {
+           "DIR": "FORWARD",
+           "T": "1000"
+          },
+          "inputs": {
+           "N": {
+            "block": {
+             "type": "math_number",
+             "id": "zyt%._fX(WH$Phb3}t8$",
+             "fields": {
+              "NUM": 2
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "otto_calibracion",
+     "id": "IzlYk;ga]}B;-@VF3b+)",
+     "x": 600,
+     "y": 20,
+     "fields": {
+      "YL": -4,
+      "YR": 6,
+      "RL": 0,
+      "RR": -3,
+      "BRAZOS": true,
+      "BI": 5,
+      "BD": -7,
+      "GUARDAR": true
+     }
+    }
+   ]
+  }
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T02:01:13.101Z"
+}

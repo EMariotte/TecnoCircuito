@@ -1,0 +1,228 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "uno",
+ "nivel": 1,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "I/_9V7B;jogCvX+tD^c1",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "LOOP": {
+       "block": {
+        "type": "controls_if",
+        "id": "iTG#aP$lE=s$0[M]riW3",
+        "inputs": {
+         "IF0": {
+          "block": {
+           "type": "leer_digital",
+           "id": "TI-fWh(Wc_U{bN9V$Yff",
+           "fields": {
+            "PIN": "Boton"
+           }
+          }
+         },
+         "DO0": {
+          "block": {
+           "type": "escribir_digital",
+           "id": "wCbKUMFI_VEISZjZ9fQI",
+           "fields": {
+            "PIN": "LedRojo",
+            "EST": "HIGH"
+           },
+           "next": {
+            "block": {
+             "type": "escribir_digital",
+             "id": "8;U@MK`R36h}x71@/cD#",
+             "fields": {
+              "PIN": "13",
+              "EST": "LOW"
+             },
+             "next": {
+              "block": {
+               "type": "servo_mover",
+               "id": "Pr%(Xuly%b5-U4;^*ovP",
+               "fields": {
+                "PIN": "Pinza"
+               },
+               "inputs": {
+                "A": {
+                 "block": {
+                  "type": "math_number",
+                  "id": "Z$_BQF^_F{af(IS0maUi",
+                  "fields": {
+                   "NUM": 90
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "escribir_pwm",
+                 "id": "b/JWCp)hwmlN:Co=9VK@",
+                 "fields": {
+                  "PIN": "LedAzul"
+                 },
+                 "inputs": {
+                  "V": {
+                   "block": {
+                    "type": "math_number",
+                    "id": "QzE=,tE#3mzAilwLBr,F",
+                    "fields": {
+                     "NUM": 128
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "fn_call",
+                   "id": "TbGF8PjdA3CB*0VFTS@-",
+                   "inline": true,
+                   "extraState": {
+                    "nombre": "parpadear",
+                    "tipo": "void",
+                    "params": [
+                     {
+                      "nombre": "pin",
+                      "tipo": "int"
+                     }
+                    ]
+                   },
+                   "inputs": {
+                    "ARG0": {
+                     "block": {
+                      "type": "pin_valor",
+                      "id": "%PritFM[I1mWsrm,IYbw",
+                      "fields": {
+                       "PIN": "LedRojo"
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "serial_imprimir",
+                     "id": "O;ml`riJ$/K06D3xtMgc",
+                     "fields": {
+                      "NL": true
+                     },
+                     "inputs": {
+                      "V": {
+                       "block": {
+                        "type": "dht_leer",
+                        "id": "!jpG^$mrT;H0s=G6rL]g",
+                        "fields": {
+                         "T": "DHT11",
+                         "PIN": "Clima",
+                         "M": "C"
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "pin_nombre",
+     "id": ",jfHLATP;pgo-~lAfXZM",
+     "x": 600,
+     "y": 20,
+     "fields": {
+      "PIN": "13",
+      "NOMBRE": "LedRojo"
+     }
+    },
+    {
+     "type": "pin_nombre",
+     "id": "yy6Pdhn6?(VNpx[l-ZG]",
+     "x": 600,
+     "y": 60,
+     "fields": {
+      "PIN": "2",
+      "NOMBRE": "Boton"
+     }
+    },
+    {
+     "type": "pin_nombre",
+     "id": "KkcI$uJ5Wlprq}N7[uD~",
+     "x": 600,
+     "y": 100,
+     "fields": {
+      "PIN": "10",
+      "NOMBRE": "Pinza"
+     }
+    },
+    {
+     "type": "pin_nombre",
+     "id": "Aa.M%HF.|R)wV-xH0_DB",
+     "x": 600,
+     "y": 140,
+     "fields": {
+      "PIN": "A0",
+      "NOMBRE": "Clima"
+     }
+    },
+    {
+     "type": "pin_nombre",
+     "id": ";0?n/*_$fu;Hc+cjEPGm",
+     "x": 600,
+     "y": 180,
+     "fields": {
+      "PIN": "9",
+      "NOMBRE": "LedAzul"
+     }
+    },
+    {
+     "type": "fn_def",
+     "id": "_?k|1V8.vW~b3CD=:FQ7",
+     "x": 600,
+     "y": 260,
+     "fields": {
+      "NAME": "parpadear",
+      "TIPO": "void",
+      "NPARAM": "1",
+      "P0N": "pin",
+      "P0T": "int"
+     },
+     "inputs": {
+      "BODY": {
+       "block": {
+        "type": "cpp_linea",
+        "id": "4#ckzibVLKyOASm@A.?7",
+        "fields": {
+         "CODE": "digitalWrite(pin, HIGH);\ndelay(100);\ndigitalWrite(pin, LOW);"
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T02:01:12.300Z"
+}

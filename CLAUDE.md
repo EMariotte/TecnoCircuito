@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 7 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4: cableado, chip con avr8js, circuito eléctrico (MNA), Web Worker y PWM, **las tareas T1 y T2 completas** y **la protoboard**. El 2 quedó validado con el multímetro (`validacion/`), y Efraín dio por validado el prototipo completo. **TecnoBloques ya lo usa en desarrollo** (`npm run app:simulador`). `npm run probar` pasa 12 grupos de pruebas (con la netlist de KiCad) y `test:simulador` de TecnoBloques 24 de 24. Falta la primera etiqueta con `dist/tecnocircuito.js`, para que el simulador llegue al instalador.
+> Actualizado: 7 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4: cableado, chip con avr8js, circuito eléctrico (MNA), Web Worker y PWM, **las tareas T1 y T2 completas** y **la protoboard**. El 2 quedó validado con el multímetro (`validacion/`), y Efraín dio por validado el prototipo completo. **TecnoBloques ya lo usa en desarrollo** (`npm run app:simulador`). `npm run probar` pasa 14 grupos de pruebas (con la netlist de KiCad, el esquema del circuito y las fixtures) y `test:simulador` de TecnoBloques 26 de 26. Falta la primera etiqueta con `dist/tecnocircuito.js`, para que el simulador llegue al instalador.
 
 ---
 
@@ -101,7 +101,7 @@ Son un borrador: Efraín puede ajustarlas.
 TecnoCircuito/
 ├── CLAUDE.md · BITACORA.md · CONTRATO.md · README.md · LICENSE · NOTICE
 ├── package.json          ← versión semver; scripts de construir y probar
-├── contrato/             ← esquemas JSON del circuito y de los eventos (contrato 1)
+├── contrato/             ← esquemas JSON del circuito (✅ circuito.schema.json, 8 oct) y de los eventos (contrato 1)
 ├── src/
 │   ├── index.js          ← API pública: crearLienzo, crearSimulador, VERSION, CONTRATO, PLACAS
 │   ├── simulador.js      ← lado de la página: órdenes al Worker, fotos y dibujo (prototipo 3)
@@ -170,7 +170,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 ## Próxima sesión: retomar desde aquí
 
-**KiCad (8 oct):** Efraín probó «Importar netlist» en KiCad 10 y funciona. **Pendiente para después:** la huella del Uno no deja montar piezas encima (DRC, «courtyard overlap»). La solución propuesta es exportar los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad (J1 a J4) en vez de la huella del Uno. Ver `prototipo/COMO-FUNCIONA.md`, sección 43, al final.
+**KiCad (8 oct):** Efraín probó «Importar netlist» en KiCad 10 y funciona. El solape con la huella del Uno quedó resuelto el mismo día: la netlist lleva los conectores J1–J4 de la plantilla «Arduino Uno Shield». **Falta que Efraín pruebe a mano** importar sobre un proyecto hecho con esa plantilla (`prototipo/LEEME.md`, «Llevar el circuito a KiCad»).
 
 El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Para avanzar hacen falta estas mediciones y pruebas de Efraín:**
 
@@ -199,7 +199,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
 - ✅ `prototipo/` entró, con su `dist/` (para abrirlo sin construir). Se ignoran `prototipo/pruebas/capturas/`, `*.cjs`, `*.log`, `node_modules/` y `respaldos/`.
 - La historia quedó en tres commits: prototipos 0 a 3 con la primera conexión (desde el respaldo previo), después los ajustes con T1, T2 y la protoboard, y al final los archivos del repositorio.
 - ⬜ Primera etiqueta (`v0.1.0`) con `dist/tecnocircuito.js` en la raíz, para que TecnoBloques dependa de ella (contrato, sección 9).
-- ✅ (TecnoBloques 0.2.5) TecnoBloques ya deja `<caso>.tbq.json` y `<caso>.hex` en `test/salida/<caso>/` (`npm test` y `npm run compilar`). Falta el script `npm run fixtures` de este lado.
+- ✅ (TecnoBloques 0.2.5) TecnoBloques ya deja `<caso>.tbq.json` y `<caso>.hex` en `test/salida/<caso>/` (`npm test` y `npm run compilar`). ✅ `npm run fixtures` los trae a `prototipo/pruebas/fixtures/` y `npm run probar:fixtures` los prueba (8 oct). TecnoBloques genera `t1_protoboard`, con circuito (8 oct).
 
 ## Primera sesión (checklist)
 
@@ -222,7 +222,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
 3. ✅ `README.md` y `package.json` (`tecnocircuito` 0.1.0, Apache-2.0) en la raíz (7 oct).
 4. ✅ Repositorio público `EMariotte/TecnoCircuito` creado y publicado, con la autorización de Efraín (7 oct).
 5. ✅ Periféricos de avr8js 0.21.1 (revisado el 7 oct): CPU con interrupciones, GPIO (puertos A a L, INT0/INT1 y PCINT), temporizadores 0, 1 y 2, ADC con los canales del ATmega328, USART, SPI, TWI (I2C), EEPROM, watchdog y reloj. **Para la Mega faltan los temporizadores 3, 4 y 5:** no hay configuración y habría que escribirla.
-6. Empezar la etapa 0 por el formato del circuito y su esquema en `contrato/`, porque TecnoBloques depende de él.
+6. ✅ Etapa 0, formato del circuito: `contrato/circuito.schema.json`, `prototipo/pruebas/contrato.js` y sus pruebas (8 oct). Falta el esquema de los eventos.
 
 ---
 
@@ -230,7 +230,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
 
 - **Esquemático para KiCad,** para que quien quiera hacer una placa de circuito impreso no empiece de cero. Recomendación, en dos pasos:
   1. ✅ **Netlist de KiCad** (8 oct): `src/kicad.js`, `lienzo.exportarNetlist()`, «Llevar a KiCad» en TecnoBloques. Probada con las huellas y los símbolos de KiCad 10, y por Efraín en el editor de placas. Ver `prototipo/COMO-FUNCIONA.md`, sección 43.
-     - ⬜ **Shield sin solapes:** exportar los conectores J1 a J4 de la plantilla «Arduino Uno Shield» de KiCad en vez de la huella del Uno.
+     - ✅ **Shield sin solapes** (8 oct): la netlist lleva los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad. El DRC de la prueba no ve solapes.
   2. **Después, el esquemático (`.kicad_sch`)** con **etiquetas en vez de cables:** cada símbolo en una cuadrícula y una etiqueta con el nombre de su red en cada pata. Así no hay que trazar cables. Reutiliza la tabla de huellas y pads de `src/kicad.js`.
 - **Diagrama de flujo del programa,** en TecnoBloques: se arma a partir de los bloques (inicio, acciones, decisiones «si» y repeticiones) y se dibuja como SVG. Sirve para la documentación del proyecto y como evidencia. Está anotado también en el CLAUDE.md de TecnoBloques.
 - Las dos se pueden guardar en SVG, como el circuito (`lienzo.exportarSVG()`), y subir a TecnoRuta.

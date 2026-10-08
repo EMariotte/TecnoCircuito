@@ -1,0 +1,302 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "nano",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "q7?^{gcb:LcI_YDe~B__",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "SETUP": {
+       "block": {
+        "type": "otto_iniciar",
+        "id": "}fmEfmI~l@Q^?5Ow)E,/",
+        "fields": {
+         "YL": "2",
+         "YR": "3",
+         "RL": "4",
+         "RR": "5",
+         "BUZ": "13"
+        },
+        "next": {
+         "block": {
+          "type": "otto_brazos_iniciar",
+          "id": "JZ%WmL?DnX4]x_,pd@KR",
+          "fields": {
+           "IZQ": "6",
+           "DER": "7"
+          },
+          "next": {
+           "block": {
+            "type": "otto_velocidad",
+            "id": "f-9g0-}LA:6ctuGX7JjA",
+            "fields": {
+             "A": "LIM",
+             "V": 180
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "LOOP": {
+       "block": {
+        "type": "otto_coreografia",
+        "id": "StoVk=oV#TlA4(Bioa(3",
+        "fields": {
+         "M": "baile"
+        },
+        "inputs": {
+         "MS": {
+          "block": {
+           "type": "math_number",
+           "id": "h?/w]HljvEpNf_NR?Yd|",
+           "fields": {
+            "NUM": 400
+           }
+          }
+         }
+        },
+        "next": {
+         "block": {
+          "type": "otto_coreografia",
+          "id": "dNh5*,,vhu[_4q5E]X=f",
+          "fields": {
+           "M": "mala"
+          },
+          "inputs": {
+           "MS": {
+            "block": {
+             "type": "math_number",
+             "id": "JdiPik.p?M2xBHuA)H9p",
+             "fields": {
+              "NUM": 400
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "otto_mover_servo",
+            "id": "w50@WNRv-C3usS;]65*-",
+            "fields": {
+             "S": "2"
+            },
+            "inputs": {
+             "A": {
+              "block": {
+               "type": "math_number",
+               "id": "tAe$0wk-TxjI[)N#t/3a",
+               "fields": {
+                "NUM": 70
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "otto_mover_servo",
+              "id": ",X6anakei2Vbg%}#q|DY",
+              "fields": {
+               "S": "BD"
+              },
+              "inputs": {
+               "A": {
+                "block": {
+                 "type": "math_number",
+                 "id": "9t]^K*W||~/Y0PUxWBj4",
+                 "fields": {
+                  "NUM": 30
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "otto_pierna",
+                "id": "x#LZJIJK?6(v~udYgZ~T",
+                "fields": {
+                 "MOV": "bend",
+                 "DIR": "LEFT",
+                 "T": "1.5"
+                },
+                "inputs": {
+                 "N": {
+                  "block": {
+                   "type": "math_number",
+                   "id": "U#3i2YH$^dYaTNEwwTV*",
+                   "fields": {
+                    "NUM": 2
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "otto_saltar",
+                  "id": "Vt%p1mZyYj~v0iH%`:bT",
+                  "fields": {
+                   "T": "0.7"
+                  },
+                  "inputs": {
+                   "N": {
+                    "block": {
+                     "type": "math_number",
+                     "id": "mZMj8N(E3f=C[ha{:tvw",
+                     "fields": {
+                      "NUM": 3
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "otto_baile",
+                    "id": "Lj2%5;:v7Ln-Lf~`S.8#",
+                    "fields": {
+                     "MOV": "crusaito|-1",
+                     "H": "MEDIUM",
+                     "T": "1000"
+                    },
+                    "inputs": {
+                     "N": {
+                      "block": {
+                       "type": "math_number",
+                       "id": "^khjzDYXw7,EFToi+X76",
+                       "fields": {
+                        "NUM": 2
+                       }
+                      }
+                     }
+                    },
+                    "next": {
+                     "block": {
+                      "type": "otto_boca_animacion",
+                      "id": "A4!0TkX=^@Qp9]ZpDH5K",
+                      "fields": {
+                       "A": "wave|10"
+                      },
+                      "next": {
+                       "block": {
+                        "type": "otto_sonido_deslizante",
+                        "id": "9%QN)%g!n(i[AEv,XFMt",
+                        "fields": {
+                         "P": "1.02"
+                        },
+                        "inputs": {
+                         "A": {
+                          "block": {
+                           "type": "math_number",
+                           "id": "L%}`Sz$qafcIpgg`w[3B",
+                           "fields": {
+                            "NUM": 2000
+                           }
+                          }
+                         },
+                         "B": {
+                          "block": {
+                           "type": "math_number",
+                           "id": "Qy-{bcvE~4#!v3B]T6K~",
+                           "fields": {
+                            "NUM": 400
+                           }
+                          }
+                         }
+                        },
+                        "next": {
+                         "block": {
+                          "type": "otto_relajar",
+                          "id": "i2`CJJ+8=|9~@Q$978fu",
+                          "fields": {
+                           "A": "R"
+                          },
+                          "next": {
+                           "block": {
+                            "type": "otto_relajar",
+                            "id": "{E%NqtqY%BGs^lmVgKRz",
+                            "fields": {
+                             "A": "D"
+                            },
+                            "next": {
+                             "block": {
+                              "type": "otto_velocidad",
+                              "id": "$!c!%{0x}:8P0qBcyYML",
+                              "fields": {
+                               "A": "SIN",
+                               "V": 240
+                              },
+                              "next": {
+                               "block": {
+                                "type": "otto_reposo",
+                                "id": "f8r=*K[1|bQi?r-iek|R"
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "matriz_crear",
+     "id": "IK@br,d61zBssuM2U(II",
+     "x": 700,
+     "y": 20,
+     "fields": {
+      "NAME": "baile",
+      "TIPO": "int",
+      "F": 3,
+      "C": 6,
+      "DATOS": "[[90,90,90,90,90,90],[60,120,90,90,160,20],[90,90,70,110,20,160]]"
+     }
+    },
+    {
+     "type": "matriz_crear",
+     "id": "{t5I4phH9].Jw-G18F~%",
+     "x": 700,
+     "y": 200,
+     "fields": {
+      "NAME": "mala",
+      "TIPO": "int",
+      "F": 2,
+      "C": 5,
+      "DATOS": "[[1,2,3,4,5],[1,2,3,4,5]]"
+     }
+    }
+   ]
+  }
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T02:01:13.184Z"
+}

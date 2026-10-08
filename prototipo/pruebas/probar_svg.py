@@ -108,8 +108,8 @@ with sync_playwright() as p:
     with pg.expect_download() as descarga:
         pg.get_by_text('Guardar netlist (KiCad)').click()
     net = Path(descarga.value.path()).read_text(encoding='utf-8')
-    revisar(descarga.value.suggested_filename == 'circuito.net' and net.startswith('(export\n\t(version "E")') and '(footprint "Module:Arduino_UNO_R3")' in net,
-            f'«Guardar netlist (KiCad)» descarga «{descarga.value.suggested_filename}» con el Uno y {net.count(chr(9) * 2 + "(net" + chr(10))} redes')
+    revisar(descarga.value.suggested_filename == 'circuito.net' and net.startswith('(export\n\t(version "E")') and '(ref "J2")' in net and 'PinSocket_1x10' in net,
+            f'«Guardar netlist (KiCad)» descarga «{descarga.value.suggested_filename}» con los conectores del shield y {net.count(chr(9) * 2 + "(net" + chr(10))} redes')
 
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))
     nav.close()

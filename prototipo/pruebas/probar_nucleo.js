@@ -118,23 +118,7 @@ for (const pos of [0.25, 0.75, 0, 1]) {
   revisar(ideal.fallas().length === 0, 'en modo ideal, el mismo circuito no avisa fallas');
 }
 
-// 4b. Programa real de TecnoBloques (fixture «eco» de test/salida): el serial llega en UTF-8 («Recibí»)
-{
-  const fixture = path.join(__dirname, '..', '..', '..', 'TecnoBloques', 'test', 'salida', 'eco', 'eco.hex');
-  if (!fs.existsSync(fixture)) console.log('      (sin la fixture eco de TecnoBloques: corre npm test y npm run compilar allá)');
-  else {
-    const c = LED9(220);
-    c.cables[0] = { de: 'placa.D13', a: 'r1.1' };
-    const n = crearNucleo({ hex: fs.readFileSync(fixture, 'utf8'), circuito: c, activas: ACTIVAS });
-    let texto = '';
-    for (let t = 0; t < 300; t += 16) { n.avanzar(CUADRO); texto += n.foto().serial; }
-    n.enviarSerial('on\n');
-    let led = 0;
-    for (let t = 0; t < 300; t += 16) { n.avanzar(CUADRO); const f = n.foto(); texto += f.serial; led = f.leds.led1; }
-    revisar(/Escribe on u off/.test(texto) && /Recibí: on/.test(texto), 'el eco de TecnoBloques responde «Recibí: on», con la tilde bien (UTF-8)');
-    revisar(led > 0.7, `y prende el LED del pin 13 (brillo ${(led * 100).toFixed(0)} %)`);
-  }
-}
+// 4b. El eco de TecnoBloques (serial en UTF-8) se prueba con las fixtures: probar_fixtures.js
 
 // ---- Tarea T1: botón, lectura digital desde el circuito y entrada flotante
 const TODAS = { danoComponentes: true, limitePin: true, entradaFlotante: true, ruidoADC: true };

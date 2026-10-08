@@ -466,3 +466,69 @@ Efraín importó la netlist en el editor de placas de KiCad 10: **la importació
 
   En vez de la huella del Uno, la netlist exportaría **esos 4 conectores, con las mismas referencias**. El aprendiz crea el proyecto desde la plantilla, importa la netlist y KiCad conecta las piezas a los conectores que ya están en su lugar, sin solapes ni nada que borrar. Hay que sacar de la plantilla qué pin de cada conector es cada pin del Uno, y probarlo con el DRC en `probar_kicad_pcb.py`.
 - **Decisión de Efraín:** se deja documentado y se analiza después. Por ahora se sigue con el software actual.
+
+## 2026-10-08 — Contrato 1: el esquema del circuito y las fixtures
+
+Primer paso de la etapa 0 que el prototipo no había cerrado: **el formato del circuito tiene reglas escritas.** Antes vivía en prosa en `CONTRATO.md` y en el código de `normalizar()`. Efraín está fuera del ambiente, así que se hizo solo software.
+
+- **`contrato/circuito.schema.json`** (JSON Schema 2020-12) es la fuente de:
+  - los pines de cada pieza (los 31 del Uno, la resistencia, el LED, el potenciómetro y el botón);
+  - los 10 colores de cable, los colores del LED y del botón;
+  - los giros (0, 90, 180, 270) y el rango de la perilla;
+  - los huecos de la media protoboard (un patrón que excluye las columnas sin hueco de los rieles).
+
+  **No cambia el formato:** escribe las reglas que ya había. Es tolerante con lo nuevo, porque el contrato promete que una pieza o un campo nuevos no rompen nada.
+- **`prototipo/pruebas/contrato.js`** revisa un circuito con el esquema (con `ajv`, MIT, solo para pruebas) y además lo que un esquema no ve: cables a piezas o pines que no existen, huecos que no existen, `en` sin protoboard, ids repetidos. Los mensajes de las referencias están en español; los del esquema los escribe `ajv`, en inglés.
+- **`npm run probar:contrato`** (43 comprobaciones):
+  - **el código está de acuerdo con el contrato:** los pines del dibujo del Uno y del catálogo, los colores, los 400 huecos de `protoboard.js` y la tabla de KiCad coinciden con el esquema;
+  - **cumplen el esquema** el ejemplo de `CONTRATO.md` y los 5 ejemplos de la página;
+  - **se rechazan 19 errores** con su motivo, y se aceptan un tipo de pieza y un campo nuevos.
+- **`probar_protoboard.py`:** los 5 circuitos que guarda el lienzo cumplen el contrato. Son el que queda después de agregar, encajar, mover, girar y borrar, y cada ejemplo después de pasar por el lienzo.
+- **`npm run fixtures`** trae los 16 casos de TecnoBloques 0.2.5 (`.tbq.json` y `.hex`) a `prototipo/pruebas/fixtures/`, y se commitean.
+  - **`npm run probar:fixtures`:** los 13 programas del Uno y del Nano corren 1 s en el chip simulado sin fallar, y el eco responde «Recibí: on» con la tilde.
+  - Los 3 de la Mega se saltan: esa placa todavía no se simula.
+  - La prueba del eco salió de `probar_nucleo.js`, así que ya no depende de la carpeta hermana.
+- **Hallazgo:** ninguna fixture de TecnoBloques trae `circuito`, porque se generaron antes del simulador. **Pendiente en TecnoBloques:** un caso de prueba con circuito (por ejemplo, la T1 en protoboard), para que el contrato se pruebe con un proyecto real de los dos lados.
+- `npm run probar` pasa 14 grupos (307 comprobaciones).
+
+## 2026-10-08 — KiCad: el Uno como los conectores del shield (sin solapes)
+
+**Pedido de Efraín:** si el solape se arregla cambiando la huella del Uno por la del shield, hacerlo ya en vez de posponerlo.
+
+- **`src/kicad.js`:** en vez de la huella `Module:Arduino_UNO_R3` (A1), la netlist lleva los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad, con sus mismas referencias (J1 a J4), huellas y UUID. Al importar sobre un proyecto hecho con esa plantilla, KiCad los reconoce en su lugar y solo agrega las piezas.
+- **De dónde salió la relación de pines:** de la netlist de la propia plantilla (`kicad-cli sch export netlist`). Por ejemplo, D13 es el pin 5 de J2, D2 el 6 de J4, A0 el 1 de J3, y GND2 el 6 de J1.
+- **Pruebas:**
+  - `probar_kicad.js` (18 comprobaciones), con las redes nuevas y los UUID.
+  - `probar_contrato.js`: los conectores tienen cada pin del Uno una sola vez.
+  - `probar_kicad_pcb.py` (39 comprobaciones):
+    - vuelve a exportar la netlist de la plantilla y compara los 31 pines;
+    - abre la placa de la plantilla, reconoce J1 a J4 y agrega las piezas dentro del contorno;
+    - **el DRC no ve solapes.**
+  - Control: la huella vieja del Uno con un LED encima sí da `courtyards_overlap`, el error que encontró Efraín.
+- **Instrucciones nuevas** (`LEEME.md`): proyecto desde la plantilla «Arduino Uno Shield», importar la netlist y no marcar la opción de borrar huellas (borraría los agujeros de montaje).
+- Imagen de la T1 sobre el shield en `docs/capturas/kicad-shield-t1.png`, en el README y en `COMO-FUNCIONA.md`, sección 43.
+- **TecnoBloques:** el texto de «Llevar a KiCad» dice que se empiece desde la plantilla.
+- **Por probar a mano:** la importación sobre la plantilla, en el editor de placas de KiCad 10.
+
+## 2026-10-08 — Contrato 1: la prueba con circuito en los dos proyectos
+
+**Pedido de Efraín:** que la prueba del contrato se haga en los dos proyectos.
+
+- **TecnoBloques** genera un caso nuevo, `t1_protoboard`: el programa de bloques «escribir en el pin 13 lo que lee el pin 2», con la T1 armada en la protoboard en su campo `circuito`. El circuito está en `test/circuitos/t1_protoboard.json`. Además, su `test:simulador` revisa con `prototipo/pruebas/contrato.js` de aquí el circuito que guarda la app.
+- **Aquí,** `npm run fixtures` lo trae (17 casos) y `probar:fixtures` lo corre con su circuito: el LED queda en 0 % con el botón suelto, sube a 83 % al presionarlo y vuelve a 0 % al soltarlo.
+
+## 2026-10-08 — Validación humana del flujo completo (Efraín)
+
+Efraín llevó un proyecto **desde cero** por todo el camino, en la app de escritorio (`npm run app:simulador`), y lo aprobó:
+
+1. armó el programa con bloques y conectó los componentes en el simulador;
+2. lo simuló, y funcionó;
+3. exportó el circuito como imagen SVG y como netlist;
+4. creó el proyecto en KiCad 10 desde la plantilla «Arduino Uno Shield» e importó la netlist: **KiCad la aceptó y el DRC no vio inconvenientes**;
+5. guardó el proyecto como `.tbq.json` y lo volvió a abrir desde la app, con los bloques y el circuito conectado.
+
+Con esto, el flujo del aula queda probado de punta a punta:
+
+```
+bloques → simulación → imagen SVG (evidencia) → netlist → placa en KiCad
+```

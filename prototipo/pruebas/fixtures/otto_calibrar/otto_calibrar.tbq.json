@@ -1,0 +1,41 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "nano",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "3bs-U#OT_uIV~`ERwF-w",
+     "x": 40,
+     "y": 40,
+     "deletable": false
+    },
+    {
+     "type": "otto_calibracion",
+     "id": "AijHwvlDr2+G%!+j^=lD",
+     "x": 600,
+     "y": 20,
+     "fields": {
+      "YL": -4,
+      "YR": 6,
+      "RL": 0,
+      "RR": -3,
+      "BRAZOS": true,
+      "BI": 5,
+      "BD": -7,
+      "GUARDAR": true
+     }
+    }
+   ]
+  }
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T02:01:13.087Z"
+}

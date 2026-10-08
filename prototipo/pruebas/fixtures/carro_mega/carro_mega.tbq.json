@@ -1,0 +1,383 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Carro Bluetooth",
+ "placa": "mega",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "*NEBiW=.$Rc~7?_DrVr[",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "SETUP": {
+       "block": {
+        "type": "serial_iniciar",
+        "id": "(CL,`%}1.OlLz=^V~5V4",
+        "fields": {
+         "B": "9600"
+        },
+        "next": {
+         "block": {
+          "type": "bt_iniciar",
+          "id": "WbaEVOnaf6pRk=;=DYtY",
+          "fields": {
+           "RX": "A1",
+           "TX": "A2",
+           "B": "9600"
+          },
+          "next": {
+           "block": {
+            "type": "lcd_iniciar",
+            "id": "1,UY7Wd4]rY#to=+uXv7",
+            "fields": {
+             "DIR": "0x27",
+             "T": "16x2"
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "LOOP": {
+       "block": {
+        "type": "var_set",
+        "id": "mIC;@qX(tk]01Rf7y{kM",
+        "fields": {
+         "VAR": {
+          "id": "v_temp"
+         }
+        },
+        "inputs": {
+         "V": {
+          "block": {
+           "type": "dht_leer",
+           "id": "GRgb#,Otg4yGN3VTVwlj",
+           "fields": {
+            "T": "DHT11",
+            "PIN": "A0",
+            "M": "C"
+           }
+          }
+         }
+        },
+        "next": {
+         "block": {
+          "type": "lcd_escribir",
+          "id": "u~n#7HJ]O5?u^@1S~|(}",
+          "inputs": {
+           "V": {
+            "block": {
+             "type": "texto_unir",
+             "id": "Bg:RDv(C3zM|pJvbRz$M",
+             "inputs": {
+              "A": {
+               "shadow": {
+                "type": "text",
+                "id": ".VNaN/0vgQP1CM0._66R",
+                "fields": {
+                 "TEXT": "Temp: "
+                }
+               }
+              },
+              "B": {
+               "block": {
+                "type": "var_get",
+                "id": "fk9]#rl,]9ZRfAW-eX=S",
+                "fields": {
+                 "VAR": {
+                  "id": "v_temp"
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "C": {
+            "shadow": {
+             "type": "math_number",
+             "id": ")}-d+{D6gjzgwRHWC.9^",
+             "fields": {
+              "NUM": 0
+             }
+            }
+           },
+           "F": {
+            "shadow": {
+             "type": "math_number",
+             "id": "vOAHQ6DW.mu7S-vco=l@",
+             "fields": {
+              "NUM": 0
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "controls_if",
+            "id": "T3~3;+#!F45aGPu%J%km",
+            "inputs": {
+             "IF0": {
+              "block": {
+               "type": "bt_disponible",
+               "id": "]3FZ2]I[g:K:K{U2piO:"
+              }
+             },
+             "DO0": {
+              "block": {
+               "type": "var_set",
+               "id": "|jB$R9X$tqm{``j}5t#w",
+               "fields": {
+                "VAR": {
+                 "id": "v_cmd"
+                }
+               },
+               "inputs": {
+                "V": {
+                 "block": {
+                  "type": "bt_leer_caracter",
+                  "id": "$CzzmCYij27wwB#NmjDG"
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "controls_if",
+                 "id": "a-#[ebrHZ9GHn3ffywj-",
+                 "extraState": {
+                  "elseIfCount": 1
+                 },
+                 "inputs": {
+                  "IF0": {
+                   "block": {
+                    "type": "logic_compare",
+                    "id": "wO9th!gLefm.sXa.)xE1",
+                    "fields": {
+                     "OP": "EQ"
+                    },
+                    "inputs": {
+                     "A": {
+                      "block": {
+                       "type": "var_get",
+                       "id": "4R7zN^,VmUYKiaNyZOAJ",
+                       "fields": {
+                        "VAR": {
+                         "id": "v_cmd"
+                        }
+                       }
+                      }
+                     },
+                     "B": {
+                      "block": {
+                       "type": "caracter",
+                       "id": "}K)DF0PrW/nvttn%eJC-",
+                       "fields": {
+                        "C": "A"
+                       }
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "DO0": {
+                   "block": {
+                    "type": "fn_call",
+                    "id": "F9V/RsczUP8Yai]ws,+f",
+                    "inline": true,
+                    "extraState": {
+                     "nombre": "avanzar",
+                     "tipo": "void",
+                     "params": [
+                      {
+                       "nombre": "velocidad",
+                       "tipo": "int"
+                      }
+                     ]
+                    },
+                    "inputs": {
+                     "ARG0": {
+                      "shadow": {
+                       "type": "math_number",
+                       "id": "r!@rrrOcT4n2,hbm2nb`",
+                       "fields": {
+                        "NUM": 200
+                       }
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "IF1": {
+                   "block": {
+                    "type": "logic_compare",
+                    "id": "#9uX0Br`k#l(@{d:|N?*",
+                    "fields": {
+                     "OP": "EQ"
+                    },
+                    "inputs": {
+                     "A": {
+                      "block": {
+                       "type": "var_get",
+                       "id": "5=JA/N4Q]6+vmH-r[-Sd",
+                       "fields": {
+                        "VAR": {
+                         "id": "v_cmd"
+                        }
+                       }
+                      }
+                     },
+                     "B": {
+                      "block": {
+                       "type": "caracter",
+                       "id": "6Qis}vsWCFcmN/7jwo[e",
+                       "fields": {
+                        "C": "S"
+                       }
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "DO1": {
+                   "block": {
+                    "type": "motores_detener_todos",
+                    "id": "1Qc]TNE25{1L0vk$pbLl"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "serial_imprimir",
+              "id": "6x^L!:y+${bmgUMr5Ml.",
+              "fields": {
+               "NL": true
+              },
+              "inputs": {
+               "V": {
+                "block": {
+                 "type": "var_get",
+                 "id": "E$iM,h|LOv8KBw52GJxG",
+                 "fields": {
+                  "VAR": {
+                   "id": "v_temp"
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "esperar",
+                "id": "@D]]f}U]Kb0*]MQKM@wo",
+                "inputs": {
+                 "MS": {
+                  "shadow": {
+                   "type": "math_number",
+                   "id": "(1Lo;#uHm5P/$#L;mRs}",
+                   "fields": {
+                    "NUM": 500
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "fn_def",
+     "id": "`jJ8V0kGUlb3:c`.AJ`g",
+     "x": 660,
+     "y": 40,
+     "fields": {
+      "NAME": "avanzar",
+      "TIPO": "void",
+      "NPARAM": "1",
+      "P0N": "velocidad",
+      "P0T": "int"
+     },
+     "inputs": {
+      "BODY": {
+       "block": {
+        "type": "motor_dc",
+        "id": "N^QQ)qw8D8gsMF]KSCo6",
+        "fields": {
+         "M": "1",
+         "DIR": "FORWARD"
+        },
+        "inputs": {
+         "VEL": {
+          "block": {
+           "type": "fn_param",
+           "id": "5-.)+i]T,)xo=v6d@{]%",
+           "fields": {
+            "P": "velocidad"
+           }
+          }
+         }
+        },
+        "next": {
+         "block": {
+          "type": "motor_dc",
+          "id": "qCt;,qusn(wcgQtB[FKH",
+          "fields": {
+           "M": "2",
+           "DIR": "FORWARD"
+          },
+          "inputs": {
+           "VEL": {
+            "block": {
+             "type": "fn_param",
+             "id": "BdmAK9gN_5)tZzNx4psB",
+             "fields": {
+              "P": "velocidad"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "variables": [
+   {
+    "name": "comando",
+    "id": "v_cmd",
+    "type": "char"
+   },
+   {
+    "name": "temperatura",
+    "id": "v_temp",
+    "type": "float"
+   }
+  ]
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T20:07:36.511Z"
+}

@@ -1,0 +1,228 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Eco serial y LED",
+ "placa": "uno",
+ "nivel": 2,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "P~}tptp_Z//Bm=r}[g{C",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "SETUP": {
+       "block": {
+        "type": "serial_iniciar",
+        "id": "qjHR|f%~9t^+kxe/q64e",
+        "fields": {
+         "B": "9600"
+        },
+        "next": {
+         "block": {
+          "type": "serial_imprimir",
+          "id": "nZpd[F4JF1O33U|@Di*s",
+          "fields": {
+           "NL": true
+          },
+          "inputs": {
+           "V": {
+            "shadow": {
+             "type": "text",
+             "id": "3B~$sGC0,en[EAQxwxzF",
+             "fields": {
+              "TEXT": "Escribe on u off"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "LOOP": {
+       "block": {
+        "type": "controls_if",
+        "id": "a*orsUw@iRn7-mI-WIJ9",
+        "inputs": {
+         "IF0": {
+          "block": {
+           "type": "serial_disponible",
+           "id": "PF1pAPy;P=cXXBVsWrG]"
+          }
+         },
+         "DO0": {
+          "block": {
+           "type": "var_set",
+           "id": "#Sz`[dwk-#zsqu%u3K^)",
+           "fields": {
+            "VAR": {
+             "id": "v_msg"
+            }
+           },
+           "inputs": {
+            "V": {
+             "block": {
+              "type": "serial_leer_texto",
+              "id": "XiPfB_E`|.4PxKa#99IA"
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "serial_imprimir",
+             "id": "#R#o!0YQY{`nS9W]b`lx",
+             "fields": {
+              "NL": true
+             },
+             "inputs": {
+              "V": {
+               "block": {
+                "type": "texto_unir",
+                "id": "dm:Wd@`Z%XZNMq)bx4U[",
+                "inputs": {
+                 "A": {
+                  "shadow": {
+                   "type": "text",
+                   "id": "QJW#)W{qaY9,iO_{TQNF",
+                   "fields": {
+                    "TEXT": "Recibí: "
+                   }
+                  }
+                 },
+                 "B": {
+                  "block": {
+                   "type": "var_get",
+                   "id": "fr::RJrSMR%BS_hG;_(F",
+                   "fields": {
+                    "VAR": {
+                     "id": "v_msg"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "controls_if",
+               "id": "fsg/]Y|08w^8[6(*(bL#",
+               "extraState": {
+                "elseIfCount": 1
+               },
+               "inputs": {
+                "IF0": {
+                 "block": {
+                  "type": "logic_compare",
+                  "id": "FiOHf~UH+aHkgkYXSQ]{",
+                  "fields": {
+                   "OP": "EQ"
+                  },
+                  "inputs": {
+                   "A": {
+                    "block": {
+                     "type": "var_get",
+                     "id": "yruy0^9!.UIP{zOQT}47",
+                     "fields": {
+                      "VAR": {
+                       "id": "v_msg"
+                      }
+                     }
+                    }
+                   },
+                   "B": {
+                    "block": {
+                     "type": "text",
+                     "id": "jojPC4fzd8GA_m=G7l/0",
+                     "fields": {
+                      "TEXT": "on"
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "DO0": {
+                 "block": {
+                  "type": "escribir_digital",
+                  "id": "sF_?[5A%jil%vCmBJpmD",
+                  "fields": {
+                   "PIN": "13",
+                   "EST": "HIGH"
+                  }
+                 }
+                },
+                "IF1": {
+                 "block": {
+                  "type": "logic_compare",
+                  "id": "X]]!3aOAX1p$;Kq06c:B",
+                  "fields": {
+                   "OP": "EQ"
+                  },
+                  "inputs": {
+                   "A": {
+                    "block": {
+                     "type": "var_get",
+                     "id": "!(pzRDSHWH*xAZ]L?kj{",
+                     "fields": {
+                      "VAR": {
+                       "id": "v_msg"
+                      }
+                     }
+                    }
+                   },
+                   "B": {
+                    "block": {
+                     "type": "text",
+                     "id": "w^cW7p$kNULZO?nG(=c,",
+                     "fields": {
+                      "TEXT": "off"
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "DO1": {
+                 "block": {
+                  "type": "escribir_digital",
+                  "id": "I1JXi2Z`b^4cIrvFG7OJ",
+                  "fields": {
+                   "PIN": "13",
+                   "EST": "LOW"
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "variables": [
+   {
+    "name": "mensaje",
+    "id": "v_msg",
+    "type": "String"
+   }
+  ]
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T20:07:35.924Z"
+}

@@ -698,12 +698,12 @@ Una **netlist** es el circuito sin dibujo: **qué piezas hay** (cada una con su 
 ```
   Lo que ve el aprendiz                    Lo que guarda la netlist
   ────────────────────                     ────────────────────────
-  Uno ──cable── protoboard                 Piezas:  A1 Uno, R1 220, D1 LED, SW1 botón, R2 10k
-        │ tiras, rieles,                   Redes:   D13            = A1.28, R1.2
+  Uno ──cable── protoboard                 Piezas:  J1–J4 (conectores del shield), R1 220, D1 LED, SW1 botón, R2 10k
+        │ tiras, rieles,                   Redes:   D13            = J2.5,  R1.2
         │ cables, colores,                          Net-(D1-Pad2)  = D1.2,  R1.1
-        │ posiciones                                GND            = A1.6,  D1.1, R2.2
-        └──────────────── calcularNodos() ─►        +5V            = A1.5,  SW1.2
-                                                    D2             = A1.17, R2.1, SW1.1
+        │ posiciones                                GND            = D1.1,  J1.6, R2.2
+        └──────────────── calcularNodos() ─►        +5V            = J1.5,  SW1.2
+                                                    D2             = J4.6,  R2.1, SW1.1
 ```
 
 **El simulador ya hacía el trabajo difícil:** `calcularNodos()` es lo mismo que usa el solucionador eléctrico. La protoboard, sus tiras y los cables desaparecen, porque solo son conexiones y quedan dentro de cada red.
@@ -724,7 +724,7 @@ Es el formato «export» S-expression versión «E», el mismo que escribe el es
     …)
   (nets
     (net (code "3") (name "GND") (class "Default")
-      (node (ref "A1") (pin "6") (pinfunction "GND2") (pintype "passive"))
+      (node (ref "J1") (pin "6") (pinfunction "GND2") (pintype "passive"))
       (node (ref "D1") (pin "1") (pintype "passive"))
       …)))
 ```
@@ -735,13 +735,19 @@ Cada pin nuestro tiene que caer en **el número de pad correcto** de la huella. 
 
 | Pieza | Ref | Huella de KiCad | Nuestro pin → pad |
 |---|---|---|---|
-| Uno | A1 | `Module:Arduino_UNO_R3` | D0…D13 → 15…28 · A0…A5 → 9…14 · 5V → 5 · 3V3 → 4 · VIN → 8 · GND2, GND3 → 6, 7 · GND1 → 29 · AREF → 30 · SDA, SCL → 31, 32 · IOREF → 2 · RESET → 3 |
+| Uno (desde el 8 oct, los conectores del shield) | J1 Power | `Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical` | IOREF → 2 · RESET → 3 · 3V3 → 4 · 5V → 5 · GND2, GND3 → 6, 7 · VIN → 8 |
+| | J2 Digital/PWM | `…PinSocket_1x10…` | SCL → 1 · SDA → 2 · AREF → 3 · GND1 → 4 · D13 … D8 → 5 … 10 |
+| | J3 Analog | `…PinSocket_1x06…` | A0 … A5 → 1 … 6 |
+| | J4 Digital/PWM | `…PinSocket_1x08…` | D7 … D0 → 1 … 8 |
 | Resistencia | R | `Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal` | 1 → 1 · 2 → 2 |
 | LED | D | `LED_THT:LED_D5.0mm` | cátodo → 1 (el pad cuadrado) · ánodo → 2 |
 | Botón | SW | `Button_Switch_THT:SW_PUSH_6mm` | 1i, 1d → 1 · 2i, 2d → 2 (la huella repite los números, como nuestras patas unidas por dentro) |
 | Potenciómetro | RV | `Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical` | GND → 1 · SIG → 2 (el cursor) · VCC → 3 |
 
-- **De dónde salió:** del símbolo oficial `MCU_Module:Arduino_UNO_R3` de KiCad 10, que tiene el nombre de cada pin. Se confirmó con la posición de cada pad: el 28 (D13) queda al lado del 29 (GND) y del 30 (AREF), igual que en la placa y en el dibujo de Wokwi.
+- **De dónde salió:**
+  - las piezas, de sus símbolos y huellas oficiales de KiCad 10;
+  - los conectores, de la netlist de la plantilla «Arduino Uno Shield» (`kicad-cli sch export netlist`). La prueba la vuelve a exportar y compara pin por pin.
+  - La primera versión (7 oct) usaba la huella `Module:Arduino_UNO_R3`; ver el hallazgo al final de esta sección.
 - **Licencia:** no copiamos nada de las librerías de KiCad. Solo escribimos el nombre de la huella y el número de cada pad, y KiCad las busca en sus propias librerías.
 
 ### Reglas de las redes
@@ -809,4 +815,74 @@ Efraín importó la netlist en KiCad 10 y funcionó: aparecen las piezas con sus
   - `J3` Analog (6);
   - `J4` Digital/PWM (8).
 
-  En vez de la huella del Uno, la netlist exportaría **esos 4 conectores, con las mismas referencias**. El aprendiz crea el proyecto desde la plantilla, importa la netlist y KiCad conecta las piezas a los conectores que ya están en su lugar, sin solapes ni nada que borrar. Hay que sacar de la plantilla qué pin de cada conector es cada pin del Uno, y probarlo con el DRC en `probar_kicad_pcb.py`.
+  En vez de la huella del Uno, la netlist exportaría **esos 4 conectores, con las mismas referencias**. El aprendiz crea el proyecto desde la plantilla, importa la netlist y KiCad conecta las piezas a los conectores que ya están en su lugar, sin solapes ni nada que borrar.
+
+### La solución: los conectores de la plantilla (hecha el 8 oct)
+
+```
+ ANTES (7 oct)                                   AHORA (8 oct)
+ ─────────────                                   ─────────────
+ netlist: A1 = Module:Arduino_UNO_R3             netlist: J1, J2, J3, J4 = los conectores de la plantilla
+          (dibuja el Uno entero, con una                  (mismas referencias y mismos UUID)
+           zona de cortesía en toda la placa)
+ KiCad: las piezas encima del Uno →              KiCad: proyecto desde la plantilla «Arduino Uno Shield»,
+        «courtyard overlap»                             importar la netlist → reconoce J1–J4 en su lugar,
+                                                        agrega R1, D1, SW1… → las piezas van dentro del
+                                                        contorno, sin solapes
+```
+
+- **Cómo reconoce KiCad los conectores:** al importar, enlaza cada pieza de la netlist con la huella que ya está en la placa, por su referencia (J1) o por su UUID. Usamos los dos iguales a los de la plantilla, así que funciona con cualquiera de las dos opciones del diálogo.
+- **Qué pin es cada uno:** sale de la netlist de la propia plantilla. Por ejemplo, D13 es el pin 5 de J2, D2 el 6 de J4 y A0 el 1 de J3.
+- **Cómo se probó** (`probar_kicad_pcb.py`, con KiCad 10.0.3):
+  - abre la placa de la plantilla, reconoce J1–J4 por su referencia y agrega las piezas nuevas dentro del contorno;
+  - el DRC ve las 9 conexiones por trazar de la T1 y **ningún solape**;
+  - como control, la huella vieja del Uno con un LED encima sí da `courtyards_overlap`, el mismo error que encontró Efraín.
+- **Los demás pines de los conectores quedan sin red.** El Uno ya une por dentro sus tres GND, así que no hace falta trazar pistas entre ellos.
+
+![La T1 sobre la plantilla del shield, armada por la prueba](../docs/capturas/kicad-shield-t1.png)
+
+## 44. El esquema del circuito (`contrato/circuito.schema.json`)
+
+> Hecho el 8 de octubre de 2026. Cierra la parte de la etapa 0 que pide «el formato del circuito y su esquema».
+
+Hasta aquí, las reglas del circuito estaban en tres lugares: la prosa de `CONTRATO.md`, el código de `normalizar()` en el lienzo y la cabeza de quien lo escribió. Ahora hay un archivo que manda, y pruebas que obligan al código y a los ejemplos a estar de acuerdo con él.
+
+```
+                      contrato/circuito.schema.json   ← manda: pines, colores, giros, huecos
+                                    │
+        ┌───────────────────────────┼─────────────────────────────┐
+        ▼                           ▼                             ▼
+  el código dice lo mismo     los ejemplos lo cumplen       lo que guarda el lienzo lo cumple
+  (probar_contrato.js)        (probar_contrato.js)          (probar_protoboard.py, en Chromium)
+  · pines del dibujo del Uno  · CONTRATO.md, sección 4      · después de agregar, encajar,
+  · catálogo y colores        · los 5 de la página            mover, girar y borrar
+  · 400 huecos de la          · 19 errores rechazados       · cada ejemplo de la página
+    protoboard                · lo nuevo, aceptado
+  · tabla de KiCad
+                                    ▲
+                      pruebas/fixtures/ (npm run fixtures, desde TecnoBloques)
+                      · cada .tbq.json y su circuito · cada .hex corriendo en el chip
+```
+
+### Dos capas de revisión
+
+| Capa | Quién | Qué revisa | Ejemplo de mensaje |
+|---|---|---|---|
+| Forma | el esquema (con `ajv`) | Tipos, valores permitidos, patrones | `/componentes/0/rot must be equal to one of the allowed values [0,90,180,270]` |
+| Referencias | `pruebas/contrato.js` | Que lo nombrado exista | `cable 0 (placa.D13 → led9.anodo): no hay ninguna pieza «led9»` |
+
+Un esquema JSON no puede decir «este cable llega a una pieza que está en la lista de piezas»: solo mira cada valor por separado. Por eso hay una segunda capa, que **lee los pines del propio esquema**, así que no repite la tabla.
+
+### Tolerante con lo nuevo
+
+El contrato promete que una pieza nueva no rompe a una versión vieja (sección 4), y que agregar piezas o campos sube solo la versión menor (sección 8). Por eso:
+
+- un `tipo` que el esquema no conoce **es válido** (se muestra como «desconocido»);
+- un campo que no conoce **es válido** (TecnoBloques conserva los campos que no conoce);
+- lo que sí conoce lo revisa estricto: un LED «morado» o un giro de 45° no pasan.
+
+### Las fixtures
+
+`npm run fixtures` copia de `../TecnoBloques/test/salida/<caso>/` cada `<caso>.tbq.json` y `<caso>.hex`. Se commitean, para que las pruebas corran sin la carpeta hermana. `probar:fixtures` revisa el formato del proyecto, su circuito si trae, y corre cada `.hex` del ATmega328P un segundo en el chip, con el mismo núcleo del Worker.
+
+Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron antes del simulador. El siguiente paso, del lado de TecnoBloques, es un caso con la T1 en protoboard.

@@ -14,7 +14,9 @@
   - ruido en `analogRead()`.
 - **Piezas:** Arduino Uno, LED, resistencia, potenciómetro, botón y una media protoboard de 400 puntos en la que las piezas se encajan solas.
 - **Para documentar:** el circuito se guarda como imagen SVG, para un proyecto o una evidencia.
-- **Para hacer una placa:** el circuito se exporta como netlist de KiCad. En el editor de placas aparecen las piezas con sus conexiones, listas para diseñar un shield.
+- **Para hacer una placa:** el circuito se exporta como netlist de KiCad. Sobre la plantilla «Arduino Uno Shield» de KiCad aparecen las piezas con sus conexiones a los conectores del Uno, listas para diseñar un shield.
+
+  ![La T1 sobre la plantilla del shield en KiCad](docs/capturas/kicad-shield-t1.png)
 
 | Botón con pull-down (tarea T1) | LED sin resistencia: se quema |
 |---|---|

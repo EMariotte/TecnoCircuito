@@ -3,7 +3,7 @@
 // Uso: npm run probar:kicad   (arma pruebas/kicad.cjs con esbuild y corre este archivo)
 const fs = require('fs');
 const path = require('path');
-const { netlistKiCad, PIEZAS_KICAD } = require('./kicad.cjs');
+const { netlistKiCad, PIEZAS_KICAD, CONECTORES_SHIELD } = require('./kicad.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -38,25 +38,30 @@ console.log(texto.split('\n').slice(0, 8).join('\n') + '\n…');
 revisar(texto.startsWith('(export\n\t(version "E")') && balanceado(texto), 'es una netlist «export» versión E, con los paréntesis cerrados');
 revisar(
   igual(t1.piezas, {
-    A1: 'Module:Arduino_UNO_R3',
+    J1: 'Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical',
+    J2: 'Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical',
+    J3: 'Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical',
+    J4: 'Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical',
     R1: 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal',
     D1: 'LED_THT:LED_D5.0mm',
     SW1: 'Button_Switch_THT:SW_PUSH_6mm',
     R2: 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal',
   }),
-  'cinco piezas con su huella; la protoboard no es pieza: ' + Object.keys(t1.piezas).join(', '),
+  'los 4 conectores del shield y las 4 piezas, con su huella; ni el Uno ni la protoboard son piezas: ' + Object.keys(t1.piezas).join(', '),
 );
 revisar(/\(ref "R1"\)\s*\(value "220"\)/.test(texto) && /\(ref "R2"\)\s*\(value "10k"\)/.test(texto), 'los valores: R1 220 y R2 10k');
 const ESPERADAS = {
-  D2: ['A1.17', 'R2.1', 'SW1.1'],
-  D13: ['A1.28', 'R1.2'],
-  GND: ['A1.6', 'D1.1', 'R2.2'],
+  D2: ['J4.6', 'R2.1', 'SW1.1'],
+  D13: ['J2.5', 'R1.2'],
+  GND: ['D1.1', 'J1.6', 'R2.2'],
   'Net-(D1-Pad2)': ['D1.2', 'R1.1'],
-  '+5V': ['A1.5', 'SW1.2'],
+  '+5V': ['J1.5', 'SW1.2'],
 };
 revisar(igual(Object.keys(t1.redes).sort(), Object.keys(ESPERADAS).sort()), 'cinco redes: ' + Object.keys(t1.redes).join(', '));
 for (const [nombre, pads] of Object.entries(ESPERADAS)) revisar(igual(t1.redes[nombre], pads), `${nombre}: ${(t1.redes[nombre] || []).join(', ')}`);
 revisar(!/protoboard|"a19"|"i-/.test(texto.split('(nets')[1]), 'en las redes no queda ningún hueco de la protoboard');
+revisar(CONECTORES_SHIELD.every((j) => texto.includes(`(ref "${j.ref}")`) && texto.includes(`(tstamps "${j.uuid}")`)),
+  'los conectores llevan las referencias y los UUID de la plantilla «Arduino Uno Shield» de KiCad (así se reconocen al importar)');
 revisar(netlistKiCad(EJEMPLO_PB, { nombre: 'T1 en protoboard', fecha: FECHA }) === texto, 'exportar dos veces da el mismo texto (KiCad reconoce las mismas huellas)');
 
 // 2. El mismo circuito con cables directos da las mismas redes
@@ -90,20 +95,20 @@ const t2 = {
 const textoT2 = netlistKiCad(t2, { nombre: 'T2 potenciometro', fecha: FECHA });
 fs.writeFileSync(path.join(SALIDA, 't2_potenciometro.net'), textoT2);
 const r2 = leer(textoT2).redes;
-revisar(igual(r2, { '+5V': ['A1.5', 'RV1.3'], A0: ['A1.9', 'RV1.2'], GND: ['A1.29', 'RV1.1'] }), 'T2: ' + JSON.stringify(r2));
+revisar(igual(r2, { '+5V': ['J1.5', 'RV1.3'], A0: ['J3.1', 'RV1.2'], GND: ['J2.4', 'RV1.1'] }), 'T2: ' + JSON.stringify(r2));
 revisar(/\(ref "RV1"\)\s*\(value "10k"\)/.test(textoT2), 'el potenciómetro es RV1, de 10k');
 
 // 4. Casos de borde
 const suelta = netlistKiCad({ formato: 1, placa: 'uno', componentes: [{ id: 'led1', tipo: 'led', props: {} }], cables: [] }, { fecha: FECHA });
 revisar(/\(ref "D1"\)/.test(suelta) && Object.keys(leer(suelta).redes).length === 0, 'una pieza sin cables entra a las piezas, sin redes');
 const corto = leer(netlistKiCad({ formato: 1, placa: 'uno', componentes: [], cables: [{ de: 'placa.D13', a: 'placa.GND1' }] }, { fecha: FECHA })).redes;
-revisar(igual(corto, { GND: ['A1.28', 'A1.29'] }), 'un corto de D13 a GND queda en la red GND: ' + JSON.stringify(corto));
+revisar(igual(corto, { GND: ['J2.4', 'J2.5'] }), 'un corto de D13 a GND queda en la red GND: ' + JSON.stringify(corto));
 const raro = netlistKiCad({ formato: 1, placa: 'uno', componentes: [], cables: [] }, { nombre: 'Proyecto "uno" \\ prueba', fecha: FECHA });
 revisar(raro.includes('(source "Proyecto \\"uno\\" \\\\ prueba")') && balanceado(raro), 'las comillas del nombre se escapan como en KiCad');
 
 // La tabla de huellas y pads, para que probar_kicad_pcb.py la compare con las librerías de KiCad
 const tabla = Object.entries(PIEZAS_KICAD).map(([tipo, d]) => [tipo, { lib: d.lib, parte: d.parte, huella: d.huella, pads: d.pads }]);
-fs.writeFileSync(path.join(SALIDA, 'piezas.json'), JSON.stringify(Object.fromEntries(tabla), null, 2));
+fs.writeFileSync(path.join(SALIDA, 'piezas.json'), JSON.stringify({ piezas: Object.fromEntries(tabla), conectores: CONECTORES_SHIELD }, null, 2));
 
 console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');
 process.exit(fallos ? 1 : 0);

@@ -40,7 +40,8 @@ lienzo.ponerTema('oscuro');
 lienzo.exportarSVG();       // el circuito como texto SVG, tal como se ve (documentación, evidencias en TecnoRuta),
                             // con la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» abajo a la derecha
 lienzo.exportarNetlist({ nombre });  // el circuito como netlist de KiCad (.net, «export» versión E): piezas con su huella
-                            // y redes; en el editor de placas de KiCad, Archivo → Importar → Netlist
+                            // y redes. El Uno va como los 4 conectores (J1–J4) de la plantilla «Arduino Uno Shield»
+                            // de KiCad; en su editor de placas, Archivo → Importar → Netlist
 lienzo.destruir();
 
 // Simulador: necesita el .hex. Usa el mismo lienzo para mostrar lo que pasa.
@@ -100,7 +101,7 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
 - Los extremos de un cable son `"<id>.<pin>"`. La placa siempre se llama `placa`.
 - **Cada pin físico tiene nombre propio,** porque un cable llega a un agujero concreto. En el Uno: `D0`–`D13`, `A0`–`A5`, `GND1`, `GND2`, `GND3`, `5V`, `3V3`, `VIN`, `AREF`, `IOREF`, `RESET`, `SDA` y `SCL`. Los tres GND son el mismo nodo eléctrico, igual que `SDA` con `A4` y `SCL` con `A5`, pero son pines distintos.
 - **`puntos`** (opcional) son los dobleces del cable, en orden desde `de` hasta `a`: una lista de pares `[x, y]` en las mismas coordenadas. Sin `puntos`, el cable va recto.
-- Los nombres de pines de cada componente los define TecnoCircuito en `contrato/circuito.schema.json`. Hasta que exista el esquema, son estos:
+- **El esquema manda:** [`contrato/circuito.schema.json`](contrato/circuito.schema.json) (JSON Schema 2020-12) define los nombres de pines de cada pieza, los colores y los huecos de la protoboard. Lo que un esquema no puede revisar (que cada cable llegue a una pieza que existe y a un pin que esa pieza tiene) lo revisa `prototipo/pruebas/contrato.js`. Es tolerante con lo nuevo: un tipo de pieza o un campo que no conoce no lo invalida. Resumen de las piezas:
 
   | `tipo` | Pines | `props` |
   |---|---|---|
@@ -218,7 +219,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
    3. correr `npm test`, `npm run test:simulador` y `npm run test:app`;
    4. commit en TecnoBloques: `chore: TecnoCircuito vX.Y.Z`.
 3. **Pruebas de contrato en los dos lados:**
-   - **Aquí:** `pruebas/fixtures/` guarda proyectos `.tbq.json` y `.hex` generados por TecnoBloques. `npm run fixtures` los copia desde `../TecnoBloques/test/salida/<caso>/` (`<caso>.tbq.json` y `<caso>.hex`, desde la 0.2.5) cuando la carpeta hermana existe. Se commitean, así que las pruebas corren sin TecnoBloques.
+   - **Aquí:** `prototipo/pruebas/fixtures/` guarda proyectos `.tbq.json` y `.hex` generados por TecnoBloques. `npm run fixtures` los copia desde `../TecnoBloques/test/salida/<caso>/` (`<caso>.tbq.json` y `<caso>.hex`, desde la 0.2.5) cuando la carpeta hermana existe. Se commitean, así que las pruebas corren sin TecnoBloques. `npm run probar:fixtures` revisa cada proyecto y su circuito contra el esquema, y corre cada `.hex` del ATmega328P en el chip simulado.
    - **En TecnoBloques:** `npm run test:simulador` compila sus programas de prueba, los corre con Node en la versión fija del simulador y comprueba que guardar y abrir un proyecto conserva `circuito` y cualquier campo desconocido.
 4. **Trabajo en los dos a la vez:**
    - `npm run simulador:local` (en TecnoBloques) instala `file:../TecnoCircuito`;
@@ -237,4 +238,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 7 oct 2026 | Ajustes del prototipo 0: cada pin físico con nombre propio (`GND1` a `GND3`), `puntos` opcionales en los cables, placa fija en el origen con coordenadas definidas y `alEvento` en `crearLienzo`. Sigue en borrador, así que no sube el número. |
 | 1 (borrador) | 7 oct 2026 | Sección 4.1: el proyecto `.tbq.json` que contiene el circuito (TecnoBloques 0.2.5 conserva los campos desconocidos y guarda `creadoCon`; el `.hex` no va en el proyecto). Fixtures disponibles en `test/salida`. |
 | 1 (borrador) | 7 oct 2026 | Primera conexión con TecnoBloques: `alSerial` entrega texto UTF-8; se proponen `sim.destruir()` y `sim.medidas()`. `tbEscritorio.compilarHex` ya existe en TecnoBloques (sección 5). |
-| 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). |
+| 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). |

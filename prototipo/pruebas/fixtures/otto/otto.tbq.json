@@ -1,0 +1,286 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Otto humanoide esquiva",
+ "placa": "nano",
+ "nivel": 2,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "-E@3]7=d;p{SGFH$t?Bf",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "SETUP": {
+       "block": {
+        "type": "otto_iniciar",
+        "id": "F%mw@@@uwJpZ1D6J-8S`",
+        "fields": {
+         "YL": "2",
+         "YR": "3",
+         "RL": "4",
+         "RR": "5",
+         "BUZ": "13"
+        },
+        "next": {
+         "block": {
+          "type": "otto_brazos_iniciar",
+          "id": "Yolr8KSXvDUoo%c7#lV]",
+          "fields": {
+           "IZQ": "6",
+           "DER": "7"
+          },
+          "next": {
+           "block": {
+            "type": "otto_sonido",
+            "id": "511)Po$t.w:g[7:jX(4-",
+            "fields": {
+             "S": "S_connection"
+            },
+            "next": {
+             "block": {
+              "type": "otto_brazos",
+              "id": "Y}6[=oTUe]38W#1O*BHK",
+              "fields": {
+               "A": "SAL_IZQ"
+              },
+              "next": {
+               "block": {
+                "type": "fn_call",
+                "id": "Rp$R1*P((hSpq5=I4$yu",
+                "inline": true,
+                "extraState": {
+                 "nombre": "bailar",
+                 "tipo": "void",
+                 "params": []
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "LOOP": {
+       "block": {
+        "type": "controls_if",
+        "id": "JMI]JpI*f??)Gk05_Jyo",
+        "extraState": {
+         "hasElse": true
+        },
+        "inputs": {
+         "IF0": {
+          "block": {
+           "type": "logic_compare",
+           "id": "*CN0gB|C_|KPT^uy=%]B",
+           "fields": {
+            "OP": "LT"
+           },
+           "inputs": {
+            "A": {
+             "block": {
+              "type": "ultrasonido",
+              "id": "N.YiJ6C2?b)8/pHV}$wt",
+              "fields": {
+               "TRIG": "8",
+               "ECHO": "9"
+              }
+             }
+            },
+            "B": {
+             "shadow": {
+              "type": "math_number",
+              "id": "C##!IKl!PdDR7q)}1e#h",
+              "fields": {
+               "NUM": 15
+              }
+             }
+            }
+           }
+          }
+         },
+         "DO0": {
+          "block": {
+           "type": "otto_sonido",
+           "id": "ev5sYzTS.c~H^Nq.RmSF",
+           "fields": {
+            "S": "S_surprise"
+           },
+           "next": {
+            "block": {
+             "type": "otto_brazos",
+             "id": "+9C{4b,0)}]0Vk2/w9nw",
+             "fields": {
+              "A": "ARRIBA"
+             },
+             "next": {
+              "block": {
+               "type": "otto_caminar",
+               "id": "{Yrbu)p/Yk4f259p{pI{",
+               "fields": {
+                "DIR": "BACKWARD",
+                "T": "1000"
+               },
+               "inputs": {
+                "N": {
+                 "shadow": {
+                  "type": "math_number",
+                  "id": "e#MNbVRxn5lD_*yfjF(l",
+                  "fields": {
+                   "NUM": 2
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "otto_girar",
+                 "id": "70L71RlFJCH{ugD9_U,7",
+                 "fields": {
+                  "DIR": "LEFT",
+                  "T": "1000"
+                 },
+                 "inputs": {
+                  "N": {
+                   "shadow": {
+                    "type": "math_number",
+                    "id": "|7|G#xBv{7k(sOPCSNR+",
+                    "fields": {
+                     "NUM": 3
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "otto_brazos",
+                   "id": "YH{CNlkaq^),]h`**F^i",
+                   "fields": {
+                    "A": "FRENTE"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "ELSE": {
+          "block": {
+           "type": "otto_caminar",
+           "id": "=1a%#YDbu@}v?dGE[8nZ",
+           "fields": {
+            "DIR": "FORWARD",
+            "T": "1000"
+           },
+           "inputs": {
+            "N": {
+             "shadow": {
+              "type": "math_number",
+              "id": "n2Q@m5?9VPy7j+s%SU:k",
+              "fields": {
+               "NUM": 1
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "fn_def",
+     "id": "`g0fnCK+5=bYCXtk$}0s",
+     "x": 660,
+     "y": 40,
+     "fields": {
+      "NAME": "bailar",
+      "TIPO": "void",
+      "NPARAM": "0"
+     },
+     "inputs": {
+      "BODY": {
+       "block": {
+        "type": "otto_baile",
+        "id": "=0no9^Xf@f]w2A__snvy",
+        "fields": {
+         "MOV": "moonwalker|LEFT",
+         "H": "MEDIUM",
+         "T": "1000"
+        },
+        "inputs": {
+         "N": {
+          "shadow": {
+           "type": "math_number",
+           "id": "],]T1L^#@uKxS|Q{$Kj,",
+           "fields": {
+            "NUM": 2
+           }
+          }
+         }
+        },
+        "next": {
+         "block": {
+          "type": "otto_baile",
+          "id": "wd3O$7hQV^c3!=x7XRUP",
+          "fields": {
+           "MOV": "crusaito|FORWARD",
+           "H": "MEDIUM",
+           "T": "1000"
+          },
+          "inputs": {
+           "N": {
+            "shadow": {
+             "type": "math_number",
+             "id": "85heew@[)GYA/P(MoPxI",
+             "fields": {
+              "NUM": 2
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "otto_brazos",
+            "id": "[P:-Ge/GJ1l_/bn*C~!s",
+            "fields": {
+             "A": "ALETEAR"
+            },
+            "next": {
+             "block": {
+              "type": "otto_gesto",
+              "id": "6`(/v]49]qkjEXbqFkJ0",
+              "fields": {
+               "G": "OttoHappy"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T20:07:35.379Z"
+}

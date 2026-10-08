@@ -7,10 +7,13 @@
   "scripts": {
     "construir": "node construir.js",
     "compilar": "node compilar.js",
-    "probar": "npm run construir && npm run probar:motor && npm run probar:nucleo && npm run probar:kicad && python -I pruebas/probar_kicad_pcb.py && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_svg.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_t1t2.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_protoboard.py dist/prototipo.html pruebas/capturas",
+    "probar": "npm run construir && npm run probar:motor && npm run probar:nucleo && npm run probar:kicad && npm run probar:contrato && node pruebas/probar_fixtures.js && python -I pruebas/probar_kicad_pcb.py && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_svg.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_t1t2.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_protoboard.py dist/prototipo.html pruebas/capturas",
     "probar:motor": "esbuild src/motor/index.js --bundle --format=cjs --platform=node --outfile=pruebas/motor.cjs --log-level=warning && node pruebas/probar_motor.js",
     "probar:nucleo": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_nucleo.js",
     "probar:kicad": "esbuild src/kicad.js --bundle --format=cjs --platform=node --outfile=pruebas/kicad.cjs --log-level=warning && node pruebas/probar_kicad.js",
+    "probar:contrato": "esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_contrato.js",
+    "probar:fixtures": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_fixtures.js",
+    "fixtures": "node pruebas/traer_fixtures.js",
     "medir": "esbuild src/chip.js --bundle --format=cjs --platform=node --outfile=pruebas/chip.cjs --log-level=warning && node pruebas/medir_chip.js"
   },
   "dependencies": {
@@ -18,6 +21,7 @@
     "avr8js": "0.21.1"
   },
   "devDependencies": {
+    "ajv": "8.20.0",
     "esbuild": "0.28.2"
   }
 }

@@ -1,5 +1,6 @@
 """Prueba la protoboard (prototipo 4) en Chromium: tiras, encaje de las patas, mover, girar, borrar y simular."""
 import json
+import subprocess
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -180,6 +181,21 @@ with sync_playwright() as p:
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent)')
     revisar(any('componente_quitado' in e and 'protoboard' in e for e in eventos) and any('componente_agregado' in e and 'protoboard' in e for e in eventos),
             'quitar y agregar la protoboard quedan en los eventos')
+
+    # Lo que guarda el lienzo cumple el contrato (contrato/circuito.schema.json): el circuito tal como quedó
+    # después de toda esta prueba, y cada ejemplo de la página después de pasar por el lienzo.
+    carpeta = SALIDA / 'contrato'
+    carpeta.mkdir(exist_ok=True)
+    guardados = [carpeta / 'despues_de_la_prueba.json']
+    guardados[0].write_text(json.dumps(pg.evaluate('lienzo.circuito()'), ensure_ascii=False), encoding='utf-8')
+    for boton in ['ejemplo', 'ejemploT1', 'ejemploPB', 'ejemploT2']:
+        pg.click('#' + boton)
+        pg.wait_for_timeout(300)
+        guardados.append(carpeta / f'{boton}.json')
+        guardados[-1].write_text(json.dumps(pg.evaluate('lienzo.circuito()'), ensure_ascii=False), encoding='utf-8')
+    revision = subprocess.run(['node', str(Path(__file__).parent / 'contrato.js'), *map(str, guardados)], capture_output=True, text=True, encoding='utf-8')
+    print(revision.stdout.rstrip())
+    revisar(revision.returncode == 0, f'los {len(guardados)} circuitos que guarda el lienzo cumplen el contrato (esquema y referencias)')
 
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))
     nav.close()

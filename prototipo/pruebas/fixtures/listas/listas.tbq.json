@@ -1,0 +1,158 @@
+{
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "uno",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "#$1(=RFT`V35T|OFvAVH",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "LOOP": {
+       "block": {
+        "type": "serial_imprimir",
+        "id": "slm~qC%2S:lHR=)KlSut",
+        "fields": {
+         "NL": true
+        },
+        "inputs": {
+         "V": {
+          "block": {
+           "type": "lista_elemento",
+           "id": "Q?+KwHgF@{/KihxV@e=4",
+           "fields": {
+            "LISTA": "notas"
+           },
+           "inputs": {
+            "I": {
+             "block": {
+              "type": "math_number",
+              "id": "mn_]Q[FLDU3U}2DyQt{1",
+              "fields": {
+               "NUM": 3
+              }
+             }
+            }
+           }
+          }
+         }
+        },
+        "next": {
+         "block": {
+          "type": "serial_imprimir",
+          "id": "vy#FEm!xqZAbR3^=4kQ5",
+          "fields": {
+           "NL": true
+          },
+          "inputs": {
+           "V": {
+            "block": {
+             "type": "lista_elemento",
+             "id": "D;=(yuBo5d3Sg/rnu5/^",
+             "fields": {
+              "LISTA": "fantasma"
+             },
+             "inputs": {
+              "I": {
+               "block": {
+                "type": "math_number",
+                "id": "fh*/jI8ftNa-7m:(bLUj",
+                "fields": {
+                 "NUM": 0
+                }
+               }
+              }
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "matriz_poner",
+            "id": "]2$:tQhwC_XDyqsXA]dP",
+            "fields": {
+             "M": "m"
+            },
+            "inputs": {
+             "F": {
+              "block": {
+               "type": "math_number",
+               "id": "V_aPx$z5S/=lw;_gcrCV",
+               "fields": {
+                "NUM": 0
+               }
+              }
+             },
+             "C": {
+              "block": {
+               "type": "math_number",
+               "id": "W4LKANvg_8~4f{|dO2WH",
+               "fields": {
+                "NUM": 2
+               }
+              }
+             },
+             "V": {
+              "block": {
+               "type": "math_number",
+               "id": "HR+o(mrCgV4;;F$^$e_4",
+               "fields": {
+                "NUM": 1
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "lista_crear",
+     "id": "K-uQjKL1+6J]Eepke}yy",
+     "x": 700,
+     "y": 10,
+     "fields": {
+      "NAME": "notas",
+      "TIPO": "int",
+      "VALORES": "1, hola, 3"
+     }
+    },
+    {
+     "type": "matriz_crear",
+     "id": "0Bg*qLRHUfQI@t~L!.8i",
+     "x": 700,
+     "y": 80,
+     "fields": {
+      "NAME": "m",
+      "TIPO": "int",
+      "F": 2,
+      "C": 2,
+      "DATOS": "[[1,2],[3,4]]"
+     }
+    }
+   ]
+  },
+  "variables": [
+   {
+    "name": "notas",
+    "id": "?7HjIz@I?0!zW^LZb~}T",
+    "type": "int"
+   }
+  ]
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.2.5",
+ "guardado": "2026-10-08T02:01:13.013Z"
+}
