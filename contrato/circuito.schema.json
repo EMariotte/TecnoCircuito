@@ -52,6 +52,7 @@
     "pines-led": { "enum": ["anodo", "catodo"] },
     "pines-potenciometro": { "description": "SIG es el cursor (la pata del medio).", "enum": ["GND", "SIG", "VCC"] },
     "pines-pulsador": { "description": "Las patas con el mismo número están unidas por dentro; al presionar se une la 1 con la 2.", "enum": ["1i", "1d", "2i", "2d"] },
+    "pines-servo": { "description": "Los 3 cables del microservo: GND (marrón), VCC (rojo) y SIG, la señal (naranja).", "enum": ["GND", "VCC", "SIG"] },
     "hueco-media": {
       "description": "Huecos de la media protoboard de 400 puntos, como vienen impresos. Tiras: a1 … j30. Rieles: s+N, s-N (superiores), i+N, i-N (inferiores), sin las columnas 1, 7, 13, 19 y 25.",
       "type": "string",
@@ -124,6 +125,15 @@
                 }
               },
               "en": { "propertyNames": { "$ref": "#/$defs/pines-potenciometro" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "servo" } } },
+          "then": {
+            "properties": {
+              "props": { "properties": { "modelo": { "enum": ["sg90", "mg90s"], "description": "Cambia el dibujo, el consumo y la velocidad." } } },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-servo" } }
             }
           }
         },

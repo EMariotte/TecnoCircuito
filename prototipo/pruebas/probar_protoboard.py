@@ -188,7 +188,7 @@ with sync_playwright() as p:
     carpeta.mkdir(exist_ok=True)
     guardados = [carpeta / 'despues_de_la_prueba.json']
     guardados[0].write_text(json.dumps(pg.evaluate('lienzo.circuito()'), ensure_ascii=False), encoding='utf-8')
-    for boton in ['ejemplo', 'ejemploT1', 'ejemploPB', 'ejemploT2']:
+    for boton in ['ejemplo', 'ejemploT1', 'ejemploPB', 'ejemploT2', 'ejemploServo', 'ejemploServos']:
         pg.click('#' + boton)
         pg.wait_for_timeout(300)
         guardados.append(carpeta / f'{boton}.json')

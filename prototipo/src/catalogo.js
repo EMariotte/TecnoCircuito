@@ -1,5 +1,8 @@
 // Catálogo del prototipo: qué dibujo de @wokwi/elements usa cada pieza, cómo se llaman sus pines
 // en el contrato y qué lee el aprendiz al pasar el mouse por un pin.
+// Las piezas Tecno (dibujo propio, sin Wokwi) traen `dibujo` en vez de `etiqueta`: ver src/piezas/.
+
+import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
 
 // En el orden del código de colores de las resistencias: la tecla 0 a 9 elige el color de ese número.
 // Las claves son las del contrato; «morado» se conserva por los circuitos ya guardados y se muestra como violeta.
@@ -114,6 +117,40 @@ export const TIPOS = {
     },
     aplicar(el, props) {
       el.color = { rojo: 'red', verde: 'green', azul: 'blue', amarillo: 'yellow', blanco: 'white', negro: 'black' }[props.color] || 'red';
+    },
+  },
+  // Tarea T3. Pieza Tecno: microservo SG90 o MG90S (src/piezas/servo.js). El núcleo lee el ancho del pulso del pin
+  // al que va la señal y gira el brazo; el modelo cambia el dibujo, el consumo y la velocidad.
+  servo: {
+    nombre: 'Servo',
+    prefijo: 'servo',
+    props: { modelo: 'sg90' },
+    dibujo: {
+      ancho: TAMANO_SERVO.ancho,
+      alto: TAMANO_SERVO.alto,
+      pines: PINES_SERVO,
+      svg: (props) => dibujarServo(props.modelo, 90),
+    },
+    rotulo: (pin) =>
+      ({
+        GND: 'GND · cable marrón: va a tierra (−)',
+        VCC: 'VCC · cable rojo: va a 5V (+)',
+        SIG: 'Señal · cable naranja: va al pin que manda los pulsos',
+      })[pin] || pin,
+    campo: {
+      prop: 'modelo',
+      etiqueta: 'Modelo',
+      opciones: Object.entries(MODELOS_SERVO).map(([k, d]) => [k, `${d.nombre} (engranajes de ${d.engranajes})`]),
+    },
+    // Cambiar el modelo redibuja la pieza (el color y el rótulo cambian).
+    aplicar(el, props) {
+      const nuevo = new DOMParser().parseFromString(dibujarServo(props.modelo, 90), 'image/svg+xml').documentElement;
+      el.replaceChildren(...[...nuevo.childNodes].map((n) => el.ownerDocument.importNode(n, true)));
+    },
+    // Mientras se simula, el brazo va al ángulo que calcula el núcleo.
+    mostrar(el, estado) {
+      const brazo = el.querySelector('[data-brazo]');
+      if (brazo) brazo.setAttribute('transform', giroBrazo(estado && typeof estado.angulo === 'number' ? estado.angulo : 90));
     },
   },
   // Prototipo 3 (tarea T2). «posicion» va de 0 (perilla hacia GND) a 1 (hacia VCC).

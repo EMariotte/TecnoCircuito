@@ -68,6 +68,7 @@ export function crearLienzo(elemento, opciones = {}) {
     <button type="button" role="menuitem" data-accion="agregar" data-tipo="resistencia">Resistencia</button>
     <button type="button" role="menuitem" data-accion="agregar" data-tipo="potenciometro">Potenciómetro</button>
     <button type="button" role="menuitem" data-accion="agregar" data-tipo="pulsador">Botón</button>
+    <button type="button" role="menuitem" data-accion="agregar" data-tipo="servo">Servo</button>
     <button type="button" role="menuitem" data-accion="protoboard">Protoboard</button>
   </div>
 </div>`;
@@ -100,7 +101,7 @@ export function crearLienzo(elemento, opciones = {}) {
   let camaraManual = false; // el aprendiz movió o acercó la vista: ya no se re-encuadra sola
   let tamanoEncuadre = null; // tamaño del área cuando se encuadró por última vez
   let destruido = false;
-  let vistaSim = { simulando: false, leds: {}, quemados: [], voltajes: {}, placa: {} }; // lo que el simulador pide mostrar
+  let vistaSim = { simulando: false, leds: {}, quemados: [], voltajes: {}, placa: {}, servos: {} }; // lo que el simulador pide mostrar
   const pulsados = new Set(); // botones presionados con el mouse ahora
   const oyentesPulsar = []; // el simulador escucha aquí los botones (no cambian el circuito guardado)
 
@@ -118,7 +119,12 @@ export function crearLienzo(elemento, opciones = {}) {
     div.dataset.id = id;
     if (tipo) div.dataset.tipo = tipo;
     let el;
-    if (def) {
+    if (def && def.dibujo) {
+      // Pieza Tecno: su dibujo es un SVG propio (src/piezas/), con el tamaño y los pines que trae la definición.
+      const plantilla = document.createElement('template');
+      plantilla.innerHTML = def.dibujo.svg(props);
+      el = plantilla.content.firstElementChild;
+    } else if (def) {
       el = document.createElement(def.etiqueta);
       if (def.aplicar) def.aplicar(el, props);
       if (def.perilla) el.addEventListener('input', () => girarPerilla(id, Number(el.value) / 100));
@@ -135,7 +141,16 @@ export function crearLienzo(elemento, opciones = {}) {
     vistas.set(id, vista);
     return Promise.resolve(el.updateComplete).then(() => {
       if (vistas.get(id) !== vista) return; // la quitaron mientras se dibujaba
-      if (def) {
+      if (def && def.dibujo) {
+        Object.assign(vista, { w: def.dibujo.ancho, h: def.dibujo.alto });
+        for (const [nombre, p] of Object.entries(def.dibujo.pines)) {
+          const marca = document.createElement('div');
+          marca.className = 'tc-pin';
+          marca.dataset.ref = `${id}.${nombre}`;
+          capaPines.appendChild(marca);
+          vista.pines.set(nombre, { px: p.x, py: p.y, div: marca });
+        }
+      } else if (def) {
         Object.assign(vista, tamanoNatural(el));
         for (const p of el.pinInfo || []) {
           const nombre = def.nombrePin(p.name);
@@ -300,6 +315,8 @@ export function crearLienzo(elemento, opciones = {}) {
       v.el.value = brillo > 0.005;
       v.el.brightness = brillo;
       v.div.classList.toggle('tc-quemado', vistaSim.quemados.includes(v.id));
+    } else if (v.def && v.def.mostrar) {
+      v.def.mostrar(v.el, vistaSim.simulando ? vistaSim.servos[v.id] : null);
     }
   }
 
@@ -1313,6 +1330,7 @@ export function crearLienzo(elemento, opciones = {}) {
         quemados: estado.quemados || [],
         voltajes: estado.voltajes || {},
         placa: estado.placa || {},
+        servos: estado.servos || {},
       };
       if (antes !== vistaSim.simulando) {
         tc.classList.toggle('tc-simulando', vistaSim.simulando);

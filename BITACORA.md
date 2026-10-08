@@ -532,3 +532,48 @@ Con esto, el flujo del aula queda probado de punta a punta:
 ```
 bloques → simulación → imagen SVG (evidencia) → netlist → placa en KiCad
 ```
+
+## 2026-10-08 — Tarea T3: el servo (pieza Tecno) y la energía del USB
+
+**Pedido de Efraín:** empezar a ampliar las piezas simulables con los dos microservos, «un solo elemento y que varíe el modelo con las variables de consumo y torque de cada uno», y que se vea cuando varios servos superan el consumo y se apaga el controlador, «un feature que no tiene ningún simulador».
+
+- **Pieza Tecno `servo`** (`src/piezas/servo.js`, encabezado SPDX): dibujo original a escala desde las medidas del SG90, con dos modelos, **SG90** (azul translúcido, engranajes de plástico) y **MG90S** (negro, de metal).
+  - Pines `GND`, `VCC` y `SIG` en un conector a 0,1".
+  - El lienzo aprendió a dibujar piezas Tecno con SVG propio (`dibujo` en el catálogo en vez de `etiqueta` de Wokwi).
+- **Modelo lógico:** mide el ancho de cada pulso con el ciclo exacto del cambio de pin. Con el programa real de la librería Servo, `write(0)`, `write(90)` y `write(180)` dan 544, 1471 y 2400 µs, y 0°, 89,9° y 180°. Gira a la velocidad de la hoja de datos (0,1 s por 60° a 4,8 V), proporcional al voltaje.
+- **Modelo eléctrico:** consumo quieto, moviéndose y al arrancar (SG90: 10, 200 y 650 mA; MG90S: 10, 250 y 700 mA). Son valores típicos de varias hojas de datos, que varían entre clones. **Por validar con el multímetro.**
+- **Errores del aula:**
+  - sin GND o sin alimentación, no se mueve;
+  - alimentado desde un pin, avisa (falla `servo_alimentacion`);
+  - a 3,3 V va más lento.
+- **Energía del USB** (`src/energia.js`, no idealidad `limiteUSB`):
+  - el 5V baja con la corriente (0,4 Ω);
+  - un golpe de más de unos 1,5 A reinicia la placa (falla `reinicio_usb`);
+  - más de 500 mA sostenidos calientan el fusible MF-MSMF050-2 del Uno, que apaga la placa (falla `fusible_usb`) y vuelve a encender a los 3 s.
+  - En la simulación, 1 y 2 SG90 funcionan, y con 3 o 4 arrancando a la vez la placa **se reinicia en bucle**, como en el aula.
+  - El fusible calza con su hoja de datos (150 ms a 8 A). El reloj no retrocede con los reinicios.
+- **Contrato 1:**
+  - la pieza `servo` está en el esquema y en la tabla de piezas;
+  - entran la clave `limiteUSB` (`reinicioPorCaida` queda reservada, dentro de ella) y las fallas nuevas;
+  - el evento `reinicio_placa` se emite (motivo `boton` o `energia_usb`).
+- **KiCad:** el servo es un conector `PinHeader_1x03` con el símbolo `Motor:Motor_Servo` (1 = señal, 2 = +, 3 = −), verificado con las librerías de KiCad 10.
+- **Programas nuevos:** `servo_barrido` (0°, 90°, 180°) y `servos_cuatro` (4 servos a la vez). En la página, «Ejemplo con servo (T3)» y «Cuatro servos en el USB (T3)», y filas nuevas en la tabla: el servo y el USB.
+- **Pruebas:**
+  - `probar_nucleo.js`: 22 comprobaciones nuevas (servo y energía).
+  - `probar_servo.py` (Chromium): 18.
+  - El contrato y KiCad también cubren el servo.
+  - `npm run probar` pasa 15 grupos.
+- **Por validar en el aula** (`LEEME.md`, «Validar el servo y la energía del USB»): la corriente de cada servo, el voltaje del 5V con servos y **con cuántos servos se reinicia el Uno** con el PC y el cable del aula.
+
+## 2026-10-08 — Validación humana del servo y de la energía del USB (Efraín)
+
+- Efraín probó en la app de escritorio los **dos modelos, SG90 y MG90S**, y escribió **dos programas propios** para validar cada situación descrita: el servo siguiendo al programa y los errores y límites de energía. **Aprobado:** «realmente funciona».
+- Siguen pendientes las medidas con hardware para ajustar los valores de partida: la corriente de cada servo, el 5V con servos y con cuántos servos se reinicia el Uno en el PC del aula (`prototipo/LEEME.md`, «Validar el servo y la energía del USB»).
+
+**Cierre de la sesión del 8 oct:**
+1. explicación e implementación de la netlist de KiCad, y el arreglo del solape con la plantilla «Arduino Uno Shield»;
+2. esquema del circuito y fixtures, con la prueba del contrato en los dos proyectos;
+3. validación humana del flujo completo, de bloques a KiCad;
+4. servo SG90/MG90S como pieza Tecno y energía del USB, también validados.
+
+Lo siguiente: la shield L293D y el motor DC (T3).

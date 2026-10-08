@@ -4,7 +4,7 @@
 // una vez por cuadro de pantalla. Si el navegador no deja crear el Worker, el mismo código corre en la página.
 import { leerHex } from './hex.js';
 
-const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC'];
+const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB'];
 // El código del Worker, ya armado: lo pone construir.js. Va como texto para que todo quepa en un solo archivo.
 const CODIGO_TRABAJADOR = typeof __CODIGO_TRABAJADOR__ === 'string' ? __CODIGO_TRABAJADOR__ : '';
 
@@ -29,6 +29,7 @@ export function crearSimulador(opciones = {}) {
   let cuadro = 0;
   const medidas = { msSimulados: 0, msReales: 0, velocidad: 1, evaluaciones: 0 };
   let medicion = null;
+  let reiniciosVistos = 0; // reinicios por energía ya avisados en esta corrida
   const fallas = [];
 
   const trabajador = crearTrabajador(recibir);
@@ -47,6 +48,10 @@ export function crearSimulador(opciones = {}) {
       const { mensaje, ...datos } = f;
       emitir('falla', datos);
     }
+    // Reinicios por la energía del USB (no idealidad «limiteUSB»): uno por foto, con cuántos hubo desde la anterior.
+    const reinicios = m.energia ? m.energia.reinicios : 0;
+    if (reinicios > reiniciosVistos) emitir('reinicio_placa', { motivo: 'energia_usb', nuevos: reinicios - reiniciosVistos, total: reinicios });
+    reiniciosVistos = reinicios;
     if (m.serial) oyentes.serial.forEach((fn) => avisar(fn, m.serial));
     vista = m;
     if (!cuadro) cuadro = requestAnimationFrame(dibujar);
@@ -61,7 +66,8 @@ export function crearSimulador(opciones = {}) {
       leds: vista.leds,
       quemados: vista.quemados,
       voltajes: vista.voltajes,
-      placa: { ledPower: true, led13: vista.placa.led13, ledTX: vista.placa.ledTX },
+      servos: vista.servos || {},
+      placa: { ledPower: vista.placa.encendida !== false, led13: vista.placa.led13, ledTX: vista.placa.ledTX },
     });
   }
 
@@ -105,6 +111,7 @@ export function crearSimulador(opciones = {}) {
         fallas.length = 0;
         medicion = null;
         vista = null;
+        reiniciosVistos = 0;
         Object.assign(medidas, { msSimulados: 0, msReales: 0, velocidad: 1 });
         emitir('simulacion_iniciada', { placa, modo });
       }
@@ -124,6 +131,8 @@ export function crearSimulador(opciones = {}) {
       // Como apretar el botón RESET: el programa empieza desde setup().
       trabajador.enviar({ tipo: 'reiniciar', corrida });
       trabajador.enviar({ tipo: 'iniciar', nuevo: false, corrida });
+      reiniciosVistos = 0;
+      emitir('reinicio_placa', { motivo: 'boton' });
       cambiarEstado('reiniciado');
       cambiarEstado('corriendo');
     },

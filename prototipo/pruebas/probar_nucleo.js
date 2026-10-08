@@ -244,6 +244,147 @@ const desviacion = (xs) => {
   revisar(pegado.every((x) => x >= 1020), `sin GND la perilla no hace nada: lee ${pegado[0]} (pegado a 5V)`);
 }
 
+// ---- Tarea T3: el servo (pieza Tecno, src/piezas/servo.js) con el programa real de la librería Servo
+{
+  const conServo = ({ modelo = 'sg90', vcc = 'placa.5V', gnd = 'placa.GND1', sig = 'placa.D9' } = {}) => ({
+    formato: 1,
+    placa: 'uno',
+    componentes: [{ id: 'servo1', tipo: 'servo', x: 0, y: 0, rot: 0, props: { modelo } }],
+    cables: [{ de: 'servo1.GND', a: gnd }, { de: 'servo1.VCC', a: vcc }, { de: 'servo1.SIG', a: sig }].filter((k) => k.a),
+  });
+  // Corre `ms` y devuelve lo que pasó con el servo cada 16 ms (como las fotos del Worker).
+  const seguir = (n, ms) => {
+    const r = [];
+    for (let t = 0; t < ms; t += 16) {
+      n.avanzar(CUADRO);
+      const f = n.foto();
+      r.push({ t: f.msSimulados, ...f.servos.servo1, consumo5V: f.medicion && f.medicion.consumo5V, fallas: f.fallas });
+    }
+    return r;
+  };
+  // servo_barrido: 0° (1 s), 90° (1 s), 180° (1 s), y vuelve a empezar
+  const n = crearNucleo({ hex: hex('servo_barrido'), circuito: conServo(), activas: ACTIVAS, semilla: 1 });
+  const v = seguir(n, 3000);
+  const en = (ms) => v.find((x) => x.t >= ms);
+  revisar(en(900).pulso >= 543 && en(900).pulso <= 545 && Math.abs(en(900).angulo) < 0.5, `write(0): pulso de ${en(900).pulso} µs → ${en(900).angulo}°`);
+  revisar(Math.abs(en(1900).pulso - 1472) <= 1 && Math.abs(en(1900).angulo - 90) < 0.5, `write(90): pulso de ${en(1900).pulso} µs → ${en(1900).angulo}°`);
+  revisar(en(2900).pulso >= 2399 && en(2900).pulso <= 2401 && Math.abs(en(2900).angulo - 180) < 0.5, `write(180): pulso de ${en(2900).pulso} µs → ${en(2900).angulo}°`);
+  // Velocidad: el SG90 gira 60° en 0,1 s a 4,8 V; a 5 V, 90° le toman unos 0,14 s
+  const inicio = v.find((x) => x.t > 2000 && x.moviendo);
+  const fin = v.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 179);
+  const segundos = (fin.t - inicio.t) / 1000;
+  revisar(segundos > 0.1 && segundos < 0.2, `de 90° a 180° tarda ${segundos.toFixed(2).replace('.', ',')} s (hoja de datos: 0,1 s por 60° a 4,8 V)`);
+  const quieto = en(1900).i * 1000;
+  const moviendo = Math.max(...v.filter((x) => x.t > 2060 && x.t < 2120).map((x) => x.i * 1000));
+  const pico = Math.max(...v.map((x) => x.pico * 1000));
+  revisar(quieto < 15 && moviendo > 150 && pico > 600, `consumo del SG90: ${quieto.toFixed(0)} mA quieto, ${moviendo.toFixed(0)} mA moviéndose y ${pico.toFixed(0)} mA de pico al arrancar`);
+  revisar(Math.abs(en(1900).consumo5V * 1000 - quieto) < 1, `el 5V de la placa entrega lo que pide el servo (${(en(1900).consumo5V * 1000).toFixed(1)} mA)`);
+  // El MG90S pide más corriente al moverse
+  const mg = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ modelo: 'mg90s' }), activas: ACTIVAS, semilla: 1 }), 2200);
+  const mgMoviendo = Math.max(...mg.filter((x) => x.t > 2060 && x.t < 2120).map((x) => x.i * 1000));
+  revisar(mgMoviendo > moviendo, `el MG90S pide más al moverse que el SG90 (${mgMoviendo.toFixed(0)} frente a ${moviendo.toFixed(0)} mA)`);
+  // Errores del aula: sin GND o sin 5V no se mueve; alimentado desde un pin, avisa; a 3,3 V va más lento
+  const sinGnd = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ gnd: null }), activas: ACTIVAS, semilla: 1 }), 1000);
+  revisar(sinGnd.every((x) => x.angulo === 90 && x.i === 0), 'sin el cable de GND el servo no se mueve ni consume');
+  const desdePin = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ vcc: 'placa.D7' }), activas: ACTIVAS, semilla: 1 }), 500);
+  const aviso = desdePin.flatMap((x) => x.fallas).find((f) => f.tipo === 'servo_alimentacion');
+  revisar(desdePin.every((x) => x.angulo === 90) && aviso && /pin 7/.test(aviso.mensaje), `alimentado desde el pin 7 no se mueve y avisa: «${aviso && aviso.mensaje}»`);
+  const a33 = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ vcc: 'placa.3V3' }), activas: ACTIVAS, semilla: 1 }), 3000);
+  const ini33 = a33.find((x) => x.t > 2000 && x.moviendo);
+  const fin33 = a33.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 179);
+  revisar(fin33 && (fin33.t - ini33.t) / 1000 > segundos * 1.3, `a 3,3 V gira más lento: ${((fin33.t - ini33.t) / 1000).toFixed(2).replace('.', ',')} s frente a ${segundos.toFixed(2).replace('.', ',')} s`);
+  // Cuatro servos moviéndose a la vez desde el USB
+  const cuatro = {
+    formato: 1,
+    placa: 'uno',
+    componentes: ['D9', 'D6', 'D5', 'D3'].map((pin, k) => ({ id: 's' + k, tipo: 'servo', x: 0, y: 0, rot: 0, props: { modelo: 'sg90' } })),
+    cables: ['D9', 'D6', 'D5', 'D3'].flatMap((pin, k) => [
+      { de: 's' + k + '.GND', a: 'placa.GND1' }, { de: 's' + k + '.VCC', a: 'placa.5V' }, { de: 's' + k + '.SIG', a: 'placa.' + pin },
+    ]),
+  };
+  const n4 = crearNucleo({ hex: hex('servos_cuatro'), circuito: cuatro, activas: ACTIVAS, semilla: 1 });
+  let maximo = 0;
+  for (let t = 0; t < 1500; t += 16) {
+    n4.avanzar(CUADRO);
+    const f = n4.foto();
+    if (f.medicion) maximo = Math.max(maximo, f.medicion.consumo5V);
+  }
+  revisar(maximo > 0.5, `cuatro servos moviéndose a la vez piden ${(maximo * 1000).toFixed(0)} mA al 5V: más de los 500 mA del USB`);
+
+  // ---- Energía del USB (no idealidad «limiteUSB», src/energia.js): con cuántos servos se reinicia la placa
+  const conN = (k) => ({ ...cuatro, componentes: cuatro.componentes.slice(0, k), cables: cuatro.cables.slice(0, 3 * k) });
+  const usb = (k, activas, ms = 8000) => {
+    const m = crearNucleo({ hex: hex('servos_cuatro'), circuito: conN(k), activas, semilla: 1 });
+    let serial = '';
+    let fallas = [];
+    let f = null;
+    let retrocede = false;
+    let antes = 0;
+    let vMin = 5;
+    for (let t = 0; t < ms; t += 16) {
+      m.avanzar(CUADRO);
+      f = m.foto();
+      serial += f.serial;
+      fallas = fallas.concat(f.fallas);
+      if (f.msSimulados < antes) retrocede = true;
+      antes = f.msSimulados;
+      if (!f.energia.apagada) vMin = Math.min(vMin, f.energia.voltios);
+    }
+    return { inicios: (serial.match(/Inicio/g) || []).length, reinicios: f.energia.reinicios, fallas, retrocede, vMin, ms: f.msSimulados };
+  };
+  const uno = usb(1, { limiteUSB: true });
+  const dos = usb(2, { limiteUSB: true });
+  revisar(uno.reinicios === 0 && dos.reinicios === 0 && uno.inicios === 1 && dos.inicios === 1, 'con 1 y con 2 servos moviéndose a la vez, la placa no se reinicia');
+  revisar(dos.vMin < 4.6 && dos.vMin > 4.2, `pero el 5V baja: con 2 servos llega a ${dos.vMin.toFixed(2).replace('.', ',')} V`);
+  const tres = usb(3, { limiteUSB: true });
+  const aviso3 = tres.fallas.find((x) => x.tipo === 'reinicio_usb');
+  revisar(tres.reinicios > 3 && tres.inicios === tres.reinicios + 1 && aviso3, `con 3 servos arrancando a la vez la placa se reinicia una y otra vez (${tres.reinicios} veces en 8 s): «${aviso3 && aviso3.mensaje}»`);
+  revisar(tres.fallas.filter((x) => x.tipo === 'reinicio_usb').length === 1, 'el aviso sale una sola vez, aunque se reinicie muchas');
+  revisar(!tres.retrocede && Math.abs(tres.ms - 8000) < 20, `el tiempo simulado no retrocede con los reinicios (${Math.round(tres.ms)} ms)`);
+  const ideal = usb(4, {});
+  revisar(ideal.reinicios === 0 && ideal.inicios === 1, 'en modo ideal (USB sin límite), los cuatro servos no reinician la placa');
+  // El fusible: más de 500 mA sostenidos lo calientan hasta que se abre; la placa se apaga y vuelve al enfriarse
+  const { crearFusible } = require('./nucleo.cjs');
+  if (crearFusible) {
+    const fus = crearFusible();
+    let t = 0;
+    while (!fus.abierto && t < 60000) fus.avanzar(1, 1.0), t++;
+    revisar(t > 5000 && t < 30000, `a 1 A sostenido, el fusible se abre a los ${(t / 1000).toFixed(1).replace('.', ',')} s (se dispara desde 1 A; 0,15 s a 8 A)`);
+    let e = 0;
+    while (fus.abierto && e < 60000) fus.avanzar(1, 0), e++;
+    revisar(e > 1000 && e < 10000, `sin carga se enfría y se cierra a los ${(e / 1000).toFixed(1).replace('.', ',')} s`);
+    const f8 = crearFusible();
+    let t8 = 0;
+    while (!f8.abierto && t8 < 5000) f8.avanzar(1, 8), t8++;
+    revisar(t8 >= 140 && t8 <= 160, `a 8 A se abre a los ${t8} ms (hoja de datos: 150 ms)`);
+  }
+  // De punta a punta: 4,7 Ω entre el 5V y GND le piden 1 A sostenido al USB. El fusible se abre, la placa se
+  // apaga (LED ON apagado) y, cuando se enfría, vuelve a encender sola.
+  const carga = {
+    formato: 1,
+    placa: 'uno',
+    componentes: [{ id: 'r1', tipo: 'resistencia', x: 0, y: 0, rot: 0, props: { ohmios: 4.7 } }],
+    cables: [{ de: 'placa.5V', a: 'r1.1' }, { de: 'r1.2', a: 'placa.GND1' }],
+  };
+  const mc = crearNucleo({ hex: hex('parpadeo13'), circuito: carga, activas: { limiteUSB: true }, semilla: 1 });
+  let seApago = null;
+  let volvio = null;
+  let avisoFusible = null;
+  let ledOn = true;
+  for (let t = 0; t < 25000; t += 16) {
+    mc.avanzar(CUADRO);
+    const f = mc.foto();
+    avisoFusible = avisoFusible || f.fallas.find((x) => x.tipo === 'fusible_usb');
+    if (f.energia.apagada && seApago === null) {
+      seApago = f.msSimulados;
+      ledOn = f.placa.encendida !== false;
+    }
+    if (seApago !== null && !f.energia.apagada && volvio === null) volvio = f.msSimulados;
+  }
+  revisar(seApago > 5000 && seApago < 20000 && !ledOn && avisoFusible, `con 1 A sostenido, la placa se apaga a los ${(seApago / 1000).toFixed(1).replace('.', ',')} s: «${avisoFusible && avisoFusible.mensaje}»`);
+  revisar(volvio !== null && volvio - seApago > 1000 && volvio - seApago < 6000, `y vuelve a encender ${volvio ? ((volvio - seApago) / 1000).toFixed(1).replace('.', ',') : '?'} s después, cuando el fusible se enfría`);
+}
+
 // 5. Cuánto tarda el chip (Node, este PC): sin PWM, con PWM y con el potenciómetro.
 //    Es informativo: depende del PC y de si está con cargador (con batería, Windows baja la velocidad).
 const velocidades = {};

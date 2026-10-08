@@ -154,14 +154,14 @@ with sync_playwright() as p:
     # Una pieza desconocida se conserva al guardar
     pg.evaluate('''() => {
       const c = lienzo.circuito();
-      c.componentes.push({ id: 'x1', tipo: 'servo', x: -120, y: 40, rot: 0, props: { angulo: 90 } });
+      c.componentes.push({ id: 'x1', tipo: 'motor_dc', x: -120, y: 40, rot: 0, props: { rpm: 200 } });
       c.campoNuevo = { a: 1 };
       localStorage.setItem('tecnocircuito-prototipo-0', JSON.stringify(c));
     }''')
     pg.reload()
     pg.wait_for_selector('.tc-pin[data-ref="led1.anodo"]', state='attached')
     c = pg.evaluate('lienzo.circuito()')
-    revisar(any(k['id'] == 'x1' and k['props'] == {'angulo': 90} for k in c['componentes']) and c.get('campoNuevo') == {'a': 1},
+    revisar(any(k['id'] == 'x1' and k['props'] == {'rpm': 200} for k in c['componentes']) and c.get('campoNuevo') == {'a': 1},
             'pieza desconocida y campo nuevo se conservan')
     pg.screenshot(path=str(SALIDA / '5_desconocida.png'))
 

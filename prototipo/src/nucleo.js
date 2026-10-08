@@ -9,8 +9,12 @@
 // valor de cada combinación, porque el pico de corriente es el que daña.
 import { crearChip, FRECUENCIA, PinState } from './chip.js';
 import { armarRed, revisarFallas, LED } from './motor/red.js';
+import { calcularNodos } from './conexiones.js';
+import { crearServo, MODELOS_SERVO } from './piezas/servo.js';
+import { USB, crearFusible, voltaje5V } from './energia.js';
 
 export { FRECUENCIA, PinState };
+export { USB, crearFusible } from './energia.js';
 
 const DESTELLO_TX_MS = 60; // cuánto queda prendido el LED TX de la placa después de enviar
 const ANALOGICOS = [['A0'], ['A1'], ['A2'], ['A3'], ['A4', 'SDA'], ['A5', 'SCL']];
@@ -61,8 +65,23 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   const yaAvisadas = new Set();
   const fallas = [];
   let nuevas = [];
+  // Servos (tarea T3): id → { modelo, senal, fuente, conectado, logico, subida, sumaA, picoA, msVentana }
+  let servos = new Map();
+  // Energía del USB (no idealidad «limiteUSB», src/energia.js). Un reinicio por energía crea un chip nuevo, pero el
+  // tiempo sigue: `base` guarda los ciclos de los chips anteriores, así el reloj del Worker nunca retrocede.
+  let base = 0;
+  const fusible = crearFusible();
+  let apagada = false; // el fusible se abrió: la placa no tiene energía hasta que se enfríe
+  let corteUSB = null; // { motivo: 'puerto' | 'fusible', amperios }: pasó en este milisegundo; se atiende al terminar
+  let iCircuito = 0; // lo que el circuito le pide al 5V y al 3,3V (de la última foto)
+  let v5 = USB.voltios;
+  let reinicios = 0;
+  let usbSuma = 0;
+  let usbPico = 0;
+  let usbMs = 0;
+  let picos = []; // [ms, pico] de las últimas fotos: la tabla muestra el pico del último segundo
 
-  const ms = () => (chip.ciclos / FRECUENCIA) * 1000;
+  const ms = () => ((base + chip.ciclos) / FRECUENCIA) * 1000;
   const clave = (e) => {
     let k = '';
     for (const n in e) k += e[n];
@@ -85,8 +104,11 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       if (!estadosDe.has(claveActual)) estadosDe.set(claveActual, ahora);
       if (claveActual === ventana.clave) corte = { tiempos: new Map(tiempos), ciclo: chip.ciclos };
       actualizarEntradas(); // un pin que pasa a entrada (o que maneja otra entrada) cambia lo que se lee
+      if (servos.size) medirPulsos(cambios);
     });
     chip.alCadaMs(ruidoAlAire);
+    chip.alCadaMs(avanzarServos);
+    for (const s of servos.values()) s.subida = null; // un chip nuevo empieza sin pulsos a medias
     chip.ponerLectorAnalogico(leerAnalogico);
     chip.alByteSerial((byte) => {
       serial.push(byte);
@@ -103,6 +125,162 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   function rehacerRed() {
     red = armarRed(circuitoActual, { quemados, presionados });
     soluciones = new Map();
+    armarServos();
+  }
+
+  // ---- Servos: el ancho de cada pulso dice el ángulo; el brazo gira a la velocidad del modelo y pide corriente
+
+  // Para cada servo: a qué pin del chip va su señal y de dónde se alimenta. Un servo que ya existía conserva su
+  // ángulo (es una pieza física: no vuelve a 90° porque se movió un cable).
+  function armarServos() {
+    const raiz = calcularNodos(circuitoActual);
+    const mismo = (a, b) => raiz(a) === raiz(b);
+    const nuevos = new Map();
+    for (const c of circuitoActual.componentes) {
+      if (c.tipo !== 'servo') continue;
+      const modelo = MODELOS_SERVO[c.props && c.props.modelo] ? c.props.modelo : 'sg90';
+      const antes = servos.get(c.id);
+      const s = antes && antes.modelo === modelo ? antes : { modelo, logico: crearServo(modelo), subida: null, sumaA: 0, picoA: 0, msVentana: 0 };
+      s.senal = PINES_EN_ORDEN.find((pin) => mismo(c.id + '.SIG', 'placa.' + pin)) || null;
+      const aTierra = mismo(c.id + '.GND', 'placa.GND1');
+      const pinVcc = PINES_EN_ORDEN.find((pin) => mismo(c.id + '.VCC', 'placa.' + pin));
+      s.fuente = mismo(c.id + '.VCC', 'placa.5V') ? '5V' : mismo(c.id + '.VCC', 'placa.3V3') ? '3V3' : pinVcc || null;
+      s.conectado = aTierra && (s.fuente === '5V' || s.fuente === '3V3');
+      if (pinVcc && aTierra) {
+        avisar({
+          tipo: 'servo_alimentacion',
+          componente: c.id,
+          mensaje: `El servo ${c.id} toma la corriente del pin ${pinVcc.replace(/^D/, '')}: un pin da hasta 40 mA y el servo pide unos ${MODELOS_SERVO[modelo].mA.movimiento} mA al moverse. Conecta el cable rojo a 5V.`,
+        });
+      }
+      nuevos.set(c.id, s);
+    }
+    servos = nuevos;
+  }
+
+  // Un cambio en el pin de señal de un servo: la subida marca el inicio del pulso y la bajada, su ancho.
+  function medirPulsos(cambios) {
+    for (const s of servos.values()) {
+      if (!s.senal || !(s.senal in cambios)) continue;
+      if (cambios[s.senal] === PinState.High) s.subida = chip.ciclos;
+      else if (s.subida !== null) {
+        if (s.conectado && !apagada) s.logico.pulso(((chip.ciclos - s.subida) / FRECUENCIA) * 1e6);
+        s.subida = null;
+      }
+    }
+  }
+
+  // Voltaje con que se alimenta un servo ahora: el 5V baja con lo que se le pide al USB; sin energía, nada.
+  const voltiosServo = (s) => (!s.conectado || apagada ? 0 : s.fuente === '5V' ? v5 : 3.3);
+
+  // Cada milisegundo simulado: cada servo gira hacia su ángulo y se suma la corriente que pidió. Después se
+  // revisa la energía del USB: con «limiteUSB», un golpe de corriente reinicia la placa y un exceso sostenido
+  // calienta el fusible hasta que se abre y la apaga.
+  function avanzarServos() {
+    let amperios = apagada ? 0 : USB.placaA + iCircuito;
+    for (const s of servos.values()) {
+      const v = voltiosServo(s);
+      s.logico.avanzar(1, v);
+      const a = s.logico.corriente(v);
+      s.sumaA += a;
+      s.picoA = Math.max(s.picoA, a);
+      s.msVentana++;
+      if (s.fuente === '5V' || s.fuente === '3V3') amperios += a;
+    }
+    if (activas.limiteUSB) {
+      fusible.avanzar(1, amperios);
+      v5 = apagada ? 0 : voltaje5V(amperios);
+      if (!apagada && !corteUSB) {
+        if (amperios > USB.limitePuertoA || v5 < USB.bodV) corteUSB = { motivo: 'puerto', amperios };
+        else if (fusible.abierto) corteUSB = { motivo: 'fusible', amperios };
+      }
+    } else v5 = USB.voltios;
+    usbSuma += amperios;
+    usbPico = Math.max(usbPico, amperios);
+    usbMs++;
+  }
+
+  // Lo que pasó con la energía en este milisegundo: la placa se reinicia (golpe de corriente) o se apaga (fusible).
+  function atenderCorte() {
+    const { motivo, amperios } = corteUSB;
+    corteUSB = null;
+    if (motivo === 'puerto') {
+      avisar({
+        tipo: 'reinicio_usb',
+        componente: 'placa',
+        corriente_mA: Math.round(amperios * 1000),
+        mensaje: `La placa se reinició: los servos y el circuito pidieron ${amperios.toFixed(1).replace('.', ',')} A de golpe y el puerto USB da hasta unos ${String(USB.limitePuertoA).replace('.', ',')} A. Alimenta los servos con una fuente aparte y une su GND con el del Arduino.`,
+      });
+    } else {
+      avisar({
+        tipo: 'fusible_usb',
+        componente: 'placa',
+        corriente_mA: Math.round(amperios * 1000),
+        mensaje: `La placa se apagó: el fusible del USB se calentó porque se le pidieron ${Math.round(amperios * 1000)} mA por varios segundos y aguanta 500 mA. Vuelve a encender cuando se enfríe. Alimenta los servos y motores con una fuente aparte.`,
+      });
+      apagada = true;
+    }
+    reinicios++;
+    // Chip nuevo: el programa empieza otra vez (si quedó apagada, empieza cuando vuelva la energía).
+    base += chip.ciclos;
+    nuevoChip();
+    actualizarEntradas();
+  }
+
+  // Sin energía (fusible abierto): el tiempo pasa, el fusible se enfría y el chip espera.
+  function seguirApagada(ciclos) {
+    const porMs = FRECUENCIA / 1000;
+    let resto = ciclos;
+    while (resto > 0 && apagada) {
+      const paso = Math.min(resto, porMs);
+      base += paso;
+      resto -= paso;
+      avanzarServos();
+      if (!fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
+    }
+    if (resto > 0) chip.correr(resto);
+  }
+
+  // Lo que pasó con el USB desde la última foto. El pico es el mayor del último segundo, como el «máximo» de un
+  // multímetro: el golpe de corriente dura milisegundos y en una sola foto casi nunca se alcanza a ver.
+  function fotoEnergia() {
+    const ahora = ms();
+    picos = picos.filter(([t]) => ahora - t < 1000);
+    picos.push([ahora, usbPico]);
+    const r = {
+      amperios: usbMs ? usbSuma / usbMs : 0,
+      pico: Math.max(...picos.map(([, a]) => a)),
+      voltios: v5,
+      fusible: Math.round(fusible.calor * 100) / 100,
+      apagada,
+      reinicios,
+    };
+    usbSuma = 0;
+    usbPico = 0;
+    usbMs = 0;
+    return r;
+  }
+
+  // Lo que se ve y se mide de cada servo en esta foto; la corriente es el promedio de la ventana (y su pico).
+  function fotoServos() {
+    const r = {};
+    for (const [id, s] of servos) {
+      const e = s.logico.estado();
+      r[id] = {
+        modelo: s.modelo,
+        angulo: Math.round(e.angulo * 10) / 10,
+        pulso: e.pulso === null ? null : Math.round(e.pulso),
+        senal: s.senal,
+        fuente: s.fuente,
+        moviendo: e.moviendo,
+        i: s.msVentana ? s.sumaA / s.msVentana : s.logico.corriente(s.voltios),
+        pico: s.picoA,
+      };
+      s.sumaA = 0;
+      s.picoA = 0;
+      s.msVentana = 0;
+    }
+    return r;
   }
 
   // ---- Entradas: lo que el circuito le deja leer al programa (digitalRead y analogRead)
@@ -211,6 +389,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
   // Cierra la ventana de tiempo: promedia el circuito, actualiza las entradas analógicas y entrega lo que se ve.
   function foto() {
+    if (apagada) return fotoApagada();
     acumular();
     let usar = tiempos;
     if (corte && corte.ciclo > ventana.inicio) {
@@ -247,10 +426,21 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     const pines = chip.estados();
     const texto = serial.length ? decodificador.decode(Uint8Array.from(serial), { stream: true }) : '';
     serial = [];
+    const vistaServos = fotoServos();
+    const energia = fotoEnergia();
+    iCircuito = medicion ? medicion.fuentes.reduce((t, f) => t + Math.max(0, f.i), 0) : 0;
+    if (medicion) {
+      medicion.usb = energia;
+      medicion.servos = Object.entries(vistaServos).map(([id, s]) => ({ id, ...s }));
+      // Lo que entrega el pin 5V de la placa: lo del circuito más los servos que se alimentan de él.
+      const del5V = (medicion.fuentes.find((f) => f.pin === '5V') || { i: 0 }).i;
+      medicion.consumo5V = del5V + medicion.servos.filter((s) => s.fuente === '5V').reduce((t, s) => t + s.i, 0);
+    }
     const fallasNuevas = nuevas;
     nuevas = [];
     return {
       msSimulados: ms(),
+      servos: vistaServos,
       evaluaciones,
       leds: Object.fromEntries((medicion ? medicion.leds : []).map((l) => [l.id, l.brillo])),
       quemados: [...quemados],
@@ -260,6 +450,27 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       serial: texto,
       fallas: fallasNuevas,
       medicion,
+      energia,
+    };
+  }
+
+  // La placa sin energía: todo apagado; los servos se quedan donde estaban.
+  function fotoApagada() {
+    const fallasNuevas = nuevas;
+    nuevas = [];
+    return {
+      msSimulados: ms(),
+      evaluaciones,
+      servos: fotoServos(),
+      energia: fotoEnergia(),
+      leds: {},
+      quemados: [...quemados],
+      voltajes: {},
+      entradas: {},
+      placa: { led13: false, ledTX: false, encendida: false },
+      serial: '',
+      fallas: fallasNuevas,
+      medicion: null,
     };
   }
 
@@ -301,9 +512,20 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     serial = [];
     decodificador = new TextDecoder('utf-8');
     txHasta = 0;
+    energiaDeNuevo();
     nuevoChip();
     rehacerRed();
     actualizarEntradas();
+  }
+
+  // Al reiniciar a mano (RESET o una corrida nueva): el reloj vuelve a cero y el USB queda como recién conectado.
+  function energiaDeNuevo() {
+    base = 0;
+    apagada = false;
+    corteUSB = null;
+    picos = [];
+    fusible.reiniciar();
+    v5 = USB.voltios;
   }
 
   nuevoChip();
@@ -312,9 +534,13 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
   return {
     get ciclos() {
-      return chip.ciclos;
+      return base + chip.ciclos;
     },
-    avanzar: (ciclos) => chip.correr(ciclos),
+    avanzar(ciclos) {
+      if (apagada) return seguirApagada(ciclos);
+      chip.correr(ciclos);
+      if (corteUSB) atenderCorte();
+    },
     foto,
     ponerCircuito(c) {
       circuitoActual = c;
@@ -330,10 +556,14 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     },
     enviarSerial: (texto) => chip.enviarSerial(String(texto)),
     reiniciarChip() {
+      energiaDeNuevo();
       nuevoChip(); // como el botón RESET: el programa empieza de nuevo y lo quemado sigue quemado
       actualizarEntradas();
     },
-    reiniciarTodo, // otra corrida: piezas nuevas y fallas sin avisar
+    reiniciarTodo() {
+      reinicios = 0;
+      reiniciarTodo(); // otra corrida: piezas nuevas y fallas sin avisar
+    },
     fallas: () => [...fallas],
   };
 }

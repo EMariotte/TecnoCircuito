@@ -2,6 +2,7 @@
 
 > Escrita el 7 de octubre de 2026, a partir de cómo se hizo la **protoboard** (prototipo 4), que no viene en @wokwi/elements.
 > Sirve para lo que viene: la shield L293D, el motor DC, el HC-05, el PCA9685, la matriz MAX7219, el DHT11, el carro y Otto.
+> **Piezas Tecno hechas con esta receta:** la protoboard (7 oct) y el microservo SG90 / MG90S (8 oct, [src/piezas/servo.js](src/piezas/servo.js)). El servo es el ejemplo de una pieza con las tres partes: dibujo, modelo eléctrico (su consumo) y modelo lógico (lee el ancho del pulso). Se explica en [COMO-FUNCIONA.md](COMO-FUNCIONA.md), sección 45.
 
 ## Lo que pasó con la protoboard
 

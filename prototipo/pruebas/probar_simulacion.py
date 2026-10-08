@@ -132,7 +132,7 @@ with sync_playwright() as p:
     }}''')
     revisar(apagados, 'al detener, todo se apaga (también el LED ON de la placa)')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos b")].map(b => b.textContent)')
-    revisar(eventos[:2] == ['simulacion_detenida', 'simulacion_iniciada'], f'eventos de la simulación: {eventos[:3]}')
+    revisar(eventos[:3] == ['simulacion_detenida', 'reinicio_placa', 'simulacion_iniciada'], f'eventos de la simulación (con el reinicio por el botón): {eventos[:3]}')
 
     # 7. Un .hex dañado se rechaza con un mensaje claro
     msg = pg.evaluate('''() => { try { TecnoCircuito.crearSimulador({ lienzo, hex: ":1000000BAD\\n" }); return "aceptado"; }

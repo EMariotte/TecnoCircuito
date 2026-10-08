@@ -109,6 +109,7 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
   | `led` | `anodo`, `catodo` | `color`: rojo, verde, amarillo, azul o blanco |
   | `potenciometro` | `GND`, `SIG`, `VCC` | `ohmios`, `posicion` (0 hacia GND, 1 hacia VCC) |
   | `pulsador` | `1i`, `1d`, `2i`, `2d` | `color` |
+  | `servo` | `GND` (marrón), `VCC` (rojo), `SIG` (naranja, la señal) | `modelo`: `sg90` o `mg90s` (cambia el dibujo, el consumo y la velocidad) |
 
   En el pulsador, las patas con el mismo número están unidas por dentro, y al presionarlo se une la 1 con la 2. Si está presionado o no, no se guarda: solo existe mientras se simula.
 - **Colores de cable:** `negro`, `marron`, `rojo`, `naranja`, `amarillo`, `verde`, `azul`, `morado` (se muestra como violeta), `gris` y `blanco`, en el orden del código de colores (0 a 9).
@@ -179,6 +180,8 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 
 - `t`: milisegundos desde 1970. `origen`: `circuito` o `simulador`.
 - Tipos del contrato 1: `componente_agregado`, `componente_quitado`, `componente_cambiado`, `cable_agregado`, `cable_quitado`, `boton_pulsado`, `simulacion_iniciada`, `simulacion_detenida`, `falla`, `reinicio_placa`.
+- `falla` lleva en `datos.tipo` qué pasó: `led_quemado`, `resistencia_caliente`, `corriente_pin`, `cortocircuito`, `sin_solucion`, `servo_alimentacion` (un servo alimentado desde un pin), `reinicio_usb` (la placa se reinició por un golpe de corriente) o `fusible_usb` (el fusible del USB se abrió y la placa se apagó). Cada falla se avisa una vez por corrida.
+- `reinicio_placa` (origen `simulador`): `{ motivo: 'boton' }` al pulsar Reiniciar, o `{ motivo: 'energia_usb', nuevos, total }` cuando la placa se reinicia o se apaga por la energía del USB (una vez por foto, con cuántos hubo).
 - `boton_pulsado` (origen `circuito`) sale al soltar un botón presionado con el mouse durante la simulación: `{ id, ms }`, con cuánto tiempo estuvo presionado. Muestra cómo prueba el aprendiz su montaje.
 - TecnoBloques agrega `alias`, `sesion`, `version_tb` y `version_tc`. Suma sus propios eventos con `origen: 'editor'` (cambios de bloques, compilaciones, errores) y escribe una línea JSON por evento en `%APPDATA%\TecnoBloques\registros\<alias>-<fecha>.jsonl`.
 - **Agregar un tipo de evento nuevo no rompe el contrato.** Cambiar o quitar uno sí.
@@ -195,8 +198,8 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
   | `entradaFlotante` | una entrada sin ningún camino a 5V, a GND o a un pin que la maneje lee al azar: la digital cambia sola y la analógica deambula. Apagada, lee BAJO y 0 |
   | `ruidoADC` | ruido pequeño en `analogRead` (unos 0,6 pasos de desviación; se ajusta con la placa real) |
   | `caidaL293D` | caída de 1,4 a 2 V en las salidas de la shield |
-  | `limiteUSB` | presupuesto de 500 mA del USB |
-  | `reinicioPorCaida` | la placa se reinicia si el voltaje cae demasiado |
+  | `limiteUSB` | energía del USB: el 5V baja con la corriente; un golpe de corriente mayor que el que deja pasar el puerto (unos 1,5 A) reinicia la placa; más de 500 mA sostenidos calientan el fusible hasta que se abre y la apagan, y vuelve a encender al enfriarse. Apagada, el USB no tiene límite |
+  | `reinicioPorCaida` | reservada. El reinicio por caída de voltaje ya va dentro de `limiteUSB` |
 
 - **Quién decide el modo:** TecnoBloques. El paquete solo lo recibe.
 
@@ -238,4 +241,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 7 oct 2026 | Ajustes del prototipo 0: cada pin físico con nombre propio (`GND1` a `GND3`), `puntos` opcionales en los cables, placa fija en el origen con coordenadas definidas y `alEvento` en `crearLienzo`. Sigue en borrador, así que no sube el número. |
 | 1 (borrador) | 7 oct 2026 | Sección 4.1: el proyecto `.tbq.json` que contiene el circuito (TecnoBloques 0.2.5 conserva los campos desconocidos y guarda `creadoCon`; el `.hex` no va en el proyecto). Fixtures disponibles en `test/salida`. |
 | 1 (borrador) | 7 oct 2026 | Primera conexión con TecnoBloques: `alSerial` entrega texto UTF-8; se proponen `sim.destruir()` y `sim.medidas()`. `tbEscritorio.compilarHex` ya existe en TecnoBloques (sección 5). |
-| 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). |
+| 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). El 8 oct entran la pieza `servo` (`GND`, `VCC`, `SIG`; `modelo` sg90 o mg90s), la no idealidad `limiteUSB`, las fallas `servo_alimentacion`, `reinicio_usb` y `fusible_usb`, y el evento `reinicio_placa` empieza a emitirse. |

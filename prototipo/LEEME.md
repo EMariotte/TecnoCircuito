@@ -17,7 +17,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
 
 - **Cables:** clic en un pin para empezar, clic en el espacio libre para doblar el cable y clic en otro pin para terminar. También se puede arrastrar de un pin a otro. Esc cancela.
 - **Cable elegido:** cambiar el color, arrastrar sus dobleces, agregar un doblez con doble clic sobre el cable o quitarlo con doble clic sobre el doblez. Supr borra el cable.
-- **Piezas:** «+ Agregar» abre el menú (LED, Resistencia, Potenciómetro, Botón y Protoboard). Las piezas se arrastran, se giran con R y se borran con Supr. Se puede cambiar el color del LED y del botón, y el valor de la resistencia o del potenciómetro. La perilla se gira con el mouse sobre el dibujo o con el deslizador de la barra.
+- **Piezas:** «+ Agregar» abre el menú (LED, Resistencia, Potenciómetro, Botón, Servo y Protoboard). Las piezas se arrastran, se giran con R y se borran con Supr. Se puede cambiar el color del LED y del botón, y el valor de la resistencia o del potenciómetro. La perilla se gira con el mouse sobre el dibujo o con el deslizador de la barra.
 - **Colores de cable:** 10, en el orden del código de colores. Con un cable elegido o mientras se dibuja, las teclas 0 a 9 eligen el color (0 negro, 1 marrón, 2 rojo… 9 blanco).
 - **Protoboard:**
   - al soltar una pieza encima, sus patas se encajan en los huecos libres más cercanos (mientras se arrastra se ven en verde);
@@ -28,7 +28,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
 - **Vista:** la rueda del mouse hace zoom y arrastrar el fondo mueve la vista.
 - **Simulación:**
   - elige el programa (parpadeo, PWM, potenciómetro, botón con pull-down o con pull-up interna, y los dos de validación) y el modo (realista o ideal), y usa Iniciar, Pausar, Reiniciar y Detener;
-  - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)» y «Ejemplo con potenciómetro (T2)» arman el circuito de cada tarea y eligen su programa;
+  - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)», «Ejemplo con potenciómetro (T2)», «Ejemplo con servo (T3)» y «Cuatro servos en el USB (T3)» arman el circuito de cada tarea y eligen su programa;
   - mientras corre, los botones se presionan manteniendo el clic sobre ellos;
   - el cableado y los valores se pueden cambiar mientras corre;
   - el panel muestra la velocidad frente al chip real, las fallas, el monitor serial y una tabla de voltajes y corrientes;
@@ -72,6 +72,16 @@ Son dos programas que dan números para comparar con el simulador:
 2. **Entrada al aire:** el pin 2 sin nada conectado. Sube `programas/validar_flotante/validar_flotante.ino` y anota cuántos cambios cuenta en 2 s y el porcentaje en ALTO. Repite acercando la mano al cable o tocando el pin. El simulador cambia en promedio cada 120 ms (unos 16 cambios en 2 s).
 
 Con esos números se ajustan `RUIDO_ADC_V` y `CAMBIO_AL_AIRE_POR_MS` en `src/nucleo.js`. Los mismos programas también corren en el simulador, para compararlos.
+
+## Validar el servo y la energía del USB con la placa real
+
+Los valores del servo y del USB son de partida (hojas de datos y valores típicos). Con el kit se ajustan así:
+
+1. **Consumo del servo** (multímetro en serie con el cable rojo, en la escala de 2 A o de 10 A): con `programas/servo_barrido/servo_barrido.ino`, anota la corriente quieto, moviéndose y con el brazo frenado con la mano por un segundo (bloqueado). Hazlo con el SG90 y con el MG90S. El simulador usa 10, 200 y 650 mA (SG90) y 10, 250 y 700 mA (MG90S): `MODELOS_SERVO` en `src/piezas/servo.js`.
+2. **Voltaje del 5V** (multímetro entre 5V y GND) con 1 y con 2 servos moviéndose. Moviéndose, el simulador da unos 4,9 y 4,8 V (en el instante del arranque baja a 4,7 y 4,5 V, pero un multímetro no alcanza a verlo): `USB.ohmios` en `src/energia.js`.
+3. **Con cuántos servos se reinicia** (`programas/servos_cuatro/servos_cuatro.ino`, con 1, 2, 3 y 4 servos alimentados del 5V de la placa por USB): mira si el monitor serial repite «Inicio». En el PC del aula y con el cable del kit. El simulador se reinicia desde 3 SG90: `USB.limitePuertoA` (1,5 A).
+
+Las medidas van a `validacion/` y se vuelven pruebas, como las del LED.
 
 ## Llevar el circuito a KiCad
 

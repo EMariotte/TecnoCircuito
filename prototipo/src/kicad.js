@@ -9,6 +9,7 @@
 // El Uno no se fabrica: en su lugar van los 4 conectores del shield que se monta encima.
 
 import { calcularNodos } from './conexiones.js';
+import { MODELOS_SERVO } from './piezas/servo.js';
 
 // Los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad (share/kicad/template/Arduino_Uno), con sus mismas
 // referencias y sus mismos UUID: al importar, KiCad reconoce los que ya están en la placa de la plantilla, sobre el
@@ -61,6 +62,12 @@ export const PIEZAS_KICAD = {
     // La huella repite los números: dos pads «1» y dos «2», unidos por dentro como 1i-1d y 2i-2d.
     ref: 'SW', lib: 'Switch', parte: 'SW_Push', huella: 'Button_Switch_THT:SW_PUSH_6mm',
     valor: () => 'Pulsador', pads: { '1i': '1', '1d': '1', '2i': '2', '2d': '2' },
+  },
+  servo: {
+    // En la placa, el servo se enchufa a un conector macho de 3 pines. El símbolo Motor_Servo de KiCad tiene
+    // 1 = señal (PWM), 2 = + y 3 = −: el mismo orden que el conector del servo (naranja, rojo, marrón).
+    ref: 'M', lib: 'Motor', parte: 'Motor_Servo', huella: 'Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical',
+    valor: (p) => 'Servo ' + (MODELOS_SERVO[p.modelo] || MODELOS_SERVO.sg90).nombre, pads: { SIG: '1', VCC: '2', GND: '3' },
   },
   potenciometro: {
     // 1 y 3 son los extremos; 2 es el cursor (la pata del medio).

@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 7 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4: cableado, chip con avr8js, circuito eléctrico (MNA), Web Worker y PWM, **las tareas T1 y T2 completas** y **la protoboard**. El 2 quedó validado con el multímetro (`validacion/`), y Efraín dio por validado el prototipo completo. **TecnoBloques ya lo usa en desarrollo** (`npm run app:simulador`). `npm run probar` pasa 14 grupos de pruebas (con la netlist de KiCad, el esquema del circuito y las fixtures) y `test:simulador` de TecnoBloques 26 de 26. Falta la primera etiqueta con `dist/tecnocircuito.js`, para que el simulador llegue al instalador.
+> Actualizado: 8 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4 (cableado, chip, circuito eléctrico, Web Worker y PWM, protoboard), **T1 y T2 completas** y **la T3 empezada:** el servo SG90/MG90S (pieza Tecno) y la energía del USB (el 5V baja, la placa se reinicia o el fusible la apaga). Además: el esquema del circuito (`contrato/`), las fixtures de TecnoBloques y la netlist de KiCad sobre la plantilla «Arduino Uno Shield». **Efraín validó el 8 oct**, en la app, el flujo completo (bloques → simulación → SVG → netlist → KiCad, DRC sin problemas → guardar y abrir) y los dos servos. `npm run probar` pasa 15 grupos (380 comprobaciones) y `test:simulador` de TecnoBloques 26 de 26. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
 
 ---
 
@@ -109,6 +109,8 @@ TecnoCircuito/
 │   ├── nucleo.js         ← chip + circuito + promedio del PWM + entradas (digitalRead, ruido, al aire), sin página
 │   ├── protoboard.js     ← media protoboard: huecos, tiras, dibujo y encaje de las patas (prototipo 4)
 │   ├── kicad.js          ← netlist de KiCad: piezas con su huella y redes (lienzo.exportarNetlist)
+│   ├── energia.js        ← energía del USB: caída del 5V, reinicio por golpe de corriente y fusible (limiteUSB)
+│   ├── piezas/           ← piezas Tecno con dibujo propio: servo.js (SG90 y MG90S: dibujo, pulso → ángulo, consumo)
 │   ├── motor/            ← MNA, Newton-Raphson, reloj común con el chip
 │   ├── chip/             ← avr8js: puertos, ADC, temporizadores, USART; placas uno/nano/nano_old/mega
 │   ├── componentes/      ← un archivo por componente: vista + modelo eléctrico + modelo lógico
@@ -170,7 +172,17 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 ## Próxima sesión: retomar desde aquí
 
-**KiCad (8 oct):** Efraín probó «Importar netlist» en KiCad 10 y funciona. El solape con la huella del Uno quedó resuelto el mismo día: la netlist lleva los conectores J1–J4 de la plantilla «Arduino Uno Shield». **Falta que Efraín pruebe a mano** importar sobre un proyecto hecho con esa plantilla (`prototipo/LEEME.md`, «Llevar el circuito a KiCad»).
+**Sesión del 8 oct, cerrada con todo validado por Efraín en la app:**
+- netlist de KiCad sobre la plantilla «Arduino Uno Shield», con el DRC sin problemas;
+- el esquema del circuito y las fixtures;
+- el servo SG90/MG90S y la energía del USB.
+
+**Lo siguiente, solo software (recomendación):** seguir con la T3.
+1. **Shield L293D** como pieza Tecno: el 74HC595 por los pines 4, 7, 8 y 12, y el PWM de los motores (M1 = 11, M2 = 3, M3 = 6, M4 = 5), con la caída de 1,4 a 2 V (`caidaL293D`). Sus servos van en SERVO_1 = 10 y SERVO_2 = 9.
+2. **Motor DC** como pieza Tecno, con su consumo en la energía del USB.
+3. Probarlos con un programa de AFMotor_R4, la librería del kit.
+
+**Con hardware (cuando Efraín esté en el ambiente):** los puntos 3, 7, 8 y 9 de abajo. Después, la primera etiqueta `v0.1.0`.
 
 El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Para avanzar hacen falta estas mediciones y pruebas de Efraín:**
 
@@ -185,6 +197,11 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
    - `validar_flotante`: cuántas veces cambia el pin 2 al aire.
    Con eso se ajustan `RUIDO_ADC_V` (hoy 0,6 pasos) y `CAMBIO_AL_AIRE_POR_MS` (hoy 1/120) en `src/nucleo.js`, y las medidas van a `validacion/`.
 8. **Probar la protoboard con dos o tres aprendices:** armar la T1 en ella («Ejemplo en protoboard (T1)» como referencia) y anotar dónde se traban.
+9. **Validar el servo y la energía del USB (T3)**, con las instrucciones de `prototipo/LEEME.md`:
+   - la corriente del SG90 y del MG90S quietos, moviéndose y bloqueados;
+   - el voltaje del 5V con 1 y 2 servos;
+   - **con cuántos servos se reinicia el Uno** en el PC del aula (el simulador: desde 3 SG90).
+   Con eso se ajustan `MODELOS_SERVO` (`src/piezas/servo.js`) y `USB` (`src/energia.js`). También conviene un transportador para ver si `write(0)` y `write(180)` llegan a 0° y 180° en los servos del kit.
 
 **Con esas medidas:**
 
@@ -216,6 +233,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
    - ✅ Contrato: `sim.destruir()`, `sim.medidas()` y `lienzo.exportarSVG()` en el paquete y en `CONTRATO.md` (7 oct).
    - ✅ T1 y T2 completas (7 oct): pieza `pulsador`, `digitalRead()` desde el circuito (umbrales del ATmega), `entradaFlotante` (digital y analógica) y `ruidoADC`. Programas `boton_pulldown`, `boton_pullup`, `validar_adc` y `validar_flotante`. Pruebas: `probar_nucleo.js` y `probar_t1t2.py`.
    - ✅ Prototipo 4, la protoboard (7 oct): `src/protoboard.js`, campo `en` en cada pieza (sección 4.0 del contrato), encaje con vista previa, tira iluminada y menú «+ Agregar». Prueba: `probar_protoboard.py`.
+   - ✅ T3, primera parte (8 oct): pieza Tecno `servo` (SG90 y MG90S) y energía del USB (`limiteUSB`: caída, reinicio y fusible). Pruebas: `probar_nucleo.js` y `probar_servo.py`. Falta la shield L293D y el motor DC.
    - ⬜ Validar T1 y T2 con la placa real (`validar_adc` y `validar_flotante`) y probar la protoboard con aprendices.
 1. ✅ La carpeta está en `Proyectos Tecno\TecnoCircuito`, al lado de TecnoBloques.
 2. ✅ `git init`, `LICENSE` (Apache 2.0) y `NOTICE` (© SENA – TecnoAcademia Tolima, autor Efraín Guillermo Mariotte Parra, con avr8js, @wokwi/elements y Lit), igual que TecnoBloques (7 oct).

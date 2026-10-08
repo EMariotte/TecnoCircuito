@@ -25,6 +25,11 @@ const DIBUJO = { resistencia: ['1', '2'], led: ['A', 'C'], potenciometro: ['GND'
 for (const [tipo, nombres] of Object.entries(DIBUJO)) {
   revisar(mismo(nombres.map(TIPOS[tipo].nombrePin), PINES[tipo]), `${tipo}: los pines del catálogo (${nombres.map(TIPOS[tipo].nombrePin).join(', ')}) son los del esquema`);
 }
+for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
+  revisar(mismo(Object.keys(def.dibujo.pines), PINES[tipo]), `${tipo} (pieza Tecno): los pines de su dibujo (${Object.keys(def.dibujo.pines).join(', ')}) son los del esquema`);
+}
+const modelosEsquema = D.componente.allOf.find((r) => r.if.properties.tipo.const === 'servo').then.properties.props.properties.modelo.enum;
+revisar(mismo(TIPOS.servo.campo.opciones.map((o) => o[0]), modelosEsquema), `servo: los modelos del catálogo (${modelosEsquema.join(', ')}) son los del esquema`);
 revisar(mismo(Object.keys(TIPOS), Object.keys(PINES)), `cada tipo del catálogo tiene sus pines en el esquema (${Object.keys(TIPOS).join(', ')})`);
 revisar(JSON.stringify(Object.keys(COLORES_CABLE)) === JSON.stringify(D['color-cable'].enum), 'los 10 colores de cable, en el mismo orden del código de colores');
 for (const tipo of ['led', 'pulsador']) {
@@ -49,8 +54,8 @@ const delContrato = JSON.parse(contrato.split('## 4. Formato del circuito')[1].m
 const p1 = revisarCircuito(delContrato);
 revisar(!p1.length, 'el ejemplo de CONTRATO.md, sección 4' + (p1.length ? ': ' + p1.join(' | ') : ''));
 const pagina = fs.readFileSync(path.join(__dirname, '..', 'pagina.html'), 'utf8');
-const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf('\n', pagina.indexOf('const EJEMPLO_PB =')));
-const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB };')();
+const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf('})();', pagina.indexOf('const EJEMPLO_SERVOS =')) + 5);
+const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS };')();
 for (const [nombre, circuito] of Object.entries(ejemplos)) {
   const p = revisarCircuito(circuito);
   revisar(!p.length, `${nombre} de la página de prueba` + (p.length ? ': ' + p.join(' | ') : ''));
@@ -68,6 +73,8 @@ const casos = [
   ['giro de 45°', (c) => { c.componentes[0].rot = 45; }, /rot/],
   ['cable «fucsia»', (c) => { c.cables[0].color = 'fucsia'; }, /color/],
   ['LED «morado»', (c) => { c.componentes[1].props.color = 'morado'; }, /props\/color/],
+  ['un servo de un modelo que no existe', (c) => c.componentes.push({ id: 's1', tipo: 'servo', x: 0, y: 0, props: { modelo: 'mg996r' } }), /modelo/],
+  ['un cable a la pata «PWM» del servo (se llama SIG)', (c) => { c.componentes.push({ id: 's1', tipo: 'servo', x: 0, y: 0, props: { modelo: 'sg90' } }); c.cables.push({ de: 'placa.D9', a: 's1.PWM' }); }, /no tiene el pin «PWM»/],
   ['potenciómetro con la perilla en 1,5', (c) => c.componentes.push({ id: 'p', tipo: 'potenciometro', x: 0, y: 0, props: { posicion: 1.5 } }), /posicion/],
   ['resistencia de 0 Ω', (c) => { c.componentes[0].props.ohmios = 0; }, /ohmios/],
   ['una pieza llamada «placa»', (c) => { c.componentes[0].id = 'placa'; }, /id/],

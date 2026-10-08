@@ -34,7 +34,7 @@ export function modeloLed(color) {
   return { Is: LED.iRef / Math.expm1(vUnion / (LED.n * VT)), n: LED.n };
 }
 
-const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1i', '1d', '2i', '2d'] };
+const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1i', '1d', '2i', '2d'], servo: ['GND', 'VCC', 'SIG'] };
 
 // Arma la red una vez por cableado (y por botones presionados). Cambiar los pines (ponerPines) no la rehace:
 // solo cambia las fuentes. Un botón presionado une sus patas 1 y 2: es parte del cableado de ese momento.

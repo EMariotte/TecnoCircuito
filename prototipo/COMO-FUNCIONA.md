@@ -886,3 +886,86 @@ El contrato promete que una pieza nueva no rompe a una versión vieja (sección 
 `npm run fixtures` copia de `../TecnoBloques/test/salida/<caso>/` cada `<caso>.tbq.json` y `<caso>.hex`. Se commitean, para que las pruebas corran sin la carpeta hermana. `probar:fixtures` revisa el formato del proyecto, su circuito si trae, y corre cada `.hex` del ATmega328P un segundo en el chip, con el mismo núcleo del Worker.
 
 Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron antes del simulador. El siguiente paso, del lado de TecnoBloques, es un caso con la T1 en protoboard.
+
+## 45. El servo (pieza Tecno: SG90 y MG90S)
+
+> Hecho el 8 de octubre de 2026. Es la segunda pieza Tecno y la primera con las tres partes: dibujo, modelo eléctrico y modelo lógico. Todo está en [src/piezas/servo.js](src/piezas/servo.js).
+
+**Una sola pieza, dos modelos.** Comparten la forma, el conector y la manera de recibir órdenes. Cambian el color (azul translúcido o negro), los engranajes (plástico o metal) y el consumo. La propiedad `modelo` elige cuál.
+
+```
+        programa (librería Servo)                    núcleo (en el Worker)                      lienzo
+  servo.write(90) ─► Timer1 genera un pulso    ┌────────────────────────────────┐
+  cada 20 ms en el pin 9 ───────────────────►  │ medirPulsos(): subida → bajada  │
+                                               │ = 1472 µs → objetivo 90°        │
+                                               │ avanzarServos() cada 1 ms:      │   foto.servos   ┌──────────────┐
+                                               │  gira a 600 °/s · V/4,8         │ ──────────────► │ brazo girado │
+                                               │  corriente: reposo / movimiento │   {angulo, i}   │ (transform)  │
+                                               │  / arranque                     │                 └──────────────┘
+                                               └────────────────────────────────┘
+```
+
+### Las tres partes
+
+| Parte | Qué hace | Dónde |
+|---|---|---|
+| Dibujo | SVG a escala (1 mm = 3,78 px) desde las medidas del SG90. El brazo es un grupo `data-brazo` que se gira con `transform`. El conector tiene los pines a 0,1": encaja en la protoboard | `dibujarServo()`, `giroBrazo()` |
+| Modelo lógico | Mide el ancho de cada pulso con el ciclo exacto del cambio de pin. Con la librería Servo, 544 µs = 0° y 2400 µs = 180°. Ignora pulsos fuera de 400–2700 µs y cambios menores que la banda muerta (5 µs) | `crearServo().pulso()` |
+| Movimiento | Gira hacia el objetivo a la velocidad de la hoja de datos (0,1 s por 60° a 4,8 V), proporcional al voltaje: a 3,3 V va más lento | `crearServo().avanzar()` |
+| Modelo eléctrico | Pide corriente según lo que hace: quieto, moviéndose, o arrancando (los primeros 30 ms de cada movimiento, casi la corriente de bloqueo). Escala con el voltaje | `crearServo().corriente()` |
+
+### Los datos de cada modelo (por validar con el multímetro)
+
+| | SG90 | MG90S |
+|---|---|---|
+| Engranajes | plástico | metal |
+| Torque (4,8 V) | 1,8 kg·cm | 1,8 kg·cm (2,2 a 6 V) |
+| Velocidad (4,8 V) | 0,1 s / 60° | 0,1 s / 60° |
+| Quieto / moviéndose / arranque | 10 / 200 / 650 mA | 10 / 250 / 700 mA |
+
+Los consumos cambian mucho entre fabricantes y clones: el SG90 bloqueado va de unos 360 a 750 mA según la fuente. Por eso son valores de partida, y la validación con los servos del kit los ajusta (LEEME, «Validar el servo y la energía del USB»).
+
+### Lo que revisa el núcleo de cada servo (`armarServos()`)
+
+- **La señal:** a qué pin del chip llega `SIG` (por cables, la protoboard o los dos).
+- **La alimentación:** si `VCC` está en 5V, en 3,3V o en un pin, y si `GND` está a tierra.
+  - Sin GND o sin alimentación, no se mueve ni consume.
+  - Alimentado desde un pin (error común en el aula), no se mueve y avisa: «un pin da hasta 40 mA y el servo pide unos 200 mA al moverse. Conecta el cable rojo a 5V».
+- **Un servo conserva su ángulo** aunque se mueva un cable o se reinicie la placa, porque es una pieza física.
+
+### En KiCad
+
+En la placa, el servo es un conector macho de 3 pines (`PinHeader_1x03`) con el símbolo `Motor:Motor_Servo`: 1 = señal, 2 = + y 3 = −. Es el mismo orden que el conector del servo (naranja, rojo, marrón).
+
+## 46. La energía del USB (no idealidad `limiteUSB`)
+
+> Hecho el 8 de octubre de 2026, a pedido de Efraín: que se vea cuando varios servos piden más de lo que da el USB. Ningún otro simulador lo muestra. Está en [src/energia.js](src/energia.js) y se revisa cada milisegundo en el núcleo.
+
+```
+ USB del PC (5,0 V) ──[fusible 500 mA]──[cable y transistor ≈ 0,4 Ω]── 5V de la placa ── placa (50 mA), circuito y servos
+```
+
+| Efecto | Cuándo | Qué se ve | De dónde sale el valor |
+|---|---|---|---|
+| Caída | siempre | el 5V baja (unos 4,8 V a 500 mA) y los servos giran más lento | 0,4 Ω: valor de partida |
+| Reinicio | un golpe de corriente mayor que el que deja pasar el puerto | la placa se reinicia: el programa vuelve a `setup()`, los servos se quedan donde estaban | 1,5 A: valor de partida (cambia con cada PC) |
+| Apagado | más de 500 mA sostenidos | el fusible se calienta, se abre y la placa se apaga (LED ON apagado); vuelve sola a los 3 s, cuando se enfría | fusible MF-MSMF050-2 del Uno: sostiene 0,5 A, se dispara desde 1 A, 0,15 s a 8 A |
+
+**Por qué varios servos reinician la placa:** al empezar a moverse, cada servo pide casi su corriente de bloqueo por unos milisegundos. Si arrancan juntos, esos picos se suman:
+
+| SG90 arrancando a la vez | Pico | 5V más bajo | Resultado |
+|---|---|---|---|
+| 1 | 0,72 A | 4,72 V | funciona |
+| 2 | 1,40 A | 4,47 V | funciona |
+| 3 | 1,96 A | 4,28 V | se reinicia una y otra vez |
+| 4 | 2,37 A | 4,09 V | se reinicia una y otra vez |
+
+El bucle es el mismo que se ve en el aula. Al reiniciarse, `attach()` manda los servos a 90°; todos arrancan a la vez y la placa se reinicia de nuevo. El aviso sale una vez, pero la tabla cuenta los reinicios y cada uno queda en el evento `reinicio_placa`.
+
+**El reloj no retrocede.** Un reinicio crea un chip nuevo, y el núcleo guarda en `base` los ciclos de los chips anteriores. Así, para el Worker el tiempo sigue avanzando.
+
+**Lo que se mide:**
+- `foto.energia`: corriente promedio, pico del último segundo (como el «máximo» de un multímetro: el golpe dura milisegundos), voltaje del 5V, calor del fusible (0 a 1), si está apagada y cuántos reinicios hubo.
+- La tabla de la página lo muestra en la fila «USB (placa y circuito)».
+
+**En modo ideal** (`limiteUSB` apagada) el USB no tiene límite: el mismo circuito con cuatro servos funciona. Así se compara cómo debería funcionar con cómo funciona de verdad.

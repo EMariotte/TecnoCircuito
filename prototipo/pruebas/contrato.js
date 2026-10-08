@@ -17,6 +17,7 @@ const PINES = {
   led: D['pines-led'].enum,
   potenciometro: D['pines-potenciometro'].enum,
   pulsador: D['pines-pulsador'].enum,
+  servo: D['pines-servo'].enum,
 };
 const PINES_PLACA = { uno: D['pines-placa-uno'].enum };
 
