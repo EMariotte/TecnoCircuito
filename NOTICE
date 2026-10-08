@@ -13,3 +13,11 @@ Este producto incluye software de terceros, embebido en el paquete construido:
 
 El dibujo de la protoboard, el solucionador eléctrico (análisis nodal modificado con
 Newton-Raphson) y el resto del código son propios de TecnoCircuito.
+
+Piezas Tecno: los dibujos y modelos de las piezas hechas para TecnoCircuito (como la
+protoboard) son originales, se hicieron a partir de la pieza real y se distribuyen bajo
+la misma licencia Apache 2.0.
+
+Las imágenes que produce TecnoCircuito (por ejemplo, el SVG de un circuito que guarda un
+aprendiz) son de quien las hace. Se pueden usar, compartir y publicar libremente, sin
+incluir esta licencia ni este aviso.

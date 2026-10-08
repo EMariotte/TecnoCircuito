@@ -47,6 +47,7 @@
 | **Repositorio propio** | Decidido por Efraín el 7 oct 2026. TecnoBloques depende de una **etiqueta fija**, así que se pueden publicar arreglos de TecnoBloques sin cambiar el simulador. |
 | **Las tareas mandan** | En 2026 solo se construye lo que piden las tres tareas de la sección «Alcance de 2026». |
 | **Versión congelada** | Mientras el simulador se use en el estudio de 2027, su versión no cambia. Lo nuevo sale en otra versión. |
+| **Piezas Tecno originales** | Decidido por Efraín el 7 oct 2026. Todos los dibujos propios son originales, hechos desde la pieza real (nada de Fritzing ni del simulador de Wokwi), y van en Apache 2.0 con el encabezado SPDX. Las imágenes que exporta TecnoCircuito son libres (aclarado en `NOTICE`). Cómo hacerlas: `prototipo/RECETA-COMPONENTE-NUEVO.md`. |
 | **Registro de eventos desde la etapa 0** | Cableados, fallas detectadas y correcciones. El paquete solo emite los eventos; TecnoBloques los guarda. |
 
 ---

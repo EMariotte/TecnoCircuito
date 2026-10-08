@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// © 2026 SENA – TecnoAcademia Tolima · Pieza Tecno: protoboard
+//
 // Protoboard (prototipo 4): geometría, nombres de los huecos, tiras conectadas por dentro y dibujo.
 // No toca la página: la usan el lienzo (dibujo y encaje de las patas) y conexiones.js (las tiras).
 //

@@ -121,13 +121,30 @@ Ningún componente se da por terminado sin compararlo con el objeto real:
 
 Las medidas van a `validacion/` y se vuelven pruebas de regresión. La protoboard es solo conexiones (un cable ideal), así que se valida con aprendices: que puedan armar la T1 en ella sin ayuda.
 
+## Tus propias piezas Tecno
+
+Una **pieza Tecno** es una pieza hecha para TecnoCircuito con esta receta: dibujo original, modelo y pruebas. La protoboard fue la primera.
+
+- **Dibujo original, desde la pieza real.** Mide el objeto, mira su hoja de datos y dibújalo tú. **No abras los archivos de Fritzing** (CC BY-SA) **ni los del simulador de Wokwi** (sus piezas no están en el paquete libre): así nadie puede decir que el dibujo es una copia.
+- **Licencia Apache 2.0,** la misma de todo el proyecto. Si envías tu pieza para incluirla, entra con esa licencia (sección 5 de la licencia).
+- **Encabezado al inicio del archivo:**
+
+  ```js
+  // SPDX-License-Identifier: Apache-2.0
+  // © 2026 SENA – TecnoAcademia Tolima · Pieza Tecno: <nombre de la pieza>
+  ```
+
+  Si la pieza es de otra persona o institución, va su nombre en el ©.
+- **El nombre:** cualquiera puede hacer piezas compatibles. Para llamarlas «Piezas Tecno» oficiales del SENA, tienen que entrar a este repositorio (sección 6 de la licencia: no da permiso para usar el nombre ni las marcas).
+- **Las imágenes que exporta el aprendiz son suyas.** El SVG de su circuito lleva copia de los dibujos, pero el `NOTICE` lo aclara: se usa y se publica libremente, sin la licencia ni el aviso.
+
 ## Lista rápida
 
 ```
 □ 1. Objeto real y hoja de datos anotados (medidas, qué une por dentro, cómo viene impreso)
 □ 2. Nombres de pines elegidos y escritos en CONTRATO.md (sección 4)
 □ 3. Geometría en una sola función (paso de 9,6 px si va en la protoboard)
-□ 4. Dibujo SVG en px, solo con atributos, sin copiar dibujos ajenos
+□ 4. Dibujo SVG original en px, solo con atributos, con el encabezado SPDX de pieza Tecno
 □ 5. Puntos de conexión en la capa correcta, con rótulo en palabras del aprendiz
 □ 6. Modelo eléctrico (unir nodos, resistencias y fuentes, o no lineal)
 □ 7. Modelo lógico, si habla con el programa (setPin, ADC, USART, TWI, SPI, tiempos)

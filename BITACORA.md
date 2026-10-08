@@ -394,3 +394,18 @@ Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrado
 - **Receta nueva:** `prototipo/RECETA-COMPONENTE-NUEVO.md`, los 10 pasos con que se creó la protoboard desde cero (no viene en @wokwi/elements), para repetirlos con otros componentes que no trae ningún simulador.
 - **Para la próxima sesión:** explicarle a Efraín la exportación de la netlist de KiCad y si basta para empezar una placa en KiCad.
 - **Falta** la primera etiqueta con `dist/tecnocircuito.js` en la raíz, para que TecnoBloques dependa de ella y el simulador llegue al instalador.
+
+## 2026-10-07 — Piezas Tecno: dibujos originales en Apache 2.0
+
+**Decisión de Efraín:** todos los dibujos serán propios y originales, mejores que los de Fritzing, y la receta queda para que cualquiera cree sus propias **piezas Tecno**.
+
+- **Por qué no Fritzing:** sus piezas son CC BY-SA 3.0, que obliga a «compartir igual». Un dibujo adaptado seguiría siendo CC BY-SA, no podría volverse Apache 2.0 y llegaría hasta el SVG del aprendiz. Además, Creative Commons recomienda no usar sus licencias para software.
+- **Por qué Apache 2.0 y no una licencia *copyleft*:**
+  - Es servicio público.
+  - Apache ya obliga a conservar el crédito al SENA (`NOTICE`, sección 4) y no deja usar el nombre (sección 6).
+  - Lo valioso del simulador, la validación con la placa y las tareas del aula, no se copia con el código.
+- **Hecho:**
+  - `NOTICE` y `README` declaran las piezas Tecno en Apache 2.0 y aclaran que **las imágenes que produce TecnoCircuito son de quien las hace** y se publican libremente, sin la licencia ni el aviso.
+  - La receta tiene la sección «Tus propias piezas Tecno».
+  - `src/protoboard.js` lleva el encabezado SPDX: es la primera pieza Tecno.
+- **Pendiente:** los dibujos que vienen de Wokwi (Uno, LED, botón) son MIT. Cuando tengamos versiones propias, el SVG exportado será del todo nuestro.
