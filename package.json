@@ -1,0 +1,13 @@
+{
+  "name": "tecnocircuito",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Simulador de circuitos con microcontrolador para TecnoBloques — TecnoAcademia Tolima, SENA",
+  "license": "Apache-2.0",
+  "author": "Efraín Guillermo Mariotte Parra (TecnoAcademia Tolima, SENA)",
+  "repository": "github:EMariotte/TecnoCircuito",
+  "scripts": {
+    "construir": "npm --prefix prototipo run construir",
+    "probar": "npm --prefix prototipo run probar"
+  }
+}

@@ -1,0 +1,15 @@
+TecnoCircuito
+Copyright 2026 SENA - TecnoAcademia Tolima (Ibagué, Colombia)
+
+Autor: Efraín Guillermo Mariotte Parra, Facilitador de Robótica,
+TecnoAcademia Tolima (SENA, SENNOVA).
+
+Este producto incluye software de terceros, embebido en el paquete construido:
+
+- avr8js (https://github.com/wokwi/avr8js), Copyright Uri Shaked, licencia MIT.
+- @wokwi/elements (https://github.com/wokwi/wokwi-elements), Copyright Uri Shaked,
+  licencia MIT.
+- Lit (https://lit.dev), Copyright Google LLC, licencia BSD-3-Clause.
+
+El dibujo de la protoboard, el solucionador eléctrico (análisis nodal modificado con
+Newton-Raphson) y el resto del código son propios de TecnoCircuito.

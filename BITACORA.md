@@ -376,3 +376,21 @@ Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrado
 - **Eventos:** mover, agregar y quitar la protoboard salen como `componente_*` con `id: "protoboard"`. Encajar o soltar una pieza sale en `componente_cambiado` con su `en`.
 - **Para TecnoBloques no cambia nada:** guarda el circuito sin interpretarlo.
 
+## 2026-10-07 — Prototipo validado y repositorio publicado
+
+**Decisión de Efraín:** «este primer prototipo demuestra lo que quería». La viabilidad queda validada y se crea el repositorio, que se publica igual que TecnoBloques.
+
+- **Cómo nació:** la idea era validar con prototipos antes de crear el repositorio, pero el proyecto creció rápido. En un día pasó de cablear un LED al chip simulado, al circuito eléctrico validado con el multímetro, al Web Worker con PWM, a las tareas T1 y T2 y a la protoboard.
+- **La historia queda en tres commits:**
+  1. los prototipos 0 a 3 con la primera conexión a TecnoBloques, tomados del respaldo que se guardó antes de los ajustes de la tarde, con la bitácora hasta ese punto;
+  2. los ajustes de Efraín, T1, T2 y el prototipo 4, con la bitácora hasta la protoboard;
+  3. los archivos del repositorio y la documentación al día.
+- **Archivos del repositorio,** como en TecnoBloques:
+  - `LICENSE` (Apache 2.0);
+  - `NOTICE` (© SENA – TecnoAcademia Tolima, autor Efraín Guillermo Mariotte Parra, con los avisos de avr8js, @wokwi/elements y Lit);
+  - `README.md` con capturas y la sección «Cómo nació»;
+  - `package.json` `tecnocircuito` 0.1.0.
+- **`prototipo/dist/` entra al repositorio** para abrir el prototipo sin construir. Las capturas de las pruebas, los `.cjs`, los registros y `respaldos/` no entran. `investigacion/` sigue fuera.
+- **Receta nueva:** `prototipo/RECETA-COMPONENTE-NUEVO.md`, los 10 pasos con que se creó la protoboard desde cero (no viene en @wokwi/elements), para repetirlos con otros componentes que no trae ningún simulador.
+- **Para la próxima sesión:** explicarle a Efraín la exportación de la netlist de KiCad y si basta para empezar una placa en KiCad.
+- **Falta** la primera etiqueta con `dist/tecnocircuito.js` en la raíz, para que TecnoBloques dependa de ella y el simulador llegue al instalador.
