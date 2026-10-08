@@ -170,7 +170,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 ## Próxima sesión: retomar desde aquí
 
-**Lo primero:** que Efraín pruebe a mano «Archivo → Importar → Netlist» en el editor de placas de KiCad 10 con la netlist de la T1 (instrucciones en `prototipo/LEEME.md`, «Llevar el circuito a KiCad»). La netlist se hizo y se probó el 8 oct (`COMO-FUNCIONA.md`, sección 43), pero ese menú no se puede probar de forma automática.
+**KiCad (8 oct):** Efraín probó «Importar netlist» en KiCad 10 y funciona. **Pendiente para después:** la huella del Uno no deja montar piezas encima (DRC, «courtyard overlap»). La solución propuesta es exportar los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad (J1 a J4) en vez de la huella del Uno. Ver `prototipo/COMO-FUNCIONA.md`, sección 43, al final.
 
 El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Para avanzar hacen falta estas mediciones y pruebas de Efraín:**
 
@@ -229,7 +229,8 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
 ## Ideas para más adelante (pedidas por Efraín el 7 oct)
 
 - **Esquemático para KiCad,** para que quien quiera hacer una placa de circuito impreso no empiece de cero. Recomendación, en dos pasos:
-  1. ✅ **Netlist de KiCad** (8 oct): `src/kicad.js`, `lienzo.exportarNetlist()`, «Llevar a KiCad» en TecnoBloques. Probada con las huellas y los símbolos de KiCad 10. Ver `prototipo/COMO-FUNCIONA.md`, sección 43.
+  1. ✅ **Netlist de KiCad** (8 oct): `src/kicad.js`, `lienzo.exportarNetlist()`, «Llevar a KiCad» en TecnoBloques. Probada con las huellas y los símbolos de KiCad 10, y por Efraín en el editor de placas. Ver `prototipo/COMO-FUNCIONA.md`, sección 43.
+     - ⬜ **Shield sin solapes:** exportar los conectores J1 a J4 de la plantilla «Arduino Uno Shield» de KiCad en vez de la huella del Uno.
   2. **Después, el esquemático (`.kicad_sch`)** con **etiquetas en vez de cables:** cada símbolo en una cuadrícula y una etiqueta con el nombre de su red en cada pata. Así no hay que trazar cables. Reutiliza la tabla de huellas y pads de `src/kicad.js`.
 - **Diagrama de flujo del programa,** en TecnoBloques: se arma a partir de los bloques (inicio, acciones, decisiones «si» y repeticiones) y se dibuja como SVG. Sirve para la documentación del proyecto y como evidencia. Está anotado también en el CLAUDE.md de TecnoBloques.
 - Las dos se pueden guardar en SVG, como el circuito (`lienzo.exportarSVG()`), y subir a TecnoRuta.

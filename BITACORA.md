@@ -451,3 +451,18 @@ Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrado
 - **No se probó a mano** el menú «Archivo → Importar → Netlist» del editor de placas: KiCad no expone ese lector en Python. Queda para Efraín, con las instrucciones de `LEEME.md`.
 - **Licencias:** no se copia nada de las librerías de KiCad. Solo se escriben los nombres de las huellas y los números de pad, y KiCad las busca en sus propias librerías.
 - **Queda para más adelante:** el esquemático `.kicad_sch`, con etiquetas en vez de cables (ver `COMO-FUNCIONA.md`, sección 43).
+
+## 2026-10-08 — Prueba de Efraín en KiCad: el Uno se solapa con las piezas
+
+Efraín importó la netlist en el editor de placas de KiCad 10: **la importación funciona** y las piezas quedan conectadas. Encontró un problema para hacer un shield: KiCad no deja que las otras huellas se monten sobre la del Uno.
+
+- **La causa:** la huella `Module:Arduino_UNO_R3` dibuja el Uno entero, con una zona de cortesía (*courtyard*) que cubre toda la placa. KiCad no deja que otra huella se monte sobre una zona de cortesía: es la regla «courtyard overlap» del DRC del editor de placas (no el ERC, que es del esquemático). Para KiCad, el Uno es una pieza más que ocupa espacio, no la placa de abajo.
+- **El arreglo de Efraín funciona:** crear el proyecto con la plantilla del Uno y borrar la huella del Uno que trae la netlist. Las demás piezas quedan conectadas a los pines de la plantilla, porque las redes llevan los nombres de esos pines.
+- **La solución propuesta (para más adelante):** KiCad 10 trae la plantilla **«Arduino Uno Shield»** (`share/kicad/template/Arduino_Uno`). Tiene el contorno exacto del Uno, 4 agujeros de montaje y 4 conectores hembra:
+  - `J1` Power (8);
+  - `J2` Digital/PWM (10);
+  - `J3` Analog (6);
+  - `J4` Digital/PWM (8).
+
+  En vez de la huella del Uno, la netlist exportaría **esos 4 conectores, con las mismas referencias**. El aprendiz crea el proyecto desde la plantilla, importa la netlist y KiCad conecta las piezas a los conectores que ya están en su lugar, sin solapes ni nada que borrar. Hay que sacar de la plantilla qué pin de cada conector es cada pin del Uno, y probarlo con el DRC en `probar_kicad_pcb.py`.
+- **Decisión de Efraín:** se deja documentado y se analiza después. Por ahora se sigue con el software actual.

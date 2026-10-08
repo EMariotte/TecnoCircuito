@@ -796,3 +796,17 @@ Un detalle del botón: KiCad pide unir también las dos patas «1» entre sí (y
 El Python de KiCad trae el módulo `pcbnew`, pero no su lector de netlists. Por eso la prueba carga cada huella y le pone a cada pad su red, que es lo mismo que hace «Importar netlist».
 
 **Lo que solo se puede probar a mano:** el menú «Importar netlist» del editor de placas. Ver [LEEME.md](LEEME.md), «Llevar el circuito a KiCad».
+
+### Hallazgo de la prueba en KiCad (8 oct): el Uno se solapa con las piezas
+
+Efraín importó la netlist en KiCad 10 y funcionó: aparecen las piezas con sus conexiones. Pero el DRC no deja montar las piezas encima del Uno, así que no queda como un shield.
+
+- **La causa:** la huella `Module:Arduino_UNO_R3` dibuja el Uno entero, con una zona de cortesía (*courtyard*) que cubre toda la placa. KiCad no deja que otra huella se monte sobre una zona de cortesía: es la regla «courtyard overlap» del DRC del editor de placas (no el ERC, que es del esquemático). Para KiCad, el Uno es una pieza más que ocupa espacio, no la placa de abajo.
+- **El arreglo de Efraín funciona:** crear el proyecto con la plantilla del Uno y borrar la huella del Uno que trae la netlist. Las demás piezas quedan conectadas a los pines de la plantilla, porque las redes llevan los nombres de esos pines.
+- **La solución propuesta (para más adelante):** KiCad 10 trae la plantilla **«Arduino Uno Shield»** (`share/kicad/template/Arduino_Uno`). Tiene el contorno exacto del Uno, 4 agujeros de montaje y 4 conectores hembra:
+  - `J1` Power (8);
+  - `J2` Digital/PWM (10);
+  - `J3` Analog (6);
+  - `J4` Digital/PWM (8).
+
+  En vez de la huella del Uno, la netlist exportaría **esos 4 conectores, con las mismas referencias**. El aprendiz crea el proyecto desde la plantilla, importa la netlist y KiCad conecta las piezas a los conectores que ya están en su lugar, sin solapes ni nada que borrar. Hay que sacar de la plantilla qué pin de cada conector es cada pin del Uno, y probarlo con el DRC en `probar_kicad_pcb.py`.
