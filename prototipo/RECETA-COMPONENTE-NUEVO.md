@@ -5,7 +5,7 @@
 
 ## Lo que pasó con la protoboard
 
-@wokwi/elements (MIT) trae los dibujos del Uno, el LED, la resistencia, el potenciómetro, el botón y otros, cada uno con la posición de sus pines. **No trae protoboard.** El simulador de Wokwi sí tiene una, pero no está en ese paquete libre. Fritzing tiene dibujos, pero su licencia (CC BY-SA) no se puede mezclar con Apache 2.0.
+@wokwi/elements (MIT) trae los dibujos del Uno, el LED, la resistencia, el potenciómetro, el botón y otros, cada uno con la posición de sus pines. **No trae protoboard.** El simulador de Wokwi sí tiene una, pero no está en ese paquete libre. Fritzing tiene dibujos, pero son CC BY-SA 3.0, que obliga a «compartir igual»: un dibujo adaptado (escalado, con los huecos marcados) seguiría siendo CC BY-SA. No se podría volver Apache 2.0 y llegaría hasta el SVG que exporta el aprendiz, que tendría que dar crédito a Fritzing y conservar esa licencia. Además, Creative Commons recomienda no usar sus licencias para software.
 
 Por eso se construyó desde cero, **sin copiar el código ni los dibujos de nadie**, a partir del objeto real: una media protoboard de 400 puntos, con huecos a 0,1", el canal central de 0,3" y los rieles. El resultado es [src/protoboard.js](src/protoboard.js), unas 170 líneas, más su integración en el lienzo.
 
