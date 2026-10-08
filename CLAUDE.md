@@ -232,6 +232,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
   2. **Después, el esquemático (`.kicad_sch`)** con los símbolos acomodados solos. Es más trabajo, porque hay que ubicar los símbolos y referenciar las librerías de KiCad.
 - **Diagrama de flujo del programa,** en TecnoBloques: se arma a partir de los bloques (inicio, acciones, decisiones «si» y repeticiones) y se dibuja como SVG. Sirve para la documentación del proyecto y como evidencia. Está anotado también en el CLAUDE.md de TecnoBloques.
 - Las dos se pueden guardar en SVG, como el circuito (`lienzo.exportarSVG()`), y subir a TecnoRuta.
+- **Diseño de marca de TecnoCircuito:** cuando exista el símbolo, agregarlo a la marca de la imagen SVG («Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima», constante `MARCA_SVG` en `prototipo/src/lienzo.js`).
 
 ## Investigación (privada)
 

@@ -66,6 +66,25 @@ with sync_playwright() as p:
     revisar(re.search(r'id="tc-pot1-rotating"[^>]*transform="rotate\(', svg) or re.search(r'transform="rotate\([^"]+\)"[^>]*id="tc-pot1-rotating"', svg),
             'la perilla del potenciómetro queda girada como atributo')
     revisar('rotate(90)' in svg, 'la resistencia girada sale girada')
+    marca = pg.evaluate('''(texto) => {
+      const caja = document.createElement('div');
+      caja.innerHTML = texto;
+      document.body.appendChild(caja);
+      const svg = caja.querySelector('svg');
+      const t = svg.querySelector(':scope > text');
+      const m = t.getBBox();
+      const c = svg.querySelector(':scope > g').getBBox();
+      const tr = svg.querySelector(':scope > g').transform.baseVal.consolidate().matrix;
+      const r = { texto: t.textContent, x0: m.x, x1: m.x + m.width, y0: m.y, y1: m.y + m.height,
+                  ancho: svg.width.baseVal.value, alto: svg.height.baseVal.value, finCircuito: c.y + c.height + tr.f };
+      caja.remove();
+      return r;
+    }''', svg)
+    print('   marca:', marca)
+    revisar(marca['texto'] == 'Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima', f'lleva la marca «{marca["texto"]}»')
+    revisar(marca['x0'] >= 0 and marca['x1'] <= marca['ancho'] and marca['y1'] <= marca['alto'], 'la marca cabe entera en la imagen')
+    revisar(marca['x1'] > marca['ancho'] - 20 and marca['y1'] > marca['alto'] - 12, 'la marca está en la esquina inferior derecha')
+    revisar(marca['y0'] >= marca['finCircuito'], 'la marca va debajo del circuito, sin tapar nada')
 
     # Abrir el archivo solo, como lo abriría otro programa, y comparar con la pantalla
     # (como imagen dentro de una página: la foto de un SVG abierto solo se queda esperando en Chromium)

@@ -10,6 +10,9 @@ import { PLACAS, TIPOS, COLORES_CABLE, CODIGO_COLORES, NOMBRE_COLOR, colorPorDef
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+// Marca de la imagen SVG exportada (abajo a la derecha). La imagen sigue siendo de quien la hace (NOTICE).
+const MARCA_SVG = 'Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima';
+const MARCA_ANCHO_MIN = 280; // px: la marca (unos 245 px en Arial 9) cabe aunque el circuito sea pequeño
 const ORIGEN_SVG = 5000; // la capa de cables empieza en (-5000, -5000): así todo cable recibe clics
 const UMBRAL_CLIC = 4; // px de pantalla: si el puntero se mueve menos, es un clic y no un arrastre
 const IMAN = 8; // px de pantalla: un doblez se alinea con el punto vecino si queda así de cerca
@@ -1107,11 +1110,13 @@ export function crearLienzo(elemento, opciones = {}) {
 
   // Arma un SVG que se abre igual en el navegador, Word, LibreOffice o Inkscape: fondo blanco, cada pieza con
   // su dibujo de Wokwi (con sus estilos y sus identificadores renombrados) y los cables encima, como en pantalla.
+  // Abajo a la derecha lleva la marca «Hecho con TecnoCircuito», en una franja propia para no tapar nada.
   function exportarSVG() {
     const caja = cajaDelCircuito() || { x0: 0, y0: 0, x1: 100, y1: 100 };
     const margen = 12;
-    const ancho = Math.ceil(caja.x1 - caja.x0 + 2 * margen);
-    const alto = Math.ceil(caja.y1 - caja.y0 + 2 * margen);
+    const franja = 16;
+    const ancho = Math.max(MARCA_ANCHO_MIN, Math.ceil(caja.x1 - caja.x0 + 2 * margen));
+    const alto = Math.ceil(caja.y1 - caja.y0 + 2 * margen) + franja;
     const partes = [
       `<svg xmlns="${SVG_NS}" xmlns:xlink="http://www.w3.org/1999/xlink" width="${ancho}" height="${alto}" viewBox="0 0 ${ancho} ${alto}">`,
       '<title>Circuito armado en TecnoCircuito</title>',
@@ -1134,7 +1139,12 @@ export function crearLienzo(elemento, opciones = {}) {
           `<path d="${d}" stroke="${color}" stroke-width="3"/>${extremo(pts[0])}${extremo(pts[pts.length - 1])}</g>`,
       );
     }
-    partes.push('</g>', '</svg>');
+    partes.push(
+      '</g>',
+      `<text x="${ancho - margen}" y="${alto - 9}" text-anchor="end" font-family="Arial, Helvetica, sans-serif" ` +
+        `font-size="9" fill="#7a7a7a">${escaparXML(MARCA_SVG)}</text>`,
+      '</svg>',
+    );
     return partes.join('\n');
   }
 

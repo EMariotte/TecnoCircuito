@@ -409,3 +409,15 @@ Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrado
   - La receta tiene la sección «Tus propias piezas Tecno».
   - `src/protoboard.js` lleva el encabezado SPDX: es la primera pieza Tecno.
 - **Pendiente:** los dibujos que vienen de Wokwi (Uno, LED, botón) son MIT. Cuando tengamos versiones propias, el SVG exportado será del todo nuestro.
+
+## 2026-10-07 — Marca en la imagen SVG
+
+**Pedido de Efraín:** que cada circuito exportado recuerde de dónde salió, aunque la imagen sea libre.
+
+- `exportarSVG()` agrega, abajo a la derecha, **«Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima»**, en gris claro (Arial 9).
+  - Va en una franja propia de 16 px debajo del circuito, así que no tapa piezas ni cables.
+  - La imagen mide al menos 280 px de ancho, para que la marca quepa aunque el circuito sea pequeño.
+- **Texto elegido:** «Hecho con» es como se dice en español «Made with» o «Powered by». Se descartó «Realizado por», porque el circuito lo hace el aprendiz, no TecnoCircuito. También se descartó «Con la tecnología de», que es largo y comercial.
+- **No cambia la licencia:** la imagen sigue siendo de quien la hace (`NOTICE`). La marca es un recordatorio, no una condición.
+- **Pruebas:** `probar_svg.py` suma 4 comprobaciones: el texto, que cabe, que está en la esquina y que queda debajo del circuito. Pasan las 15.
+- **Contrato:** anotado en `CONTRATO.md` (API y fila de la versión 1). La API no cambia, solo el contenido de la imagen.
