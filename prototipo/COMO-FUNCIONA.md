@@ -1,7 +1,7 @@
 # Cómo funciona el prototipo 0
 
 > Explicación del lienzo de cableado: qué hace cada archivo, cómo se arma y cómo se ejecuta.
-> Escrita el 7 de octubre de 2026. Los números de línea de `src/lienzo.js` están al día con el prototipo 2.
+> Escrita el 7 de octubre de 2026. Los números de línea de `src/lienzo.js` están al día con el prototipo 4.
 
 ## 1. Vista general
 
@@ -80,9 +80,9 @@ Hay dos sistemas de coordenadas:
 pantalla = cámara.p + mundo × cámara.escala          aMundo(e):  mundo = (pantalla − cámara.p) / escala
 ```
 
-- **Zoom** ([zoom](src/lienzo.js#L700)): calcula qué punto del mundo está bajo el cursor, cambia la escala y recoloca la cámara para que ese punto siga bajo el cursor.
-- **Ver todo** ([encuadrar](src/lienzo.js#L712)): calcula la caja que rodea todas las piezas y los dobleces y la centra, sin pasar de 2,4×.
-- **Giro de una pieza:** CSS la gira alrededor de su centro, y [girarPunto](src/lienzo.js#L171) hace la misma cuenta para saber dónde quedó cada pin:
+- **Zoom** ([zoom](src/lienzo.js#L1052)): calcula qué punto del mundo está bajo el cursor, cambia la escala y recoloca la cámara para que ese punto siga bajo el cursor.
+- **Ver todo** ([encuadrar](src/lienzo.js#L1090)): calcula la caja que rodea todas las piezas y los dobleces y la centra, sin pasar de 2,4×.
+- **Giro de una pieza:** CSS la gira alrededor de su centro, y [girarPunto](src/lienzo.js#L330) hace la misma cuenta para saber dónde quedó cada pin:
 
 ```
 centro c = (w/2, h/2)     d = pin − c     pin girado = c + ( d.x·cosθ − d.y·senθ ,  d.x·senθ + d.y·cosθ )
@@ -114,7 +114,7 @@ El tamaño se lee de los atributos del SVG y no del diseño de la página. En Te
 | `trazando` | el cable a medio dibujar: pin de salida, dobleces, cursor y destino | entre varios clics |
 | `gesto` | lo que hace el puntero mientras está presionado: `pin`, `mover`, `paneo` o `asa` | solo mientras el botón está abajo |
 
-Al presionar ([pointerdown](src/lienzo.js#L537)), el lienzo decide en este orden:
+Al presionar ([pointerdown](src/lienzo.js#L724)), el lienzo decide en este orden:
 
 ```
 ¿es un pin? ───────────► ¿dibujando?  sí → terminarCable(pin)
@@ -126,10 +126,10 @@ Al presionar ([pointerdown](src/lienzo.js#L537)), el lienzo decide en este orden
 si no (fondo o placa) ─► quitar la selección + gesto 'paneo' (mover la vista)
 ```
 
-- **Al mover** ([pointermove](src/lienzo.js#L571)), el puntero no cuenta como arrastre hasta pasar de 4 px. Así se distingue un clic de un arrastre.
-- **Al soltar** ([alSoltar](src/lienzo.js#L603)), se cierra el gesto: guardar la posición, agregar un doblez o terminar un cable arrastrado.
+- **Al mover** ([pointermove](src/lienzo.js#L882)), el puntero no cuenta como arrastre hasta pasar de 4 px. Así se distingue un clic de un arrastre.
+- **Al soltar** ([alSoltar](src/lienzo.js#L933)), se cierra el gesto: guardar la posición, agregar un doblez o terminar un cable arrastrado.
 - **Los gestos de arrastre capturan el puntero** (`setPointerCapture`), para que no se pierdan si el mouse sale de la pieza.
-- **Esa captura también desvía el doble clic,** y por eso [dblclick](src/lienzo.js#L627) busca con `elementFromPoint` qué hay de verdad bajo el puntero.
+- **Esa captura también desvía el doble clic,** y por eso [dblclick](src/lienzo.js#L971) busca con `elementFromPoint` qué hay de verdad bajo el puntero.
 
 ## 7. El ciclo de un cable
 
@@ -151,8 +151,8 @@ si no (fondo o placa) ─► quitar la selección + gesto 'paneo' (mover la vist
 
 El imán actúa en dos momentos:
 
-- **Al agregar un doblez** ([alinear](src/lienzo.js#L298)): si queda a menos de 8 px de pantalla del punto anterior en x o en y, se iguala esa coordenada. Así salen tramos perfectamente rectos.
-- **Al llegar al pin final** ([ajustarFinal](src/lienzo.js#L307)): el último doblez se alinea con el pin. Solo se mueve en el eje que no rompe el tramo anterior. Por eso el cable D13 → resistencia queda como una «L» exacta aunque el clic caiga 3 px corrido.
+- **Al agregar un doblez** ([alinear](src/lienzo.js#L462)): si queda a menos de 8 px de pantalla del punto anterior en x o en y, se iguala esa coordenada. Así salen tramos perfectamente rectos.
+- **Al llegar al pin final** ([ajustarFinal](src/lienzo.js#L471)): el último doblez se alinea con el pin. Solo se mueve en el eje que no rompe el tramo anterior. Por eso el cable D13 → resistencia queda como una «L» exacta aunque el clic caiga 3 px corrido.
 
 ## 8. Cómo se dibuja un cable
 
@@ -168,7 +168,7 @@ un <g> por cable, de abajo hacia arriba:
    toque  (invisible, 12) ─ zona ancha para atinarle con el clic
 ```
 
-[dibujarCables](src/lienzo.js#L222) sincroniza los elementos en vez de borrarlos y crearlos de nuevo: solo cambia sus atributos `d`, el color y la clase. Si se reemplazaran entre el primer y el segundo clic, el navegador no reconocería el doble clic. El cable elegido pasa al frente, y sus dobleces van a la capa `.tc-asas`.
+[dibujarCables](src/lienzo.js#L381) sincroniza los elementos en vez de borrarlos y crearlos de nuevo: solo cambia sus atributos `d`, el color y la clase. Si se reemplazaran entre el primer y el segundo clic, el navegador no reconocería el doble clic. El cable elegido pasa al frente, y sus dobleces van a la capa `.tc-asas`.
 
 ## 9. Eventos y cambios
 
@@ -183,7 +183,7 @@ un <g> por cable, de abajo hacia arriba:
 | color o dobleces de un cable | ninguno (sigue abierto) | sí |
 | «Ver encendido» | ninguno: solo cambia el dibujo | no |
 
-Si el código que escucha falla, el `try/catch` de [emitir](src/lienzo.js#L808) y [cambio](src/lienzo.js#L817) evita que se rompa el lienzo. El contrato lo exige: el editor nunca se cae por el simulador.
+Si el código que escucha falla, el `try/catch` de [emitir](src/lienzo.js#L1252) y [cambio](src/lienzo.js#L1261) evita que se rompa el lienzo. El contrato lo exige: el editor nunca se cae por el simulador.
 
 ## 10. La construcción ([construir.js](construir.js))
 
@@ -525,3 +525,166 @@ TecnoBloques (app de escritorio)                          TecnoCircuito (este pr
 - **Falta en el contrato: `destruir()` del simulador.** TecnoBloques necesita cerrar el Worker al cambiar de proyecto o de placa. Hoy usa `_destruir()`, que es solo del prototipo. Se propone agregar `sim.destruir()` a la API (cambio compatible).
 - **El monitor no podía estar en otra pestaña.** Para ver el LED y escribirle al programa a la vez, TecnoBloques agregó un monitor pequeño al pie de la pestaña «Circuito». El monitor serial de siempre también muestra la simulación.
 - **El estado «Simulando · … · velocidad» sale de `_medidas()`,** que también es solo del prototipo. Conviene pasarlo al contrato como `sim.medidas()` (tiempo simulado y velocidad), porque es lo que el aprendiz ve.
+
+---
+
+# Ajustes de Efraín y tareas T1 y T2
+
+> Agregado el 7 de octubre de 2026 (tarde). Archivos tocados: [src/catalogo.js](src/catalogo.js), [src/lienzo.js](src/lienzo.js), [src/chip.js](src/chip.js), [src/nucleo.js](src/nucleo.js), [src/motor/red.js](src/motor/red.js) y [src/conexiones.js](src/conexiones.js).
+
+## 33. Colores de cable en el orden del código de colores
+
+```
+ tecla:   0      1       2     3        4         5      6     7        8     9
+ color: negro  marrón  rojo  naranja  amarillo  verde  azul  violeta  gris  blanco
+ clave: negro  marron  rojo  naranja  amarillo  verde  azul  morado   gris  blanco   ← lo que se guarda
+```
+
+- **El orden lo da `COLORES_CABLE`,** y `CODIGO_COLORES[n]` dice qué color va con la tecla n. «morado» se conserva como clave porque ya había circuitos guardados con ella.
+- **Con un cable elegido o mientras se dibuja uno,** la tecla 0 a 9 llama a `ponerColor()`. Las muestras de la barra hacen lo mismo y llevan su número, así el aprendiz aprende el código de colores sin darse cuenta.
+- **Las teclas que usa el lienzo** (Supr, Esc, R y 0 a 9) se detienen con `stopPropagation()` y no siguen hacia la página. Sin eso, Supr en el circuito también borraba un bloque elegido en Blockly.
+
+## 34. La imagen SVG del circuito (`lienzo.exportarSVG()`)
+
+```
+ por cada pieza (en el orden de las capas):        al final, los cables (encima, como en pantalla)
+   SVG del dibujo de Wokwi (está en su shadow DOM)
+   ├─ clonar y quitar los comentarios de Lit
+   ├─ perilla: --knob-angle (CSS) → transform="rotate(…)" (atributo: lo entienden Word e Inkscape)
+   ├─ identificadores: light1 → tc-led1-light1 (dos LED usaban los mismos filtros)
+   ├─ estilos del shadow DOM → <style> limitado a la pieza (#tc-placa text { font-size: 2px … })
+   └─ <g transform="translate(x y) rotate(rot)">
+```
+
+Sin los estilos, las letras de la placa salen gigantes. Sin el prefijo, el segundo LED tomaría el filtro del primero. La prueba `probar_svg.py` revisa que sea XML válido, que no repita identificadores, que toda referencia apunte a algo y que la imagen cargue sola.
+
+## 35. Las entradas: del circuito al `digitalRead()`
+
+```
+ cambia un pin del programa ─┐
+ cambia el cableado ─────────┼──► actualizarEntradas() (nucleo.js)
+ se presiona/suelta un botón ┘        │
+                                      ├─ solución del circuito con los pines de ahora (guardada por combinación)
+                                      ├─ red.flotantes(): ¿qué entradas no tienen ningún camino a 5V, GND o un pin?
+                                      ├─ cada entrada (D2–D13, A0–A5):
+                                      │     al aire → nivel al azar (realista) o BAJO (ideal)
+                                      │     V ≥ 3,0 V → ALTO · V ≤ 1,5 V → BAJO · en medio → el nivel anterior
+                                      │     sin nada conectado y con INPUT_PULLUP → ALTO
+                                      ├─ chip.ponerEntrada(pin, nivel)  →  setPin() de avr8js  →  digitalRead()
+                                      └─ los voltajes de A0–A5 al ADC desde ya (no espera a la foto)
+```
+
+- **Por qué en cada cambio y no en cada foto:** un programa que hace `pinMode(2, INPUT_PULLUP)` y lee en la línea siguiente tiene que ver el ALTO al instante, como en la placa. Las soluciones se guardan por combinación de pines, así que no cuesta: con PWM, cada cambio de pin solo busca en la memoria.
+- **Los umbrales son los del ATmega328P a 5 V** (0,6·VCC y 0,3·VCC). En medio la placa real no garantiza nada, y conservar el nivel anterior imita su histéresis.
+- **D0 y D1 no se tocan:** son del monitor serial.
+
+## 36. Entrada flotante y ruido del ADC
+
+**¿Cuándo está «al aire» una entrada?** `red.flotantes()` arma grupos de pines por conducción: cables, resistencias, potenciómetros y botones presionados. Los LED no cuentan, porque apagados no conducen. Un grupo está manejado si contiene GND, 5V, 3,3V, un pin de salida o un pin con pull-up. Una entrada en un grupo sin manejar está al aire.
+
+| No idealidad | Realista | Ideal |
+|---|---|---|
+| `entradaFlotante`, digital | cambia sola, en promedio cada 120 ms (`CAMBIO_AL_AIRE_POR_MS`) | lee BAJO |
+| `entradaFlotante`, analógica | deambula: cada lectura se mueve un poco al azar (`PASEO_AL_AIRE_V`) | lee 0 |
+| `ruidoADC` | cada `analogRead()` suma un ruido normal de unos 0,6 pasos (`RUIDO_ADC_V`) | sin ruido |
+
+- **Por qué 120 ms y no más rápido:** con cambios cada 7 ms el LED se veía siempre a medias, porque el ojo y el promedio por cuadro lo suavizan. A 120 ms se ve «el LED se prende y se apaga solo», que es lo que el aprendiz tiene que reconocer.
+- **Los dos valores son de partida.** Se ajustan con `validar_flotante.ino` y `validar_adc.ino` en la placa real.
+- **El azar tiene semilla** (`crearAzar`, mulberry32). Las pruebas con Node usan una semilla fija y dan siempre lo mismo.
+- **El ADC redondea el voltaje al microvoltio.** Justo en 2,5 V (512), un error de cálculo de una milmillonésima hacía saltar la lectura entre 511 y 512.
+- **Sin GND, el potenciómetro no divide:** la pata del medio queda pegada a 5V y lee 1023. Eso no es una no idealidad sino física, y sale igual en los dos modos.
+
+## 37. El botón (`pulsador`)
+
+```
+   1i ●──────────● 1d        las patas con el mismo número: la misma lámina de metal por dentro
+          ┌──┐
+          │  │  ← al presionar se une la 1 con la 2
+          └──┘
+   2i ●──────────● 2d
+```
+
+- **En `conexiones.js`,** `1i` va siempre unida con `1d`, y `2i` con `2d`. Si el botón está en `presionados`, también `1i` con `2i`. Presionarlo cambia el cableado de ese momento: se rehace la red y se leen las entradas otra vez.
+- **Mientras se simula, el clic presiona el botón y no lo mueve,** como en la placa. Detenido, se mueve como cualquier pieza.
+  - El lienzo no captura el puntero en el botón: si lo hace, el dibujo de Wokwi cree que el mouse salió y se suelta solo.
+  - Si el mouse se sale del botón con el clic apretado, se suelta, como un dedo que se resbala.
+- **Al soltarlo sale el evento `boton_pulsado { id, ms }`,** que muestra cómo prueba el aprendiz su montaje.
+- **El estado presionado no se guarda en el circuito.** Llega al Worker por un mensaje propio (`pulsador`).
+
+---
+
+# Prototipo 4: la protoboard
+
+> Agregado el 7 de octubre de 2026. Archivo nuevo: [src/protoboard.js](src/protoboard.js).
+
+## 38. Geometría y nombres
+
+```
+        ┌───────────────────────────────────────────────────────────────┐
+  +  s+ │  ● ● ● ● ●   ● ● ● ● ●   ● ● ● ● ●   ● ● ● ● ●   ● ● ● ● ●   │  riel + de arriba (25 huecos, unido)
+  −  s- │  ● ● ● ● ●   ● ● ● ● ●   ● ● ● ● ●   ● ● ● ● ●   ● ● ● ● ●   │  riel − de arriba
+        │ 1       5         10        15        20        25        30  │
+     a  │ ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  …              │  ┐
+     …  │ │  │  │  │  │                                                 │  │ cada columna une a–e
+     e  │ ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  …              │  ┘
+        │════════════════════ canal central (0,3") ═════════════════════│
+     f  │ ●  ●  ●  ●  ●  …                                               │  ┐
+     …  │ │  │  │  │  │                                                  │  │ y aparte f–j
+     j  │ ●  ●  ●  ●  ●  …                                               │  ┘
+  −  i- │  ● ● ● ● ●   …                                                 │  riel − de abajo
+  +  i+ │  ● ● ● ● ●   …                                                 │  riel + de abajo
+        └───────────────────────────────────────────────────────────────┘
+```
+
+- **La distancia entre huecos es la de los pines:** 0,1" = 9,6 px. Entre `e` y `f` hay 3 pasos, como en la protoboard real, para que un chip o un botón queden cruzando el canal.
+- **Los nombres son los impresos:** `a1` … `j30`. Los rieles, `s+N`, `s-N`, `i+N` e `i-N`, usan la columna que tienen debajo, y les falta un hueco cada 6 columnas.
+- **`huecos()` y `tiras()`** dan la lista de huecos y los grupos unidos por dentro, y se guardan en memoria.
+
+## 39. Las tiras en el circuito
+
+`calcularNodos()` une los huecos de cada tira y cada pata encajada con su hueco (campo `en`). Desde ahí todo funciona igual que con cables:
+
+```
+ D13 ──cable──► a19 ═tira 19═ c19 ◄─pata 2─ r1 ─pata 1─► c13 ═tira 13═ a13 ◄─ánodo─ LED
+```
+
+El motor también da el voltaje de todos los huecos de una tira que toca algo. Así el rótulo de cualquier hueco de esa tira muestra su voltaje, como la punta de un multímetro.
+
+## 40. Encajar una pieza (`encajar()` en protoboard.js)
+
+```
+ 1. las patas de la pieza en coordenadas de la protoboard (con su giro)
+ 2. la primera pata → su hueco más cercano; si está a más de un paso, la pieza no está sobre la protoboard
+ 3. corrimiento = lo que le falta a la primera pata para caer justo en su hueco
+ 4. con ese corrimiento, cada pata debe caer a menos de 3,5 px de un hueco libre y distinto
+ 5. sí → la pieza se corre lo justo y queda «en»: { anodo: "protoboard.a13", … }
+    no → queda suelta (sin «en»)
+```
+
+- **Por qué 3,5 px:** los dibujos de Wokwi no tienen las patas a 0,1" exactas. El LED las tiene a 10 px, la resistencia a 58,8 (6,1 pasos) y el potenciómetro a 10. La tolerancia las acepta sin confundir huecos vecinos (9,6 px).
+- **Cuándo se encaja:**
+  - al soltar una pieza arrastrada;
+  - al girarla, porque puede caer en otros huecos o quedar suelta;
+  - al agregarla, si aparece sobre la protoboard.
+- **Mientras se arrastra,** `mostrarDestino()` pinta en verde los huecos donde quedaría.
+
+## 41. Capas: por qué los huecos van dentro del dibujo de la protoboard
+
+```
+ capa de pines        patas de las piezas (siempre encima: se puede cablear una pata)
+ capa de cables       cables
+ capa de piezas       placa · PROTOBOARD (con sus 400 huecos dentro) · piezas encima
+```
+
+En la primera versión, los huecos estaban en la capa de pines, encima de todo. Un clic en el cuerpo de una pieza suelta sobre la protoboard caía en un hueco y empezaba un cable. Dentro del dibujo de la protoboard quedan debajo de las piezas, y además se mueven solos con ella.
+
+Hay dos efectos de paso, y los dos son como en la real:
+
+- **Un hueco con un cable ya conectado no recibe otro.** El cable está encima.
+- **Un hueco con una pata encajada** (`tc-ocupado`) no recibe clics. Se cablea la pata, que es el mismo nodo.
+
+## 42. Mover, borrar y la barra
+
+- **Mover la protoboard** corre también las piezas que tienen `en`, y sus huecos no cambian. **Borrarla** quita los `en` y los cables a sus huecos.
+- **«+ Agregar»** abre un menú. Va fuera de la barra porque la barra se desplaza de lado y lo cortaría. En el menú, «Protoboard» se apaga si ya hay una.
+- **La barra tiene altura fija** y siempre va en una línea. Si cambiara de alto con lo elegido, la vista se correría bajo el mouse del aprendiz mientras cablea. Las opciones de la pieza elegida se desplazan dentro de su espacio sin tapar el zoom.

@@ -136,6 +136,130 @@ for (const pos of [0.25, 0.75, 0, 1]) {
   }
 }
 
+// ---- Tarea T1: botón, lectura digital desde el circuito y entrada flotante
+const TODAS = { danoComponentes: true, limitePin: true, entradaFlotante: true, ruidoADC: true };
+const IDEAL = { danoComponentes: false, limitePin: false, entradaFlotante: false, ruidoADC: false };
+// LED con 220 Ω en el pin 13 y un botón en el pin 2. conPulldown: 5V → botón → pin 2, y 10 kΩ del pin 2 a GND.
+// alGND: el botón une el pin 2 con GND (para INPUT_PULLUP). Sin las dos: el pin 2 queda al aire si no se presiona.
+const T1 = ({ conPulldown = true, alGND = false } = {}) => {
+  const c = LED9(220);
+  c.cables[0] = { de: 'placa.D13', a: 'r1.1' };
+  c.componentes.push({ id: 'btn1', tipo: 'pulsador', x: 0, y: 0, rot: 0, props: { color: 'rojo' } });
+  c.cables.push({ de: 'placa.D2', a: 'btn1.1i' }, { de: alGND ? 'placa.GND3' : 'placa.5V', a: 'btn1.2i' });
+  if (conPulldown && !alGND) {
+    c.componentes.push({ id: 'r2', tipo: 'resistencia', x: 0, y: 0, rot: 0, props: { ohmios: 10000 } });
+    c.cables.push({ de: 'btn1.1d', a: 'r2.1' }, { de: 'r2.2', a: 'placa.GND2' });
+  }
+  return c;
+};
+// Muestrea cada ms el LED del pin 13 (lo que el programa escribió según lo que leyó del pin 2).
+let serialVisto = '';
+function muestrear(n, ms) {
+  let prendido = 0;
+  let cambios = 0;
+  let antes = null;
+  for (let t = 0; t < ms; t++) {
+    n.avanzar(FRECUENCIA / 1000);
+    const foto = n.foto();
+    serialVisto += foto.serial;
+    const alto = foto.placa.led13;
+    if (alto) prendido++;
+    if (antes !== null && alto !== antes) cambios++;
+    antes = alto;
+  }
+  return { prendido: prendido / ms, cambios };
+}
+
+// 6. Botón con pull-down: suelto lee BAJO, presionado lee ALTO; el monitor lo cuenta
+{
+  const n = crearNucleo({ hex: hex('boton_pulldown'), circuito: T1(), activas: TODAS, semilla: 1 });
+  serialVisto = correr(n, 200).serial;
+  const suelto = muestrear(n, 100);
+  n.ponerPulsador('btn1', true);
+  const presionado = muestrear(n, 100);
+  const f = n.foto();
+  n.ponerPulsador('btn1', false);
+  const otraVez = muestrear(n, 100);
+  const texto = serialVisto + n.foto().serial;
+  revisar(suelto.prendido === 0 && presionado.prendido === 1 && otraVez.prendido === 0,
+    `pull-down: suelto el LED queda apagado, presionado prendido y al soltar se apaga (${suelto.prendido}, ${presionado.prendido}, ${otraVez.prendido})`);
+  revisar(Math.abs(f.voltajes['placa.D2'] - 5) < 0.01, `presionado, el pin 2 está a ${f.voltajes['placa.D2'].toFixed(2)} V`);
+  revisar(/Presionado/.test(texto) && /Suelto/.test(texto), 'el monitor serial dice «Presionado» y «Suelto»');
+}
+
+// 7. Sin la pull-down, suelto el pin 2 queda al aire: en modo realista lee al azar; en modo ideal, BAJO
+{
+  const realista = crearNucleo({ hex: hex('boton_pulldown'), circuito: T1({ conPulldown: false }), activas: TODAS, semilla: 7 });
+  correr(realista, 100);
+  const azar = muestrear(realista, 3000);
+  const f = realista.foto();
+  revisar(azar.cambios >= 10 && azar.cambios <= 50 && azar.prendido > 0.2 && azar.prendido < 0.8,
+    `realista: el LED se prende y se apaga solo (${azar.cambios} cambios en 3 s, unos 25 esperados; prendido ${(azar.prendido * 100).toFixed(0)} %)`);
+  revisar(f.entradas.D2 && f.entradas.D2.alAire && f.voltajes['placa.D2'] === null, 'el pin 2 figura «al aire» y sin voltaje medible');
+  realista.ponerPulsador('btn1', true);
+  const firme = muestrear(realista, 100);
+  revisar(firme.prendido === 1 && firme.cambios === 0, 'al presionar deja de flotar: el LED queda prendido y quieto');
+  const ideal = crearNucleo({ hex: hex('boton_pulldown'), circuito: T1({ conPulldown: false }), activas: IDEAL, semilla: 7 });
+  correr(ideal, 100);
+  const quieto = muestrear(ideal, 500);
+  revisar(quieto.prendido === 0 && quieto.cambios === 0, 'ideal: sin pull-down el pin 2 lee BAJO y el LED queda apagado y quieto');
+}
+
+// 8. Botón a GND con la pull-up interna (INPUT_PULLUP): la lógica va al revés y no hace falta resistencia
+{
+  const n = crearNucleo({ hex: hex('boton_pullup'), circuito: T1({ alGND: true }), activas: TODAS, semilla: 3 });
+  correr(n, 200);
+  const suelto = muestrear(n, 100);
+  const vSuelto = n.foto().voltajes['placa.D2'];
+  n.ponerPulsador('btn1', true);
+  const presionado = muestrear(n, 100);
+  revisar(suelto.prendido === 0 && presionado.prendido === 1, `pull-up interna: suelto apagado, presionado prendido (${suelto.prendido}, ${presionado.prendido})`);
+  revisar(Math.abs(vSuelto - 5) < 0.01, `suelto, la pull-up deja el pin 2 a ${vSuelto.toFixed(2)} V`);
+}
+
+// ---- Tarea T2: ruido de analogRead() y entrada analógica al aire
+// Lee del monitor serial las lecturas del programa «potenciometro» (una cada 100 ms).
+function lecturas(n, cuantas) {
+  let texto = '';
+  for (let t = 0; t < cuantas * 100 + 200; t += 16) {
+    n.avanzar(CUADRO);
+    texto += n.foto().serial;
+  }
+  return renglones(texto);
+}
+const desviacion = (xs) => {
+  const m = xs.reduce((s, x) => s + x, 0) / xs.length;
+  return Math.sqrt(xs.reduce((s, x) => s + (x - m) ** 2, 0) / xs.length);
+};
+
+// 9. Ruido del ADC: en realista la lectura baila 1 o 2 pasos; en ideal es siempre la misma
+{
+  const ruido = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: conPot(0.5), activas: TODAS, semilla: 11 }), 40);
+  const limpio = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: conPot(0.5), activas: IDEAL, semilla: 11 }), 40);
+  const d = desviacion(ruido);
+  revisar(d > 0.2 && d < 1.5 && Math.max(...ruido) - Math.min(...ruido) <= 6,
+    `realista: perilla al 50 %, ${ruido.length} lecturas entre ${Math.min(...ruido)} y ${Math.max(...ruido)} (desviación ${d.toFixed(2)} pasos)`);
+  revisar(new Set(limpio).size === 1 && Math.abs(limpio[0] - 511) <= 1, `ideal: siempre ${limpio[0]}`);
+}
+
+// 10. Sin la pata del medio, A0 queda al aire: en realista lee cualquier cosa; en ideal, 0
+{
+  const alAire = () => {
+    const c = conPot(0.5);
+    c.cables = c.cables.filter((k) => k.de !== 'pot1.SIG');
+    return c;
+  };
+  const realista = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: alAire(), activas: TODAS, semilla: 5 }), 30);
+  const ideal = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: alAire(), activas: IDEAL, semilla: 5 }), 30);
+  revisar(Math.max(...realista) - Math.min(...realista) > 30, `realista: A0 al aire deambula entre ${Math.min(...realista)} y ${Math.max(...realista)}`);
+  revisar(ideal.every((x) => x === 0), 'ideal: A0 al aire lee 0');
+  // Sin GND el potenciómetro no divide: la pata del medio queda pegada a 5V (física, no una no idealidad)
+  const sinGND = conPot(0.3);
+  sinGND.cables = sinGND.cables.filter((k) => k.de !== 'pot1.GND');
+  const pegado = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: sinGND, activas: IDEAL, semilla: 5 }), 10);
+  revisar(pegado.every((x) => x >= 1020), `sin GND la perilla no hace nada: lee ${pegado[0]} (pegado a 5V)`);
+}
+
 // 5. Cuánto tarda el chip (Node, este PC): sin PWM, con PWM y con el potenciómetro.
 //    Es informativo: depende del PC y de si está con cargador (con batería, Windows baja la velocidad).
 const velocidades = {};

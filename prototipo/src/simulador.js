@@ -4,7 +4,7 @@
 // una vez por cuadro de pantalla. Si el navegador no deja crear el Worker, el mismo código corre en la página.
 import { leerHex } from './hex.js';
 
-const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin'];
+const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC'];
 // El código del Worker, ya armado: lo pone construir.js. Va como texto para que todo quepa en un solo archivo.
 const CODIGO_TRABAJADOR = typeof __CODIGO_TRABAJADOR__ === 'string' ? __CODIGO_TRABAJADOR__ : '';
 
@@ -39,7 +39,8 @@ export function crearSimulador(opciones = {}) {
     if (m.tipo === 'error') return console.error('TecnoCircuito:', m.mensaje);
     if (m.tipo !== 'foto' || m.corrida !== corrida || estado === 'detenido') return;
     Object.assign(medidas, { msSimulados: m.msSimulados, msReales: m.msReales, velocidad: m.velocidad, evaluaciones: m.evaluaciones });
-    medicion = m.medicion;
+    // La tabla usa los voltajes de la foto (con «al aire») y cómo lee el programa cada entrada.
+    medicion = m.medicion ? { ...m.medicion, voltajes: m.voltajes, entradas: m.entradas } : null;
     for (const f of m.fallas) {
       fallas.push(f);
       oyentes.falla.forEach((fn) => avisar(fn, { tipo: f.tipo, componente: f.componente, mensaje: f.mensaje }));
@@ -54,8 +55,9 @@ export function crearSimulador(opciones = {}) {
   // Lo que se ve: el LED «L» de la placa sigue al pin 13, y cada LED brilla según su corriente promedio.
   function dibujar() {
     cuadro = 0;
-    if (estado === 'detenido' || !vista) return lienzo._mostrar({});
+    if (estado === 'detenido' || !vista) return lienzo._mostrar({ simulando: estado !== 'detenido' });
     lienzo._mostrar({
+      simulando: true, // el lienzo deja presionar los botones con el mouse
       leds: vista.leds,
       quemados: vista.quemados,
       voltajes: vista.voltajes,
@@ -78,6 +80,13 @@ export function crearSimulador(opciones = {}) {
   function cambiarEstado(nuevo) {
     estado = nuevo;
     oyentes.estado.forEach((fn) => avisar(fn, nuevo));
+  }
+
+  // Un botón presionado o soltado con el mouse: lo resuelve el Worker al instante (no cambia el circuito guardado).
+  if (typeof lienzo._alPulsar === 'function') {
+    lienzo._alPulsar((id, presionado) => {
+      if (vivo) trabajador.enviar({ tipo: 'pulsador', id, presionado });
+    });
   }
 
   // Si el aprendiz cambia el cableado (o gira la perilla), el Worker resuelve otra vez al instante.
@@ -133,14 +142,25 @@ export function crearSimulador(opciones = {}) {
     alSerial: (fn) => typeof fn === 'function' && oyentes.serial.push(fn),
     alFalla: (fn) => typeof fn === 'function' && oyentes.falla.push(fn),
     alEstado: (fn) => typeof fn === 'function' && oyentes.estado.push(fn),
-    // Solo del prototipo, fuera del contrato: medidas del reloj y del circuito, para comprobarlos.
-    _medidas: () => ({ ...medidas, estado, hilo: trabajador.hilo() }),
-    _mediciones: () => (estado === 'detenido' || !medicion ? null : { ...medicion, fallas: [...fallas], modo, activas }),
-    _destruir() {
+    // Contrato 1: lo que necesita la línea de estado. velocidad va de 0 a 1 (1 = al ritmo del chip real).
+    medidas: () => ({ ...medidas, estado, hilo: trabajador.hilo() }),
+    // Contrato 1: detiene la simulación, libera el Worker y suelta el lienzo. Después ya no se puede usar.
+    destruir() {
+      if (!vivo) return;
       this.detener();
       vivo = false;
+      cancelAnimationFrame(cuadro);
       trabajador.terminar();
     },
+    // Nombres del prototipo que TecnoBloques usó antes de que entraran al contrato: se conservan por ahora.
+    _medidas() {
+      return this.medidas();
+    },
+    _destruir() {
+      this.destruir();
+    },
+    // Solo del prototipo, fuera del contrato: voltajes y corrientes de cada pieza, para la tabla de mediciones.
+    _mediciones: () => (estado === 'detenido' || !medicion ? null : { ...medicion, fallas: [...fallas], modo, activas }),
   };
 }
 

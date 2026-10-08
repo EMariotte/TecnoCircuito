@@ -45,7 +45,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(300)
 
     api = pg.evaluate('({ v: TecnoCircuito.VERSION, s: typeof TecnoCircuito.crearSimulador })')
-    revisar(api == {'v': '0.0.4-prototipo', 's': 'function'}, f'API con crearSimulador: {api}')
+    revisar(api == {'v': '0.0.5-prototipo', 's': 'function'}, f'API con crearSimulador: {api}')
 
     # 1. Parpadeo en el pin 13 con el circuito bien armado
     pg.locator('#iniciar').click()
@@ -80,6 +80,7 @@ with sync_playwright() as p:
     pg.mouse.click(x, y)
     pg.keyboard.press('Delete')
     quedan = [c['a'] for c in pg.evaluate('lienzo.circuito().cables')]
+    pg.wait_for_timeout(150)  # la foto que ya venía del Worker todavía trae el LED prendido
     r = pg.evaluate(MUESTREO, 1.2)
     revisar('placa.GND1' not in quedan and r['prendido'] == 0, f'sin cable a GND el LED no prende (cables: {quedan})')
     revisar(r['l13'] > 0.3, 'el LED «L» de la placa sigue parpadeando: el programa no se detuvo')

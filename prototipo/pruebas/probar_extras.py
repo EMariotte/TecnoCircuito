@@ -78,6 +78,21 @@ with sync_playwright() as p:
     dibujando = pg.evaluate(f'!!{RAIZ}.querySelector(".tc-dibujando")')
     revisar(not dibujando and len(cables()) == 3, 'Esc cancela el cable a medio dibujar')
 
+    # Color con las teclas mientras se dibuja: 6 = azul (código de colores). Las teclas no salen del lienzo.
+    pg.evaluate('window._teclasFuera = []; document.addEventListener("keydown", e => window._teclasFuera.push(e.key))')
+    xr1, yr1 = centro('r1.1')
+    pg.mouse.click(x5, y5)
+    pg.keyboard.press('6')
+    trazo_azul = pg.evaluate(f'{RAIZ}.querySelector(".tc-previa .tc-cable-linea").getAttribute("stroke")')
+    activa = pg.evaluate(f'{RAIZ}.querySelector(".tc-muestra.tc-activa").dataset.color')
+    pg.mouse.click(xr1, yr1)
+    nuevo = cables()[-1]
+    revisar(trazo_azul == '#2f6fde' and activa == 'azul' and nuevo['color'] == 'azul' and nuevo['de'] == 'placa.5V',
+            f'tecla 6 mientras se dibuja: el cable nuevo sale azul ({nuevo["color"]}), no rojo como pide la convención para 5V')
+    pg.keyboard.press('Delete')
+    fuera = pg.evaluate('window._teclasFuera')
+    revisar(len(cables()) == 3 and fuera == [], f'Supr borra el cable y las teclas del lienzo no llegan a la página (Blockly): {fuera}')
+
     # Clic otra vez en el pin de salida: también cancela
     pg.mouse.click(x5, y5)
     pg.mouse.click(x5, y5)

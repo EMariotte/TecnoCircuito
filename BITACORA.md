@@ -258,3 +258,121 @@ Anotado desde la sesión de TecnoBloques, con el mismo título en las dos bitác
 - **Error encontrado y corregido aquí:** el serial perdía las tildes, porque cada byte se convertía por separado. Ahora se decodifica como UTF-8. Lo prueba `probar_nucleo.js` con el `.hex` real del eco de TecnoBloques: la primera fixture del contrato que se usa.
 - **Para el contrato:** se proponen `sim.destruir()` (TecnoBloques usa hoy `_destruir()`) y `sim.medidas()` (la línea de estado usa `_medidas()`). Anotados en `CONTRATO.md`.
 
+## 2026-10-07 — Ajustes de Efraín: colores de los cables, imagen SVG y tamaño del circuito
+
+Efraín pidió cinco ajustes después de ver las dos páginas conectadas. Antes de empezar se guardó un respaldo: `respaldos/prototipo-2026-10-07-antes-de-T1-T2-y-protoboard.zip`.
+
+- **Colores de los cables en el orden del código de colores:**
+  - son 10: 0 negro, 1 marrón, 2 rojo, 3 naranja, 4 amarillo, 5 verde, 6 azul, 7 violeta, 8 gris y 9 blanco;
+  - se agregaron marrón y gris, y «morado» se conserva como clave por los circuitos guardados;
+  - cada muestra lleva su número;
+  - **las teclas 0 a 9** cambian el color del cable elegido o del que se está dibujando, y las muestras también aparecen mientras se dibuja.
+- **Error de integración encontrado y corregido:** las teclas del lienzo seguían hasta la página, así que Supr en el circuito podía borrar también un bloque elegido en Blockly. Ahora el lienzo las detiene.
+- **Imagen SVG del circuito (`lienzo.exportarSVG()`):**
+  - copia el dibujo de cada pieza con sus estilos;
+  - pone un prefijo a los identificadores (dos LED usaban los mismos filtros);
+  - deja la perilla del potenciómetro girada como atributo, para que Word, LibreOffice o Inkscape la vean igual;
+  - lleva los cables encima y el fondo blanco.
+  - Prueba nueva `probar_svg.py`: XML válido, sin identificadores repetidos, referencias completas, la imagen carga sola y es fiel a la pantalla. El botón «Guardar imagen (SVG)» está en la página de prueba.
+- **El lienzo se vuelve a encuadrar cuando cambia de tamaño,** salvo que el aprendiz ya haya movido o acercado la vista a mano.
+- **Prueba ajustada:** `probar_simulacion.py` empezaba a mirar el LED en el mismo instante en que borraba el cable, y la foto que ya venía del Worker lo traía prendido. Ahora espera 150 ms.
+- **Pruebas:** `npm run probar` pasa los 8 grupos (motor y núcleo con Node, y seis en Chromium).
+
+## 2026-10-07 — Contrato 1: medidas(), destruir() y exportarSVG()
+
+Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrador y no sube el número.
+
+- **`sim.medidas()`** devuelve `{ msSimulados, msReales, velocidad, estado, hilo }`.
+- **`sim.destruir()`** detiene la simulación y libera el Worker.
+- Los nombres del prototipo (`_medidas`, `_destruir`) siguen funcionando, pero no son parte del contrato.
+- **`lienzo.exportarSVG()`** devuelve el circuito como texto SVG, tal como se ve.
+- TecnoBloques ya usa los tres; ver su bitácora.
+
+## 2026-10-07 — Tareas T1 y T2 completas en el simulador
+
+**T1 (LED y botón):**
+
+- **Pieza nueva `pulsador`** (dibujo de 12 mm de Wokwi, con las patas al paso de la protoboard). Las patas con el mismo número están unidas por dentro, y al presionar se une la 1 con la 2.
+- **Cómo se usa:** mientras la simulación corre, se mantiene presionado con el mouse. Detenida, se mueve como cualquier pieza. Si el mouse se sale del botón con el clic apretado, el botón se suelta.
+- **Lectura digital desde el circuito:** el núcleo resuelve el circuito cada vez que cambia un pin, el cableado o un botón, y escribe en el chip (`setPin` de avr8js) el nivel de cada entrada. Usa los umbrales del ATmega a 5 V: ALTO desde 3 V, BAJO hasta 1,5 V, y en medio conserva el nivel anterior.
+- **Entrada flotante (`entradaFlotante`):** una entrada sin ningún camino (cables, resistencias, potenciómetros o botones presionados) a 5V, a GND o a un pin que la maneje queda al aire. En modo realista cambia sola, en promedio cada 120 ms, así el LED se prende y se apaga a la vista. En modo ideal lee BAJO. La tabla de mediciones la marca «al aire» y sin voltaje medible.
+- **Ajuste hecho al probar:** con cambios cada 7 ms el LED se veía siempre a medias, porque el ojo (y el promedio por cuadro) lo suaviza. Se dejó en 120 ms, a la vista.
+- **Programas:** `boton_pulldown` (5V → botón → pin 2, con 10 kΩ a GND) y `boton_pullup` (botón a GND con `INPUT_PULLUP`). La página de prueba tiene el botón «Ejemplo con botón (T1)».
+
+**T2 (potenciómetro y brillo):**
+
+- **Ruido del ADC (`ruidoADC`):** cada `analogRead()` lleva un ruido de unos 0,6 pasos de desviación. Con la perilla al 50 % lee entre 511 y 514. En modo ideal, siempre 511.
+- **Entrada analógica al aire:** sin la pata del medio, A0 deambula al azar en modo realista y lee 0 en ideal. Sin GND, el potenciómetro no divide y lee 1023: eso es física y sale igual en los dos modos.
+- **Error corregido:** el primer `analogRead()` leía 0, porque el voltaje de A0 recién llegaba al chip con la primera foto, a los 16 ms. Ahora llega desde el arranque.
+
+**Lienzo:**
+
+- La barra queda siempre en una línea y se desplaza de lado si no cabe. Antes, al pasar a dos líneas, el área cambiaba de alto y la vista saltaba mientras se cableaba.
+- El re-encuadre automático solo actúa con cambios de tamaño de más del 10 %.
+
+**Pruebas:**
+
+- 11 comprobaciones nuevas en `probar_nucleo.js` (Node, con semilla para que el azar se repita) y 15 en `probar_t1t2.py` (Chromium, con el botón presionado con el mouse).
+- `npm run probar` pasa los 9 grupos. En TecnoBloques, `test:simulador` pasa 24 de 24.
+
+**Falta validar con la placa real** (regla 2), con dos programas nuevos:
+
+- `validar_adc`: el potenciómetro quieto en A0; da el mínimo, el máximo, el promedio y la desviación de 200 lecturas.
+- `validar_flotante`: el pin 2 sin nada; da cuántas veces cambia en 2 s y qué parte del tiempo lee ALTO.
+
+Con eso se ajustan `RUIDO_ADC_V` y `CAMBIO_AL_AIRE_POR_MS` en `src/nucleo.js`.
+
+## 2026-10-07 — Contrato 1: botón, colores y entradas (T1 y T2)
+
+Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrador y no sube el número.
+
+- **Sección 4:** tabla de piezas con sus pines y `props` (`resistencia`, `led`, `potenciometro` y el nuevo `pulsador`) y los 10 colores de cable en el orden del código de colores (`marron` y `gris` son nuevos).
+- **Sección 6:** evento nuevo `boton_pulsado` (`{ id, ms }`, origen `circuito`).
+- **Sección 7:** `entradaFlotante` cubre la entrada digital y la analógica. `ruidoADC` queda descrito.
+- **Para TecnoBloques no cambia nada:** guarda el circuito sin interpretarlo y escribe los eventos que le lleguen.
+
+## 2026-10-07 — Prototipo 4: la protoboard
+
+La interfaz de la protoboard era el último riesgo técnico grande que no se había tocado.
+
+- **Dibujo propio** (`src/protoboard.js`), porque @wokwi/elements no trae protoboard. Es la media de 400 puntos del kit:
+  - 30 columnas, con las filas a–e y f–j separadas por el canal central (0,3");
+  - dos rieles arriba y dos abajo, de 25 huecos cada uno;
+  - líneas roja y azul, signos + y −, y números y letras como vienen impresos.
+- **Huecos con nombre:** `a1` … `j30` y los rieles `s+N`, `s-N`, `i+N`, `i-N`. Las tiras unidas por dentro entran al cálculo de nodos, así que el motor eléctrico, la entrada flotante y las mediciones funcionan igual que con cables.
+- **Encajar piezas:**
+  - al soltar una pieza sobre la protoboard, si todas sus patas caen cerca de huecos libres, se corre lo justo para quedar en ellos, y su campo `en` dice qué pata va en qué hueco;
+  - mientras se arrastra, los huecos donde quedaría se ven en verde;
+  - un hueco ocupado no recibe otra pata;
+  - al girar con R, se re-encaja o queda suelta.
+  - Los dibujos de Wokwi no tienen las patas a 0,1" exactas (el LED a 10 px, la resistencia a 58,8), así que se tolera hasta 3,5 px.
+- **Para aprender:** al pasar el mouse por un hueco, o por una pata encajada, se ilumina toda su tira (5 huecos o el riel completo). El rótulo dice «unido por dentro con a15–e15» o «todo el riel está unido», más el voltaje si se está simulando.
+- **Mover la protoboard** mueve las piezas encajadas con ella. **Borrarla** deja las piezas sueltas y quita los cables que llegaban a sus huecos.
+- **Cables a la protoboard:** un cable a un riel − sale negro y a un riel + sale rojo.
+- **«+ Agregar»:** un solo botón abre el menú de piezas (LED, Resistencia, Potenciómetro, Botón y Protoboard). Con cinco botones, la barra no cabía en el panel de TecnoBloques, y en 2027 vendrán más piezas.
+- **Ejemplo en protoboard (T1)** en la página de prueba: el LED con su resistencia, y el botón girado cruzando el canal central con su pull-down al riel − de abajo.
+
+**Errores encontrados y corregidos al probar:**
+
+- **Los huecos tapaban las piezas.** Estaban en la capa de pines, encima de todo, así que un clic en el cuerpo de una pieza suelta sobre la protoboard empezaba un cable. Ahora van dentro del dibujo de la protoboard, debajo de las piezas. Un hueco con un cable ya conectado no recibe otro, como en la real.
+- **La protoboard no se podía elegir, mover ni borrar,** porque el lienzo le buscaba un `id` y no lo tiene (no es un componente).
+- **La barra cambiaba de alto según lo elegido** (con «Borrar» era más alta). Al empezar un cable, la vista se corría 6 px y el doblez caía mal. Ahora tiene altura fija, y las opciones de la pieza se desplazan dentro de su espacio sin tapar el zoom.
+- **En modo ideal, con la perilla al 50 %, la lectura saltaba entre 511 y 512** por un error de redondeo de una milmillonésima de voltio, justo en el borde de 2,5 V. El ADC redondea el voltaje al microvoltio, y ahora da 512 fijo.
+
+**Pruebas:**
+
+- `probar_protoboard.py`: 21 comprobaciones en Chromium.
+- 2 nuevas del motor con Node: el LED en la protoboard da los mismos 12,50 mA que con cables, y con la resistencia en la otra mitad no pasa corriente.
+- `npm run probar` pasa los 10 grupos. En TecnoBloques, `test:simulador` pasa 24 de 24.
+- `VERSION` del paquete: `0.0.5-prototipo`.
+
+**Falta:** probar la protoboard con dos o tres aprendices. Es la prueba que dice si la interfaz es fácil.
+
+## 2026-10-07 — Contrato 1: protoboard
+
+Anotado con el mismo título en las dos bitácoras. El contrato sigue en borrador y no sube el número.
+
+- **Nueva sección 4.0:** el campo `protoboard` (`{ tipo: "media", x, y }` o `null`), los nombres de los huecos (`a1` … `j30`, `s+N`, `s-N`, `i+N`, `i-N`) y el campo opcional `en` de cada pieza (qué pata va en qué hueco), que es lo que manda para la conexión.
+- **Eventos:** mover, agregar y quitar la protoboard salen como `componente_*` con `id: "protoboard"`. Encajar o soltar una pieza sale en `componente_cambiado` con su `en`.
+- **Para TecnoBloques no cambia nada:** guarda el circuito sin interpretarlo.
+

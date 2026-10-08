@@ -1,6 +1,7 @@
 // Traduce el circuito del contrato y el estado de los pines del chip a una red eléctrica (motor/mna.js),
 // la resuelve, mide cada pieza y revisa las fallas. No toca la página.
 import { calcularNodos } from '../conexiones.js';
+import { huecos } from '../protoboard.js';
 import { resistencia, fuenteConResistencia, fuenteVoltaje, diodo, resolver, VT } from './mna.js';
 import { PinState } from 'avr8js';
 
@@ -33,11 +34,13 @@ export function modeloLed(color) {
   return { Is: LED.iRef / Math.expm1(vUnion / (LED.n * VT)), n: LED.n };
 }
 
-const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'] };
+const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1i', '1d', '2i', '2d'] };
 
-// Arma la red una vez por cableado. Cambiar los pines (ponerPines) no la rehace: solo cambia las fuentes.
-export function armarRed(circuito, { quemados = new Set() } = {}) {
-  const raiz = calcularNodos(circuito);
+// Arma la red una vez por cableado (y por botones presionados). Cambiar los pines (ponerPines) no la rehace:
+// solo cambia las fuentes. Un botón presionado une sus patas 1 y 2: es parte del cableado de ese momento.
+export function armarRed(circuito, { quemados = new Set(), presionados = new Set() } = {}) {
+  const raiz = calcularNodos(circuito, { presionados });
+  const conduce = calcularNodos(circuito, { presionados, conduccion: true }); // para saber qué entradas flotan
   const tierra = raiz('placa.GND1');
   const indices = new Map();
   let n = 0;
@@ -53,6 +56,17 @@ export function armarRed(circuito, { quemados = new Set() } = {}) {
   const fuentes = [];
   const fallasFijas = [];
   const usados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
+  // Huecos de la protoboard cuya tira toca algo (un cable o una pata encajada): el rótulo de cualquiera de ellos
+  // muestra el voltaje de la tira, como la punta de un multímetro.
+  const huecosConAlgo = [];
+  if (circuito.protoboard) {
+    const raices = new Set([...usados].map(raiz));
+    for (const c of circuito.componentes) for (const pata of Object.keys(c.en || {})) raices.add(raiz(c.id + '.' + pata));
+    for (const h of huecos(circuito.protoboard.tipo)) {
+      const ref = 'protoboard.' + h.nombre;
+      if (raices.has(raiz(ref))) huecosConAlgo.push(ref);
+    }
+  }
 
   // 5 V y 3,3 V de la placa: fuentes de voltaje ideales.
   const nodosFuente = new Map();
@@ -113,8 +127,36 @@ export function armarRed(circuito, { quemados = new Set() } = {}) {
   }
   fuentes.forEach((f, i) => (f.fila = n + i));
 
+  // Grupos (por conducción) que tienen algo que fija su voltaje: GND, 5V, 3,3V, un pin de salida o una pull-up.
+  function gruposManejados(estados) {
+    const manejados = new Set([conduce('placa.GND1')]);
+    for (const p of ['5V', '3V3']) if (usados.has('placa.' + p)) manejados.add(conduce('placa.' + p));
+    for (const pin of PINES_UNO) {
+      const e = estados[pin];
+      if (e === PinState.High || e === PinState.Low || e === PinState.InputPullUp) manejados.add(conduce('placa.' + pin));
+    }
+    return manejados;
+  }
+  const todasLasRefs = new Set([...usados, ...huecosConAlgo]);
+  for (const c of circuito.componentes) for (const p of PATAS[c.tipo] || []) todasLasRefs.add(c.id + '.' + p);
+
   return {
     fallasFijas,
+    // Entradas flotantes: pines en modo entrada (sin pull-up) sin ningún camino, por cables, resistencias,
+    // potenciómetros o botones presionados, a GND, a 5V, a 3,3V o a un pin que los maneje. Leen al azar.
+    flotantes(estados) {
+      const manejados = gruposManejados(estados);
+      const r = new Set();
+      for (const pin of PINES_UNO) if (estados[pin] === PinState.Input && !manejados.has(conduce('placa.' + pin))) r.add(pin);
+      return r;
+    },
+    // Puntas (cables y patas de las piezas) que quedan al aire: un multímetro no mediría un voltaje fijo ahí.
+    refsAlAire(estados) {
+      const manejados = gruposManejados(estados);
+      const r = new Set();
+      for (const ref of todasLasRefs) if (!manejados.has(conduce(ref))) r.add(ref);
+      return r;
+    },
     // Pone cada pin como lo dejó el programa.
     ponerPines(estados) {
       for (const [pin, f] of Object.entries(pines)) {
@@ -134,6 +176,7 @@ export function armarRed(circuito, { quemados = new Set() } = {}) {
       };
       const voltajes = {};
       for (const ref of usados) voltajes[ref] = V(ref);
+      for (const ref of huecosConAlgo) voltajes[ref] = V(ref);
       for (const c of circuito.componentes) {
         for (const p of PATAS[c.tipo] || []) {
           voltajes[c.id + '.' + p] = V(c.id + '.' + p);

@@ -15,6 +15,7 @@ import {
   usart0Config,
   AVRADC,
   adcConfig,
+  ADCMuxInputType,
   PinState,
 } from 'avr8js';
 import { leerHex } from './hex.js';
@@ -40,6 +41,28 @@ export function crearChip(hex) {
   // analogRead(): el ADC lee el voltaje que el circuito deja en A0–A5 (lo pone ponerAnalogico).
   const adc = new AVRADC(cpu, adcConfig);
   const puertos = PINES_UNO.map(([config, nombres]) => [new AVRIOPort(cpu, config), nombres]);
+  const dondeEsta = {}; // pin → [puerto, bit], para poner el nivel de una entrada
+  for (const [puerto, nombres] of puertos) nombres.forEach((nombre, bit) => (dondeEsta[nombre] = [puerto, bit]));
+  // Cada analogRead() le pregunta al núcleo qué voltaje lee (ahí entran el ruido y la entrada al aire).
+  // Si nadie responde, se lee el voltaje que dejó ponerAnalogico, como hace avr8js por omisión.
+  let lectorAnalogico = null;
+  adc.onADCRead = (entrada) => {
+    let voltios = 0;
+    if (entrada.type === ADCMuxInputType.SingleEnded) {
+      const base = adc.channelValues[entrada.channel] || 0;
+      voltios = lectorAnalogico ? lectorAnalogico(entrada.channel, base) : base;
+    } else if (entrada.type === ADCMuxInputType.Constant) {
+      voltios = entrada.voltage;
+    } else if (entrada.type === ADCMuxInputType.Temperature) {
+      voltios = 0.378125; // 25 °C, como avr8js
+    }
+    // Redondeado al microvoltio: justo en el borde entre dos pasos (2,5 V = 512), un error de cálculo de una
+    // milmillonésima de voltio haría saltar la lectura entre 511 y 512 sin ruido de por medio.
+    const exacto = Math.round(voltios * 1e6) / 1e6;
+    const valor = Math.min(1023, Math.max(0, Math.floor((exacto / adc.referenceVoltage) * 1024)));
+    cpu.addClockEvent(() => adc.completeADCRead(valor), adc.sampleCycles);
+  };
+  const alMs = [];
 
   const alPines = [];
   const alByte = [];
@@ -77,6 +100,7 @@ export function crearChip(hex) {
         usart.writeByte(colaEntrada[0]); // si el programa no abrió el serial, el byte se pierde, como en la placa
         colaEntrada.shift();
       }
+      for (const fn of alMs) fn(); // cada 1 ms simulado (ruido de las entradas al aire)
     }
   }
 
@@ -91,5 +115,13 @@ export function crearChip(hex) {
     enviarSerial: (texto) => colaEntrada.push(...new TextEncoder().encode(texto)),
     // Voltaje (0 a 5 V) que verá analogRead() en el canal 0–5 (A0–A5).
     ponerAnalogico: (canal, voltios) => (adc.channelValues[canal] = Math.max(0, Math.min(5, voltios))),
+    // fn(canal, voltiosDelCircuito) → voltios que lee esta conversión.
+    ponerLectorAnalogico: (fn) => (lectorAnalogico = fn),
+    // Nivel que verá digitalRead() en un pin de entrada (true = ALTO).
+    ponerEntrada(pin, nivel) {
+      const lugar = dondeEsta[pin];
+      if (lugar) lugar[0].setPin(lugar[1], !!nivel);
+    },
+    alCadaMs: (fn) => alMs.push(fn),
   };
 }

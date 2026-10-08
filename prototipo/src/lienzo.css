@@ -74,12 +74,16 @@
 
 /* Barra */
 
+/* Siempre en una línea: si la barra creciera a dos líneas, el área cambiaría de alto y la vista saltaría
+   mientras el aprendiz cablea. Si no cabe, se desplaza de lado. */
 .tc-barra {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
   align-items: center;
   gap: 8px 12px;
-  min-height: 50px;
+  height: 54px; /* fija: si cambiara con lo elegido, la vista se correría bajo el mouse */
   padding: 8px 10px;
   background: var(--barra);
   border-bottom: 1px solid var(--borde);
@@ -94,9 +98,18 @@
 
 .tc-sel {
   flex: 1 1 auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px 8px;
   min-width: 0;
+  overflow-x: auto; /* si las opciones de la pieza no caben, se desplazan aquí sin tapar el zoom */
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  padding: 3px 2px; /* el anillo de la muestra elegida no se corta */
+}
+
+.tc-barra > .tc-grupo,
+.tc-sel > * {
+  flex: none;
 }
 
 .tc-etiqueta {
@@ -128,13 +141,17 @@
   outline-offset: 1px;
 }
 
+/* Muestra de color con su número del código de colores (la tecla que la elige) */
 .tc .tc-muestra {
+  display: inline-grid;
+  place-items: center;
   width: 24px;
   height: 24px;
   min-height: 0;
   padding: 0;
   border-radius: 50%;
   border: 2px solid var(--borde);
+  font: 700 11px/1 system-ui, "Segoe UI", sans-serif;
 }
 
 .tc .tc-muestra.tc-activa {
@@ -366,4 +383,76 @@
 .tc-solo-lectura .tc-agregar,
 .tc-solo-lectura .tc-pin {
   display: none;
+}
+
+/* Mientras corre la simulación, los botones se presionan con el mouse */
+.tc.tc-simulando .tc-comp[data-tipo="pulsador"] {
+  cursor: pointer;
+}
+
+/* Protoboard (prototipo 4) */
+.tc-comp.tc-protoboard {
+  cursor: grab;
+}
+
+.tc .tc-pin.tc-hueco {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+}
+
+.tc-dibujando .tc-pin.tc-hueco {
+  box-shadow: none;
+}
+
+.tc .tc-pin.tc-ocupado {
+  pointer-events: none;
+}
+
+/* La tira que está unida por dentro con el hueco que se señala */
+.tc .tc-pin.tc-tira {
+  background: rgba(46, 158, 68, 0.3);
+  box-shadow: 0 0 0 1.3px #2e9e44;
+}
+
+/* Los huecos donde quedaría la pieza que se está arrastrando */
+.tc .tc-pin.tc-destino {
+  background: rgba(46, 158, 68, 0.6);
+  box-shadow: 0 0 0 1.8px #1f7a32;
+}
+
+/* Menú «+ Agregar» */
+.tc-menu {
+  position: absolute;
+  z-index: 10;
+  display: grid;
+  min-width: 160px;
+  padding: 4px;
+  background: var(--barra);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.tc-menu[hidden] {
+  display: none;
+}
+
+.tc .tc-menu button {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  padding: 6px 10px;
+}
+
+.tc .tc-menu button:hover,
+.tc .tc-menu button:focus-visible {
+  background: var(--boton-hover);
+}
+
+.tc .tc-menu button[disabled] {
+  color: var(--suave);
+  cursor: default;
+  background: transparent;
 }

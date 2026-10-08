@@ -32,7 +32,7 @@ with sync_playwright() as p:
     pg.screenshot(path=str(SALIDA / '1_inicio.png'))
 
     api = pg.evaluate('({ v: TecnoCircuito.VERSION, c: TecnoCircuito.CONTRATO, p: TecnoCircuito.PLACAS })')
-    revisar(api == {'v': '0.0.4-prototipo', 'c': 1, 'p': ['uno']}, f'API del contrato: {api}')
+    revisar(api == {'v': '0.0.5-prototipo', 'c': 1, 'p': ['uno']}, f'API del contrato: {api}')
     pines = pg.locator('.tc-pin').count()
     revisar(pines == 31 + 2 + 2, f'pines dibujados: {pines} (31 de la placa + 2 + 2)')
     desfases = pg.evaluate('''() => [...document.querySelector("main .tecnocircuito").shadowRoot.querySelectorAll(".tc-comp")]
@@ -117,16 +117,22 @@ with sync_playwright() as p:
 
     # Seleccionar el cable 1 por la mitad de su tramo vertical (lejos del cable de GND) y borrarlo con Supr
     pg.mouse.click(xd, yd - 30)
-    revisar(pg.locator('.tc-muestra').count() == 8, 'al elegir un cable aparecen los 8 colores')
+    orden = pg.evaluate('[...document.querySelector("main .tecnocircuito").shadowRoot.querySelectorAll(".tc-muestra")].map(b => b.textContent + b.dataset.color)')
+    revisar(orden == ['0negro', '1marron', '2rojo', '3naranja', '4amarillo', '5verde', '6azul', '7morado', '8gris', '9blanco'],
+            f'al elegir un cable aparecen los 10 colores en el orden del código, con su número: {orden}')
     pg.locator('.tc-muestra[data-color="naranja"]').click()
-    revisar(pg.evaluate('lienzo.circuito().cables[0].color') == 'naranja', 'cable 1 pasa a naranja')
+    revisar(pg.evaluate('lienzo.circuito().cables[0].color') == 'naranja', 'cable 1 pasa a naranja con la muestra')
+    pg.keyboard.press('2')
+    revisar(pg.evaluate('lienzo.circuito().cables[0].color') == 'rojo', 'la tecla 2 lo pone rojo (código de colores)')
+    pg.keyboard.press('3')
     pg.screenshot(path=str(SALIDA / '3b_cable_elegido.png'))
     pg.mouse.click(xd, yd - 30)
     pg.keyboard.press('Delete')
     revisar(len(pg.evaluate('lienzo.circuito().cables')) == 2, 'Supr borra el cable elegido')
 
     # Agregar un LED desde la barra
-    pg.get_by_text('+ LED').click()
+    pg.get_by_role('button', name='+ Agregar').click()
+    pg.get_by_role('menuitem', name='LED', exact=True).click()
     ids = [k['id'] for k in pg.evaluate('lienzo.circuito()')['componentes']]
     revisar(ids == ['r1', 'led1', 'led2'], f'+ LED agrega led2: {ids}')
 

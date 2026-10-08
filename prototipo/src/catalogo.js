@@ -1,22 +1,28 @@
 // Catálogo del prototipo: qué dibujo de @wokwi/elements usa cada pieza, cómo se llaman sus pines
 // en el contrato y qué lee el aprendiz al pasar el mouse por un pin.
 
+// En el orden del código de colores de las resistencias: la tecla 0 a 9 elige el color de ese número.
+// Las claves son las del contrato; «morado» se conserva por los circuitos ya guardados y se muestra como violeta.
 export const COLORES_CABLE = {
-  verde: '#2e9e44',
-  rojo: '#d7263d',
-  negro: '#2b2b2b',
-  azul: '#2f6fde',
-  amarillo: '#e8c20c',
-  naranja: '#f28c28',
-  morado: '#8e44ad',
-  blanco: '#f4f4f4',
+  negro: '#2b2b2b', // 0
+  marron: '#8b5a2b', // 1
+  rojo: '#d7263d', // 2
+  naranja: '#f28c28', // 3
+  amarillo: '#e8c20c', // 4
+  verde: '#2e9e44', // 5
+  azul: '#2f6fde', // 6
+  morado: '#8e44ad', // 7
+  gris: '#9aa0a6', // 8
+  blanco: '#f4f4f4', // 9
 };
+export const CODIGO_COLORES = Object.keys(COLORES_CABLE); // posición = número del código
+export const NOMBRE_COLOR = { marron: 'marrón', morado: 'violeta' }; // el resto se escribe igual que la clave
 
 // Convención del aula: negro a tierra, rojo al positivo, verde para señales.
 export function colorPorDefecto(de, a) {
   const refs = [de, a];
-  if (refs.some((r) => /^placa\.GND/.test(r))) return 'negro';
-  if (refs.some((r) => /^placa\.(5V|3V3|VIN)$/.test(r))) return 'rojo';
+  if (refs.some((r) => /^placa\.GND/.test(r) || /^protoboard\.[si]-/.test(r))) return 'negro'; // GND o riel −
+  if (refs.some((r) => /^placa\.(5V|3V3|VIN)$/.test(r) || /^protoboard\.[si]\+/.test(r))) return 'rojo'; // 5V o riel +
   return 'verde';
 }
 
@@ -84,6 +90,30 @@ export const TIPOS = {
     },
     aplicar(el, props) {
       el.color = { rojo: 'red', verde: 'green', amarillo: 'yellow', azul: 'blue', blanco: 'white' }[props.color] || 'red';
+    },
+  },
+  // Tarea T1. Botón de 4 patas: las dos patas con el mismo número están unidas por dentro (1i con 1d, 2i con 2d)
+  // y al presionar se une la 1 con la 2. Se presiona con el mouse mientras la simulación corre.
+  pulsador: {
+    nombre: 'Botón',
+    etiqueta: 'wokwi-pushbutton',
+    prefijo: 'btn',
+    props: { color: 'rojo' },
+    nombrePin: (n) => ({ '1.l': '1i', '1.r': '1d', '2.l': '2i', '2.r': '2d' })[n],
+    rotulo: (pin) =>
+      ({
+        '1i': 'pata 1 · unida por dentro con la otra pata 1',
+        '1d': 'pata 1 · unida por dentro con la otra pata 1',
+        '2i': 'pata 2 · unida por dentro con la otra pata 2',
+        '2d': 'pata 2 · unida por dentro con la otra pata 2',
+      })[pin] || pin,
+    campo: {
+      prop: 'color',
+      etiqueta: 'Color',
+      opciones: [['rojo', 'Rojo'], ['verde', 'Verde'], ['azul', 'Azul'], ['amarillo', 'Amarillo'], ['blanco', 'Blanco'], ['negro', 'Negro']],
+    },
+    aplicar(el, props) {
+      el.color = { rojo: 'red', verde: 'green', azul: 'blue', amarillo: 'yellow', blanco: 'white', negro: 'black' }[props.color] || 'red';
     },
   },
   // Prototipo 3 (tarea T2). «posicion» va de 0 (perilla hacia GND) a 1 (hacia VCC).

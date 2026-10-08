@@ -2,7 +2,7 @@
 // La página solo dibuja. Así el chip puede usar un núcleo completo del procesador sin congelar la página
 // ni competir con Blockly, y la velocidad no depende de cuánto tarde la página en dibujar.
 //
-// Mensajes que recibe: crear, iniciar, pausar, reiniciar, detener, circuito, serial.
+// Mensajes que recibe: crear, iniciar, pausar, reiniciar, detener, circuito, serial, pulsador.
 // Mensajes que manda: listo, foto, error. Cada foto lleva la «corrida» con la que se pidió, para que la página
 // descarte las que llegan tarde (de antes de pausar, detener o reiniciar).
 import { crearNucleo, FRECUENCIA } from './nucleo.js';
@@ -113,6 +113,10 @@ self.onmessage = (e) => {
         break;
       case 'serial':
         nucleo.enviarSerial(m.texto);
+        break;
+      case 'pulsador':
+        nucleo.ponerPulsador(m.id, m.presionado);
+        if (!corriendo) enviarFoto(); // en pausa también se ve el cambio
         break;
     }
   } catch (err) {

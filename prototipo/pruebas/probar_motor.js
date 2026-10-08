@@ -103,6 +103,30 @@ function medir(circuito, estados = { D13: PinState.High }) {
   revisar(todas, `converge en los 60 casos (5 colores × 12 resistencias), peor caso: ${peor} vueltas`);
 }
 
+// 9b. Protoboard (prototipo 4): las patas encajadas y las tiras unen igual que los cables
+{
+  const pb = (resistenciaEn) => ({
+    formato: 1,
+    placa: 'uno',
+    protoboard: { tipo: 'media', x: 300, y: 30 },
+    componentes: [
+      { id: 'r1', tipo: 'resistencia', props: { ohmios: 220 }, en: resistenciaEn },
+      { id: 'led1', tipo: 'led', props: { color: 'rojo' }, en: { catodo: 'protoboard.a12', anodo: 'protoboard.a13' } },
+    ],
+    cables: [
+      { de: 'placa.D13', a: 'protoboard.a19' },
+      { de: 'protoboard.e12', a: 'protoboard.i-12' },
+      { de: 'protoboard.i-2', a: 'placa.GND2' },
+    ],
+  });
+  const directo = medir(circuitoLed()).leds[0].i;
+  const enTira = medir(pb({ 1: 'protoboard.c13', 2: 'protoboard.c19' })).leds[0].i;
+  revisar(Math.abs(enTira - directo) < 1e-9, `en la protoboard el LED con 220 Ω da lo mismo que con cables: ${mA(enTira)}`);
+  // La misma resistencia en la otra mitad (f–j): el canal central corta la tira, así que no hay circuito
+  const cortado = medir(pb({ 1: 'protoboard.g13', 2: 'protoboard.g19' })).leds[0].i;
+  revisar(Math.abs(cortado) < 1e-9, `con la resistencia en la otra mitad (f–j) no pasa corriente: el canal central separa las tiras (${mA(cortado)})`);
+}
+
 // 10. Tiempo por solución
 {
   const red = armarRed(circuitoLed());
