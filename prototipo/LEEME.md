@@ -17,7 +17,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
 
 - **Cables:** clic en un pin para empezar, clic en el espacio libre para doblar el cable y clic en otro pin para terminar. También se puede arrastrar de un pin a otro. Esc cancela.
 - **Cable elegido:** cambiar el color, arrastrar sus dobleces, agregar un doblez con doble clic sobre el cable o quitarlo con doble clic sobre el doblez. Supr borra el cable.
-- **Piezas:** «+ Agregar» abre el menú (LED, Resistencia, Potenciómetro, Botón, Servo y Protoboard). Las piezas se arrastran, se giran con R y se borran con Supr. Se puede cambiar el color del LED y del botón, y el valor de la resistencia o del potenciómetro. La perilla se gira con el mouse sobre el dibujo o con el deslizador de la barra.
+- **Piezas:** «+ Agregar» abre el menú (LED, Resistencia, Potenciómetro, Botón, Servo, Motor TT, Shield L293D, Batería LiPo 2S y Protoboard). La shield va montada sobre el Uno: no se mueve ni se gira, y hay una sola. El motor tiene dos vistas (solo el eje con sus RPM, o con la rueda y hacia dónde avanzaría) y un lado del robot (izquierdo o derecho); la batería, tres cargas (llena 8,4 V, nominal 7,4 V y descargada 6,4 V). Las piezas se arrastran, se giran con R y se borran con Supr. Se puede cambiar el color del LED y del botón, y el valor de la resistencia o del potenciómetro. La perilla se gira con el mouse sobre el dibujo o con el deslizador de la barra.
 - **Colores de cable:** 10, en el orden del código de colores. Con un cable elegido o mientras se dibuja, las teclas 0 a 9 eligen el color (0 negro, 1 marrón, 2 rojo… 9 blanco).
 - **Protoboard:**
   - al soltar una pieza encima, sus patas se encajan en los huecos libres más cercanos (mientras se arrastra se ven en verde);
@@ -28,7 +28,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
 - **Vista:** la rueda del mouse hace zoom y arrastrar el fondo mueve la vista.
 - **Simulación:**
   - elige el programa (parpadeo, PWM, potenciómetro, botón con pull-down o con pull-up interna, y los dos de validación) y el modo (realista o ideal), y usa Iniciar, Pausar, Reiniciar y Detener;
-  - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)», «Ejemplo con potenciómetro (T2)», «Ejemplo con servo (T3)» y «Cuatro servos en el USB (T3)» arman el circuito de cada tarea y eligen su programa;
+  - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)», «Ejemplo con potenciómetro (T2)», «Ejemplo con servo (T3)», «Cuatro servos en el USB (T3)», «Seis servos en el USB (T3)» y «Carro con la shield L293D (T3)» arman el circuito de cada tarea y eligen su programa;
   - mientras corre, los botones se presionan manteniendo el clic sobre ellos;
   - **la mano es el mouse:** en modo realista, el mouse sobre el cable o el pin de una entrada al aire hace que esta capte la red de 60 Hz, como la mano cerca de la placa real;
   - el cableado y los valores se pueden cambiar mientras corre;
@@ -84,6 +84,18 @@ Los valores del servo y del USB son de partida (hojas de datos y valores típico
 
 Las medidas van a `validacion/` y se vuelven pruebas, como las del LED.
 
+## Validar la shield L293D y el motor TT con la placa real
+
+Los valores del motor TT y de la caída del L293D son de hojas de datos. Con el kit (shield L293D Rev4, motores TT amarillos de 6 V y la LiPo 2S) se ajustan así, con «Validar: carro con la shield L293D» (`programas/carro_motores`, AFMotor_R4: M1 y M4 2 s adelante a 200, 1 s quietos, 2 s atrás a 255 y 1 s quietos):
+
+1. **Voltaje de la batería** (multímetro en EXT_PWR) quieta y con los motores girando. El simulador usa 8,4 / 7,4 / 6,4 V y 0,05 Ω de resistencia interna (`LIPO` en `src/piezas/bateria_lipo.js`).
+2. **Caída del L293D** (multímetro entre los dos bornes de M1, con el motor girando «atrás 255»): el simulador da 8,4 − 1,57 = 6,8 V con la batería llena (`SHIELD.caidaV` y `caidaPorA` en `src/potencia.js`).
+3. **Motor TT sin carga** (rueda en el aire): la corriente (multímetro en serie con un cable del motor) y las RPM (contando vueltas de la rueda en 10 s, o con el celular en cámara lenta). El simulador: unos 130 mA y 180 RPM a 200, 227 RPM a 255 (`MOTOR_TT` en `src/piezas/motor_tt.js`).
+4. **Motor bloqueado** (rueda frenada con la mano, máximo 1 s): la corriente de arranque. El simulador usa 1,2 A a 6 V.
+5. **Hacia dónde gira cada rueda** con FORWARD, con los dos motores cableados igual (rojo en A): en el simulador, la del lado derecho va hacia atrás.
+
+Las medidas van a `validacion/` y se vuelven pruebas.
+
 ## Llevar el circuito a KiCad
 
 1. Arma el circuito (por ejemplo, «Ejemplo en protoboard (T1)») y pulsa «Guardar netlist (KiCad)».
@@ -103,4 +115,4 @@ Ver [RECETA-COMPONENTE-NUEVO.md](RECETA-COMPONENTE-NUEVO.md): los 10 pasos que s
 
 ## Qué no hace
 
-Solo dibuja y simula el Uno y la media protoboard. Todavía no tiene la tarea T3 (shield L293D, motor y servo) ni los módulos de 2027.
+Solo dibuja y simula el Uno y la media protoboard. De la tarea T3 ya tiene el servo, la energía del USB, la shield L293D, el motor TT y la batería LiPo 2S; falta validarlos con la placa real (arriba). La netlist de KiCad todavía no incluye la shield, el motor ni la batería. No tiene los módulos de 2027.

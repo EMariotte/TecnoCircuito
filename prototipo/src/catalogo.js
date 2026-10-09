@@ -3,6 +3,9 @@
 // Las piezas Tecno (dibujo propio, sin Wokwi) traen `dibujo` en vez de `etiqueta`: ver src/piezas/.
 
 import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
+import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, dibujarShield } from './piezas/shield_l293d.js';
+import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/motor_tt.js';
+import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
 
 // En el orden del código de colores de las resistencias: la tecla 0 a 9 elige el color de ese número.
 // Las claves son las del contrato; «morado» se conserva por los circuitos ya guardados y se muestra como violeta.
@@ -151,6 +154,62 @@ export const TIPOS = {
     mostrar(el, estado) {
       const brazo = el.querySelector('[data-brazo]');
       if (brazo) brazo.setAttribute('transform', giroBrazo(estado && typeof estado.angulo === 'number' ? estado.angulo : 90));
+    },
+  },
+  // Tarea T3. Pieza Tecno: la shield de motores L293D (src/piezas/shield_l293d.js). Va montada sobre el Uno: no se
+  // arrastra ni se gira, y hay una sola. Sus pines son los bornes de los motores, EXT_PWR y los conectores de servo.
+  shield_l293d: {
+    nombre: 'Shield L293D',
+    prefijo: 'shield',
+    montada: true,
+    props: { puentePWR: true },
+    dibujo: { ancho: TAMANO_SHIELD.ancho, alto: TAMANO_SHIELD.alto, pines: PINES_SHIELD, svg: (props) => dibujarShield(props.puentePWR !== false) },
+    rotulo: (pin) => ROTULOS_SHIELD[pin] || pin,
+    campos: [{ prop: 'puentePWR', etiqueta: 'Puente PWR', opciones: [[true, 'puesto (la batería también alimenta el Uno)'], [false, 'quitado']] }],
+    aplicar(el, props) {
+      const nuevo = new DOMParser().parseFromString(dibujarShield(props.puentePWR !== false), 'image/svg+xml').documentElement;
+      el.replaceChildren(...[...nuevo.childNodes].map((n) => el.ownerDocument.importNode(n, true)));
+    },
+    // Mientras se simula, el LED de la shield se prende si los motores tienen energía.
+    mostrar(el, estado) {
+      const led = el.querySelector('[data-led-pwr]');
+      const color = estado && estado.motoresV > 1 ? '#3ddc5a' : '#1f5a2c';
+      if (led && led.getAttribute('fill') !== color) led.setAttribute('fill', color);
+    },
+  },
+  // Tarea T3. Pieza Tecno: motorreductor TT de 6 V (src/piezas/motor_tt.js), con dos vistas y su lado del robot.
+  // La vista cambia el tamaño del dibujo: el lienzo lo rehace al cambiarla (dibujo.marco).
+  motor_tt: {
+    nombre: 'Motor TT',
+    prefijo: 'motor',
+    props: { vista: 'eje', lado: 'izquierdo' },
+    dibujo: {
+      marco: (props) => ({ ...vistaMotor(props), pines: pinesMotor(props) }),
+      svg: (props) => dibujarMotor(props),
+    },
+    rotulo: (pin) => ({ A: 'borne A del motor (cable rojo)', B: 'borne B del motor (cable negro)' })[pin] || pin,
+    campos: [
+      { prop: 'vista', etiqueta: 'Vista', opciones: [['eje', 'solo el eje (RPM)'], ['rueda', 'con la rueda']] },
+      { prop: 'lado', etiqueta: 'Lado del robot', opciones: [['izquierdo', 'izquierdo'], ['derecho', 'derecho']] },
+    ],
+    mostrar(el, estado, props) {
+      mostrarMotor(el, props || {}, estado);
+    },
+  },
+  // Tarea T3. Pieza Tecno: batería LiPo 2S (src/piezas/bateria_lipo.js), con tres estados de carga.
+  bateria_lipo: {
+    nombre: 'Batería LiPo 2S',
+    prefijo: 'bateria',
+    props: { carga: 'nominal' },
+    dibujo: { ancho: TAMANO_LIPO.ancho, alto: TAMANO_LIPO.alto, pines: PINES_LIPO, svg: (props) => dibujarLipo(props.carga) },
+    rotulo: (pin) => ({ POS: '+ · cable rojo de potencia', NEG: '− · cable negro de potencia' })[pin] || pin,
+    campos: [{ prop: 'carga', etiqueta: 'Carga', opciones: Object.entries(CARGAS_LIPO).map(([k, c]) => [k, `${c.nombre} (${String(c.voltios).replace('.', ',')} V)`]) }],
+    aplicar(el, props) {
+      const nuevo = new DOMParser().parseFromString(dibujarLipo(props.carga), 'image/svg+xml').documentElement;
+      el.replaceChildren(...[...nuevo.childNodes].map((n) => el.ownerDocument.importNode(n, true)));
+    },
+    mostrar(el, estado, props) {
+      mostrarLipo(el, (props || {}).carga, estado);
     },
   },
   // Prototipo 3 (tarea T2). «posicion» va de 0 (perilla hacia GND) a 1 (hacia VCC).

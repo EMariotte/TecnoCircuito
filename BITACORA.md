@@ -642,3 +642,36 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
   - `npm run probar`: 15 grupos, 389 comprobaciones.
 
 - **Validación humana (Efraín, 10 oct):** creó un proyecto nuevo en TecnoBloques, conectó un LED con su resistencia, usó el ejemplo de encendido por el monitor serial y, al simular con el circuito ampliado, vio cambiar las mediciones en el panel. Aprobado.
+
+## 2026-10-10 — T3: shield L293D, motor TT y batería LiPo (piezas Tecno)
+
+**Pedido de Efraín:** modelar las piezas de potencia del kit como piezas Tecno, con la shield lo más detallada posible y los nombres de sus tres integrados legibles. El kit: shield L293D Rev4, motores TT amarillos de 6 V y una LiPo 2S en EXT_PWR, con el puente PWR alimentando el VIN del Uno.
+
+- **Shield «desarmada»** (`src/piezas/shield_l293d.js`): U3 74HC595, U1 y U2 L293D con sus nombres, borneras M1–M4, EXT_PWR, puente PWR, LED, conectores SERVO_1 (pin 10) y SERVO_2 (pin 9), agujeros en las posiciones reales del Uno. Va montada sobre el Uno: no se mueve ni se gira y hay una sola.
+- **Motor TT** (`src/piezas/motor_tt.js`): vista «eje» (RPM encima) y vista «rueda» (flecha de avance y velocidad en cm/s), y lado izquierdo o derecho, que refleja el dibujo. Modelo de motor DC con reducción 1:48, de hojas de datos: 200 RPM y 150 mA sin carga a 6 V, 1,2 A bloqueado.
+- **Batería LiPo 2S** (`src/piezas/bateria_lipo.js`): llena, nominal o descargada (8,4, 7,4 y 6,4 V), con su cable de balance dibujado. Descargada, avisa al empezar que corre el riesgo de perder sus celdas.
+- **Lógica** (`src/potencia.js`): 74HC595 por los pines 8, 4, 12 y 7, como AFMotor_R4 (BSD-3); PWM de los pines 11, 3, 6 y 5 promediado por milisegundo y suavizado; puente H con la caída de 1,4 V + 1 V/A (`caidaL293D`); batería con 0,05 Ω; el Uno toma la energía del VIN con más de 6,6 V. Fallas nuevas: `bateria_baja`, `bateria_celdas`, `bateria_invertida`, `bateria_corto`, `bateria_en_5v`, `motores_sin_energia`, `motor_en_pin` y `l293d_corriente`.
+- **Lienzo:** piezas con varias propiedades (`campos`), valores sí/no, dibujo que cambia de tamaño con sus propiedades (`dibujo.marco`) y piezas montadas.
+- **Contrato 1:** las tres piezas en el esquema y en `CONTRATO.md`; `mediciones()` gana `shield`, `motores`, `baterias` y `porVin`.
+- **Ejemplo:** «Carro con la shield L293D (T3)» y el programa `carro_motores` (AFMotor_R4). En TecnoBloques, «Validar: carro con la shield L293D».
+- **Resultado en el simulador:** adelante a 200, 179 RPM con 5,4 V en el motor; atrás a 255, 227 RPM con 6,8 V (caída de 1,57 V); en modo ideal, 279 RPM. La rueda derecha, cableada igual que la izquierda, va hacia atrás.
+- **Pruebas:** `probar_potencia.js` (24), `probar_carro.py` (25) y el contrato con cada vista del motor. `npm run probar`: 17 grupos, 449 comprobaciones. `test:simulador` de TecnoBloques: 28 de 28.
+- **Falta:** validar con la placa real (LEEME, «Validar la shield L293D y el motor TT»), la netlist de KiCad con la shield desarmada, los pines del cable de balance y el probador de celdas.
+
+## 2026-10-10 — Ajustes del carro pedidos por Efraín: velocidad, flecha y la shield como la real
+
+**Validación humana de Efraín:** las piezas de potencia funcionan, pero en su app el carro iba al 33–40 % de velocidad. También pidió que la flecha siga el giro de la llanta y que la shield se parezca más a la real.
+
+- **Velocidad:** en este PC no se pudo reproducir el 33 %. Con TecnoBloques maximizado y el carro, iba al 100 %, y el hilo de la página trabajaba ~90 ms por segundo. Pero el perfil del núcleo mostró que el 14 % se iba en los getters que esbuild pone delante de `avrInstruction`. Guardarla una vez en `src/chip.js` hace el chip un **72 % más rápido** (carro: de 1,32× a 2,27× el tiempo real en Node), para todos los programas. El cálculo de la shield y los motores no era el freno. Además, el motor solo toca su texto y su flecha cuando cambian. Ver `COMO-FUNCIONA.md`, sección 50. **Falta confirmar en el PC de Efraín** (¿con cargador o con batería?).
+- **Flecha:** ahora apunta hacia donde la rueda, apoyada en el piso, empujaría el robot: contra el reloj en el dibujo → izquierda. «Adelante» y «atrás» no cambian. El símbolo de giro de la vista del eje (⟲ ⟳) también sigue el giro que se ve, incluido el lado derecho reflejado.
+- **Shield:**
+  - los tres integrados van de pie y en fila, como en la placa real (L293D, 74HC595, L293D), con su nombre a lo largo;
+  - los conectores de servo van arriba a la izquierda;
+  - sin agujeros de montaje;
+  - la bornera de M3 y M4 queda a la misma distancia del borde que la de M1 y M2.
+- **Rueda:** los rayos son 3 veces más gruesos.
+- **Pruebas:**
+  - `probar_carro.py` comprueba que la flecha va hacia donde rueda cada llanta;
+  - `npm run probar`: 17 grupos, 451 comprobaciones;
+  - `test:simulador` de TecnoBloques: 28 de 28.
+

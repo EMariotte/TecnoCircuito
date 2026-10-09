@@ -21,6 +21,9 @@ import {
 import { leerHex } from './hex.js';
 
 export const FRECUENCIA = 16e6; // 16 MHz, el cristal del Uno
+// La función que ejecuta cada instrucción, guardada una vez: al empaquetar, esbuild deja `avrInstruction` detrás de
+// dos «getters» de módulo, y llamarlos en cada instrucción (millones por segundo) costaba ~14 % del tiempo del chip.
+const ejecutarInstruccion = avrInstruction;
 
 // Qué pin del Uno corresponde a cada bit de cada puerto del ATmega328P.
 const PINES_UNO = [
@@ -93,7 +96,7 @@ export function crearChip(hex) {
     while (cpu.cycles < fin) {
       const tramo = Math.min(fin, cpu.cycles + FRECUENCIA / 1000);
       while (cpu.cycles < tramo) {
-        avrInstruction(cpu);
+        ejecutarInstruccion(cpu);
         cpu.tick();
       }
       if (colaEntrada.length && !usart.rxBusy) {

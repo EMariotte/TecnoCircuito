@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 9 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 empezada** (servo SG90/MG90S y energía del USB). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 15 grupos (387 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
+> Actualizado: 10 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 completa en software** (servo SG90/MG90S, energía del USB y, desde el 10 oct, shield L293D, motor TT y batería LiPo 2S como piezas Tecno; estas tres sin validar con la placa real). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 17 grupos (451 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
 
 ---
 
@@ -110,7 +110,9 @@ TecnoCircuito/
 │   ├── protoboard.js     ← media protoboard: huecos, tiras, dibujo y encaje de las patas (prototipo 4)
 │   ├── kicad.js          ← netlist de KiCad: piezas con su huella y redes (lienzo.exportarNetlist)
 │   ├── energia.js        ← energía del USB: caída del 5V, reinicio por golpe de corriente y fusible (limiteUSB)
-│   ├── piezas/           ← piezas Tecno con dibujo propio: servo.js (SG90 y MG90S: dibujo, pulso → ángulo, consumo)
+│   ├── potencia.js       ← shield L293D (74HC595, PWM, puente H con su caída), motores TT y batería LiPo, cada 1 ms
+│   ├── mediciones.js     ← filasDeMediciones: la tabla en español de sim.mediciones()
+│   ├── piezas/           ← piezas Tecno con dibujo propio: servo.js (SG90 y MG90S), shield_l293d.js, motor_tt.js y bateria_lipo.js
 │   ├── motor/            ← MNA, Newton-Raphson, reloj común con el chip
 │   ├── chip/             ← avr8js: puertos, ADC, temporizadores, USART; placas uno/nano/nano_old/mega
 │   ├── componentes/      ← un archivo por componente: vista + modelo eléctrico + modelo lógico
@@ -164,7 +166,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 ## Riesgos técnicos
 
 - Convergencia de Newton-Raphson con LED. **Cerrado en corriente continua por el prototipo 2:** converge en 60 casos (5 colores, de 0 Ω a 1 MΩ) en 21 vueltas como máximo, y cada solución tarda unos 7 µs. Sigue abierto para PWM y motores.
-- Rendimiento en tiempo real con PWM. **Atendido en el prototipo 3:** el PWM se promedia por combinación de pines (el circuito se resuelve una vez por combinación) y el chip corre en un Web Worker, que fue un 25 % más rápido que la versión en la página en el mismo PC. Falta medirlo en un PC del aula, con cargador.
+- Rendimiento en tiempo real con PWM. **Atendido en el prototipo 3:** el PWM se promedia por combinación de pines (el circuito se resuelve una vez por combinación) y el chip corre en un Web Worker, que fue un 25 % más rápido que la versión en la página en el mismo PC. El 10 oct el chip quedó un 72 % más rápido al llamar `avrInstruction` sin los getters de esbuild (COMO-FUNCIONA, sección 50). Falta medirlo en un PC del aula, con cargador.
 - La interfaz de la protoboard, que debe ser fácil para aprendices. **Prototipo 4 hecho:** encaje automático, tira iluminada y vista previa en verde. Falta probarla con dos o tres aprendices.
 - Más adelante: los tiempos estrictos del DHT11 y el juego completo de comandos del HD44780.
 
@@ -189,6 +191,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 2. **MG90S:** las tres corrientes (quieto, barrido continuo, bloqueado ≤ 2 s) y sus ángulos con el transportador.
 3. Opcional: repetir el ADC con el programa corregido para tener la desviación exacta.
 4. La protoboard con dos o tres aprendices, y la velocidad con TecnoBloques en el aula cuando exista `v0.1.0`.
+5. **Shield L293D y motor TT** (Ejemplos → «Validar: carro con la shield L293D»; pasos en `prototipo/LEEME.md`): voltaje de la LiPo quieta y con motores, caída del L293D en los bornes de M1, corriente y RPM del motor sin carga, corriente bloqueado (≤ 1 s) y hacia dónde gira cada rueda con FORWARD.
 
 **Pendientes de software que salieron de las validaciones:**
 - ✅ **Promedio de señales lentas** (10 oct, sección 48 de COMO-FUNCIONA): promedio móvil de 100 ms si un pin cambió en los últimos 50 ms; si no, valor exacto. Antes, cuando la señal duraba más que una foto (16 ms), el promedio saltaba. Pasa con el servo (la tabla dice «Pin 9: 1,84 V» y un multímetro diría 0,3 a 0,6 V) y con el LED de la mano (cada foto entre 7 y 50 %; el promedio sí es 35 %). Arreglo: suavizar la medición con una constante de tiempo como la del ojo o del multímetro.
@@ -196,10 +199,13 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 - **El circuito no siente la caída del 5V:** solo los servos ven el voltaje real.
 - En TecnoBloques (Fase 2d): exportar el monitor serial a **CSV** y un **graficador serial** con casillas por variable.
 
-**Lo siguiente, solo software (recomendación):** seguir con la T3.
-1. **Shield L293D** como pieza Tecno: el 74HC595 por los pines 4, 7, 8 y 12, y el PWM de los motores (M1 = 11, M2 = 3, M3 = 6, M4 = 5), con la caída de 1,4 a 2 V (`caidaL293D`). Sus servos van en SERVO_1 = 10 y SERVO_2 = 9.
-2. **Motor DC** como pieza Tecno, con su consumo en la energía del USB.
-3. Probarlos con un programa de AFMotor_R4, la librería del kit.
+**Hecho el 10 oct (solo software):** ✅ shield L293D «desarmada» (74HC595, dos L293D, borneras, EXT_PWR, puente PWR, servos en 10 y 9), ✅ motor TT (vistas eje y rueda, lado izquierdo o derecho) y ✅ batería LiPo 2S (llena, nominal, descargada, con aviso), con `src/potencia.js`, el programa `carro_motores` (AFMotor_R4) y el ejemplo «Carro». Ver `prototipo/COMO-FUNCIONA.md`, sección 49. **Falta validarlos con la placa real.**
+
+**Lo siguiente, solo software (orden acordado con Efraín el 10 oct):**
+1. **Biblioteca de piezas** con buscador y una «ficha» de cada pieza en el inspector (como los paneles de Cirkit Designer y Tinkercad, pero propios).
+2. **Cable de balance** de la LiPo con sus pines y el **probador de celdas** («1-8S Lipo Li-ion Fe Batería Voltaje 2IN1 Probador Bajo Voltaje Zumbador Alarma»; hace falta una foto del probador del kit). Después, el estado «desbalanceada».
+3. **Netlist de KiCad con la shield desarmada** (sus integrados, borneras y conectores como piezas).
+4. En TecnoBloques (Fase 2d): CSV del monitor serial y graficador serial.
 
 **Con hardware:** la lista de «La próxima vez en el laboratorio», arriba. Después, la primera etiqueta `v0.1.0`.
 

@@ -53,6 +53,12 @@
     "pines-potenciometro": { "description": "SIG es el cursor (la pata del medio).", "enum": ["GND", "SIG", "VCC"] },
     "pines-pulsador": { "description": "Las patas con el mismo número están unidas por dentro; al presionar se une la 1 con la 2.", "enum": ["1i", "1d", "2i", "2d"] },
     "pines-servo": { "description": "Los 3 cables del microservo: GND (marrón), VCC (rojo) y SIG, la señal (naranja).", "enum": ["GND", "VCC", "SIG"] },
+    "pines-shield_l293d": {
+      "description": "Shield de motores L293D Rev4, montada sobre el Uno. Bornes de los motores (M1A … M4B), sus GND, la entrada de la batería (EXT_POS, EXT_GND) y los conectores de servo (S1 va al pin 10 y S2 al 9).",
+      "enum": ["M1A", "M1B", "GND_IZQ", "M2A", "M2B", "M4A", "M4B", "GND_DER", "M3A", "M3B", "EXT_POS", "EXT_GND", "S2_SIG", "S2_POS", "S2_GND", "S1_SIG", "S1_POS", "S1_GND"]
+    },
+    "pines-motor_tt": { "description": "Los 2 cables del motorreductor TT: A (rojo) y B (negro).", "enum": ["A", "B"] },
+    "pines-bateria_lipo": { "description": "El cable de potencia de la LiPo 2S: POS (rojo, +) y NEG (negro, −). El de balance todavía no tiene pines.", "enum": ["POS", "NEG"] },
     "hueco-media": {
       "description": "Huecos de la media protoboard de 400 puntos, como vienen impresos. Tiras: a1 … j30. Rieles: s+N, s-N (superiores), i+N, i-N (inferiores), sin las columnas 1, 7, 13, 19 y 25.",
       "type": "string",
@@ -134,6 +140,40 @@
             "properties": {
               "props": { "properties": { "modelo": { "enum": ["sg90", "mg90s"], "description": "Cambia el dibujo, el consumo y la velocidad." } } },
               "en": { "propertyNames": { "$ref": "#/$defs/pines-servo" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "shield_l293d" } } },
+          "then": {
+            "properties": {
+              "x": { "const": 0 },
+              "y": { "const": 0 },
+              "props": { "properties": { "puentePWR": { "type": "boolean", "description": "Puesto (true): la batería de EXT_PWR también alimenta el VIN del Uno." } } },
+              "en": false
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "motor_tt" } } },
+          "then": {
+            "properties": {
+              "props": {
+                "properties": {
+                  "vista": { "enum": ["eje", "rueda"], "description": "Solo el eje con sus RPM, o con la rueda y hacia dónde avanzaría." },
+                  "lado": { "enum": ["izquierdo", "derecho"], "description": "Lado del robot: refleja el dibujo y el sentido de avance." }
+                }
+              },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-motor_tt" } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "bateria_lipo" } } },
+          "then": {
+            "properties": {
+              "props": { "properties": { "carga": { "enum": ["llena", "nominal", "descargada"], "description": "8,4 V, 7,4 V o 6,4 V." } } },
+              "en": { "propertyNames": { "$ref": "#/$defs/pines-bateria_lipo" } }
             }
           }
         },

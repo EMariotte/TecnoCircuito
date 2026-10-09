@@ -40,6 +40,19 @@ export function filasDeMediciones(m) {
     ...servos.map((s) =>
       fila(`${s.id} (${s.modelo.toUpperCase()})`, '', miliamperios(s.i),
         !s.fuente ? 'sin alimentación' : !s.senal ? 'sin señal' : `${Math.round(s.angulo)}°${s.moviendo ? ', moviéndose' : ''}${s.pulso ? ` · pulso ${s.pulso} µs` : ''}`)),
+    ...(m.shield
+      ? [fila(`${m.shield.id}: motores (EXT_PWR)`, voltios(m.shield.motoresV), '',
+          m.shield.motoresV < 1 ? 'sin energía: conecta la batería a EXT_PWR' : `puente PWR ${m.shield.puente ? 'puesto' : 'quitado'}${m.porVin ? ' · el Uno toma la energía del VIN' : ''}`)]
+      : []),
+    ...(m.motores || []).map((x) => {
+      const cms = Math.abs(x.velocidad);
+      const sentido = Math.sign(x.velocidad) * (x.lado === 'derecho' ? -1 : 1) > 0 ? 'adelante' : 'atrás';
+      return fila(`${x.id} (${x.canal || 'sin shield'})`, voltios(x.voltios), miliamperios(x.i),
+        Math.abs(x.rpm) < 1 ? 'quieto' : `${Math.round(Math.abs(x.rpm))} RPM · ${sentido} ${Math.round(cms)} cm/s`);
+    }),
+    ...(m.baterias || []).map((b) =>
+      fila(`${b.id} (LiPo 2S)`, voltios(b.voltios), b.conectada ? miliamperios(b.i) : '',
+        `${num(b.voltios / 2, 2)} V por celda${b.voltios / 2 < 3.3 ? ' · cárgala' : ''}${b.conectada ? '' : ' · sin conectar'}`)),
     ...(servos.length ? [fila('5V de la placa (USB)', '', miliamperios(m.consumo5V), 'el USB da hasta 500 mA')] : []),
     ...(usb && (servos.length || usb.reinicios || usb.pico > 0.2)
       ? [fila('USB (placa y circuito)', voltios(usb.voltios), miliamperios(usb.amperios),

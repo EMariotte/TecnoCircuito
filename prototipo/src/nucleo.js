@@ -12,6 +12,7 @@ import { armarRed, revisarFallas, LED } from './motor/red.js';
 import { calcularNodos } from './conexiones.js';
 import { crearServo, MODELOS_SERVO } from './piezas/servo.js';
 import { USB, crearFusible, voltajeConServos } from './energia.js';
+import { crearPotencia } from './potencia.js';
 
 export { FRECUENCIA, PinState };
 export { USB, crearFusible } from './energia.js';
@@ -95,6 +96,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let usbPico = 0;
   let usbMs = 0;
   let picos = []; // [ms, pico] de las últimas fotos: la tabla muestra el pico del último segundo
+  // Shield L293D, motores TT y batería LiPo (tarea T3, src/potencia.js).
+  const potencia = crearPotencia({ activas, avisar: (f) => avisar(f) });
+  let motores5V = 0; // lo que piden al 5V los motores conectados directo (del milisegundo anterior)
+  let porVin = false; // el Uno se alimenta de la batería por el VIN (y no del USB)
 
   const ms = () => ((base + chip.ciclos) / FRECUENCIA) * 1000;
   const clave = (e) => {
@@ -122,10 +127,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       for (const pin in cambios) cambioPin[pin] = chip.ciclos;
       actualizarEntradas(); // un pin que pasa a entrada (o que maneja otra entrada) cambia lo que se lee
       if (servos.size) medirPulsos(cambios);
+      potencia.pinesCambiaron(cambios, ahora, chip.ciclos);
     });
     chip.alCadaMs(ruidoAlAire);
     chip.alCadaMs(avanzarServos);
     for (const s of servos.values()) s.subida = null; // un chip nuevo empieza sin pulsos a medias
+    potencia.reiniciarChip();
     ultimoCambio = -Infinity;
     cambioPin = {};
     chip.ponerLectorAnalogico(leerAnalogico);
@@ -145,6 +152,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     red = armarRed(circuitoActual, { quemados, presionados });
     soluciones = new Map();
     armarServos();
+    potencia.armar(circuitoActual, calcularNodos(circuitoActual));
     calcularMano();
   }
 
@@ -211,13 +219,16 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   // revisa la energía del USB: con «limiteUSB», un golpe de corriente reinicia la placa y un exceso sostenido
   // calienta el fusible hasta que se abre y la apaga.
   function avanzarServos() {
+    // 0. La shield y los motores, con el 5V del milisegundo anterior. Si la batería llega al VIN con más de 6,6 V, el
+    //    Uno se alimenta de ella (su regulador da 5 V) y el USB deja de entregar.
+    if (potencia.hay) ({ i5V: motores5V, porVin } = potencia.cadaMs(chip.ciclos, { v5, logica: !apagada && v5 > USB.bodV }));
     // 1. Cada servo gira con el voltaje del milisegundo anterior (eso fija su velocidad).
     for (const s of servos.values()) s.logico.avanzar(1, voltiosServo(s));
     // 2. El 5V de este milisegundo, resuelto junto con lo que piden los servos del 5V (son como resistencias).
-    const fijo = apagada ? 0 : USB.placaA + iCircuito;
+    const fijo = apagada ? 0 : USB.placaA + iCircuito + motores5V;
     let siemens = 0;
     for (const s of servos.values()) if (s.conectado && s.fuente === '5V') siemens += s.logico.corriente(1);
-    v5 = apagada ? 0 : activas.limiteUSB ? voltajeConServos(fijo, siemens) : USB.idealV;
+    v5 = apagada ? 0 : porVin ? USB.idealV : activas.limiteUSB ? voltajeConServos(fijo, siemens) : USB.idealV;
     // 3. La corriente de cada servo con ese voltaje.
     let amperios = fijo;
     for (const s of servos.values()) {
@@ -227,6 +238,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       s.msVentana++;
       if (s.fuente === '5V' || s.fuente === '3V3') amperios += a;
     }
+    if (porVin) amperios = 0; // la energía sale del VIN: el USB no entrega nada
     if (activas.limiteUSB) {
       fusible.avanzar(1, amperios);
       if (!apagada && !corteUSB) {
@@ -487,6 +499,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     serial = [];
     const vistaServos = fotoServos();
     const energia = fotoEnergia();
+    const pot = potencia.foto();
     iCircuito = medicion ? medicion.fuentes.reduce((t, f) => t + Math.max(0, f.i), 0) : 0;
     if (medicion) {
       medicion.usb = energia;
@@ -494,12 +507,14 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       // Lo que entrega el pin 5V de la placa: lo del circuito más los servos que se alimentan de él.
       const del5V = (medicion.fuentes.find((f) => f.pin === '5V') || { i: 0 }).i;
       medicion.consumo5V = del5V + medicion.servos.filter((s) => s.fuente === '5V').reduce((t, s) => t + s.i, 0);
+      Object.assign(medicion, pot.lista, { porVin });
     }
     const fallasNuevas = nuevas;
     nuevas = [];
     return {
       msSimulados: ms(),
       servos: vistaServos,
+      piezas: pot.piezas,
       evaluaciones,
       leds: Object.fromEntries((medicion ? medicion.leds : []).map((l) => [l.id, l.brillo])),
       quemados: [...quemados],
@@ -521,6 +536,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       msSimulados: ms(),
       evaluaciones,
       servos: fotoServos(),
+      piezas: potencia.foto().piezas,
       energia: fotoEnergia(),
       leds: {},
       quemados: [...quemados],
@@ -585,6 +601,8 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     picos = [];
     fusible.reiniciar();
     v5 = USB.idealV;
+    motores5V = 0;
+    porVin = false;
   }
 
   nuevoChip();

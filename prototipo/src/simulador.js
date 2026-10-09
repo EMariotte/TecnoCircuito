@@ -4,7 +4,7 @@
 // una vez por cuadro de pantalla. Si el navegador no deja crear el Worker, el mismo código corre en la página.
 import { leerHex } from './hex.js';
 
-const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB'];
+const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB', 'caidaL293D'];
 // El código del Worker, ya armado: lo pone construir.js. Va como texto para que todo quepa en un solo archivo.
 const CODIGO_TRABAJADOR = typeof __CODIGO_TRABAJADOR__ === 'string' ? __CODIGO_TRABAJADOR__ : '';
 
@@ -67,6 +67,7 @@ export function crearSimulador(opciones = {}) {
       quemados: vista.quemados,
       voltajes: vista.voltajes,
       servos: vista.servos || {},
+      piezas: vista.piezas || {},
       placa: { ledPower: vista.placa.encendida !== false, led13: vista.placa.led13, ledTX: vista.placa.ledTX },
     });
   }

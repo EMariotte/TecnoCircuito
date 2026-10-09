@@ -83,6 +83,7 @@
     <button type="button" id="ejemploServo">Ejemplo con servo (T3)</button>
     <button type="button" id="ejemploServos">Cuatro servos en el USB (T3)</button>
     <button type="button" id="ejemploSeis">Seis servos en el USB (T3)</button>
+    <button type="button" id="ejemploCarro">Carro con la shield L293D (T3)</button>
     <button type="button" id="limpiar">Empezar de nuevo</button>
     <button type="button" id="copiar">Copiar el circuito</button>
     <button type="button" id="imagen">Guardar imagen (SVG)</button>
@@ -104,12 +105,13 @@
         <option value="validar_flotante">Validar la entrada al aire del pin 2</option>
         <option value="servo_barrido">Servo en el pin 9: 0°, 90° y 180° (T3)</option>
         <option value="servos_cuatro">Cuatro servos (pines 3, 5, 6 y 9) se mueven a la vez (T3)</option>
+        <option value="carro_motores">Carro: M1 y M4 adelante, quietos y atrás, con AFMotor_R4 (T3)</option>
       </select>
     </label>
     <label class="campo">Modo
       <select id="modo">
-        <option value="realista">Realista: daños, límites, entradas al aire, ruido y límite del USB</option>
-        <option value="ideal">Ideal: sin daños, sin límites, sin ruido y con USB sin límite</option>
+        <option value="realista">Realista: daños, límites, entradas al aire, ruido, límite del USB y caída del L293D</option>
+        <option value="ideal">Ideal: sin daños, sin límites, sin ruido, USB sin límite y L293D sin caída</option>
       </select>
     </label>
     <div class="botones">
@@ -235,6 +237,27 @@
   };
   const EJEMPLO_SERVOS = servosEnUSB(['D9', 'D6', 'D5', 'D3']);
   const EJEMPLO_SEIS = servosEnUSB(['D9', 'D6', 'D5', 'D3', 'D9', 'D6']);
+  // Tarea T3: el carro del kit. Shield L293D sobre el Uno, motor izquierdo en M1, derecho en M4 (cableados igual) y la
+  // LiPo 2S en EXT_PWR, con el puente PWR puesto. Al avanzar, la rueda derecha va al revés: hay que invertir sus cables.
+  const EJEMPLO_CARRO = {
+    formato: 1,
+    placa: 'uno',
+    componentes: [
+      { id: 'shield1', tipo: 'shield_l293d', x: 0, y: 0, rot: 0, props: { puentePWR: true } },
+      { id: 'motor1', tipo: 'motor_tt', x: -388, y: -62, rot: 0, props: { vista: 'rueda', lado: 'izquierdo' } },
+      { id: 'motor2', tipo: 'motor_tt', x: 278, y: -62, rot: 0, props: { vista: 'rueda', lado: 'derecho' } },
+      { id: 'bateria1', tipo: 'bateria_lipo', x: -260, y: 280, rot: 0, props: { carga: 'llena' } },
+    ],
+    cables: [
+      { de: 'motor1.A', a: 'shield1.M1A', color: 'rojo' },
+      { de: 'motor1.B', a: 'shield1.M1B', color: 'negro' },
+      { de: 'motor2.A', a: 'shield1.M4A', color: 'rojo' },
+      { de: 'motor2.B', a: 'shield1.M4B', color: 'negro' },
+      { de: 'bateria1.POS', a: 'shield1.EXT_POS', color: 'rojo', puntos: [[86, 320]] },
+      { de: 'bateria1.NEG', a: 'shield1.EXT_GND', color: 'negro', puntos: [[104.9, 329.6]] },
+    ],
+    protoboard: null,
+  };
   const $ = (id) => document.getElementById(id);
   let lienzo = null;
 
@@ -335,6 +358,7 @@
   $('ejemploServo').onclick = () => { $('programa').value = 'servo_barrido'; abrir(EJEMPLO_SERVO); };
   $('ejemploServos').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SERVOS); };
   $('ejemploSeis').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SEIS); };
+  $('ejemploCarro').onclick = () => { $('programa').value = 'carro_motores'; abrir(EJEMPLO_CARRO); };
   $('ejemploT1').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_T1); };
   $('ejemploPB').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_PB); };
   $('ejemploT2').onclick = () => { $('programa').value = 'potenciometro'; abrir(EJEMPLO_T2); };

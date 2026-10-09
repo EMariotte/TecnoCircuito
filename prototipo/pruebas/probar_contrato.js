@@ -25,8 +25,23 @@ const DIBUJO = { resistencia: ['1', '2'], led: ['A', 'C'], potenciometro: ['GND'
 for (const [tipo, nombres] of Object.entries(DIBUJO)) {
   revisar(mismo(nombres.map(TIPOS[tipo].nombrePin), PINES[tipo]), `${tipo}: los pines del catálogo (${nombres.map(TIPOS[tipo].nombrePin).join(', ')}) son los del esquema`);
 }
+// Una pieza Tecno cuyo dibujo depende de sus propiedades (el motor y sus vistas) se revisa con cada valor de sus campos.
 for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
-  revisar(mismo(Object.keys(def.dibujo.pines), PINES[tipo]), `${tipo} (pieza Tecno): los pines de su dibujo (${Object.keys(def.dibujo.pines).join(', ')}) son los del esquema`);
+  const variantes = def.dibujo.marco ? (def.campos || []).flatMap((c) => c.opciones.map(([v]) => ({ ...def.props, [c.prop]: v }))) : [def.props];
+  for (const props of variantes) {
+    const pines = Object.keys((def.dibujo.marco ? def.dibujo.marco(props) : def.dibujo).pines);
+    revisar(mismo(pines, PINES[tipo]), `${tipo} (pieza Tecno${def.dibujo.marco ? ', ' + JSON.stringify(props) : ''}): los pines de su dibujo (${pines.join(', ')}) son los del esquema`);
+  }
+}
+// Los valores de cada campo del catálogo son los que el esquema acepta para esa propiedad.
+for (const [tipo, def] of Object.entries(TIPOS)) {
+  const regla = D.componente.allOf.find((r) => r.if.properties.tipo.const === tipo);
+  for (const campo of def.campos || []) {
+    const esquema = regla && regla.then.properties.props.properties[campo.prop];
+    const valores = campo.opciones.map((o) => o[0]);
+    const ok = esquema && (esquema.enum ? mismo(valores, esquema.enum) : esquema.type === 'boolean' && valores.every((v) => typeof v === 'boolean'));
+    revisar(!!ok, `${tipo}.${campo.prop}: los valores del catálogo (${valores.join(', ')}) son los del esquema`);
+  }
 }
 const modelosEsquema = D.componente.allOf.find((r) => r.if.properties.tipo.const === 'servo').then.properties.props.properties.modelo.enum;
 revisar(mismo(TIPOS.servo.campo.opciones.map((o) => o[0]), modelosEsquema), `servo: los modelos del catálogo (${modelosEsquema.join(', ')}) son los del esquema`);
@@ -54,8 +69,8 @@ const delContrato = JSON.parse(contrato.split('## 4. Formato del circuito')[1].m
 const p1 = revisarCircuito(delContrato);
 revisar(!p1.length, 'el ejemplo de CONTRATO.md, sección 4' + (p1.length ? ': ' + p1.join(' | ') : ''));
 const pagina = fs.readFileSync(path.join(__dirname, '..', 'pagina.html'), 'utf8');
-const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf(String.fromCharCode(10), pagina.indexOf('const EJEMPLO_SEIS =')));
-const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS };')();
+const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf('const $ = (id)'));
+const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS, EJEMPLO_CARRO };')();
 for (const [nombre, circuito] of Object.entries(ejemplos)) {
   const p = revisarCircuito(circuito);
   revisar(!p.length, `${nombre} de la página de prueba` + (p.length ? ': ' + p.join(' | ') : ''));

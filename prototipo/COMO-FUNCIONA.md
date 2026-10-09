@@ -1039,3 +1039,93 @@ Cada foto toma un pedazo distinto de la onda, y su promedio salta. Algunas venta
   - el LED de la mano se queda entre 33 y 49 %;
   - el PWM del pin 9 sigue exacto (50,0 % y 20,0 % en `test:simulador`).
 - **Constantes** (`src/nucleo.js`): `PROMEDIO_VISTA_MS = 100` y `QUIETA_MS = 50`.
+
+## 49. Potencia: shield L293D, motor TT y batería LiPo (piezas Tecno)
+
+> Hecho el 10 de octubre de 2026. Tres piezas Tecno nuevas, con dibujo propio: [src/piezas/shield_l293d.js](src/piezas/shield_l293d.js), [src/piezas/motor_tt.js](src/piezas/motor_tt.js) y [src/piezas/bateria_lipo.js](src/piezas/bateria_lipo.js). La lógica que las une está en [src/potencia.js](src/potencia.js). Los valores son de hojas de datos: **falta validarlos con la placa real** (LEEME, «Validar la shield L293D y el motor TT»).
+
+**La shield va «desarmada» por dentro:** se ven y se nombran sus tres integrados (U3 74HC595, U1 y U2 L293D), sus borneras, EXT_PWR, el puente PWR, los conectores de servo y el botón de reinicio. Va montada sobre el Uno, en su mismo lugar: no se arrastra ni se gira, y hay una sola. Las conexiones salen de la librería del kit (AFMotor_R4, BSD-3) y de las hojas de datos, no del esquema de Adafruit (que es «compartir igual»).
+
+```
+  programa (AFMotor_R4)                         núcleo: potencia.js, cada cambio de pin y cada 1 ms
+  motor1.run(FORWARD) ─► shiftOut por           ┌───────────────────────────────────────────────┐
+  D8 (datos), D4 (reloj), D12 (cierre) ───────► │ 74HC595: reloj ↑ → entra un bit; cierre ↑ →   │
+  D7 en BAJO (habilita) ───────────────────────►│ las salidas Q0–Q7 = sentido de cada motor      │
+                                                │ (M1 = Q2, Q3 · M2 = Q1, Q4 · M3 = Q5, Q7 ·     │
+  motor1.setSpeed(200) ─► PWM en D11 ─────────► │  M4 = Q0, Q6)                                  │
+  (M2 = D3, M3 = D6, M4 = D5)                   │ PWM: ciclo útil de cada ms, suavizado (4 ms)   │
+                                                │ L293D: A ≠ B → V = útil × (VS − caída)         │
+  batería en EXT_PWR ─► VS de los L293D ──────► │        A = B → frena · sin PWM → gira libre    │
+  (con el puente PWR, también el VIN del Uno)   │ motor: V = I·R + k·ω ; J·dω/dt = k·I − b·ω     │
+                                                │ batería: V = 8,4 − 0,05 Ω × corriente          │
+                                                └───────────────┬───────────────────────────────┘
+                                                                │ foto.piezas { rpm, giro, velocidad, i, voltios }
+                                                                ▼
+                                        lienzo: la rueda gira, RPM, flecha «adelante/atrás · N cm/s»
+```
+
+### Las tres piezas
+
+| Pieza | Dibujo | Propiedades | Pines |
+|---|---|---|---|
+| `shield_l293d` | La Rev4 a escala del Uno, con los tres integrados de pie y en fila como en la placa real (L293D U1, 74HC595 U3 y L293D U2, con su nombre a lo largo del chip), sin agujeros de montaje (la shield no los tiene), las dos borneras a la misma distancia del borde, borneras M1–M4, EXT_PWR (+M y GND), puente PWR (con o sin capuchón), LED de energía (prende si los motores tienen energía) y conectores SERVO_1 y SERVO_2 | `puentePWR` (sí/no) | `M1A` … `M4B`, `GND_IZQ`, `GND_DER`, `EXT_POS`, `EXT_GND`, `S1_*`, `S2_*` |
+| `motor_tt` | El motorreductor amarillo de lado. Vista «eje»: el eje de doble plano girando y las RPM encima. Vista «rueda»: la rueda de 66 mm girando y, debajo, la flecha de hacia dónde la rueda, apoyada en el piso, empujaría el cuerpo del robot (si en el dibujo gira contra el reloj, la flecha apunta a la izquierda), con «adelante» o «atrás» y la velocidad | `vista` (eje o rueda), `lado` (izquierdo o derecho: refleja el dibujo) | `A` (rojo), `B` (negro) |
+| `bateria_lipo` | El paquete 2S de 1300 mAh, con su cable de potencia (rojo y negro) y el de balance (JST-XH, solo dibujado: lo usará el probador de celdas) | `carga` (llena 8,4 V, nominal 7,4 V, descargada 6,4 V) | `POS`, `NEG` |
+
+**El lado del robot** es el error más común con un carro: con los dos motores cableados igual y `FORWARD`, una rueda empuja hacia adelante y la otra hacia atrás, porque el motor derecho está montado al revés. En el simulador se ve sin mover el carro: la flecha de la rueda derecha sale roja, «atrás».
+
+### Lo que hace el lienzo con ellas
+
+- **Dibujo que cambia de tamaño:** el motor con la rueda es más grande que con el eje. La definición trae `dibujo.marco(props)` (tamaño y pines según las propiedades), y al cambiar la vista o el lado el lienzo rehace el dibujo (`rehacerVista`), sin dejar pines repetidos.
+- **Varias propiedades por pieza** (`campos` en el catálogo) y valores sí/no (el puente PWR se guarda como `true` o `false`, no como texto).
+- **Pieza montada** (`montada: true`): va en (0, 0), justo encima del Uno y debajo de lo demás; arrastrarla mueve la vista; no tiene «Girar» y el menú no deja agregar otra.
+- **Los conectores de servo de la shield** ya son los pines 10 (SERVO_1) y 9 (SERVO_2), y sus GND son el GND del Uno (`PUENTES_SHIELD`, en `conexiones.js`). Con el puente PWR puesto, EXT_POS queda unido al VIN.
+
+### Lo que revisa el núcleo (`potencia.armar`)
+
+| Situación | Qué pasa | Falla |
+|---|---|---|
+| Batería descargada | Avisa en la primera foto: riesgo de perder las celdas | `bateria_baja` |
+| La batería baja de 3,0 V por celda con los motores | Avisa | `bateria_celdas` |
+| Batería al revés, en corto o en el pin 5V | Avisa; no alimenta nada | `bateria_invertida`, `bateria_corto`, `bateria_en_5v` |
+| Los motores reciben la orden pero no hay batería en EXT_PWR | No giran: el USB no alimenta los bornes | `motores_sin_energia` |
+| Motor en un pin del chip | Avisa: un pin da 40 mA | `motor_en_pin` |
+| Más de 0,6 A por un canal del L293D por medio segundo (rueda trabada) | Avisa: el integrado se calienta | `l293d_corriente` |
+| Motor directo al 5V y GND | Gira con el 5V del USB y su corriente entra a la energía del USB (golpe de ~1 A al arrancar) | — |
+| Batería en el VIN con más de 6,6 V | El Uno toma la energía del VIN (su regulador da 5 V) y el USB deja de entregar | — |
+
+### La caída del L293D (no idealidad `caidaL293D`)
+
+Sus transistores son bipolares: entre los dos lados del puente se comen unos **1,4 V más 1 V por amperio**. Con la batería llena, al motor le llegan 6,8 V a toda velocidad; en modo ideal, los 8,4 V. Por eso el carro va más lento con la shield que conectado directo a la batería.
+
+### El PWM de los motores
+
+AFMotor_R4 pone el PWM a unos 1000 Hz: en un milisegundo puede haber uno o dos pulsos, y el ciclo útil de cada milisegundo salta. Se suaviza con una constante de tiempo de 4 ms (unos pocos períodos), como lo hace la inductancia del motor; un pin quieto en 0 o en 1 se toma exacto. El motor siente el voltaje medio: ciclo útil × (VS − caída).
+
+### Lo que muestra la tabla de mediciones
+
+Una fila por motor (canal, voltaje medio en sus bornes, corriente, RPM y «adelante/atrás · N cm/s» según su lado), una para la shield (voltaje de los motores, el puente PWR y si el Uno toma la energía del VIN) y una por batería (voltaje, corriente y voltios por celda, con «cárgala» por debajo de 3,3 V).
+
+### Pruebas
+
+- `pruebas/probar_potencia.js` (Node, con `programas/carro_motores`): 24 comprobaciones. Adelante a 200 = 179 RPM con 5,4 V; atrás a 255 = 227 RPM con 6,8 V (caída de 1,57 V); ideal = 279 RPM; descargada = 128 RPM y aviso en la primera foto; sin batería, batería al revés, motor en un pin y motor al 5V del USB.
+- `pruebas/probar_carro.py` (Chromium): agregar las tres piezas, la shield fija y única, el puente, las vistas y el lado del motor, las cargas de la batería y el ejemplo del carro simulando (la rueda gira, la tabla y la flecha).
+- `probar_contrato.js` revisa los pines de cada vista del motor y los valores de cada campo contra el esquema.
+
+## 50. Un 72 % más rápido: la llamada a `avrInstruction`
+
+> Hallado el 10 de octubre de 2026, buscando por qué el carro iba lento en la app de Efraín.
+
+Al perfilar el núcleo con Node (`node --cpu-prof`), el 14 % del tiempo se iba en dos funciones `get` que no son del simulador. Son del empaquetador: avr8js viene como CommonJS, y esbuild deja cada cosa importada de él detrás de dos «getters» de módulo. `avrInstruction(cpu)` se llama una vez por instrucción del chip, millones de veces por segundo, y cada vez pasaba por los dos getters. Además, eso impedía que el motor de JavaScript la optimizara junto con el ciclo.
+
+**El arreglo** (`src/chip.js`) es una línea: guardar la función una sola vez, `const ejecutarInstruccion = avrInstruction;`, y llamar a esa.
+
+| Programa (Node, este PC, con cargador) | Antes | Después |
+|---|---|---|
+| Parpadeo en el pin 13 | 1,48 × el chip real | 2,37 × |
+| Carro con la shield, los dos motores y la batería | 1,32 × | 2,27 × |
+
+Sirve para todos los programas, no solo para el carro. El cálculo de la shield, los motores y la batería es poco: el carro va apenas 4 % más lento que un parpadeo. El resto del tiempo es la emulación del chip.
+
+**El dibujo:** el motor solo toca su texto y su flecha cuando cambian (antes rehacía la flecha unas 60 veces por segundo). Con TecnoBloques maximizado y las dos ruedas girando, el hilo de la página trabaja unos 90 ms por segundo, y el simulador va en otro hilo (el Worker).
+

@@ -1,4 +1,5 @@
 import { tiras } from './protoboard.js';
+import { PUENTES_SHIELD } from './piezas/shield_l293d.js';
 
 // Agrupa en nodos eléctricos los pines unidos por cables, como seguir un cable con el dedo.
 // En el prototipo 1 aquí también estaba la «regla de conexiones» que decidía si un LED prendía;
@@ -37,7 +38,12 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
     }
   }
   for (const c of circuito.componentes) {
-    if (c.tipo === 'pulsador') {
+    if (c.tipo === 'shield_l293d') {
+      // La shield va enchufada al Uno: sus conectores de servo y sus GND son pines de la placa.
+      for (const [pin, otro] of PUENTES_SHIELD) unir(c.id + '.' + pin, otro);
+      // Con el puente PWR puesto, la batería de EXT_PWR también llega al Vin del Uno.
+      if (!c.props || c.props.puentePWR !== false) unir(c.id + '.EXT_POS', 'placa.VIN');
+    } else if (c.tipo === 'pulsador') {
       unir(c.id + '.1i', c.id + '.1d'); // misma lámina de metal por dentro
       unir(c.id + '.2i', c.id + '.2d');
       if (presionados.has(c.id)) unir(c.id + '.1i', c.id + '.2i');

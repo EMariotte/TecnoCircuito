@@ -69,6 +69,9 @@ export function crearLienzo(elemento, opciones = {}) {
     <button type="button" role="menuitem" data-accion="agregar" data-tipo="potenciometro">Potenciómetro</button>
     <button type="button" role="menuitem" data-accion="agregar" data-tipo="pulsador">Botón</button>
     <button type="button" role="menuitem" data-accion="agregar" data-tipo="servo">Servo</button>
+    <button type="button" role="menuitem" data-accion="agregar" data-tipo="motor_tt">Motor TT</button>
+    <button type="button" role="menuitem" data-accion="agregar" data-tipo="shield_l293d">Shield L293D</button>
+    <button type="button" role="menuitem" data-accion="agregar" data-tipo="bateria_lipo">Batería LiPo 2S</button>
     <button type="button" role="menuitem" data-accion="protoboard">Protoboard</button>
   </div>
 </div>`;
@@ -101,7 +104,7 @@ export function crearLienzo(elemento, opciones = {}) {
   let camaraManual = false; // el aprendiz movió o acercó la vista: ya no se re-encuadra sola
   let tamanoEncuadre = null; // tamaño del área cuando se encuadró por última vez
   let destruido = false;
-  let vistaSim = { simulando: false, leds: {}, quemados: [], voltajes: {}, placa: {}, servos: {} }; // lo que el simulador pide mostrar
+  let vistaSim = { simulando: false, leds: {}, quemados: [], voltajes: {}, placa: {}, servos: {}, piezas: {} }; // lo que el simulador pide mostrar
   const pulsados = new Set(); // botones presionados con el mouse ahora
   const oyentesPulsar = []; // el simulador escucha aquí los botones (no cambian el circuito guardado)
   const oyentesMano = []; // y aquí «la mano»: el pin o el cable que tiene el mouse encima
@@ -110,7 +113,9 @@ export function crearLienzo(elemento, opciones = {}) {
   const componente = (id) => datos.componentes.find((c) => c.id === id);
   // La placa está fija en el origen; la protoboard es un objeto aparte del circuito (no está en componentes).
   const pieza = (id) => (id === 'protoboard' ? datos.protoboard : componente(id));
-  const lugar = (id) => (id === 'placa' ? { x: 0, y: 0, rot: 0 } : pieza(id));
+  // Una pieza «montada» (la shield) va encima de la placa, en su mismo lugar.
+  const montada = (c) => !!(c && TIPOS[c.tipo] && TIPOS[c.tipo].montada);
+  const lugar = (id) => (id === 'placa' || montada(componente(id)) ? { x: 0, y: 0, rot: 0 } : pieza(id));
 
   // ---- Piezas
 
@@ -138,14 +143,18 @@ export function crearLienzo(elemento, opciones = {}) {
       el.title = 'Esta pieza es de una versión más nueva de TecnoCircuito.';
     }
     div.appendChild(el);
-    capaComp.appendChild(div);
+    // Una pieza montada (la shield) va justo encima de la placa: debajo de la protoboard y de las demás piezas.
+    const vPlaca = vistas.get('placa');
+    if (def && def.montada && vPlaca) capaComp.insertBefore(div, vPlaca.div.nextSibling);
+    else capaComp.appendChild(div);
     const vista = { id, def, div, el, w: 64, h: 40, pines: new Map(), lista: false };
     vistas.set(id, vista);
     return Promise.resolve(el.updateComplete).then(() => {
       if (vistas.get(id) !== vista) return; // la quitaron mientras se dibujaba
       if (def && def.dibujo) {
-        Object.assign(vista, { w: def.dibujo.ancho, h: def.dibujo.alto });
-        for (const [nombre, p] of Object.entries(def.dibujo.pines)) {
+        const marco = def.dibujo.marco ? def.dibujo.marco(props) : def.dibujo;
+        Object.assign(vista, { w: marco.ancho, h: marco.alto });
+        for (const [nombre, p] of Object.entries(marco.pines)) {
           const marca = document.createElement('div');
           marca.className = 'tc-pin';
           marca.dataset.ref = `${id}.${nombre}`;
@@ -220,6 +229,13 @@ export function crearLienzo(elemento, opciones = {}) {
     const b = menu.querySelector('[data-accion="protoboard"]');
     b.disabled = !!datos.protoboard;
     b.title = datos.protoboard ? 'Ya hay una protoboard' : '';
+    // Las piezas montadas sobre la placa (la shield) van una sola vez.
+    for (const [tipo, def] of Object.entries(TIPOS)) {
+      if (!def.montada) continue;
+      const m = menu.querySelector(`[data-tipo="${tipo}"]`);
+      const hay = datos.componentes.some((k) => k.tipo === tipo);
+      if (m) Object.assign(m, { disabled: hay, title: hay ? `Ya hay una ${def.nombre}` : '' });
+    }
   }
 
   // ---- Encaje de las patas en la protoboard
@@ -248,6 +264,7 @@ export function crearLienzo(elemento, opciones = {}) {
   // Al soltar una pieza: si todas sus patas caen en huecos libres, queda encajada (justo en los huecos) y su
   // campo «en» dice qué pata va en qué hueco. Si no, queda suelta y sin «en».
   function encajarPieza(c) {
+    if (montada(c)) return false; // la shield va sobre el Uno, nunca en la protoboard
     const r = calcularEncaje(c);
     if (r) {
       c.x = redondear(c.x + r.dx);
@@ -318,7 +335,8 @@ export function crearLienzo(elemento, opciones = {}) {
       v.el.brightness = brillo;
       v.div.classList.toggle('tc-quemado', vistaSim.quemados.includes(v.id));
     } else if (v.def && v.def.mostrar) {
-      v.def.mostrar(v.el, vistaSim.simulando ? vistaSim.servos[v.id] : null);
+      const estado = vistaSim.simulando ? vistaSim.piezas[v.id] || vistaSim.servos[v.id] || null : null;
+      v.def.mostrar(v.el, estado, (componente(v.id) || {}).props);
     }
   }
 
@@ -622,12 +640,12 @@ export function crearLienzo(elemento, opciones = {}) {
       const def = TIPOS[c.tipo];
       const v = vistas.get(c.id);
       agregar(`<span class="tc-etiqueta">${def ? def.nombre : 'Pieza desconocida'}</span>`);
-      if (def && def.campo) {
-        const actual = String(c.props[def.campo.prop]);
-        const opciones = def.campo.opciones
+      for (const campo of def ? def.campos || (def.campo ? [def.campo] : []) : []) {
+        const actual = String(c.props[campo.prop]);
+        const opciones = campo.opciones
           .map(([valor, texto]) => `<option value="${valor}"${actual === String(valor) ? ' selected' : ''}>${texto}</option>`)
           .join('');
-        agregar(`<label class="tc-campo">${def.campo.etiqueta} <select data-prop="${def.campo.prop}">${opciones}</select></label>`);
+        agregar(`<label class="tc-campo">${campo.etiqueta} <select data-prop="${campo.prop}">${opciones}</select></label>`);
       }
       if (def && def.perilla) {
         const valor = Math.round((Number(c.props[def.perilla.prop]) || 0) * 100);
@@ -637,7 +655,7 @@ export function crearLienzo(elemento, opciones = {}) {
         const encendido = v && v.el.value ? ' checked' : '';
         agregar(`<label class="tc-check"><input type="checkbox" data-accion="encender"${encendido}> Ver encendido</label>`);
       }
-      agregar('<button type="button" data-accion="girar">Girar</button>');
+      if (!montada(c)) agregar('<button type="button" data-accion="girar">Girar</button>');
     }
     agregar('<button type="button" data-accion="borrar">Borrar</button>');
   }
@@ -655,8 +673,8 @@ export function crearLienzo(elemento, opciones = {}) {
     const c = {
       id,
       tipo,
-      x: Math.round(cx - 20 + corrimiento),
-      y: Math.round(cy - 20 + corrimiento),
+      x: def.montada ? 0 : Math.round(cx - 20 + corrimiento),
+      y: def.montada ? 0 : Math.round(cy - 20 + corrimiento),
       rot: 0,
       props: copia(def.props),
     };
@@ -673,9 +691,24 @@ export function crearLienzo(elemento, opciones = {}) {
     cambio();
   }
 
+  // Rehace el dibujo de una pieza cuyo tamaño o pines dependen de sus propiedades (la vista del motor).
+  function rehacerVista(c) {
+    const v = vistas.get(c.id);
+    if (v) {
+      v.div.remove();
+      for (const p of v.pines.values()) p.div.remove();
+      vistas.delete(c.id);
+    }
+    crearVista(c.id, c.tipo, c.props).then(() => {
+      dibujarCables();
+      if (sel && sel.id === c.id) seleccionar({ tipo: 'comp', id: c.id });
+    });
+  }
+
   function girar() {
     if (!sel || sel.tipo !== 'comp' || sel.id === 'protoboard') return;
     const c = componente(sel.id);
+    if (montada(c)) return;
     c.rot = ((c.rot || 0) + 90) % 360;
     ubicar(vistas.get(c.id));
     if (datos.protoboard) encajarPieza(c); // girada, puede encajar en otros huecos o quedar suelta
@@ -724,6 +757,7 @@ export function crearLienzo(elemento, opciones = {}) {
     menu.hidden = !abrir;
     botonMenu.setAttribute('aria-expanded', String(abrir));
     if (!abrir) return;
+    pintarAgregar(); // lo que ya está (la protoboard, la shield) no se puede agregar otra vez
     // El menú va fuera de la barra (que se desplaza de lado y lo cortaría): se ubica bajo el botón.
     const b = botonMenu.getBoundingClientRect();
     const t = tc.getBoundingClientRect();
@@ -784,9 +818,11 @@ export function crearLienzo(elemento, opciones = {}) {
     }
     const prop = e.target.dataset.prop;
     if (!prop || !def) return;
-    const valor = typeof def.props[prop] === 'number' ? Number(e.target.value) : e.target.value;
+    const tipoProp = typeof def.props[prop];
+    const valor = tipoProp === 'number' ? Number(e.target.value) : tipoProp === 'boolean' ? e.target.value === 'true' : e.target.value;
     c.props = { ...c.props, [prop]: valor };
-    def.aplicar(v.el, c.props);
+    if (def.dibujo && def.dibujo.marco) rehacerVista(c); // cambia el tamaño o los pines del dibujo
+    else def.aplicar(v.el, c.props);
     emitir('componente_cambiado', { id: c.id, props: copia(c.props) });
     cambio();
   });
@@ -893,6 +929,7 @@ export function crearLienzo(elemento, opciones = {}) {
         }
       }
       seleccionar({ tipo: 'comp', id });
+      if (montada(c)) return iniciarPaneo(e); // la shield no se mueve: arrastrarla mueve la vista
       // Sobre la perilla del potenciómetro, el arrastre la gira (lo maneja el dibujo de Wokwi): no se mueve la pieza.
       if (TIPOS[c.tipo] && TIPOS[c.tipo].perilla && e.composedPath().some(esPerilla)) return;
       gesto = { tipo: 'mover', id, dx: m.x - c.x, dy: m.y - c.y, x0: e.clientX, y0: e.clientY, movido: false };
@@ -1274,6 +1311,8 @@ export function crearLienzo(elemento, opciones = {}) {
           ? 'Arrastra los puntos blancos para acomodar el cable · Teclas 0 a 9: color · Doble clic en un punto: quitarlo · Supr: borrar'
           : sel && sel.tipo === 'cable'
             ? 'Color: muestras de arriba o teclas 0 a 9 (código de colores) · Doble clic en el cable para doblarlo · Supr: borrar'
+            : sel && montada(componente(sel.id))
+              ? 'Va montada sobre el Uno: no se mueve · Clic en un borne para empezar un cable · Supr: quitarla'
             : sel && sel.id === 'protoboard'
               ? 'Arrástrala para moverla: las piezas encajadas se mueven con ella · Pasa por un hueco para ver su tira · Supr: borrar'
               : sel && datos.protoboard
@@ -1352,6 +1391,7 @@ export function crearLienzo(elemento, opciones = {}) {
         voltajes: estado.voltajes || {},
         placa: estado.placa || {},
         servos: estado.servos || {},
+        piezas: estado.piezas || {},
       };
       if (antes !== vistaSim.simulando) {
         tc.classList.toggle('tc-simulando', vistaSim.simulando);
