@@ -38,6 +38,11 @@ const ZUMBIDO_UMBRAL = Math.cos(0.35 * Math.PI);
 // quieta la lectura no se mueve, salvo cuando el voltaje cae justo en el borde entre dos valores (ahí alterna).
 const RUIDO_ADC_V = (0.1 * 5) / 1024;
 const PASEO_AL_AIRE_V = 0.15; // cuánto deambula, por lectura, una entrada analógica al aire
+// Lo que se ve y se mide de una señal que cambia se promedia en el tiempo, como lo hacen el ojo y el multímetro:
+// promedio móvil con esta constante de tiempo. Hace falta cuando la señal es más lenta que una foto (≈16 ms): el pulso
+// de un servo (50 Hz) o la red que capta la mano (60 Hz). Una señal quieta se muestra exacta, sin esperar.
+const PROMEDIO_VISTA_MS = 100;
+const QUIETA_MS = 50; // sin cambios de pin en este tiempo, la señal se considera quieta
 
 export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(Math.random() * 2 ** 32) }) {
   const azar = crearAzar(semilla); // con semilla: las pruebas se pueden repetir
@@ -64,6 +69,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let ventana = { inicio: 0, clave: '' };
   let corte = null; // { tiempos, ciclo }: cómo iba la ventana la última vez que volvió a su combinación
   let medicion = null;
+  let ultimoCambio = -Infinity; // ciclo del último cambio de pin (para saber si la señal está quieta)
   let evaluaciones = 0;
   let txHasta = 0;
   let serial = []; // bytes que mandó el programa desde la última foto
@@ -111,12 +117,14 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       claveActual = clave(ahora);
       if (!estadosDe.has(claveActual)) estadosDe.set(claveActual, ahora);
       if (claveActual === ventana.clave) corte = { tiempos: new Map(tiempos), ciclo: chip.ciclos };
+      ultimoCambio = chip.ciclos;
       actualizarEntradas(); // un pin que pasa a entrada (o que maneja otra entrada) cambia lo que se lee
       if (servos.size) medirPulsos(cambios);
     });
     chip.alCadaMs(ruidoAlAire);
     chip.alCadaMs(avanzarServos);
     for (const s of servos.values()) s.subida = null; // un chip nuevo empieza sin pulsos a medias
+    ultimoCambio = -Infinity;
     chip.ponerLectorAnalogico(leerAnalogico);
     chip.alByteSerial((byte) => {
       serial.push(byte);
@@ -461,9 +469,13 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       }
       sols.push([m, t / total]);
     }
-    medicion = sols.length ? promediar(sols) : null;
-    if (medicion) medicion.pwm = ciclosUtiles(partes, total);
-    ponerAnalogicos();
+    const crudo = sols.length ? promediar(sols) : null;
+    if (crudo) crudo.pwm = ciclosUtiles(partes, total);
+    ponerAnalogicos(crudo); // analogRead() lee el promedio de la ventana, sin el promedio de la vista
+    // La vista: exacta si ningún pin cambió en los últimos 50 ms (señal quieta); si no, promedio móvil.
+    const quieta = chip.ciclos - ultimoCambio > (QUIETA_MS / 1000) * FRECUENCIA;
+    const alfa = quieta ? 1 : 1 - Math.exp(-((total / FRECUENCIA) * 1000) / PROMEDIO_VISTA_MS);
+    medicion = crudo ? suavizar(crudo, medicion, alfa) : null;
     const pines = chip.estados();
     const texto = serial.length ? decodificador.decode(Uint8Array.from(serial), { stream: true }) : '';
     serial = [];
@@ -699,6 +711,24 @@ function promediar(sols) {
       i: prom((m) => m.potenciometros[n].i),
     })),
   };
+}
+
+// Promedio móvil de una medición: cada número se acerca al nuevo en la fracción `alfa` (1 = el nuevo, exacto). Las
+// listas se emparejan por id o por pin (una pieza nueva entra con su valor); null («al aire») y lo que no es número
+// se toman tal cual. Devuelve un objeto nuevo: las soluciones guardadas no se tocan.
+function suavizar(nuevo, previo, alfa) {
+  if (typeof nuevo === 'number') return typeof previo === 'number' && alfa < 1 ? previo + alfa * (nuevo - previo) : nuevo;
+  if (Array.isArray(nuevo)) {
+    const llave = (x) => (x && typeof x === 'object' ? x.id || x.pin : undefined);
+    const antes = new Map((Array.isArray(previo) ? previo : []).map((x) => [llave(x), x]));
+    return nuevo.map((x, i) => suavizar(x, llave(x) !== undefined ? antes.get(llave(x)) : (previo || [])[i], alfa));
+  }
+  if (nuevo && typeof nuevo === 'object') {
+    const r = {};
+    for (const k of Object.keys(nuevo)) r[k] = suavizar(nuevo[k], previo && typeof previo === 'object' ? previo[k] : undefined, alfa);
+    return r;
+  }
+  return nuevo;
 }
 
 // Generador de números al azar con semilla (mulberry32): la misma semilla da la misma secuencia.

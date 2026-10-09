@@ -1007,3 +1007,35 @@ El bucle es el mismo que se ve en el aula. Al reiniciarse, `attach()` manda los 
 **Para qué sirve en el aula:** el aprendiz olvida la resistencia pull-down y su circuito parece funcionar, porque el LED queda quieto. Pero al pasar el mouse por el cable del botón, el LED se enciende a medias. Es lo mismo que pasa en la mesa al acercar la mano, y lo lleva a descubrir para qué sirve la pull-down.
 
 **Cómo se comparó:** con el mismo programa en los dos lados. La placa con la mano dio de 225 a 269 cambios en 2 s y 35,3 % en ALTO; el simulador, con el mouse, `cambios 240 alto 35.1 %`.
+
+## 48. El promedio de la vista (señales más lentas que una foto)
+
+> Hecho el 10 de octubre de 2026. Salió de las validaciones del 9 oct: la tabla decía «Pin 9: 1,84 V» con un servo, y el LED de la mano saltaba entre 0 y 83 % de una foto a otra.
+
+**El problema.** Cada foto promedia lo que pasó en su ventana (≈16 ms), cortada en períodos completos (sección 27). Con el PWM a 490 Hz entran unos 8 períodos, y el promedio sale exacto. Pero una señal más lenta que la ventana no alcanza a dar un período completo:
+- el pulso de un servo (50 Hz: 1,5 ms en ALTO cada 20 ms);
+- la red de 60 Hz que capta «la mano».
+
+Cada foto toma un pedazo distinto de la onda, y su promedio salta. Algunas ventanas del servo ni siquiera tienen un cambio de pin.
+
+**El arreglo: promediar como el ojo y el multímetro**, que integran unos 100 ms:
+
+```
+ ventana de la foto ──► promedio crudo ──┬──► analogRead() (sin cambio)
+                                          │
+                                          ▼
+                         ¿algún pin cambió en los últimos 50 ms?
+                            no → la vista es el valor exacto, al instante (un botón, un LED fijo)
+                            sí → promedio móvil: vista += α · (crudo − vista),  α = 1 − e^(−ventana / 100 ms)
+```
+
+- **`suavizar()`** recorre la medición (voltajes, LED, resistencias, pines, PWM) y empareja las listas por `id` o `pin`, así una pieza nueva entra con su valor. Devuelve un objeto nuevo: las soluciones guardadas no se tocan.
+- **Lo que NO cambia:**
+  - las fallas, que se revisan con el valor de cada combinación (el pico es el que daña);
+  - `analogRead()`;
+  - el ciclo útil del PWM y los servos.
+- **Resultado:**
+  - el pin 9 del servo a 90° marca entre 0,31 y 0,38 V, como un multímetro (~0,37 V);
+  - el LED de la mano se queda entre 33 y 49 %;
+  - el PWM del pin 9 sigue exacto (50,0 % y 20,0 % en `test:simulador`).
+- **Constantes** (`src/nucleo.js`): `PROMEDIO_VISTA_MS = 100` y `QUIETA_MS = 50`.

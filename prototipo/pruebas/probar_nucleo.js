@@ -310,6 +310,17 @@ const desviacion = (xs) => {
   const pico = Math.max(...v.map((x) => x.pico * 1000));
   revisar(quieto < 15 && moviendo > 150 && pico > 600, `consumo del SG90: ${quieto.toFixed(0)} mA quieto, ${moviendo.toFixed(0)} mA moviéndose y ${pico.toFixed(0)} mA de pico al arrancar`);
   revisar(Math.abs(en(1900).consumo5V * 1000 - quieto) < 1, `el 5V de la placa entrega lo que pide el servo (${(en(1900).consumo5V * 1000).toFixed(1)} mA)`);
+  // El pin de señal en la tabla: un multímetro promedia el pulso (1,47 ms de cada 20 ms a 90°) y marca ~0,37 V.
+  // Cada foto (16 ms) es más corta que el período del servo: sin el promedio de la vista, la tabla saltaba (y decía 1,84 V).
+  const vista = crearNucleo({ hex: hex('servo_barrido'), circuito: conServo(), activas: ACTIVAS, semilla: 1 });
+  const v9 = [];
+  for (let t = 0; t < 1900; t += 16) {
+    vista.avanzar(CUADRO);
+    const f = vista.foto();
+    if (t > 1500) v9.push(f.voltajes['placa.D9']);
+  }
+  revisar(Math.min(...v9) > 0.28 && Math.max(...v9) < 0.46,
+    `el pin 9 del servo en la tabla: entre ${Math.min(...v9).toFixed(2).replace('.', ',')} y ${Math.max(...v9).toFixed(2).replace('.', ',')} V, como un multímetro (~0,37 V)`);
   // Barrido continuo (servo_continuo): la placa real midió ~100 mA en un SG90 del kit (UT33B+, 9 oct 2026)
   const lento = crearNucleo({ hex: hex('servo_continuo'), circuito: conServo(), activas: ACTIVAS, semilla: 1 });
   const barrido = seguir(lento, 6000).filter((x) => x.t > 1000);

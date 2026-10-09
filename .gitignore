@@ -30,3 +30,6 @@ respaldos/
 prototipo/pruebas/capturas/
 prototipo/pruebas/*.cjs
 prototipo/pruebas/*.log
+
+# Imágenes de referencia con licencia de terceros (solo para consultar en local; nunca al repositorio público)
+prototipo/Imagenes_módulos/

@@ -613,3 +613,17 @@ Efraín estuvo en la TecnoAcademia con el kit y se validó una prueba a la vez. 
 **Cierre:** pasan los 15 grupos de `npm run probar` (387 comprobaciones), y en TecnoBloques `npm test`, `test:ui` y `test:simulador` (28 de 28).
 
 **La próxima vez en el laboratorio:** 5 y 6 SG90 en un Uno (la predicción), el MG90S, y, opcional, el ADC con el programa corregido.
+
+## 2026-10-10 — El promedio de la vista para señales lentas
+
+Sesión de solo software. Es el primer pendiente que salió de las validaciones del 9 oct.
+
+- **Problema:** cuando una señal es más lenta que una foto (≈16 ms), el promedio de la ventana salta. Pasaba con el pulso del servo (la tabla decía «Pin 9: 1,84 V») y con la red que capta la mano (el LED saltaba entre 0 y 83 %).
+- **Arreglo** (`src/nucleo.js`): la vista se promedia como el ojo y el multímetro.
+  - Con un pin cambiando en los últimos 50 ms, promedio móvil con τ = 100 ms.
+  - Con la señal quieta, valor exacto al instante.
+  - `analogRead()`, las fallas y el ciclo útil del PWM no cambian.
+- **Primer intento descartado:** decidir «señal quieta» por una ventana con una sola combinación de pines. Las ventanas del servo a veces no tienen ningún cambio (1,5 ms en ALTO cada 20 ms) y el filtro se reiniciaba a 0. El criterio bueno es el tiempo desde el último cambio.
+- **Resultado:** el pin 9 del servo marca de 0,31 a 0,38 V (un multímetro, ~0,37 V) y el LED de la mano se queda entre 33 y 49 %. La prueba nueva está en `probar_nucleo.js`.
+- `npm run probar`: 15 grupos, 388 comprobaciones. `test:simulador` de TecnoBloques también pasa (PWM al 50,0 % y al 20,0 %).
+- Explicado en `COMO-FUNCIONA.md`, sección 48.
