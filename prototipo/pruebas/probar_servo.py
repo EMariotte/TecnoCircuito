@@ -80,15 +80,15 @@ with sync_playwright() as p:
     pg.wait_for_function('() => /90\\r?\\n180/.test(document.getElementById("serial").textContent)', timeout=15000)
     pg.wait_for_timeout(500)
     a180 = angulo(brazos()[0])
-    revisar(a180 is not None and abs(a180 - 180) < 2, f'con write(180) el brazo queda a {a180}°')
+    revisar(a180 is not None and abs(a180 - 175) < 2, f'con write(180) el brazo queda a {a180}° (el SG90 del kit llega a 175°)')
     pg.locator('main').screenshot(path=str(SALIDA / 'servo_2_simulando.png'))
     pg.click('#detener')
     pg.wait_for_timeout(300)
     revisar(angulo(brazos()[0]) == 90, 'al detener, el dibujo vuelve a 90° (lo que se guarda no cambia)')
 
-    # Cuatro servos en el USB: juntos piden más de 500 mA
-    pg.get_by_text('Cuatro servos en el USB (T3)').click()
-    pg.wait_for_selector('.tc-pin[data-ref="servo4.SIG"]', state='attached')
+    # Seis servos en el USB (como un Otto): el 5V se hunde al arrancar y la placa se reinicia (con 4 no: medido)
+    pg.get_by_text('Seis servos en el USB (T3)').click()
+    pg.wait_for_selector('.tc-pin[data-ref="servo6.SIG"]', state='attached')
     pg.click('#iniciar')
     pg.wait_for_function('() => /Inicio/.test(document.getElementById("serial").textContent)', timeout=15000)
     maximo = 0
@@ -97,7 +97,7 @@ with sync_playwright() as p:
         m = re.search(r'pico ([\d.]+),(\d+) mA', fila('USB (placa y circuito)').replace('.', ''))
         if m:
             maximo = max(maximo, float(m.group(1) + '.' + m.group(2)))
-    revisar(maximo > 1500, f'con los cuatro arrancando a la vez, el USB llega a un pico de {maximo:.0f} mA (el puerto da unos 1500 mA)')
+    revisar(maximo > 1000, f'con los seis arrancando a la vez, el USB llega a un pico de {maximo:.0f} mA')
     aviso = pg.evaluate('document.getElementById("fallas").textContent')
     revisar('se reinició' in aviso and 'fuente aparte' in aviso, f'en modo realista la placa se reinicia y lo explica: «{aviso[:120]}…»')
     usb = fila('USB (placa y circuito)')

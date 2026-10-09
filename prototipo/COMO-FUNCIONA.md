@@ -580,6 +580,8 @@ Sin los estilos, las letras de la placa salen gigantes. Sin el prefijo, el segun
 
 ## 36. Entrada flotante y ruido del ADC
 
+> **Actualizado el 9 de octubre de 2026, con las medidas de la placa real:** el ruido del ADC bajó de 0,6 a 0,1 pasos, y la entrada al aire ahora usa «la mano es el mouse» (sección 47). Lo que sigue describe la primera versión.
+
 **¿Cuándo está «al aire» una entrada?** `red.flotantes()` arma grupos de pines por conducción: cables, resistencias, potenciómetros y botones presionados. Los LED no cuentan, porque apagados no conducen. Un grupo está manejado si contiene GND, 5V, 3,3V, un pin de salida o un pin con pull-up. Una entrada en un grupo sin manejar está al aire.
 
 | No idealidad | Realista | Ideal |
@@ -889,6 +891,8 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
 
 ## 45. El servo (pieza Tecno: SG90 y MG90S)
 
+> **Actualizado el 9 de octubre de 2026, con medidas de un SG90 del kit:** `write(0/90/180)` llega a 7°, 90° y 175° (`angulos`); la corriente es de 6 mA en reposo y 590 mA bloqueado; y el control empuja **en proporción a lo que falta** (`bandaGrados` = 8), así que un barrido lento pide ~100 mA y no la corriente de arranque en cada paso. Registros: `validacion/2026-10-09-servo-angulos.md` y `2026-10-09-servo-corriente.md`.
+
 > Hecho el 8 de octubre de 2026. Es la segunda pieza Tecno y la primera con las tres partes: dibujo, modelo eléctrico y modelo lógico. Todo está en [src/piezas/servo.js](src/piezas/servo.js).
 
 **Una sola pieza, dos modelos.** Comparten la forma, el conector y la manera de recibir órdenes. Cambian el color (azul translúcido o negro), los engranajes (plástico o metal) y el consumo. La propiedad `modelo` elige cuál.
@@ -939,6 +943,8 @@ En la placa, el servo es un conector macho de 3 pines (`PinHeader_1x03`) con el 
 
 ## 46. La energía del USB (no idealidad `limiteUSB`)
 
+> **Actualizado el 9 de octubre de 2026, con medidas en un PC del aula:** el camino del USB es **5,11 V − 1,66 Ω** (no 0,4 Ω). El 5V se resuelve **junto con los servos** en cada milisegundo (un servo arrancando es como una resistencia), y el reinicio lo dispara el **bajo voltaje** (< 2,7 V). Con 4 SG90 no se reinicia (como la placa real); desde 5, sí. Las tablas de abajo son de la primera versión. Registro: `validacion/2026-10-09-usb-5v.md`.
+
 > Hecho el 8 de octubre de 2026, a pedido de Efraín: que se vea cuando varios servos piden más de lo que da el USB. Ningún otro simulador lo muestra. Está en [src/energia.js](src/energia.js) y se revisa cada milisegundo en el núcleo.
 
 ```
@@ -969,3 +975,35 @@ El bucle es el mismo que se ve en el aula. Al reiniciarse, `attach()` manda los 
 - La tabla de la página lo muestra en la fila «USB (placa y circuito)».
 
 **En modo ideal** (`limiteUSB` apagada) el USB no tiene límite: el mismo circuito con cuatro servos funciona. Así se compara cómo debería funcionar con cómo funciona de verdad.
+
+## 47. La mano es el mouse (entrada al aire, medida en la placa real)
+
+> Hecho el 9 de octubre de 2026, a partir de la prueba de Efraín con `validar_flotante` (`validacion/2026-10-09-entrada-flotante.md`). Efraín aprobó el modelo antes de implementarlo.
+
+**Lo que mostró la placa real:** una entrada al aire **no cambia sola**. Se queda en su nivel, porque casi no tiene fugas. Pero con la mano cerca, el cuerpo funciona como una antena que capta la **red eléctrica de 60 Hz**, y la entrada la sigue: unos 120 cambios por segundo y 35 % del tiempo en ALTO.
+
+```
+ lienzo (página)                       simulador          Worker                núcleo (cada 1 ms)
+ mouse sobre un pin o un cable  ──►  _alAcercar(refs) ──► {tipo:'mano'} ──►  ponerMano(refs)
+ (solo mientras se simula;                                                      │
+  se avisa solo cuando cambia)                                                  ▼
+                                                     ¿la mano toca el grupo de la entrada al aire?
+                                                     (por conducción: cables, protoboard, resistencias,
+                                                      potenciómetros y botones presionados)
+                                                        sí → nivel = sin(2π · 60 Hz · t) > 0,454  (35 % ALTO)
+                                                        no → se queda; cambia al azar, en promedio cada 10 s
+```
+
+| Parámetro | Valor | De dónde sale |
+|---|---|---|
+| `RED_HZ` | 60 | La red eléctrica de Colombia |
+| `ZUMBIDO_UMBRAL` | cos(0,35 π) ≈ 0,454 | 35 % del tiempo en ALTO, como en la placa |
+| `CAMBIO_AL_AIRE_POR_MS` | 1/10 000 | Sin nada cerca, 0 cambios en 8 s en la placa |
+
+- **Analógica:** con la mano encima, `analogRead()` lee la onda de 60 Hz de punta a punta (0 a 1023). Ojo: un programa que lee cada 100 ms ve casi siempre el mismo punto, porque 100 ms son justo 6 ciclos; es el efecto estroboscópico, y también pasa en la placa real.
+- **En modo ideal** (`entradaFlotante` apagada), la entrada al aire lee BAJO y la mano no hace nada.
+- **El tiempo es el simulado** (`ms()`): si el simulador va más lento que el reloj real, la onda también va más lenta, como todo lo demás.
+
+**Para qué sirve en el aula:** el aprendiz olvida la resistencia pull-down y su circuito parece funcionar, porque el LED queda quieto. Pero al pasar el mouse por el cable del botón, el LED se enciende a medias. Es lo mismo que pasa en la mesa al acercar la mano, y lo lleva a descubrir para qué sirve la pull-down.
+
+**Cómo se comparó:** con el mismo programa en los dos lados. La placa con la mano dio de 225 a 269 cambios en 2 s y 35,3 % en ALTO; el simulador, con el mouse, `cambios 240 alto 35.1 %`.

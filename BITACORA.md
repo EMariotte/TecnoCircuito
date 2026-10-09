@@ -577,3 +577,39 @@ bloques → simulación → imagen SVG (evidencia) → netlist → placa en KiCa
 4. servo SG90/MG90S como pieza Tecno y energía del USB, también validados.
 
 Lo siguiente: la shield L293D y el motor DC (T3).
+
+## 2026-10-09 — Validaciones con la placa real, primera parte (Efraín en el ambiente)
+
+Efraín estuvo en la TecnoAcademia con el kit y se validó una prueba a la vez. Cada una tiene su registro en `validacion/`.
+
+1. **Velocidad en un PC del aula** (`2026-10-09-velocidad-pc-aula.md`). Los PC son HP ProBook 450 G7 (i7-10510U, 8 GB, HDD), todos iguales. Con `prototipo.html` y un servo, **nunca bajó de 90 %**. Con cuatro servos reiniciando la placa en bucle, 66 %: es una situación de falla.
+2. **Ruido de `analogRead()`** (`2026-10-09-ruido-adc.md`). El ADC real tiene unos **0,1 pasos** de ruido: con la perilla quieta no se mueve, salvo en el borde entre dos valores. `RUIDO_ADC_V` bajó de 0,6 a 0,1. Además se corrigió `validar_adc.ino`: con `float` de 32 bits daba `nan`, y ahora suma con enteros.
+3. **Entrada al aire** (`2026-10-09-entrada-flotante.md`). La real **no cambia sola**, y con la mano capta la **red de 60 Hz** (225 a 269 cambios en 2 s, 35 % en ALTO). Nuevo modelo, aprobado por Efraín: **«la mano es el mouse»**. Con el mouse sobre el cable o el pin al aire, la entrada sigue los 60 Hz; sin él, se queda quieta. El simulador da `cambios 240 alto 35.1 %` con el mismo programa. Es interno: `lienzo._alAcercar`, el mensaje `mano` del Worker y `nucleo.ponerMano`.
+4. **Ángulos del servo** (`2026-10-09-servo-angulos.md`). El SG90 del kit llega a 7°, 90° y 175° con `write(0/90/180)`. El modelo usa ahora esos puntos (`MODELOS_SERVO.sg90.angulos`). El MG90S está por medir.
+
+**Ejemplos de validación en TecnoBloques:** el grupo «Validación con la placa real (instructor)», con el C++ exacto y su circuito. Así se simula y se sube a la placa con el mismo código (ver la bitácora de TecnoBloques).
+
+**Pedidos de Efraín** (anotados en TecnoBloques, «Fase 2d»): exportar el monitor serial a **CSV** y un **graficador serial** donde se elige qué variables se ven.
+
+**Hallazgo pendiente:** la tabla muestra «Pin 9: 1,84 V» con la señal del servo, y un multímetro mostraría unos 0,3 a 0,6 V. El promedio falla cuando el período de la señal (20 ms) es más largo que cada foto (16 ms).
+
+## 2026-10-09 — Validaciones con la placa real, segunda parte, y cierre del día
+
+5. **Corriente del SG90** (`2026-10-09-servo-corriente.md`), con el UT33B+ en 10 A:
+   - medidas: menos de 10 mA quieto, ~100 mA en barrido continuo y 590 mA bloqueado;
+   - hallazgo: el modelo daba 674 mA en el barrido, porque cada paso de 1° contaba como un arranque completo;
+   - corrección: el control empuja en proporción a lo que falta (`bandaGrados` = 8, ajustado a los 100 mA). Ahora da 100 mA;
+   - SG90: reposo 6 mA y bloqueo 590 mA;
+   - ejemplo nuevo, «Validar: servo en barrido continuo» (`servo_continuo.ino`).
+6. **5V del USB** (`2026-10-09-usb-5v.md`):
+   - medidas: 5,06, 4,80, 4,68, 4,55 y 4,30 V con 0 a 4 SG90; la recta es **5,11 V − 1,66 Ω**, y el modelo suponía 0,4 Ω;
+   - **con 4 SG90 la placa no se reinició;**
+   - el modelo ahora resuelve el 5V junto con los servos (son como resistencias), y el reinicio lo dispara el bajo voltaje (< 2,7 V); con 4 SG90 queda en ~2,8 V, como en la placa;
+   - el aviso dice «el 5V bajó a X V»;
+   - «Cuatro servos en el USB» pasó a 4 SG90, y hay un ejemplo nuevo, «Seis servos en el USB», con la predicción: se reinicia.
+7. **Otto en el USB** (Nano, sin pilas, ejemplo «Otto humanoide esquiva»): camina sin reiniciarse. El simulador, con el mismo programa y 4 o 6 servos, tampoco: predijo bien un caso que no se usó para ajustarlo.
+8. **Hallazgo:** cuando una señal dura más que una foto (16 ms), su promedio salta entre fotos. Pasa con el pulso del servo en la tabla y con el LED de la mano (cada foto entre 7 y 50 %; promedio ~35 %). La prueba ahora promedia 1 s, como el ojo. **Arreglo pendiente:** suavizar en el núcleo.
+
+**Cierre:** pasan los 15 grupos de `npm run probar` (387 comprobaciones), y en TecnoBloques `npm test`, `test:ui` y `test:simulador` (28 de 28).
+
+**La próxima vez en el laboratorio:** 5 y 6 SG90 en un Uno (la predicción), el MG90S, y, opcional, el ADC con el programa corregido.

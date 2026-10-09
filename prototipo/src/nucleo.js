@@ -11,7 +11,7 @@ import { crearChip, FRECUENCIA, PinState } from './chip.js';
 import { armarRed, revisarFallas, LED } from './motor/red.js';
 import { calcularNodos } from './conexiones.js';
 import { crearServo, MODELOS_SERVO } from './piezas/servo.js';
-import { USB, crearFusible, voltaje5V } from './energia.js';
+import { USB, crearFusible, voltajeConServos } from './energia.js';
 
 export { FRECUENCIA, PinState };
 export { USB, crearFusible } from './energia.js';
@@ -24,18 +24,26 @@ const ENTRADAS = ['D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 
 // se conserva la anterior (como hace en la práctica la histéresis de la entrada).
 const UMBRAL_ALTO = 3.0;
 const UMBRAL_BAJO = 1.5;
-// Entrada flotante (no idealidad «entradaFlotante»): cada milisegundo puede cambiar con esta probabilidad.
-// En promedio cambia cada 120 ms, sin orden: el LED se prende y se apaga solo, a la vista. Más rápido, el LED
-// se ve siempre a medias (el ojo promedia). Valor de partida: se ajusta con validar_flotante.ino en la placa.
-const CAMBIO_AL_AIRE_POR_MS = 1 / 120;
-// Ruido de analogRead() (no idealidad «ruidoADC»): desviación de unos 0,6 pasos del ADC (5 V / 1024).
-// Valor de partida: se ajusta con validar_adc.ino en la placa real.
-const RUIDO_ADC_V = (0.6 * 5) / 1024;
+// Entrada flotante (no idealidad «entradaFlotante»), medida con validar_flotante.ino en un Uno del kit
+// (9 oct 2026, validacion/2026-10-09-entrada-flotante.md):
+//   - sin nada cerca, la entrada se queda en su nivel: cambia muy de vez en cuando (aquí, en promedio cada 10 s);
+//   - con la mano cerca, capta la red eléctrica: sigue una onda de 60 Hz (Colombia), unos 120 cambios por segundo
+//     y ~35 % del tiempo en ALTO. En el simulador, la mano es el mouse: sobre el cable o el pin al aire.
+const CAMBIO_AL_AIRE_POR_MS = 1 / 10000;
+const RED_HZ = 60;
+// ALTO cuando sin(2π·60·t) pasa este valor: así queda ~35 % del tiempo en ALTO (acos(0,454) / π = 0,35).
+const ZUMBIDO_UMBRAL = Math.cos(0.35 * Math.PI);
+// Ruido de analogRead() (no idealidad «ruidoADC»): desviación de 0,1 pasos del ADC (5 V / 1024).
+// Medido con validar_adc.ino en un Uno del kit (9 oct 2026, validacion/2026-10-09-ruido-adc.md): con la perilla
+// quieta la lectura no se mueve, salvo cuando el voltaje cae justo en el borde entre dos valores (ahí alterna).
+const RUIDO_ADC_V = (0.1 * 5) / 1024;
 const PASEO_AL_AIRE_V = 0.15; // cuánto deambula, por lectura, una entrada analógica al aire
 
 export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(Math.random() * 2 ** 32) }) {
   const azar = crearAzar(semilla); // con semilla: las pruebas se pueden repetir
   const presionados = new Set(); // botones presionados ahora
+  let manoRefs = []; // pines o cables que tiene el mouse encima: «la mano» del aprendiz
+  let mano = { raiz: null, grupos: new Set() }; // grupos (por conducción) que toca la mano
   let alAire = new Set(); // entradas digitales sin nada que las maneje
   let canalesAlAire = new Set(); // canales analógicos (0 a 5) al aire
   let refsAlAire = new Set();
@@ -74,7 +82,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let apagada = false; // el fusible se abrió: la placa no tiene energía hasta que se enfríe
   let corteUSB = null; // { motivo: 'puerto' | 'fusible', amperios }: pasó en este milisegundo; se atiende al terminar
   let iCircuito = 0; // lo que el circuito le pide al 5V y al 3,3V (de la última foto)
-  let v5 = USB.voltios;
+  let v5 = USB.idealV;
   let reinicios = 0;
   let usbSuma = 0;
   let usbPico = 0;
@@ -126,7 +134,22 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     red = armarRed(circuitoActual, { quemados, presionados });
     soluciones = new Map();
     armarServos();
+    calcularMano();
   }
+
+  // La mano toca todo lo que está unido a lo que tiene el mouse encima: por cables, la protoboard, resistencias o
+  // potenciómetros (como el dedo sobre un cable capta la red en todo lo que conduce con él).
+  function calcularMano() {
+    if (!manoRefs.length) {
+      mano = { raiz: null, grupos: new Set() };
+      return;
+    }
+    const raiz = calcularNodos(circuitoActual, { presionados, conduccion: true });
+    mano = { raiz, grupos: new Set(manoRefs.map(raiz)) };
+  }
+  const tocaLaMano = (ref) => mano.grupos.size > 0 && mano.grupos.has(mano.raiz(ref));
+  // Nivel que capta una entrada al aire con la mano cerca: la onda de 60 Hz de la red, en el tiempo simulado.
+  const zumbido = () => Math.sin(2 * Math.PI * RED_HZ * (ms() / 1000)) > ZUMBIDO_UMBRAL;
 
   // ---- Servos: el ancho de cada pulso dice el ángulo; el brazo gira a la velocidad del modelo y pide corriente
 
@@ -177,11 +200,17 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   // revisa la energía del USB: con «limiteUSB», un golpe de corriente reinicia la placa y un exceso sostenido
   // calienta el fusible hasta que se abre y la apaga.
   function avanzarServos() {
-    let amperios = apagada ? 0 : USB.placaA + iCircuito;
+    // 1. Cada servo gira con el voltaje del milisegundo anterior (eso fija su velocidad).
+    for (const s of servos.values()) s.logico.avanzar(1, voltiosServo(s));
+    // 2. El 5V de este milisegundo, resuelto junto con lo que piden los servos del 5V (son como resistencias).
+    const fijo = apagada ? 0 : USB.placaA + iCircuito;
+    let siemens = 0;
+    for (const s of servos.values()) if (s.conectado && s.fuente === '5V') siemens += s.logico.corriente(1);
+    v5 = apagada ? 0 : activas.limiteUSB ? voltajeConServos(fijo, siemens) : USB.idealV;
+    // 3. La corriente de cada servo con ese voltaje.
+    let amperios = fijo;
     for (const s of servos.values()) {
-      const v = voltiosServo(s);
-      s.logico.avanzar(1, v);
-      const a = s.logico.corriente(v);
+      const a = s.logico.corriente(voltiosServo(s));
       s.sumaA += a;
       s.picoA = Math.max(s.picoA, a);
       s.msVentana++;
@@ -189,12 +218,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     }
     if (activas.limiteUSB) {
       fusible.avanzar(1, amperios);
-      v5 = apagada ? 0 : voltaje5V(amperios);
       if (!apagada && !corteUSB) {
-        if (amperios > USB.limitePuertoA || v5 < USB.bodV) corteUSB = { motivo: 'puerto', amperios };
+        if (v5 < USB.bodV) corteUSB = { motivo: 'caida', amperios, voltios: v5 };
+        else if (amperios > USB.limitePuertoA) corteUSB = { motivo: 'puerto', amperios };
         else if (fusible.abierto) corteUSB = { motivo: 'fusible', amperios };
       }
-    } else v5 = USB.voltios;
+    }
     usbSuma += amperios;
     usbPico = Math.max(usbPico, amperios);
     usbMs++;
@@ -202,9 +231,17 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
   // Lo que pasó con la energía en este milisegundo: la placa se reinicia (golpe de corriente) o se apaga (fusible).
   function atenderCorte() {
-    const { motivo, amperios } = corteUSB;
+    const { motivo, amperios, voltios } = corteUSB;
     corteUSB = null;
-    if (motivo === 'puerto') {
+    if (motivo === 'caida') {
+      avisar({
+        tipo: 'reinicio_usb',
+        componente: 'placa',
+        corriente_mA: Math.round(amperios * 1000),
+        voltios: Math.round(voltios * 100) / 100,
+        mensaje: `La placa se reinició: los servos arrancaron a la vez y el 5V bajó a ${voltios.toFixed(1).replace('.', ',')} V; por debajo de 2,7 V el Arduino se reinicia. Alimenta los servos con una fuente aparte y une su GND con el del Arduino.`,
+      });
+    } else if (motivo === 'puerto') {
       avisar({
         tipo: 'reinicio_usb',
         componente: 'placa',
@@ -317,13 +354,15 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     refsAlAire = red.refsAlAire(e);
   }
 
-  // Cada milisegundo simulado, las entradas al aire pueden cambiar (solo en modo realista).
+  // Cada milisegundo simulado, las entradas al aire (solo en modo realista): con la mano cerca siguen la red de
+  // 60 Hz; sin ella se quedan en su nivel y cambian muy de vez en cuando.
   function ruidoAlAire() {
     if (!activas.entradaFlotante || !alAire.size) return;
     for (const pin of alAire) {
-      if (azar() < CAMBIO_AL_AIRE_POR_MS) {
-        nivelAlAire[pin] = !nivelAlAire[pin];
-        chip.ponerEntrada(pin, nivelAlAire[pin]);
+      const nivel = tocaLaMano('placa.' + pin) ? zumbido() : azar() < CAMBIO_AL_AIRE_POR_MS ? !nivelAlAire[pin] : nivelAlAire[pin];
+      if (nivel !== nivelAlAire[pin]) {
+        nivelAlAire[pin] = nivel;
+        chip.ponerEntrada(pin, nivel);
       }
     }
   }
@@ -332,6 +371,8 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   function leerAnalogico(canal, voltios) {
     if (canalesAlAire.has(canal)) {
       if (!activas.entradaFlotante) return 0;
+      // Con la mano cerca, la entrada analógica también capta la red: una onda de 60 Hz de punta a punta.
+      if (tocaLaMano('placa.' + ANALOGICOS[canal][0])) return 2.5 + 2.5 * Math.sin(2 * Math.PI * RED_HZ * (ms() / 1000));
       const antes = paseo.has(canal) ? paseo.get(canal) : 1 + 3 * azar();
       const v = Math.max(0, Math.min(5, antes + normal() * PASEO_AL_AIRE_V));
       paseo.set(canal, v);
@@ -525,7 +566,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     corteUSB = null;
     picos = [];
     fusible.reiniciar();
-    v5 = USB.voltios;
+    v5 = USB.idealV;
   }
 
   nuevoChip();
@@ -546,6 +587,11 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       circuitoActual = c;
       rehacerRed();
       actualizarEntradas();
+    },
+    // «La mano»: lo que tiene el mouse encima (refs de pines o de los extremos de un cable), o nada.
+    ponerMano(refs) {
+      manoRefs = Array.isArray(refs) ? refs.filter((r) => typeof r === 'string') : [];
+      calcularMano();
     },
     // Un botón se presiona o se suelta (con el mouse, mientras corre la simulación).
     ponerPulsador(id, presionado) {

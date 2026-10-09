@@ -30,6 +30,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
   - elige el programa (parpadeo, PWM, potenciómetro, botón con pull-down o con pull-up interna, y los dos de validación) y el modo (realista o ideal), y usa Iniciar, Pausar, Reiniciar y Detener;
   - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)», «Ejemplo con potenciómetro (T2)», «Ejemplo con servo (T3)» y «Cuatro servos en el USB (T3)» arman el circuito de cada tarea y eligen su programa;
   - mientras corre, los botones se presionan manteniendo el clic sobre ellos;
+  - **la mano es el mouse:** en modo realista, el mouse sobre el cable o el pin de una entrada al aire hace que esta capte la red de 60 Hz, como la mano cerca de la placa real;
   - el cableado y los valores se pueden cambiar mientras corre;
   - el panel muestra la velocidad frente al chip real, las fallas, el monitor serial y una tabla de voltajes y corrientes;
   - al pasar el mouse por un pin conectado se ve su voltaje.
@@ -68,7 +69,7 @@ El criterio es ±5 % en voltaje y ±10 % en corriente.
 
 Son dos programas que dan números para comparar con el simulador:
 
-1. **Ruido de `analogRead()`:** potenciómetro en A0 (patas a GND y 5V), perilla quieta. Sube `programas/validar_adc/validar_adc.ino` y anota lo que imprime cada segundo: mínimo, máximo, promedio y desviación de 200 lecturas. El simulador, en modo realista, da una desviación de unos 0,6 a 0,8 pasos.
+1. **Ruido de `analogRead()`:** potenciómetro en A0 (patas a GND y 5V), perilla quieta. Sube `programas/validar_adc/validar_adc.ino` y anota lo que imprime cada segundo: mínimo, máximo, promedio y desviación de 200 lecturas. En la placa real (9 oct 2026) la lectura no se mueve, salvo en el borde entre dos valores; el simulador usa 0,1 pasos de desviación.
 2. **Entrada al aire:** el pin 2 sin nada conectado. Sube `programas/validar_flotante/validar_flotante.ino` y anota cuántos cambios cuenta en 2 s y el porcentaje en ALTO. Repite acercando la mano al cable o tocando el pin. El simulador cambia en promedio cada 120 ms (unos 16 cambios en 2 s).
 
 Con esos números se ajustan `RUIDO_ADC_V` y `CAMBIO_AL_AIRE_POR_MS` en `src/nucleo.js`. Los mismos programas también corren en el simulador, para compararlos.
@@ -77,9 +78,9 @@ Con esos números se ajustan `RUIDO_ADC_V` y `CAMBIO_AL_AIRE_POR_MS` en `src/nuc
 
 Los valores del servo y del USB son de partida (hojas de datos y valores típicos). Con el kit se ajustan así:
 
-1. **Consumo del servo** (multímetro en serie con el cable rojo, en la escala de 2 A o de 10 A): con `programas/servo_barrido/servo_barrido.ino`, anota la corriente quieto, moviéndose y con el brazo frenado con la mano por un segundo (bloqueado). Hazlo con el SG90 y con el MG90S. El simulador usa 10, 200 y 650 mA (SG90) y 10, 250 y 700 mA (MG90S): `MODELOS_SERVO` en `src/piezas/servo.js`.
-2. **Voltaje del 5V** (multímetro entre 5V y GND) con 1 y con 2 servos moviéndose. Moviéndose, el simulador da unos 4,9 y 4,8 V (en el instante del arranque baja a 4,7 y 4,5 V, pero un multímetro no alcanza a verlo): `USB.ohmios` en `src/energia.js`.
-3. **Con cuántos servos se reinicia** (`programas/servos_cuatro/servos_cuatro.ino`, con 1, 2, 3 y 4 servos alimentados del 5V de la placa por USB): mira si el monitor serial repite «Inicio». En el PC del aula y con el cable del kit. El simulador se reinicia desde 3 SG90: `USB.limitePuertoA` (1,5 A).
+1. **Consumo del servo** (multímetro en serie con el cable rojo, en la escala de 2 A o de 10 A): con `programas/servo_barrido/servo_barrido.ino`, anota la corriente quieto, moviéndose y con el brazo frenado con la mano por un segundo (bloqueado). Hazlo con el SG90 y con el MG90S. Para «moviéndose» usa «Validar: servo en barrido continuo» (el multímetro es lento). **Medido el 9 oct en un SG90:** menos de 10, ~100 y 590 mA; el simulador usa 6, ~100 y 590 mA. El MG90S (10, 250 y 700 mA de la hoja) está por medir: `MODELOS_SERVO` en `src/piezas/servo.js`.
+2. **Voltaje del 5V** (multímetro entre 5V y GND) con 1 y con 2 servos moviéndose. **Medido el 9 oct:** 5,06 V sin servos y 4,80, 4,68, 4,55 y 4,30 V con 1 a 4 SG90 moviéndose; el simulador usa 5,11 V − 1,66 Ω (`USB` en `src/energia.js`).
+3. **Con cuántos servos se reinicia** (`programas/servos_cuatro/servos_cuatro.ino`, con 1, 2, 3 y 4 servos alimentados del 5V de la placa por USB): mira si el monitor serial repite «Inicio». En el PC del aula y con el cable del kit. **Medido el 9 oct:** con 4 SG90 no se reinicia. El simulador predice el reinicio desde 5 SG90 (el 5V baja de 2,7 V al arrancar): para comprobarlo, «Validar: seis servos en el USB».
 
 Las medidas van a `validacion/` y se vuelven pruebas, como las del LED.
 

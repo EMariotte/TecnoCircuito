@@ -138,6 +138,16 @@ const T1 = ({ conPulldown = true, alGND = false } = {}) => {
 };
 // Muestrea cada ms el LED del pin 13 (lo que el programa escribió según lo que leyó del pin 2).
 let serialVisto = '';
+// Corre `ms` milisegundos y devuelve todo lo que el programa escribió por el monitor serial.
+function serialDe(n, ms) {
+  let texto = '';
+  for (let t = 0; t < ms; t += 16) {
+    n.avanzar(CUADRO);
+    texto += n.foto().serial;
+  }
+  return texto;
+}
+
 function muestrear(n, ms) {
   let prendido = 0;
   let cambios = 0;
@@ -171,15 +181,26 @@ function muestrear(n, ms) {
   revisar(/Presionado/.test(texto) && /Suelto/.test(texto), 'el monitor serial dice «Presionado» y «Suelto»');
 }
 
-// 7. Sin la pull-down, suelto el pin 2 queda al aire: en modo realista lee al azar; en modo ideal, BAJO
+// 7. Sin la pull-down, suelto el pin 2 queda al aire (medido en la placa real, validacion/2026-10-09-entrada-flotante.md):
+//    sin nada cerca se queda en su nivel; con la mano (el mouse) sobre el cable, capta la red de 60 Hz. En ideal, BAJO.
 {
   const realista = crearNucleo({ hex: hex('boton_pulldown'), circuito: T1({ conPulldown: false }), activas: TODAS, semilla: 7 });
   correr(realista, 100);
-  const azar = muestrear(realista, 3000);
+  const quietoSinMano = muestrear(realista, 3000);
   const f = realista.foto();
-  revisar(azar.cambios >= 10 && azar.cambios <= 50 && azar.prendido > 0.2 && azar.prendido < 0.8,
-    `realista: el LED se prende y se apaga solo (${azar.cambios} cambios en 3 s, unos 25 esperados; prendido ${(azar.prendido * 100).toFixed(0)} %)`);
+  revisar(quietoSinMano.cambios <= 2, `realista, sin la mano: el pin al aire se queda en su nivel (${quietoSinMano.cambios} cambios en 3 s; la placa real: 0)`);
   revisar(f.entradas.D2 && f.entradas.D2.alAire && f.voltajes['placa.D2'] === null, 'el pin 2 figura «al aire» y sin voltaje medible');
+  // Con el mismo programa que se usó en la placa real (validar_flotante: cuenta los cambios del pin 2 en 2 s)
+  const flotante = crearNucleo({ hex: hex('validar_flotante'), circuito: T1({ conPulldown: false }), activas: TODAS, semilla: 7 });
+  flotante.ponerMano(['btn1.1i']); // el mouse sobre la pata del botón que va al pin 2
+  const lineas = serialDe(flotante, 6500).trim().split(/\r?\n/).slice(1, 3);
+  const medidas = lineas.map((l) => l.match(/cambios (\d+) alto ([\d.]+)/)).filter(Boolean).map((m) => [+m[1], +m[2]]);
+  revisar(medidas.length === 2 && medidas.every(([c, a]) => c >= 220 && c <= 270 && a > 30 && a < 40),
+    `con la mano sobre el botón, validar_flotante dice «${lineas.join(' | ')}» (la placa real con la mano: 225 a 269 cambios y ~35 %)`);
+  realista.ponerMano(['placa.D7']); // lejos: el pin 7 no está unido al pin 2
+  const lejos = muestrear(realista, 1000);
+  revisar(lejos.cambios <= 1, `con la mano en otro pin, el pin 2 vuelve a quedarse quieto (${lejos.cambios} cambios en 1 s)`);
+  realista.ponerMano([]);
   realista.ponerPulsador('btn1', true);
   const firme = muestrear(realista, 100);
   revisar(firme.prendido === 1 && firme.cambios === 0, 'al presionar deja de flotar: el LED queda prendido y quieto');
@@ -216,13 +237,17 @@ const desviacion = (xs) => {
   return Math.sqrt(xs.reduce((s, x) => s + (x - m) ** 2, 0) / xs.length);
 };
 
-// 9. Ruido del ADC: en realista la lectura baila 1 o 2 pasos; en ideal es siempre la misma
+// 9. Ruido del ADC (0,1 pasos, medido en la placa real): con la perilla quieta en medio de un valor, la lectura no
+//    se mueve; justo en el borde entre dos valores, alterna entre ellos. En ideal es siempre la misma.
 {
-  const ruido = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: conPot(0.5), activas: TODAS, semilla: 11 }), 40);
+  // Al 50 %, A0 tiene 2,5 V: justo el borde entre 511 y 512
+  const borde = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: conPot(0.5), activas: TODAS, semilla: 11 }), 40);
+  revisar(new Set(borde).size === 2 && Math.min(...borde) >= 511 && Math.max(...borde) <= 512,
+    `realista, en el borde (perilla al 50 %): ${borde.length} lecturas que alternan entre ${Math.min(...borde)} y ${Math.max(...borde)}, como en la placa real`);
+  // En medio del valor 300 (voltaje de 300,5 pasos): no se mueve
+  const medio = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: conPot(300.5 / 1024), activas: TODAS, semilla: 11 }), 40);
+  revisar(new Set(medio).size === 1 && medio[0] === 300, `realista, en medio de un valor: las ${medio.length} lecturas dan ${medio[0]}, quietas como en la placa real`);
   const limpio = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: conPot(0.5), activas: IDEAL, semilla: 11 }), 40);
-  const d = desviacion(ruido);
-  revisar(d > 0.2 && d < 1.5 && Math.max(...ruido) - Math.min(...ruido) <= 6,
-    `realista: perilla al 50 %, ${ruido.length} lecturas entre ${Math.min(...ruido)} y ${Math.max(...ruido)} (desviación ${d.toFixed(2)} pasos)`);
   revisar(new Set(limpio).size === 1 && Math.abs(limpio[0] - 511) <= 1, `ideal: siempre ${limpio[0]}`);
 }
 
@@ -236,6 +261,12 @@ const desviacion = (xs) => {
   const realista = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: alAire(), activas: TODAS, semilla: 5 }), 30);
   const ideal = lecturas(crearNucleo({ hex: hex('potenciometro'), circuito: alAire(), activas: IDEAL, semilla: 5 }), 30);
   revisar(Math.max(...realista) - Math.min(...realista) > 30, `realista: A0 al aire deambula entre ${Math.min(...realista)} y ${Math.max(...realista)}`);
+  // Con la mano sobre A0 al aire, validar_adc (200 lecturas en 0,4 s) ve la onda de 60 Hz de punta a punta
+  const conMano = crearNucleo({ hex: hex('validar_adc'), circuito: alAire(), activas: TODAS, semilla: 5 });
+  conMano.ponerMano(['placa.A0']);
+  const linea = serialDe(conMano, 2500).trim().split(/\r?\n/)[1] || '';
+  const [, menor, mayor] = linea.match(/min (\d+) max (\d+)/) || [];
+  revisar(+menor < 100 && +mayor > 900, `realista, con la mano sobre A0 al aire, validar_adc capta la red de 60 Hz: «${linea}»`);
   revisar(ideal.every((x) => x === 0), 'ideal: A0 al aire lee 0');
   // Sin GND el potenciómetro no divide: la pata del medio queda pegada a 5V (física, no una no idealidad)
   const sinGND = conPot(0.3);
@@ -266,19 +297,24 @@ const desviacion = (xs) => {
   const n = crearNucleo({ hex: hex('servo_barrido'), circuito: conServo(), activas: ACTIVAS, semilla: 1 });
   const v = seguir(n, 3000);
   const en = (ms) => v.find((x) => x.t >= ms);
-  revisar(en(900).pulso >= 543 && en(900).pulso <= 545 && Math.abs(en(900).angulo) < 0.5, `write(0): pulso de ${en(900).pulso} µs → ${en(900).angulo}°`);
-  revisar(Math.abs(en(1900).pulso - 1472) <= 1 && Math.abs(en(1900).angulo - 90) < 0.5, `write(90): pulso de ${en(1900).pulso} µs → ${en(1900).angulo}°`);
-  revisar(en(2900).pulso >= 2399 && en(2900).pulso <= 2401 && Math.abs(en(2900).angulo - 180) < 0.5, `write(180): pulso de ${en(2900).pulso} µs → ${en(2900).angulo}°`);
+  revisar(en(900).pulso >= 543 && en(900).pulso <= 545 && Math.abs(en(900).angulo - 7) < 0.5, `write(0): pulso de ${en(900).pulso} µs → ${en(900).angulo}° (el SG90 del kit: 7°)`);
+  revisar(Math.abs(en(1900).pulso - 1472) <= 1 && Math.abs(en(1900).angulo - 90) < 0.5, `write(90): pulso de ${en(1900).pulso} µs → ${en(1900).angulo}° (el SG90 del kit: 90°)`);
+  revisar(en(2900).pulso >= 2399 && en(2900).pulso <= 2401 && Math.abs(en(2900).angulo - 175) < 0.5, `write(180): pulso de ${en(2900).pulso} µs → ${en(2900).angulo}° (el SG90 del kit: 175°)`);
   // Velocidad: el SG90 gira 60° en 0,1 s a 4,8 V; a 5 V, 90° le toman unos 0,14 s
   const inicio = v.find((x) => x.t > 2000 && x.moviendo);
-  const fin = v.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 179);
+  const fin = v.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 174);
   const segundos = (fin.t - inicio.t) / 1000;
-  revisar(segundos > 0.1 && segundos < 0.2, `de 90° a 180° tarda ${segundos.toFixed(2).replace('.', ',')} s (hoja de datos: 0,1 s por 60° a 4,8 V)`);
+  revisar(segundos > 0.1 && segundos < 0.2, `de 90° a 175° tarda ${segundos.toFixed(2).replace('.', ',')} s (hoja de datos: 0,1 s por 60° a 4,8 V)`);
   const quieto = en(1900).i * 1000;
   const moviendo = Math.max(...v.filter((x) => x.t > 2060 && x.t < 2120).map((x) => x.i * 1000));
   const pico = Math.max(...v.map((x) => x.pico * 1000));
   revisar(quieto < 15 && moviendo > 150 && pico > 600, `consumo del SG90: ${quieto.toFixed(0)} mA quieto, ${moviendo.toFixed(0)} mA moviéndose y ${pico.toFixed(0)} mA de pico al arrancar`);
   revisar(Math.abs(en(1900).consumo5V * 1000 - quieto) < 1, `el 5V de la placa entrega lo que pide el servo (${(en(1900).consumo5V * 1000).toFixed(1)} mA)`);
+  // Barrido continuo (servo_continuo): la placa real midió ~100 mA en un SG90 del kit (UT33B+, 9 oct 2026)
+  const lento = crearNucleo({ hex: hex('servo_continuo'), circuito: conServo(), activas: ACTIVAS, semilla: 1 });
+  const barrido = seguir(lento, 6000).filter((x) => x.t > 1000);
+  const promedio = (barrido.reduce((t, x) => t + x.i, 0) / barrido.length) * 1000;
+  revisar(promedio > 90 && promedio < 110, `barrido continuo: ${promedio.toFixed(0)} mA en promedio (la placa real: ~100 mA)`);
   // El MG90S pide más corriente al moverse
   const mg = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ modelo: 'mg90s' }), activas: ACTIVAS, semilla: 1 }), 2200);
   const mgMoviendo = Math.max(...mg.filter((x) => x.t > 2060 && x.t < 2120).map((x) => x.i * 1000));
@@ -291,7 +327,7 @@ const desviacion = (xs) => {
   revisar(desdePin.every((x) => x.angulo === 90) && aviso && /pin 7/.test(aviso.mensaje), `alimentado desde el pin 7 no se mueve y avisa: «${aviso && aviso.mensaje}»`);
   const a33 = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ vcc: 'placa.3V3' }), activas: ACTIVAS, semilla: 1 }), 3000);
   const ini33 = a33.find((x) => x.t > 2000 && x.moviendo);
-  const fin33 = a33.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 179);
+  const fin33 = a33.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 174);
   revisar(fin33 && (fin33.t - ini33.t) / 1000 > segundos * 1.3, `a 3,3 V gira más lento: ${((fin33.t - ini33.t) / 1000).toFixed(2).replace('.', ',')} s frente a ${segundos.toFixed(2).replace('.', ',')} s`);
   // Cuatro servos moviéndose a la vez desde el USB
   const cuatro = {
@@ -312,7 +348,17 @@ const desviacion = (xs) => {
   revisar(maximo > 0.5, `cuatro servos moviéndose a la vez piden ${(maximo * 1000).toFixed(0)} mA al 5V: más de los 500 mA del USB`);
 
   // ---- Energía del USB (no idealidad «limiteUSB», src/energia.js): con cuántos servos se reinicia la placa
-  const conN = (k) => ({ ...cuatro, componentes: cuatro.componentes.slice(0, k), cables: cuatro.cables.slice(0, 3 * k) });
+  // Medido en la placa real (9 oct 2026, validacion/2026-10-09-usb-5v.md): con 1 a 4 SG90 desde el USB no se reinicia,
+  // y el 5V (multímetro) baja a 4,55 V con 3 y a 4,30 V con 4. Con 6, como un Otto, el simulador predice el reinicio.
+  const PINES_SERVOS = ['D9', 'D6', 'D5', 'D3', 'D9', 'D6']; // servos_cuatro maneja 4 señales; los extra las comparten
+  const conN = (k) => ({
+    formato: 1,
+    placa: 'uno',
+    componentes: PINES_SERVOS.slice(0, k).map((pin, n) => ({ id: 's' + n, tipo: 'servo', x: 0, y: 0, rot: 0, props: { modelo: 'sg90' } })),
+    cables: PINES_SERVOS.slice(0, k).flatMap((pin, n) => [
+      { de: 's' + n + '.GND', a: 'placa.GND1' }, { de: 's' + n + '.VCC', a: 'placa.5V' }, { de: 's' + n + '.SIG', a: 'placa.' + pin },
+    ]),
+  });
   const usb = (k, activas, ms = 8000) => {
     const m = crearNucleo({ hex: hex('servos_cuatro'), circuito: conN(k), activas, semilla: 1 });
     let serial = '';
@@ -320,7 +366,8 @@ const desviacion = (xs) => {
     let f = null;
     let retrocede = false;
     let antes = 0;
-    let vMin = 5;
+    let suma = 0;
+    let n = 0;
     for (let t = 0; t < ms; t += 16) {
       m.avanzar(CUADRO);
       f = m.foto();
@@ -328,21 +375,23 @@ const desviacion = (xs) => {
       fallas = fallas.concat(f.fallas);
       if (f.msSimulados < antes) retrocede = true;
       antes = f.msSimulados;
-      if (!f.energia.apagada) vMin = Math.min(vMin, f.energia.voltios);
+      if (t > 1000 && !f.energia.apagada) suma += f.energia.voltios, n++;
     }
-    return { inicios: (serial.match(/Inicio/g) || []).length, reinicios: f.energia.reinicios, fallas, retrocede, vMin, ms: f.msSimulados };
+    return { inicios: (serial.match(/Inicio/g) || []).length, reinicios: f.energia.reinicios, fallas, retrocede, vProm: suma / n, ms: f.msSimulados };
   };
-  const uno = usb(1, { limiteUSB: true });
-  const dos = usb(2, { limiteUSB: true });
-  revisar(uno.reinicios === 0 && dos.reinicios === 0 && uno.inicios === 1 && dos.inicios === 1, 'con 1 y con 2 servos moviéndose a la vez, la placa no se reinicia');
-  revisar(dos.vMin < 4.6 && dos.vMin > 4.2, `pero el 5V baja: con 2 servos llega a ${dos.vMin.toFixed(2).replace('.', ',')} V`);
-  const tres = usb(3, { limiteUSB: true });
-  const aviso3 = tres.fallas.find((x) => x.tipo === 'reinicio_usb');
-  revisar(tres.reinicios > 3 && tres.inicios === tres.reinicios + 1 && aviso3, `con 3 servos arrancando a la vez la placa se reinicia una y otra vez (${tres.reinicios} veces en 8 s): «${aviso3 && aviso3.mensaje}»`);
-  revisar(tres.fallas.filter((x) => x.tipo === 'reinicio_usb').length === 1, 'el aviso sale una sola vez, aunque se reinicie muchas');
-  revisar(!tres.retrocede && Math.abs(tres.ms - 8000) < 20, `el tiempo simulado no retrocede con los reinicios (${Math.round(tres.ms)} ms)`);
-  const ideal = usb(4, {});
-  revisar(ideal.reinicios === 0 && ideal.inicios === 1, 'en modo ideal (USB sin límite), los cuatro servos no reinician la placa');
+  const hasta4 = [1, 2, 3, 4].map((k) => usb(k, { limiteUSB: true }));
+  revisar(hasta4.every((r) => r.reinicios === 0 && r.inicios === 1), 'con 1, 2, 3 y 4 SG90 moviéndose a la vez desde el USB, la placa no se reinicia (igual que la placa real)');
+  const [v3, v4] = [hasta4[2].vProm, hasta4[3].vProm];
+  revisar(Math.abs(v3 / 4.55 - 1) < 0.05 && Math.abs(v4 / 4.3 - 1) < 0.05,
+    `el 5V promedio baja como en el multímetro: ${v3.toFixed(2).replace('.', ',')} V con 3 (real 4,55) y ${v4.toFixed(2).replace('.', ',')} V con 4 (real 4,30)`);
+  const seis = usb(6, { limiteUSB: true });
+  const aviso6 = seis.fallas.find((x) => x.tipo === 'reinicio_usb');
+  revisar(seis.reinicios > 3 && seis.inicios === seis.reinicios + 1 && aviso6 && /bajó a/.test(aviso6.mensaje),
+    `con 6 SG90, como un Otto, la placa se reinicia una y otra vez (${seis.reinicios} veces en 8 s): «${aviso6 && aviso6.mensaje}»`);
+  revisar(seis.fallas.filter((x) => x.tipo === 'reinicio_usb').length === 1, 'el aviso sale una sola vez, aunque se reinicie muchas');
+  revisar(!seis.retrocede && Math.abs(seis.ms - 8000) < 20, `el tiempo simulado no retrocede con los reinicios (${Math.round(seis.ms)} ms)`);
+  const ideal = usb(6, {});
+  revisar(ideal.reinicios === 0 && ideal.inicios === 1, 'en modo ideal (USB sin límite), los seis servos no reinician la placa');
   // El fusible: más de 500 mA sostenidos lo calientan hasta que se abre; la placa se apaga y vuelve al enfriarse
   const { crearFusible } = require('./nucleo.cjs');
   if (crearFusible) {

@@ -19,7 +19,14 @@ export const MODELOS_SERVO = {
     engranajes: 'plástico',
     torque_kgcm: 1.8, // torque de bloqueo a 4,8 V
     seg60: 0.1, // segundos para girar 60° a 4,8 V, sin carga
-    mA: { reposo: 10, movimiento: 200, arranque: 650 },
+    // Medido con el UT33B+ en un SG90 del kit (9 oct 2026, validacion/2026-10-09-servo-corriente.md): quieto, menos de
+    // 10 mA (la escala de 10 A mide de a 10 mA; 6 mA es el típico de la hoja); en barrido continuo, ~100 mA;
+    // bloqueado, 590 mA. «movimiento» es a fondo (un salto grande): por medir.
+    mA: { reposo: 6, movimiento: 200, arranque: 590 },
+    // Ángulo real según el pulso, medido con transportador en un SG90 del kit (9 oct 2026,
+    // validacion/2026-10-09-servo-angulos.md): write(90) = 1472 µs llega a 90°; write(0) = 544 µs se queda en 7°
+    // y write(180) = 2400 µs llega a 175°. Por eso, µs por grado a cada lado del centro.
+    angulos: { centroUs: 1472, usPorGradoBajo: 928 / 83, usPorGradoAlto: 928 / 85 },
     cuerpo: '#2f6fd6', // azul translúcido
     borde: '#1d4f9f',
     eje: '#f4f4f4',
@@ -30,25 +37,35 @@ export const MODELOS_SERVO = {
     torque_kgcm: 1.8, // a 4,8 V (2,2 kg·cm a 6 V)
     seg60: 0.1,
     mA: { reposo: 10, movimiento: 250, arranque: 700 },
+    angulos: { centroUs: 1472, usPorGradoBajo: 928 / 83, usPorGradoAlto: 928 / 85 }, // como el SG90: por medir
     cuerpo: '#2b2b2b', // negro
     borde: '#111111',
     eje: '#c9ccd1', // engranaje de metal
   },
 };
 export const SERVO = {
-  pulsoMin: 544, // µs para 0° (librería Servo de Arduino)
-  pulsoMax: 2400, // µs para 180°
+  pulsoMin: 544, // µs que manda write(0) (librería Servo de Arduino)
+  pulsoMax: 2400, // µs que manda write(180)
   pulsoValidoMin: 400, // un pulso fuera de este rango no es una orden (ruido o un pin que no es de servo)
   pulsoValidoMax: 2700,
   bandaMuerta: 5, // µs: un cambio menor no mueve el servo
   arranqueMs: 30, // al empezar a girar, el motor pide casi la corriente de bloqueo durante unos milisegundos
+  // El control del servo empuja el motor en proporción a lo que falta: con más de esta banda empuja a fondo
+  // (corriente de arranque y de movimiento completas); con un paso pequeño, poco. Ajustado para que el barrido
+  // continuo (servo_continuo.ino) dé los ~100 mA medidos en un SG90 del kit (9 oct 2026).
+  bandaGrados: 8,
   voltiosRef: 4.8, // voltaje de los datos de la hoja
 };
 
 // ---- Lógica (la usa el núcleo, en el Worker)
 
-export const anguloDePulso = (us) =>
-  Math.max(0, Math.min(180, ((us - SERVO.pulsoMin) / (SERVO.pulsoMax - SERVO.pulsoMin)) * 180));
+// Ángulo al que va el brazo con un pulso de `us` microsegundos, según lo medido en cada modelo. El tope mecánico
+// está en 0° y 180°.
+export function anguloDePulso(us, modelo = 'sg90') {
+  const a = (MODELOS_SERVO[modelo] || MODELOS_SERVO.sg90).angulos;
+  const grados = us <= a.centroUs ? 90 - (a.centroUs - us) / a.usPorGradoBajo : 90 + (us - a.centroUs) / a.usPorGradoAlto;
+  return Math.max(0, Math.min(180, grados));
+}
 
 // Un servo que recibe pulsos y gira. Empieza a 90°, como queda al conectarlo.
 export function crearServo(modelo) {
@@ -58,13 +75,15 @@ export function crearServo(modelo) {
   let pulso = null; // µs del último pulso válido
   let arranqueRestante = 0; // ms de corriente de arranque que quedan
   let moviendo = false;
+  let empuje = 0; // 0 a 1: cuánto empuja el control al motor (proporcional a lo que falta)
+  let empujeArranque = 0;
   return {
     // Llegó un pulso de `us` microsegundos: fija el ángulo al que debe ir.
     pulso(us) {
       if (us < SERVO.pulsoValidoMin || us > SERVO.pulsoValidoMax) return;
       if (pulso !== null && Math.abs(us - pulso) < SERVO.bandaMuerta) return;
       pulso = us;
-      objetivo = anguloDePulso(us);
+      objetivo = anguloDePulso(us, modelo);
     },
     // Avanza `ms` milisegundos con el servo alimentado a `voltios` (0 = sin alimentación: no gira ni consume).
     avanzar(ms, voltios) {
@@ -76,7 +95,11 @@ export function crearServo(modelo) {
       const velocidad = (60 / (d.seg60 * 1000)) * (voltios / SERVO.voltiosRef); // grados por ms
       const falta = objetivo - angulo;
       const ahoraMueve = Math.abs(falta) > 0.01;
-      if (ahoraMueve && !moviendo) arranqueRestante = SERVO.arranqueMs;
+      empuje = Math.min(1, Math.abs(falta) / SERVO.bandaGrados);
+      if (ahoraMueve && !moviendo) {
+        arranqueRestante = SERVO.arranqueMs;
+        empujeArranque = empuje; // un salto grande arranca a fondo; un paso pequeño, apenas
+      }
       moviendo = ahoraMueve;
       if (moviendo) angulo += Math.sign(falta) * Math.min(Math.abs(falta), velocidad * ms);
       arranqueRestante = Math.max(0, arranqueRestante - ms);
@@ -84,7 +107,10 @@ export function crearServo(modelo) {
     // Corriente que pide ahora, en amperios, a `voltios` (escala con el voltaje, como una carga resistiva).
     corriente(voltios) {
       if (!(voltios > 0)) return 0;
-      const mA = arranqueRestante > 0 ? d.mA.arranque : moviendo ? d.mA.movimiento : d.mA.reposo;
+      const { reposo, movimiento, arranque } = d.mA;
+      const mA = arranqueRestante > 0
+        ? reposo + (arranque - reposo) * empujeArranque
+        : moviendo ? reposo + (movimiento - reposo) * empuje : reposo;
       return (mA / 1000) * (voltios / SERVO.voltiosRef);
     },
     estado: () => ({ angulo, objetivo, pulso, moviendo, arrancando: arranqueRestante > 0 }),

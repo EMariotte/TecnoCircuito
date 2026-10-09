@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 8 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4 (cableado, chip, circuito eléctrico, Web Worker y PWM, protoboard), **T1 y T2 completas** y **la T3 empezada:** el servo SG90/MG90S (pieza Tecno) y la energía del USB (el 5V baja, la placa se reinicia o el fusible la apaga). Además: el esquema del circuito (`contrato/`), las fixtures de TecnoBloques y la netlist de KiCad sobre la plantilla «Arduino Uno Shield». **Efraín validó el 8 oct**, en la app, el flujo completo (bloques → simulación → SVG → netlist → KiCad, DRC sin problemas → guardar y abrir) y los dos servos. `npm run probar` pasa 15 grupos (380 comprobaciones) y `test:simulador` de TecnoBloques 26 de 26. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
+> Actualizado: 9 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 empezada** (servo SG90/MG90S y energía del USB). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 15 grupos (387 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
 
 ---
 
@@ -172,32 +172,50 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 ## Próxima sesión: retomar desde aquí
 
-**Sesión del 8 oct, cerrada con todo validado por Efraín en la app:**
-- netlist de KiCad sobre la plantilla «Arduino Uno Shield», con el DRC sin problemas;
-- el esquema del circuito y las fixtures;
-- el servo SG90/MG90S y la energía del USB.
+**Sesión del 9 oct (laboratorio): validaciones con la placa real, una por una.** Cada una tiene su registro en `validacion/2026-10-09-*.md`, y su programa es un ejemplo de TecnoBloques (grupo «Validación con la placa real»).
+
+| Validación | Resultado | Ajuste del modelo |
+|---|---|---|
+| Velocidad en el PC del aula (HP ProBook 450 G7) | ≥ 90 % con `prototipo.html` | — |
+| Ruido de `analogRead()` | 0,1 pasos | `RUIDO_ADC_V` de 0,6 a 0,1; `validar_adc.ino` corregido (daba `nan`) |
+| Entrada al aire | no cambia sola; con la mano capta los 60 Hz | modelo nuevo «la mano es el mouse» (sección 47 de COMO-FUNCIONA) |
+| Ángulos del SG90 | 7°, 90° y 175° | `MODELOS_SERVO.sg90.angulos` |
+| Corriente del SG90 | < 10, ~100 (barrido) y 590 mA (bloqueado) | reposo 6, bloqueo 590, corriente proporcional a lo que falta (banda de 8°) |
+| 5V del USB con servos | 5,11 V − 1,66 Ω; 4 SG90 no reinician | `USB` medido; 5V resuelto junto con los servos; aviso por bajo voltaje |
+| Otto (Nano, USB) caminando | no se reinicia | el simulador tampoco (señal, no medida) |
+
+**La próxima vez en el laboratorio** (Efraín quiere repetir el formato del 9 oct, varias prácticas seguidas):
+1. **Predicción:** 5 y 6 SG90 saltando juntos en un Uno (Ejemplos → «Validar: seis servos en el USB»). El simulador dice que se reinicia.
+2. **MG90S:** las tres corrientes (quieto, barrido continuo, bloqueado ≤ 2 s) y sus ángulos con el transportador.
+3. Opcional: repetir el ADC con el programa corregido para tener la desviación exacta.
+4. La protoboard con dos o tres aprendices, y la velocidad con TecnoBloques en el aula cuando exista `v0.1.0`.
+
+**Pendientes de software que salieron de las validaciones:**
+- **Promedio de señales lentas:** cuando la señal dura más que una foto (16 ms), el promedio salta. Pasa con el servo (la tabla dice «Pin 9: 1,84 V» y un multímetro diría 0,3 a 0,6 V) y con el LED de la mano (cada foto entre 7 y 50 %; el promedio sí es 35 %). Arreglo: suavizar la medición con una constante de tiempo como la del ojo o del multímetro.
+- **El circuito no siente la caída del 5V:** solo los servos ven el voltaje real.
+- En TecnoBloques (Fase 2d): exportar el monitor serial a **CSV** y un **graficador serial** con casillas por variable.
 
 **Lo siguiente, solo software (recomendación):** seguir con la T3.
 1. **Shield L293D** como pieza Tecno: el 74HC595 por los pines 4, 7, 8 y 12, y el PWM de los motores (M1 = 11, M2 = 3, M3 = 6, M4 = 5), con la caída de 1,4 a 2 V (`caidaL293D`). Sus servos van en SERVO_1 = 10 y SERVO_2 = 9.
 2. **Motor DC** como pieza Tecno, con su consumo en la energía del USB.
 3. Probarlos con un programa de AFMotor_R4, la librería del kit.
 
-**Con hardware (cuando Efraín esté en el ambiente):** los puntos 3, 7, 8 y 9 de abajo. Después, la primera etiqueta `v0.1.0`.
+**Con hardware:** la lista de «La próxima vez en el laboratorio», arriba. Después, la primera etiqueta `v0.1.0`.
 
 El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Para avanzar hacen falta estas mediciones y pruebas de Efraín:**
 
 1. ✅ **Multímetro (7 oct):** pin 13 → resistencia → LED rojo → GND con 215, 326 y 1000 Ω. Las 12 comparaciones cumplen el criterio (la peor, −4,8 % en la resistencia de 220 Ω, por una caída en los contactos de la protoboard). **El modelo queda validado sin ajustes.** Registro en `validacion/2026-10-07-led-rojo-multimetro.md`; `npm run probar:motor` lo usa como prueba de regresión.
 2. ✅ **Velocidad del prototipo 2 en un PC del aula (7 oct):** 76 a 100 % estable. Al cambiar el LED baja un instante a 54–66 % y vuelve; Efraín no nota el cambio. **El freno es la emulación del chip** (avr8js), no el circuito ni el dibujo. Ver la bitácora del 7 oct.
-3. **Velocidad del prototipo 3 en ese mismo PC,** con el cargador conectado: abrir `prototipo/dist/prototipo.html`, iniciar el parpadeo y el «Ejemplo con potenciómetro (T2)», y anotar la velocidad. La línea de estado dice si corre «en un hilo aparte». Meta: ≥ 90 % estable.
+3. ✅ **Velocidad en un PC del aula (9 oct):** HP ProBook 450 G7 (i7-10510U, 8 GB, HDD), todos iguales. `prototipo.html` con un servo: **nunca bajó de 90 %**, en un hilo aparte. Con cuatro servos reiniciando la placa en bucle: 66 %, un caso de falla. Registro en `validacion/2026-10-09-velocidad-pc-aula.md`. Falta medirlo con TecnoBloques en el aula, que llega con la etiqueta `v0.1.0`.
 4. ✅ **`npm run probar` con cargador (7 oct):** pasan todas, incluidas las de tiempo. Ojo: con batería, Windows baja la velocidad del procesador y fallan las 3 pruebas de tiempo del prototipo 1.
 5. ✅ **PWM y lectura analógica validados por Efraín** (7 oct).
 6. ✅ **Primera conexión con TecnoBloques** (7 oct): ver `prototipo/COMO-FUNCIONA.md`, secciones 31 y 32. `sim.destruir()`, `sim.medidas()` y `lienzo.exportarSVG()` ya están en el contrato.
-7. **Validar T1 y T2 con la placa real** (regla 2), con dos programas nuevos. Las instrucciones están en `prototipo/LEEME.md`, «Validar T1 y T2 con la placa real».
+7. ◐ **Validar T1 y T2 con la placa real** (regla 2), con dos programas nuevos. ✅ `validar_adc` (9 oct): el ADC real tiene unos 0,1 pasos de ruido; `RUIDO_ADC_V` bajó de 0,6 a 0,1 y el programa ahora calcula la desviación exacta (`validacion/2026-10-09-ruido-adc.md`). ✅ `validar_flotante` (9 oct): la entrada al aire real no cambia sola y con la mano capta los 60 Hz de la red; nuevo modelo «la mano es el mouse» (`validacion/2026-10-09-entrada-flotante.md`, `COMO-FUNCIONA.md` sección 47). Las instrucciones están en `prototipo/LEEME.md`, «Validar T1 y T2 con la placa real».
    - `validar_adc`: ruido de `analogRead()` con la perilla quieta.
    - `validar_flotante`: cuántas veces cambia el pin 2 al aire.
    Con eso se ajustan `RUIDO_ADC_V` (hoy 0,6 pasos) y `CAMBIO_AL_AIRE_POR_MS` (hoy 1/120) en `src/nucleo.js`, y las medidas van a `validacion/`.
 8. **Probar la protoboard con dos o tres aprendices:** armar la T1 en ella («Ejemplo en protoboard (T1)» como referencia) y anotar dónde se traban.
-9. **Validar el servo y la energía del USB (T3)**, con las instrucciones de `prototipo/LEEME.md`:
+9. ◐ **Validar el servo y la energía del USB (T3)**, con las instrucciones de `prototipo/LEEME.md`. ✅ SG90 (9 oct): ángulos (7°, 90°, 175°), corriente (< 10, ~100 y 590 mA) y 5V del USB (5,11 V − 1,66 Ω, 4 SG90 no reinician), todo en el modelo (`validacion/2026-10-09-servo-*.md` y `2026-10-09-usb-5v.md`). Falta el MG90S y comprobar la predicción con 5 y 6 SG90. Lo que se pedía al principio:
    - la corriente del SG90 y del MG90S quietos, moviéndose y bloqueados;
    - el voltaje del 5V con 1 y 2 servos;
    - **con cuántos servos se reinicia el Uno** en el PC del aula (el simulador: desde 3 SG90).
@@ -229,7 +247,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
    - ✅ Prototipo 3 (7 oct): chip y circuito en un Web Worker (`src/trabajador.js` y `src/nucleo.js`), PWM promediado por combinación de pines con ventanas cortadas en períodos completos, potenciómetro con `analogRead()` y modo en la página si no hay Worker. Pruebas: `npm run probar:nucleo` (Node) y `pruebas/probar_pwm.py`. Explicado en `prototipo/COMO-FUNCIONA.md`, secciones 25 a 30.
    - ✅ `npm run probar` con cargador: todo bien. ✅ PWM y lectura analógica validados por Efraín.
    - ✅ Primera conexión con TecnoBloques (7 oct): el eco y un programa de bloques con potenciómetro se simulan dentro de la app. Arreglado el serial en UTF-8.
-   - ⬜ Anotar la velocidad del prototipo 3 en el PC del aula **con TecnoBloques abierto** (meta ≥ 90 %).
+   - ◐ Velocidad en el PC del aula: ✅ con `prototipo.html` (9 oct, ≥ 90 %); ⬜ con TecnoBloques abierto, cuando llegue `v0.1.0`.
    - ✅ Contrato: `sim.destruir()`, `sim.medidas()` y `lienzo.exportarSVG()` en el paquete y en `CONTRATO.md` (7 oct).
    - ✅ T1 y T2 completas (7 oct): pieza `pulsador`, `digitalRead()` desde el circuito (umbrales del ATmega), `entradaFlotante` (digital y analógica) y `ruidoADC`. Programas `boton_pulldown`, `boton_pullup`, `validar_adc` y `validar_flotante`. Pruebas: `probar_nucleo.js` y `probar_t1t2.py`.
    - ✅ Prototipo 4, la protoboard (7 oct): `src/protoboard.js`, campo `en` en cada pieza (sección 4.0 del contrato), encaje con vista previa, tira iluminada y menú «+ Agregar». Prueba: `probar_protoboard.py`.

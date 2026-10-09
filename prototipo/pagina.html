@@ -82,6 +82,7 @@
     <button type="button" id="ejemploT2">Ejemplo con potenciómetro (T2)</button>
     <button type="button" id="ejemploServo">Ejemplo con servo (T3)</button>
     <button type="button" id="ejemploServos">Cuatro servos en el USB (T3)</button>
+    <button type="button" id="ejemploSeis">Seis servos en el USB (T3)</button>
     <button type="button" id="limpiar">Empezar de nuevo</button>
     <button type="button" id="copiar">Copiar el circuito</button>
     <button type="button" id="imagen">Guardar imagen (SVG)</button>
@@ -207,29 +208,33 @@
     ],
     protoboard: null,
   };
-  // Tarea T3: cuatro servos encadenados al 5V y al GND de la placa (como cuando se alimentan todos del USB).
-  const EJEMPLO_SERVOS = (() => {
-    const pines = ['D9', 'D6', 'D5', 'D3'];
+  // Tarea T3: servos SG90 encadenados al 5V y al GND de la placa, todos alimentados por el USB. Con 4 (medido en la
+  // placa real el 9 oct 2026) no se reinicia; con 6, como un Otto completo, el 5V se hunde y se reinicia.
+  // Los pines se repiten si hay más servos que señales (el programa servos_cuatro maneja 3, 5, 6 y 9).
+  const servosEnUSB = (pines) => {
     const xs = { D9: 163, D6: 198.5, D5: 208, D3: 227 };
     const componentes = [];
     const cables = [];
+    const abajo = 20 + pines.length * 96 + 10; // los cables de energía pasan por debajo del último servo
     pines.forEach((pin, n) => {
       const id = 'servo' + (n + 1);
       const y = 20 + n * 96;
-      componentes.push({ id, tipo: 'servo', x: 300, y, rot: 0, props: { modelo: n % 2 ? 'mg90s' : 'sg90' } });
+      componentes.push({ id, tipo: 'servo', x: 300, y, rot: 0, props: { modelo: 'sg90' } });
       const [yG, yV, yS] = [y + 48, y + 57.6, y + 67.2];
       if (n === 0) {
-        cables.push({ de: 'placa.GND2', a: id + '.GND', color: 'negro', puntos: [[169.5, 410], [530, 410], [530, yG]] });
-        cables.push({ de: 'placa.5V', a: id + '.VCC', color: 'rojo', puntos: [[160, 420], [545, 420], [545, yV]] });
+        cables.push({ de: 'placa.GND2', a: id + '.GND', color: 'negro', puntos: [[169.5, abajo], [530, abajo], [530, yG]] });
+        cables.push({ de: 'placa.5V', a: id + '.VCC', color: 'rojo', puntos: [[160, abajo + 10], [545, abajo + 10], [545, yV]] });
       } else {
         const ant = 'servo' + n;
         cables.push({ de: ant + '.GND', a: id + '.GND', color: 'negro', puntos: [[530, yG - 96], [530, yG]] });
         cables.push({ de: ant + '.VCC', a: id + '.VCC', color: 'rojo', puntos: [[545, yV - 96], [545, yV]] });
       }
-      cables.push({ de: 'placa.' + pin, a: id + '.SIG', color: 'naranja', puntos: [[xs[pin], -16 - n * 8], [560 + n * 12, -16 - n * 8], [560 + n * 12, yS]] });
+      cables.push({ de: 'placa.' + pin, a: id + '.SIG', color: 'naranja', puntos: [[xs[pin] + (n >= 4 ? 2 : 0), -16 - n * 8], [560 + n * 12, -16 - n * 8], [560 + n * 12, yS]] });
     });
     return { formato: 1, placa: 'uno', componentes, cables, protoboard: null };
-  })();
+  };
+  const EJEMPLO_SERVOS = servosEnUSB(['D9', 'D6', 'D5', 'D3']);
+  const EJEMPLO_SEIS = servosEnUSB(['D9', 'D6', 'D5', 'D3', 'D9', 'D6']);
   const $ = (id) => document.getElementById(id);
   let lienzo = null;
 
@@ -305,7 +310,7 @@
     // Cómo lee el programa una entrada: ALTO, BAJO o al aire (lee al azar en modo realista).
     const lee = (pin) => {
       const e = m.entradas && m.entradas[pin];
-      return !e ? '' : e.alAire ? 'al aire: lee al azar' : e.alto ? 'lee ALTO' : 'lee BAJO';
+      return !e ? '' : e.alAire ? `al aire: lee ${e.alto ? 'ALTO' : 'BAJO'}; acércale el mouse` : e.alto ? 'lee ALTO' : 'lee BAJO';
     };
     const conPin = new Set(m.pines.map((p) => p.pin));
     const filas = [
@@ -350,6 +355,7 @@
   $('ejemplo').onclick = () => abrir(EJEMPLO);
   $('ejemploServo').onclick = () => { $('programa').value = 'servo_barrido'; abrir(EJEMPLO_SERVO); };
   $('ejemploServos').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SERVOS); };
+  $('ejemploSeis').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SEIS); };
   $('ejemploT1').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_T1); };
   $('ejemploPB').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_PB); };
   $('ejemploT2').onclick = () => { $('programa').value = 'potenciometro'; abrir(EJEMPLO_T2); };

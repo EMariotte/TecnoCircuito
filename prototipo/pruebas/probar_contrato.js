@@ -54,8 +54,8 @@ const delContrato = JSON.parse(contrato.split('## 4. Formato del circuito')[1].m
 const p1 = revisarCircuito(delContrato);
 revisar(!p1.length, 'el ejemplo de CONTRATO.md, sección 4' + (p1.length ? ': ' + p1.join(' | ') : ''));
 const pagina = fs.readFileSync(path.join(__dirname, '..', 'pagina.html'), 'utf8');
-const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf('})();', pagina.indexOf('const EJEMPLO_SERVOS =')) + 5);
-const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS };')();
+const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf(String.fromCharCode(10), pagina.indexOf('const EJEMPLO_SEIS =')));
+const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS };')();
 for (const [nombre, circuito] of Object.entries(ejemplos)) {
   const p = revisarCircuito(circuito);
   revisar(!p.length, `${nombre} de la página de prueba` + (p.length ? ': ' + p.join(' | ') : ''));

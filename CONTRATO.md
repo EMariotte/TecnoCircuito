@@ -195,10 +195,10 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
   |---|---|
   | `danoComponentes` | LED quemado, resistencia que se calienta, pin dañado |
   | `limitePin` | corriente máxima por pin y total del chip |
-  | `entradaFlotante` | una entrada sin ningún camino a 5V, a GND o a un pin que la maneje lee al azar: la digital cambia sola y la analógica deambula. Apagada, lee BAJO y 0 |
-  | `ruidoADC` | ruido pequeño en `analogRead` (unos 0,6 pasos de desviación; se ajusta con la placa real) |
+  | `entradaFlotante` | una entrada sin ningún camino a 5V, a GND o a un pin que la maneje queda al aire. Medido en la placa real (9 oct 2026): sin nada cerca se queda en su nivel (cambia muy de vez en cuando); con el mouse encima del pin o de su cable («la mano») capta la red de 60 Hz (unos 120 cambios por segundo, 35 % en ALTO). La analógica deambula, o sigue la onda de 60 Hz con la mano. Apagada, lee BAJO y 0 |
+  | `ruidoADC` | ruido pequeño en `analogRead`: 0,1 pasos de desviación, medido en un Uno del kit (9 oct 2026). Con la perilla quieta, la lectura solo alterna si el voltaje cae en el borde entre dos valores |
   | `caidaL293D` | caída de 1,4 a 2 V en las salidas de la shield |
-  | `limiteUSB` | energía del USB: el 5V baja con la corriente; un golpe de corriente mayor que el que deja pasar el puerto (unos 1,5 A) reinicia la placa; más de 500 mA sostenidos calientan el fusible hasta que se abre y la apagan, y vuelve a encender al enfriarse. Apagada, el USB no tiene límite |
+  | `limiteUSB` | energía del USB, medida en un PC del aula (9 oct 2026): el 5V es 5,11 V − 1,66 Ω × corriente; si baja de 2,7 V (varios servos arrancando a la vez) la placa se reinicia; más de 1,5 A también la reinicia (sin medir); más de 500 mA sostenidos calientan el fusible hasta que se abre y la apagan, y vuelve a encender al enfriarse. Apagada, el 5V es 5,0 V sin límite |
   | `reinicioPorCaida` | reservada. El reinicio por caída de voltaje ya va dentro de `limiteUSB` |
 
 - **Quién decide el modo:** TecnoBloques. El paquete solo lo recibe.

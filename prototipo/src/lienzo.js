@@ -104,6 +104,8 @@ export function crearLienzo(elemento, opciones = {}) {
   let vistaSim = { simulando: false, leds: {}, quemados: [], voltajes: {}, placa: {}, servos: {} }; // lo que el simulador pide mostrar
   const pulsados = new Set(); // botones presionados con el mouse ahora
   const oyentesPulsar = []; // el simulador escucha aquí los botones (no cambian el circuito guardado)
+  const oyentesMano = []; // y aquí «la mano»: el pin o el cable que tiene el mouse encima
+  let manoClave = ''; // lo último avisado, para avisar solo cuando cambia
 
   const componente = (id) => datos.componentes.find((c) => c.id === id);
   // La placa está fija en el origen; la protoboard es un objeto aparte del circuito (no está en componentes).
@@ -949,7 +951,21 @@ export function crearLienzo(elemento, opciones = {}) {
       dibujarPrevia();
     }
     if (!gesto || gesto.tipo === 'pin') mostrarTip(e.target.closest && e.target.closest('.tc-pin'));
+    if (vistaSim.simulando) avisarMano(e.target);
   });
+
+  // «La mano»: mientras se simula, el mouse sobre un pin o un cable es como acercar la mano a ese punto.
+  function avisarMano(objetivo) {
+    let refs = [];
+    const pin = objetivo && objetivo.closest && objetivo.closest('.tc-pin');
+    const toque = objetivo && objetivo.closest && objetivo.closest('.tc-cable-toque');
+    if (pin) refs = [pin.dataset.ref];
+    else if (toque && datos.cables[+toque.dataset.i]) refs = [datos.cables[+toque.dataset.i].de, datos.cables[+toque.dataset.i].a];
+    const clave = refs.join('|');
+    if (clave === manoClave) return;
+    manoClave = clave;
+    for (const fn of oyentesMano) fn(refs);
+  }
 
   function alSoltar(e) {
     const g = gesto;
@@ -982,6 +998,7 @@ export function crearLienzo(elemento, opciones = {}) {
   area.addEventListener('pointercancel', alSoltar);
   area.addEventListener('pointerleave', () => {
     ocultarTip();
+    if (manoClave) avisarMano(null);
     if (gesto && gesto.tipo === 'pulsar') {
       const g = gesto;
       gesto = null;
@@ -1320,6 +1337,10 @@ export function crearLienzo(elemento, opciones = {}) {
     // Interno (no es parte del contrato): el simulador escucha aquí los botones presionados con el mouse.
     _alPulsar(fn) {
       if (typeof fn === 'function') oyentesPulsar.push(fn);
+    },
+    // Interno (no es parte del contrato): el simulador escucha aquí «la mano» (refs bajo el mouse, o []).
+    _alAcercar(fn) {
+      if (typeof fn === 'function') oyentesMano.push(fn);
     },
     // Interno (no es parte del contrato): el simulador lo usa para mostrar lo que pasa.
     _mostrar(estado) {

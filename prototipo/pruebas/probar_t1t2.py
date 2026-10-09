@@ -105,10 +105,24 @@ with sync_playwright() as p:
         pg.wait_for_timeout(400)
         return pg.evaluate(MUESTREO, 3)
 
-    azar = sin_pulldown('realista')
-    revisar(azar['cambios'] >= 8 and 0.15 < azar['prendido'] < 0.85,
-            f'realista, sin pull-down: el LED se prende y se apaga solo ({azar["cambios"]} cambios en 3 s, prendido {azar["prendido"] * 100:.0f} %)')
-    revisar('al aire' in fila('Pin 2'), f'la tabla dice que el pin 2 está al aire («{fila("Pin 2")}»)')
+    quieto_sin_mano = sin_pulldown('realista')
+    revisar(quieto_sin_mano['cambios'] <= 2,
+            f'realista, sin pull-down y sin acercar el mouse: el pin al aire se queda en su nivel ({quieto_sin_mano["cambios"]} cambios en 3 s)')
+    revisar('al aire' in fila('Pin 2') and 'mouse' in fila('Pin 2'), f'la tabla dice que el pin 2 está al aire («{fila("Pin 2")}»)')
+    # «La mano»: el mouse sobre la pata del botón que va al pin 2. El pin capta la red de 60 Hz y el LED del pin 13
+    # parpadea 60 veces por segundo: el ojo (y el dibujo, que promedia) lo ve a medias.
+    pg.locator('.tc-pin[data-ref="btn1.1i"]').hover()
+    pg.wait_for_timeout(400)
+    # Como el ojo: promedio de 1 s. Cada foto (16 ms) toma un pedazo distinto de la onda de 60 Hz (16,7 ms) y su brillo
+    # salta entre ~7 y ~50 %; el promedio es el ~35 % del tiempo en ALTO. (Pendiente: suavizar el promedio en el núcleo.)
+    brillo = pg.evaluate(f'''async () => {{
+      let suma = 0;
+      for (let i = 0; i < 25; i++) {{ suma += {RAIZ}.querySelector("wokwi-led").brightness; await new Promise(r => setTimeout(r, 40)); }}
+      return suma / 25;
+    }}''')
+    revisar(0.15 < brillo < 0.55, f'con el mouse sobre el botón (la mano), el LED brilla a medias: {brillo * 100:.0f} % en promedio (60 Hz, ~35 % del tiempo en ALTO)')
+    pg.mouse.move(5, 5)
+    pg.wait_for_timeout(400)
     pg.screenshot(path=str(SALIDA / 't1_al_aire.png'))
     quieto = sin_pulldown('ideal')
     revisar(quieto['cambios'] == 0 and quieto['prendido'] == 0, 'ideal, sin pull-down: el LED queda apagado y quieto')

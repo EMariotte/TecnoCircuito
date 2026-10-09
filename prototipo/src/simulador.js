@@ -89,6 +89,12 @@ export function crearSimulador(opciones = {}) {
   }
 
   // Un botón presionado o soltado con el mouse: lo resuelve el Worker al instante (no cambia el circuito guardado).
+  // «La mano»: el mouse sobre un pin o un cable. Una entrada al aire que toca capta la red de 60 Hz.
+  if (typeof lienzo._alAcercar === 'function') {
+    lienzo._alAcercar((refs) => {
+      if (vivo) trabajador.enviar({ tipo: 'mano', refs });
+    });
+  }
   if (typeof lienzo._alPulsar === 'function') {
     lienzo._alPulsar((id, presionado) => {
       if (vivo) trabajador.enviar({ tipo: 'pulsador', id, presionado });
