@@ -60,10 +60,13 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let circuitoActual = circuito;
   let red = null;
   let soluciones = new Map(); // solución guardada por combinación de pines
+  let planes = new Map(); // combinación → lo que leen las entradas (planDe)
+  let puestas = {}; // pin → nivel que ya se le puso a la entrada (no se vuelve a poner si no cambia)
+  let ultimaM = null; // voltajes que ya están en las entradas analógicas (de un plan)
   const estadosDe = new Map(); // combinación → estado de cada pin
   let tiempos = new Map(); // combinación → ciclos que pasó el chip en ella, en la ventana actual
   let ultimasPartes = []; // las de la ventana anterior, por si una foto llega sin tiempo (en pausa)
-  let claveActual = '';
+  let claveActual = 0;
   let desde = 0; // ciclo desde el que se cuenta la combinación actual
   // La ventana empieza en una combinación de pines y se corta la última vez que el chip volvió a ella: con PWM
   // eso son períodos completos, así el promedio no depende de dónde cae la foto. Lo que sigue pasa a la próxima.
@@ -102,11 +105,9 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let porVin = false; // el Uno se alimenta de la batería por el VIN (y no del USB)
 
   const ms = () => ((base + chip.ciclos) / FRECUENCIA) * 1000;
-  const clave = (e) => {
-    let k = '';
-    for (const n in e) k += e[n];
-    return k;
-  };
+  // La clave de una combinación de pines es un número: el estado de cada pin (0 a 3) es una cifra en base 4, en el
+  // orden de PINES_EN_ORDEN. Así se actualiza sumando lo que cambió, sin armar un texto en cada cambio de pin.
+  const clave = (e) => PINES_EN_ORDEN.reduce((k, pin) => k + e[pin] * PESO[pin], 0);
 
   function nuevoChip() {
     chip = crearChip(hex);
@@ -120,8 +121,9 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     corte = null;
     chip.alCambiarPines((cambios, ahora) => {
       acumular();
-      claveActual = clave(ahora);
-      if (!estadosDe.has(claveActual)) estadosDe.set(claveActual, ahora);
+      const antes = estadosDe.get(claveActual);
+      for (const pin in cambios) claveActual += (cambios[pin] - antes[pin]) * PESO[pin];
+      if (!estadosDe.has(claveActual)) estadosDe.set(claveActual, { ...ahora }); // `ahora` lo reutiliza el chip
       if (claveActual === ventana.clave) corte = { tiempos: new Map(tiempos), ciclo: chip.ciclos };
       ultimoCambio = chip.ciclos;
       for (const pin in cambios) cambioPin[pin] = chip.ciclos;
@@ -136,6 +138,8 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     ultimoCambio = -Infinity;
     cambioPin = {};
     chip.ponerLectorAnalogico(leerAnalogico);
+    puestas = {};
+    ultimaM = null;
     chip.alByteSerial((byte) => {
       serial.push(byte);
       txHasta = ms() + DESTELLO_TX_MS;
@@ -151,6 +155,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   function rehacerRed() {
     red = armarRed(circuitoActual, { quemados, presionados });
     soluciones = new Map();
+    planes = new Map();
     armarServos();
     potencia.armar(circuitoActual, calcularNodos(circuitoActual));
     calcularMano();
@@ -345,36 +350,76 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
   // ---- Entradas: lo que el circuito le deja leer al programa (digitalRead y analogRead)
 
-  // Resuelve el circuito con los pines de ahora y escribe en el chip el nivel de cada entrada digital.
-  function actualizarEntradas() {
-    if (!red || !chip) return;
-    const e = estadosDe.get(claveActual) || chip.estados();
-    const m = solucion(claveActual);
+  // Lo que depende solo de la combinación de pines (y del circuito), guardado como las soluciones: qué entradas y qué
+  // canales quedan al aire y qué nivel lee cada entrada. Un programa que manda datos a la shield sin pausa cambia los
+  // pines decenas de miles de veces por segundo, y recalcularlo en cada cambio era la mitad del tiempo.
+  function planDe(k, e, m) {
+    let p = planes.get(k);
+    if (p) return p;
     const flotan = red.flotantes(e);
-    alAire = new Set();
+    const canales = new Set();
+    ANALOGICOS.forEach((refs, canal) => {
+      if (flotan.has(refs[0])) canales.add(canal);
+    });
+    const alAireAqui = new Set();
+    const entradas = []; // [pin, nivel]: true o false; null = entre umbrales (se conserva el anterior); 'aire'
     for (const pin of ENTRADAS) {
       const estado = e[pin];
       if (estado !== PinState.Input && estado !== PinState.InputPullUp) continue;
       if (flotan.has(pin)) {
-        alAire.add(pin);
-        if (!(pin in nivelAlAire)) nivelAlAire[pin] = azar() < 0.5;
-        chip.ponerEntrada(pin, activas.entradaFlotante ? nivelAlAire[pin] : false); // ideal: lee BAJO
+        alAireAqui.add(pin);
+        entradas.push([pin, 'aire']);
         continue;
       }
       const v = m ? m.voltajes['placa.' + pin] : null;
-      let nivel;
-      if (typeof v === 'number') nivel = v >= UMBRAL_ALTO ? true : v <= UMBRAL_BAJO ? false : !!nivelAnterior[pin];
-      else nivel = estado === PinState.InputPullUp; // sin nada conectado: la pull-up interna lo deja en ALTO
-      nivelAnterior[pin] = nivel;
-      chip.ponerEntrada(pin, nivel);
+      if (typeof v === 'number') entradas.push([pin, v >= UMBRAL_ALTO ? true : v <= UMBRAL_BAJO ? false : null]);
+      else entradas.push([pin, estado === PinState.InputPullUp]); // sin nada conectado: la pull-up interna lo deja en ALTO
     }
-    canalesAlAire = new Set();
-    ANALOGICOS.forEach((refs, canal) => {
-      if (flotan.has(refs[0])) canalesAlAire.add(canal);
+    // Voltaje de cada entrada analógica con esta combinación (para no volver a ponerlo si no cambió).
+    const analogicos = ANALOGICOS.map((refs) => {
+      for (const r of refs) {
+        const v = m ? m.voltajes['placa.' + r] : null;
+        if (typeof v === 'number') return v;
+      }
+      return null;
     });
+    p = { canales, alAire: alAireAqui, entradas, analogicos, refsAlAire: red.refsAlAire(e) };
+    planes.set(k, p);
+    return p;
+  }
+  // Pone el nivel de una entrada digital solo si cambió.
+  function ponerEntrada(pin, nivel) {
+    if (puestas[pin] === nivel) return;
+    puestas[pin] = nivel;
+    chip.ponerEntrada(pin, nivel);
+  }
+
+  // Escribe en el chip el nivel de cada entrada digital y el voltaje de cada analógica, con los pines de ahora.
+  function actualizarEntradas() {
+    if (!red || !chip) return;
+    const e = estadosDe.get(claveActual) || chip.estados();
+    const m = solucion(claveActual);
+    const plan = planDe(claveActual, e, m);
+    alAire = plan.alAire;
+    for (const [pin, fijo] of plan.entradas) {
+      if (fijo === 'aire') {
+        if (!(pin in nivelAlAire)) nivelAlAire[pin] = azar() < 0.5;
+        ponerEntrada(pin, activas.entradaFlotante ? nivelAlAire[pin] : false); // ideal: lee BAJO
+        continue;
+      }
+      const nivel = fijo === null ? !!nivelAnterior[pin] : fijo;
+      nivelAnterior[pin] = nivel;
+      ponerEntrada(pin, nivel);
+    }
+    canalesAlAire = plan.canales;
     // El voltaje analógico está desde que se enciende la placa: no hay que esperar a la primera foto.
-    if (m) ponerAnalogicos(m);
-    refsAlAire = red.refsAlAire(e);
+    if (m && plan.analogicos !== ultimaM) {
+      plan.analogicos.forEach((v, canal) => {
+        if (v !== null && (!ultimaM || ultimaM[canal] !== v)) chip.ponerAnalogico(canal, v);
+      });
+      ultimaM = plan.analogicos;
+    }
+    refsAlAire = plan.refsAlAire;
   }
 
   // Cada milisegundo simulado, las entradas al aire (solo en modo realista): con la mano cerca siguen la red de
@@ -385,7 +430,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       const nivel = tocaLaMano('placa.' + pin) ? zumbido() : azar() < CAMBIO_AL_AIRE_POR_MS ? !nivelAlAire[pin] : nivelAlAire[pin];
       if (nivel !== nivelAlAire[pin]) {
         nivelAlAire[pin] = nivel;
-        chip.ponerEntrada(pin, nivel);
+        ponerEntrada(pin, nivel);
       }
     }
   }
@@ -490,6 +535,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     const recientes = new Set(PINES_EN_ORDEN.filter((p) => p in cambioPin && chip.ciclos - cambioPin[p] < (QUIETA_MS / 1000) * FRECUENCIA));
     if (crudo) crudo.pwm = ciclosUtiles(partes, total, recientes);
     ponerAnalogicos(crudo); // analogRead() lee el promedio de la ventana, sin el promedio de la vista
+    ultimaM = null;
     // La vista: exacta si ningún pin cambió en los últimos 50 ms (señal quieta); si no, promedio móvil.
     const quieta = chip.ciclos - ultimoCambio > (QUIETA_MS / 1000) * FRECUENCIA;
     const alfa = quieta ? 1 : 1 - Math.exp(-((total / FRECUENCIA) * 1000) / PROMEDIO_VISTA_MS);
@@ -656,8 +702,8 @@ function ciclosUtiles(partes, total, recientes = new Set()) {
   const altos = {};
   const vistos = new Set();
   for (const [k, t] of partes) {
-    for (let i = 0; i < k.length; i++) {
-      const alto = +k[i] === PinState.High;
+    for (let i = 0; i < PINES_EN_ORDEN.length; i++) {
+      const alto = Math.floor(k / 4 ** i) % 4 === PinState.High;
       altos[i] = (altos[i] || 0) + (alto ? t : 0);
       vistos.add(i);
     }
@@ -672,6 +718,7 @@ function ciclosUtiles(partes, total, recientes = new Set()) {
 }
 // El mismo orden en que chip.estados() entrega los pines (puerto D, B y C).
 const PINES_EN_ORDEN = ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
+const PESO = Object.fromEntries(PINES_EN_ORDEN.map((pin, i) => [pin, 4 ** i]));
 
 // Promedio, pesado por tiempo, de las soluciones de cada combinación de pines.
 function promediar(sols) {

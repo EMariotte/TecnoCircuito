@@ -675,3 +675,11 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
   - `npm run probar`: 17 grupos, 451 comprobaciones;
   - `test:simulador` de TecnoBloques: 28 de 28.
 
+## 2026-10-10 — El programa de bloques del carro iba al 22 %: ahora va a tiempo real
+
+**Lo que vio Efraín:** su proyecto «Carro Bluetooth» (bloques: `repetir por siempre → avanzar(255)`, con `setSpeed` y `run` de M1 y M2 en cada vuelta) simulaba al 28–40 %. El ejemplo del carro iba al 100 %.
+
+- **Causa:** sin pausa, cada `run()` manda 8 bits al 74HC595, así que los pines 4, 8 y 12 cambian decenas de miles de veces por segundo. En cada cambio, el núcleo recalculaba las entradas al aire y lo que lee cada entrada. Reproducido con `programas/carro_continuo`: 0,22× el chip real.
+- **Arreglo:** lo que leen las entradas se guarda por combinación de pines (`planDe`); una entrada solo se escribe si cambió; la clave de la combinación es un número que se actualiza con lo que cambió; el chip mira solo el puerto que se escribió; y `PinState` es una copia propia, sin los getters de esbuild. **Ahora va a 1,29×** (casi 6 veces más rápido). Ver `COMO-FUNCIONA.md`, sección 50.
+- **Prueba:** `probar_potencia.js`, sección 7: con órdenes sin pausa, M1 gira atrás y M2 adelante, y se informa la velocidad. `npm run probar`: 17 grupos, 452 comprobaciones.
+- **En TecnoBloques:** la lista de ejemplos se desplaza; antes los últimos (los de validación) quedaban fuera de la ventana.

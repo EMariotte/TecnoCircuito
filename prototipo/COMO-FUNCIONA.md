@@ -1129,3 +1129,17 @@ Sirve para todos los programas, no solo para el carro. El cálculo de la shield,
 
 **El dibujo:** el motor solo toca su texto y su flecha cuando cambian (antes rehacía la flecha unas 60 veces por segundo). Con TecnoBloques maximizado y las dos ruedas girando, el hilo de la página trabaja unos 90 ms por segundo, y el simulador va en otro hilo (el Worker).
 
+### El peor caso: órdenes a los motores sin pausa (10 oct)
+
+Efraín armó con bloques `repetir por siempre → avanzar(255)`, y `avanzar` llama `setSpeed` y `run` de dos motores. Sin pausa, cada `run()` manda 8 bits al 74HC595: el chip cambia los pines 4, 8 y 12 decenas de miles de veces por segundo. Con ese programa el simulador iba al **22 %** (`programas/carro_continuo`).
+
+En cada cambio de pin el núcleo recalculaba qué entradas quedan al aire y qué lee cada una, aunque esa combinación de pines ya hubiera salido mil veces. Cuatro arreglos, todos del mismo tipo (no repetir lo que ya se sabe):
+
+| Arreglo | Dónde |
+|---|---|
+| Lo que leen las entradas (al aire, niveles digitales y voltajes analógicos) se guarda por combinación de pines (`planDe`), como las soluciones del circuito | `nucleo.js` |
+| Una entrada o un canal analógico solo se escribe en el chip si su valor cambió | `nucleo.js` |
+| La clave de cada combinación es un número en base 4 que se actualiza con los pines que cambiaron, en vez de armar un texto de 20 letras | `nucleo.js` |
+| El chip mira solo los pines del puerto que se escribió, y `PinState` es una copia propia (sin los getters de esbuild) | `chip.js` |
+
+Resultado en Node: de **0,22×** a **1,29×** el chip real con ese programa. El carro del ejemplo va a 2,2×. `probar_potencia.js` lo prueba (sección 7) e informa la velocidad.

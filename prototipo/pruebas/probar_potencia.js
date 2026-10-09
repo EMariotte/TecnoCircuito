@@ -124,5 +124,32 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
   revisar(der.canal === 'M4' && sentido < 0, 'el motor derecho en M4 con el mismo cableado va hacia atrás: hay que invertir sus cables o su sentido');
 }
 
+// 7. Como lo arman los bloques: las órdenes a los motores sin pausa (programas/carro_continuo, M1 atrás y M2 adelante
+//    a 255). El 74HC595 recibe datos decenas de miles de veces por segundo: es el peor caso para la velocidad.
+{
+  const continuo = fs.readFileSync(path.join(__dirname, '..', 'programas', 'carro_continuo.hex'), 'utf8');
+  const c = carro({
+    cables: [
+      { de: 'motor1.A', a: 'shield1.M1A' },
+      { de: 'motor1.B', a: 'shield1.M1B' },
+      { de: 'motor2.A', a: 'shield1.M2A' },
+      { de: 'motor2.B', a: 'shield1.M2B' },
+      { de: 'bateria1.POS', a: 'shield1.EXT_POS' },
+      { de: 'bateria1.NEG', a: 'shield1.EXT_GND' },
+    ],
+  });
+  const n = crearNucleo({ hex: continuo, circuito: c, activas: REALISTA });
+  const inicio = process.hrtime.bigint();
+  let f = null;
+  for (let t = 0; t < 2000; t += 16) {
+    n.avanzar(CUADRO);
+    f = n.foto();
+  }
+  const ms = Number(process.hrtime.bigint() - inicio) / 1e6;
+  revisar(f.piezas.motor1.rpm < -200 && f.piezas.motor2.rpm > 200, `órdenes sin pausa: M1 atrás (${Math.round(f.piezas.motor1.rpm)} RPM) y M2 adelante (${Math.round(f.piezas.motor2.rpm)} RPM)`);
+  // Informativo (depende del PC y del cargador): antes del 10 oct iba a 0,22 veces el chip real.
+  console.log(`      2 s simulados en ${ms.toFixed(0)} ms → ${(2000 / ms).toFixed(2)} veces el chip real`);
+}
+
 console.log(fallos ? `\n${fallos} FALLAS` : '\nTodo bien.');
 process.exit(fallos ? 1 : 0);

@@ -16,7 +16,7 @@ import {
   AVRADC,
   adcConfig,
   ADCMuxInputType,
-  PinState,
+  PinState as PinStateAvr,
 } from 'avr8js';
 import { leerHex } from './hex.js';
 
@@ -32,7 +32,9 @@ const PINES_UNO = [
   [portCConfig, ['A0', 'A1', 'A2', 'A3', 'A4', 'A5']],
 ];
 
-export { PinState };
+// Copia propia de los estados de un pin (Low, High, Input, InputPullUp): por la misma razón que arriba, leer
+// `PinState.High` de avr8js en cada cambio de pin pasaba por los getters de esbuild.
+export const PinState = Object.freeze({ ...PinStateAvr });
 
 export { leerHex }; // se conserva aquí para las pruebas que lo importan desde el chip
 
@@ -78,14 +80,19 @@ export function crearChip(hex) {
     return e;
   }
 
-  // avr8js avisa cada vez que el programa escribe en un puerto; aquí se filtra lo que cambió de verdad.
-  for (const [puerto] of puertos) {
+  // avr8js avisa cada vez que el programa escribe en un puerto; aquí se filtra lo que cambió de verdad, mirando solo
+  // los pines de ese puerto. `ahora` es el estado de todos los pines; se reutiliza: quien lo guarde, que lo copie.
+  for (const [puerto, nombres] of puertos) {
     puerto.addListener(() => {
-      const ahora = estados();
-      const cambios = {};
-      for (const nombre in ahora) if (ahora[nombre] !== anterior[nombre]) cambios[nombre] = ahora[nombre];
-      anterior = ahora;
-      if (Object.keys(cambios).length) alPines.forEach((fn) => fn(cambios, ahora));
+      let cambios = null;
+      for (let bit = 0; bit < nombres.length; bit++) {
+        const estado = puerto.pinState(bit);
+        if (estado !== anterior[nombres[bit]]) {
+          (cambios || (cambios = {}))[nombres[bit]] = estado;
+          anterior[nombres[bit]] = estado;
+        }
+      }
+      if (cambios) for (const fn of alPines) fn(cambios, anterior);
     });
   }
   usart.onByteTransmit = (byte) => alByte.forEach((fn) => fn(byte));
