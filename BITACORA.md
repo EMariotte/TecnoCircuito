@@ -627,3 +627,18 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
 - **Resultado:** el pin 9 del servo marca de 0,31 a 0,38 V (un multímetro, ~0,37 V) y el LED de la mano se queda entre 33 y 49 %. La prueba nueva está en `probar_nucleo.js`.
 - `npm run probar`: 15 grupos, 388 comprobaciones. `test:simulador` de TecnoBloques también pasa (PWM al 50,0 % y al 20,0 %).
 - Explicado en `COMO-FUNCIONA.md`, sección 48.
+
+## 2026-10-10 — Contrato 1: sim.mediciones() y el panel de mediciones en TecnoBloques
+
+**Pedido de Efraín:** ver en TecnoBloques, con el circuito ampliado, el panel lateral con los cálculos internos (voltajes y corrientes), como en la página de prueba.
+
+- **`sim.mediciones()`** (contrato 1): lo que mediría un multímetro en cada pieza, con el promedio de la vista. Antes era `_mediciones()`, solo del prototipo, y el nombre viejo se conserva.
+- **`TecnoCircuito.filasDeMediciones(m)`** (`src/mediciones.js`): arma la tabla en español (pieza, voltaje, corriente y detalle). La página de prueba y TecnoBloques usan la misma función, así que el aprendiz lee lo mismo en los dos lados.
+- **Hallazgo y arreglo:** el ciclo útil del pin de un servo salía en «PWM 28 %» y el real es 7,4 %. Era el mismo problema de las señales lentas. Ahora los pines que cambiaron en los últimos 50 ms entran siempre al cálculo, con 0 o 1 si en la ventana no cambian, y el promedio de la vista los suaviza: da de 6,3 a 7,6 %.
+- **En la tabla,** el pin que manda la señal de un servo se describe como «señal de servo: pulso de 1471 µs», no como PWM.
+- **Pruebas:**
+  - `probar_nucleo.js` comprueba el ciclo útil del servo;
+  - `test:simulador` de TecnoBloques comprueba el panel: aparece con el circuito ampliado, muestra el pin 9 y el servo, y se esconde en la vista dividida;
+  - `npm run probar`: 15 grupos, 389 comprobaciones.
+
+- **Validación humana (Efraín, 10 oct):** creó un proyecto nuevo en TecnoBloques, conectó un LED con su resistencia, usó el ejemplo de encendido por el monitor serial y, al simular con el circuito ampliado, vio cambiar las mediciones en el panel. Aprobado.

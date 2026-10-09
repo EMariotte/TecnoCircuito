@@ -314,11 +314,13 @@ const desviacion = (xs) => {
   // Cada foto (16 ms) es más corta que el período del servo: sin el promedio de la vista, la tabla saltaba (y decía 1,84 V).
   const vista = crearNucleo({ hex: hex('servo_barrido'), circuito: conServo(), activas: ACTIVAS, semilla: 1 });
   const v9 = [];
+  const u9 = [];
   for (let t = 0; t < 1900; t += 16) {
     vista.avanzar(CUADRO);
     const f = vista.foto();
-    if (t > 1500) v9.push(f.voltajes['placa.D9']);
+    if (t > 1500) v9.push(f.voltajes['placa.D9']), u9.push(f.medicion.pwm.D9);
   }
+  revisar(Math.min(...u9) > 0.05 && Math.max(...u9) < 0.09, `y su ciclo útil: entre ${(Math.min(...u9) * 100).toFixed(1)} y ${(Math.max(...u9) * 100).toFixed(1)} % (1,47 ms de 20 ms = 7,4 %)`);
   revisar(Math.min(...v9) > 0.28 && Math.max(...v9) < 0.46,
     `el pin 9 del servo en la tabla: entre ${Math.min(...v9).toFixed(2).replace('.', ',')} y ${Math.max(...v9).toFixed(2).replace('.', ',')} V, como un multímetro (~0,37 V)`);
   // Barrido continuo (servo_continuo): la placa real midió ~100 mA en un SG90 del kit (UT33B+, 9 oct 2026)

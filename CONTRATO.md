@@ -24,6 +24,8 @@
 TecnoCircuito.VERSION    // '1.0.0'  versión del paquete (semver)
 TecnoCircuito.CONTRATO   // 1        sube solo cuando se rompe la compatibilidad
 TecnoCircuito.PLACAS     // ['uno', 'nano', 'nano_old', 'mega']  placas que sabe simular
+TecnoCircuito.filasDeMediciones(m)  // la tabla en español a partir de sim.mediciones():
+                         //   [{ pieza: 'Pin 9', voltaje: '0,37 V', corriente: '0,00 mA', detalle: 'señal de servo: …' }, …]
 
 // Lienzo: protoboard y cables. Funciona sin .hex (sirve también en la versión web).
 const lienzo = TecnoCircuito.crearLienzo(elemento, {
@@ -60,9 +62,13 @@ sim.alFalla((falla) => {}); // { tipo, componente, mensaje }  mensaje en españo
 sim.alEstado((estado) => {}); // 'corriendo' | 'pausado' | 'detenido' | 'reiniciado'
 sim.medidas();   // { msSimulados, msReales, velocidad, estado, hilo }  para la línea de estado
                  //   velocidad: 0 a 1 (1 = al ritmo del chip real) · hilo: 'worker' | 'pagina'
+sim.mediciones(); // lo que mediría un multímetro en cada pieza (null si no se simula): voltajes, leds, resistencias,
+                 //   pines, potenciometros, servos, pwm, consumo5V, usb, entradas, fallas, modo, activas.
+                 //   Las señales que cambian se promedian como el ojo y el multímetro (~100 ms).
 sim.destruir();  // detiene, libera el Worker y suelta el lienzo; después el objeto ya no sirve
 ```
 
+- `sim.mediciones()` y `TecnoCircuito.filasDeMediciones()` entraron el 10 oct 2026, para que TecnoBloques muestre la misma tabla que la página de prueba. La estructura de `mediciones()` puede ganar campos (piezas nuevas), pero no cambiar los que hay. El nombre del prototipo, `_mediciones`, sigue funcionando.
 - `sim.medidas()` y `sim.destruir()` entraron al contrato el 7 oct 2026, tras la primera conexión. Los nombres del prototipo (`_medidas`, `_destruir`) siguen funcionando mientras TecnoBloques se actualiza, pero no son parte del contrato.
 
 - **Ninguna función lanza errores hacia el editor por fallas del circuito o del programa.** Esas fallas salen por `alFalla`. Solo se lanza un error por un uso equivocado de la API, como una placa que no existe.
@@ -241,4 +247,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 7 oct 2026 | Ajustes del prototipo 0: cada pin físico con nombre propio (`GND1` a `GND3`), `puntos` opcionales en los cables, placa fija en el origen con coordenadas definidas y `alEvento` en `crearLienzo`. Sigue en borrador, así que no sube el número. |
 | 1 (borrador) | 7 oct 2026 | Sección 4.1: el proyecto `.tbq.json` que contiene el circuito (TecnoBloques 0.2.5 conserva los campos desconocidos y guarda `creadoCon`; el `.hex` no va en el proyecto). Fixtures disponibles en `test/salida`. |
 | 1 (borrador) | 7 oct 2026 | Primera conexión con TecnoBloques: `alSerial` entrega texto UTF-8; se proponen `sim.destruir()` y `sim.medidas()`. `tbEscritorio.compilarHex` ya existe en TecnoBloques (sección 5). |
-| 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). El 8 oct entran la pieza `servo` (`GND`, `VCC`, `SIG`; `modelo` sg90 o mg90s), la no idealidad `limiteUSB`, las fallas `servo_alimentacion`, `reinicio_usb` y `fusible_usb`, y el evento `reinicio_placa` empieza a emitirse. |
+| 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). El 8 oct entran la pieza `servo` (`GND`, `VCC`, `SIG`; `modelo` sg90 o mg90s), la no idealidad `limiteUSB`, las fallas `servo_alimentacion`, `reinicio_usb` y `fusible_usb`, y el evento `reinicio_placa` empieza a emitirse. El 10 oct entran `sim.mediciones()` y `TecnoCircuito.filasDeMediciones(m)` (la tabla de mediciones en español, la misma en la página de prueba y en TecnoBloques). |

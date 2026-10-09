@@ -2,6 +2,7 @@
 import { crearLienzo } from './lienzo.js';
 import { crearSimulador } from './simulador.js';
 import { PLACAS } from './catalogo.js';
+import { filasDeMediciones } from './mediciones.js';
 
 window.TecnoCircuito = Object.freeze({
   VERSION: '0.0.5-prototipo',
@@ -9,4 +10,5 @@ window.TecnoCircuito = Object.freeze({
   PLACAS: Object.freeze(Object.keys(PLACAS)),
   crearLienzo,
   crearSimulador,
+  filasDeMediciones,
 });

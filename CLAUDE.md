@@ -192,6 +192,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 **Pendientes de software que salieron de las validaciones:**
 - ✅ **Promedio de señales lentas** (10 oct, sección 48 de COMO-FUNCIONA): promedio móvil de 100 ms si un pin cambió en los últimos 50 ms; si no, valor exacto. Antes, cuando la señal duraba más que una foto (16 ms), el promedio saltaba. Pasa con el servo (la tabla dice «Pin 9: 1,84 V» y un multímetro diría 0,3 a 0,6 V) y con el LED de la mano (cada foto entre 7 y 50 %; el promedio sí es 35 %). Arreglo: suavizar la medición con una constante de tiempo como la del ojo o del multímetro.
+- ✅ **Panel de mediciones en TecnoBloques** (10 oct): `sim.mediciones()` y `TecnoCircuito.filasDeMediciones()` en el contrato 1, y el panel a la derecha con el circuito ampliado.
 - **El circuito no siente la caída del 5V:** solo los servos ven el voltaje real.
 - En TecnoBloques (Fase 2d): exportar el monitor serial a **CSV** y un **graficador serial** con casillas por variable.
 

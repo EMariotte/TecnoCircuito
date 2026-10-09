@@ -174,8 +174,13 @@ export function crearSimulador(opciones = {}) {
     _destruir() {
       this.destruir();
     },
-    // Solo del prototipo, fuera del contrato: voltajes y corrientes de cada pieza, para la tabla de mediciones.
-    _mediciones: () => (estado === 'detenido' || !medicion ? null : { ...medicion, fallas: [...fallas], modo, activas }),
+    // Contrato 1: lo que mediría un multímetro en cada pieza, con el promedio de la vista (sección 48 de COMO-FUNCIONA).
+    // null si no se está simulando. TecnoCircuito.filasDeMediciones(m) lo convierte en la tabla en español.
+    mediciones: () => (estado === 'detenido' || !medicion ? null : { ...medicion, fallas: [...fallas], modo, activas }),
+    // Nombre del prototipo antes de entrar al contrato: se conserva por ahora.
+    _mediciones() {
+      return this.mediciones();
+    },
   };
 }
 

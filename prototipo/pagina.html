@@ -300,37 +300,16 @@
     pintarMediciones();
   }
   // Tabla tipo multímetro: lo que mediría la placa real en cada pieza.
-  const num = (x, dec) => x.toFixed(dec).replace('.', ',');
-  const voltios = (v) => (v === null ? 'al aire' : num(v, 2) + ' V');
-  const miliamperios = (i) => num(i * 1000, Math.abs(i) < 0.01 ? 2 : 1) + ' mA';
+  // La tabla sale del paquete (TecnoCircuito.filasDeMediciones), igual que en TecnoBloques.
   function pintarMediciones() {
-    const m = sim._mediciones();
-    $('mediciones').hidden = !m || !m.leds;
-    if (!m || !m.leds) return;
-    // Cómo lee el programa una entrada: ALTO, BAJO o al aire (lee al azar en modo realista).
-    const lee = (pin) => {
-      const e = m.entradas && m.entradas[pin];
-      return !e ? '' : e.alAire ? `al aire: lee ${e.alto ? 'ALTO' : 'BAJO'}; acércale el mouse` : e.alto ? 'lee ALTO' : 'lee BAJO';
-    };
-    const conPin = new Set(m.pines.map((p) => p.pin));
-    const filas = [
-      ...m.pines.map((p) => [`Pin ${p.pin.replace('D', '')}`, voltios(p.v), miliamperios(p.i), m.pwm && m.pwm[p.pin] ? `PWM ${Math.round(m.pwm[p.pin] * 100)} %` : lee(p.pin)]),
-      ...Object.keys(m.entradas || {}).filter((pin) => !conPin.has(pin) && ('placa.' + pin) in m.voltajes)
-        .map((pin) => [`Pin ${pin.replace('D', '')} (entrada)`, voltios(m.voltajes['placa.' + pin]), '', lee(pin)]),
-      ...(m.potenciometros || []).map((x) => [`${x.id} (${x.ohmios >= 1000 ? num(x.ohmios / 1000, 0) + ' k' : x.ohmios + ' '}Ω)`, voltios(x.v), miliamperios(x.i), `perilla ${Math.round(x.posicion * 100)} %`]),
-      ...m.resistencias.map((r) => [`${r.id} (${r.ohmios >= 1000 ? num(r.ohmios / 1000, 1) + ' k' : r.ohmios + ' '}Ω)`, voltios(r.v), miliamperios(r.i), num(r.w * 1000, 1) + ' mW']),
-      ...m.leds.map((l) => [l.id, voltios(l.v), miliamperios(l.i), l.quemado ? 'quemado' : `brillo ${Math.round(l.brillo * 100)} %`]),
-      ...(m.servos || []).map((s) => [`${s.id} (${s.modelo.toUpperCase()})`, '', miliamperios(s.i),
-        !s.fuente ? 'sin alimentación' : !s.senal ? 'sin señal' : `${Math.round(s.angulo)}°${s.moviendo ? ', moviéndose' : ''}${s.pulso ? ` · pulso ${s.pulso} µs` : ''}`]),
-      ...(m.servos && m.servos.length ? [['5V de la placa (USB)', '', miliamperios(m.consumo5V), 'el USB da hasta 500 mA']] : []),
-      ...(m.usb && ((m.servos && m.servos.length) || m.usb.reinicios || m.usb.pico > 0.2) ? [['USB (placa y circuito)', voltios(m.usb.voltios), miliamperios(m.usb.amperios),
-        `pico ${miliamperios(m.usb.pico)} · fusible ${Math.round(m.usb.fusible * 100)} %${m.usb.reinicios ? ` · ${m.usb.reinicios} reinicios` : ''}`]] : []),
-    ];
+    const m = sim.mediciones();
+    const filas = TecnoCircuito.filasDeMediciones(m);
+    $('mediciones').hidden = !filas.length;
     const cuerpo = $('mediciones').tBodies[0];
     cuerpo.textContent = '';
-    for (const fila of filas) {
+    for (const f of filas) {
       const tr = cuerpo.insertRow();
-      for (const celda of fila) tr.insertCell().textContent = celda;
+      for (const celda of [f.pieza, f.voltaje, f.corriente, f.detalle]) tr.insertCell().textContent = celda;
     }
   }
   setInterval(() => sim && pintarEstado(), 250);

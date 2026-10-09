@@ -70,6 +70,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let corte = null; // { tiempos, ciclo }: cómo iba la ventana la última vez que volvió a su combinación
   let medicion = null;
   let ultimoCambio = -Infinity; // ciclo del último cambio de pin (para saber si la señal está quieta)
+  let cambioPin = {}; // pin → ciclo de su último cambio (su ciclo útil se sigue promediando mientras cambie)
   let evaluaciones = 0;
   let txHasta = 0;
   let serial = []; // bytes que mandó el programa desde la última foto
@@ -118,6 +119,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       if (!estadosDe.has(claveActual)) estadosDe.set(claveActual, ahora);
       if (claveActual === ventana.clave) corte = { tiempos: new Map(tiempos), ciclo: chip.ciclos };
       ultimoCambio = chip.ciclos;
+      for (const pin in cambios) cambioPin[pin] = chip.ciclos;
       actualizarEntradas(); // un pin que pasa a entrada (o que maneja otra entrada) cambia lo que se lee
       if (servos.size) medirPulsos(cambios);
     });
@@ -125,6 +127,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     chip.alCadaMs(avanzarServos);
     for (const s of servos.values()) s.subida = null; // un chip nuevo empieza sin pulsos a medias
     ultimoCambio = -Infinity;
+    cambioPin = {};
     chip.ponerLectorAnalogico(leerAnalogico);
     chip.alByteSerial((byte) => {
       serial.push(byte);
@@ -470,7 +473,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       sols.push([m, t / total]);
     }
     const crudo = sols.length ? promediar(sols) : null;
-    if (crudo) crudo.pwm = ciclosUtiles(partes, total);
+    // Los pines que cambiaron hace poco entran siempre, aunque en esta ventana no cambien (0 o 1): así una señal más
+    // lenta que la foto, como el pulso de un servo, se promedia bien en la vista.
+    const recientes = new Set(PINES_EN_ORDEN.filter((p) => p in cambioPin && chip.ciclos - cambioPin[p] < (QUIETA_MS / 1000) * FRECUENCIA));
+    if (crudo) crudo.pwm = ciclosUtiles(partes, total, recientes);
     ponerAnalogicos(crudo); // analogRead() lee el promedio de la ventana, sin el promedio de la vista
     // La vista: exacta si ningún pin cambió en los últimos 50 ms (señal quieta); si no, promedio móvil.
     const quieta = chip.ciclos - ultimoCambio > (QUIETA_MS / 1000) * FRECUENCIA;
@@ -627,8 +633,8 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 }
 
 // Fracción del tiempo en ALTO de cada pin que cambió dentro de la ventana (el «ciclo útil» del PWM).
-function ciclosUtiles(partes, total) {
-  if (partes.length < 2) return {};
+// `recientes`: pines que cambiaron hace poco; entran aunque en esta ventana se queden en 0 o en 1.
+function ciclosUtiles(partes, total, recientes = new Set()) {
   const altos = {};
   const vistos = new Set();
   for (const [k, t] of partes) {
@@ -642,7 +648,7 @@ function ciclosUtiles(partes, total) {
   const r = {};
   for (const i of vistos) {
     const f = altos[i] / total;
-    if (f > 0 && f < 1) r[nombres[i]] = Math.round(f * 1000) / 1000;
+    if ((f > 0 && f < 1) || recientes.has(nombres[i])) r[nombres[i]] = Math.round(f * 1000) / 1000;
   }
   return r;
 }
