@@ -39,7 +39,7 @@ with sync_playwright() as p:
     def agregar(nombre):
         """Agrega una pieza con el menú «+ Agregar»."""
         pg.get_by_role('button', name='+ Agregar').click()
-        pg.get_by_role('menuitem', name=nombre, exact=True).click()
+        pg.get_by_role('button', name=nombre, exact=True).click()
 
     def pieza(id_):
         c = pg.evaluate('lienzo.circuito()')
@@ -171,11 +171,11 @@ with sync_playwright() as p:
             and not any('protoboard.' in k['de'] + k['a'] for k in c['cables']),
             f'borrar la protoboard deja las piezas sueltas y quita sus cables ({len(c["cables"])} cables quedan)')
     pg.get_by_role('button', name='+ Agregar').click()
-    revisar(pg.get_by_role('menuitem', name='Protoboard', exact=True).is_enabled(), 'en el menú «+ Agregar» vuelve a estar «Protoboard»')
-    pg.get_by_role('menuitem', name='Protoboard', exact=True).click()
+    revisar(pg.get_by_role('button', name='Protoboard', exact=True).is_enabled(), 'en el menú «+ Agregar» vuelve a estar «Protoboard»')
+    pg.get_by_role('button', name='Protoboard', exact=True).click()
     pg.wait_for_timeout(200)
     pg.get_by_role('button', name='+ Agregar').click()
-    revisar(pg.evaluate('lienzo.circuito().protoboard') is not None and not pg.get_by_role('menuitem', name='Protoboard', exact=True).is_enabled(),
+    revisar(pg.evaluate('lienzo.circuito().protoboard') is not None and not pg.get_by_role('button', name='Protoboard', exact=True).is_enabled(),
             '«Protoboard» agrega una y queda apagada en el menú')
     pg.keyboard.press('Escape')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent)')

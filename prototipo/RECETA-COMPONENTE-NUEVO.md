@@ -96,6 +96,15 @@ Hay que decidir cómo se agrega, se mueve, se gira y se borra, y si tiene algo p
 - **las piezas encajadas se mueven con ella;**
 - **borrarla** deja las piezas sueltas.
 
+**Su lugar en la biblioteca y su ficha** (`src/biblioteca.js`, desde el 10 oct 2026): la pieza va en una categoría de `CATEGORIAS` y tiene su entrada en `FICHAS`:
+
+- `nombre` (el mismo del catálogo) y una `descripcion` corta: para qué sirve y el error típico;
+- `palabras` con las que la buscaría un aprendiz («luz», «pila», «carro»);
+- `pines` en palabras del aprendiz y `datos(props)`, tomados del mismo modelo que usa el simulador;
+- `validacion(props)`: si su modelo ya se comparó con la placa real (✓) o falta (◐), con la fecha y lo medido.
+
+`probar_contrato.js` revisa que ninguna pieza del catálogo se quede sin ficha ni sin categoría.
+
 Cada interacción nueva tiene que respetar las reglas del lienzo:
 
 - **la vista no salta bajo el mouse:** la barra tiene altura fija y el re-encuadre solo actúa con cambios de tamaño grandes;
@@ -149,7 +158,7 @@ Una **pieza Tecno** es una pieza hecha para TecnoCircuito con esta receta: dibuj
 □ 5. Puntos de conexión en la capa correcta, con rótulo en palabras del aprendiz
 □ 6. Modelo eléctrico (unir nodos, resistencias y fuentes, o no lineal)
 □ 7. Modelo lógico, si habla con el programa (setPin, ADC, USART, TWI, SPI, tiempos)
-□ 8. Interacción (agregar, mover, girar, borrar y lo propio de la pieza) con sus eventos
+□ 8. Interacción (agregar, mover, girar, borrar y lo propio de la pieza) con sus eventos, y su ficha en biblioteca.js
 □ 9. Pruebas con Node y con Chromium, en npm run probar, más un ejemplo en la página
 □ 10. Validación con la placa real; medidas a validacion/
 ```

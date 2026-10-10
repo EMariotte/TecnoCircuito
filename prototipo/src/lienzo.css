@@ -422,37 +422,310 @@
 }
 
 /* Menú «+ Agregar» */
-.tc-menu {
+/* Biblioteca de piezas («+ Agregar»): un panel a la izquierda, debajo de la barra, con buscador y categorías. */
+.tc-biblioteca {
   position: absolute;
   z-index: 10;
-  display: grid;
-  min-width: 160px;
-  padding: 4px;
+  top: 58px;
+  left: 6px;
+  bottom: 6px;
+  width: min(290px, calc(100% - 12px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
   background: var(--barra);
   border: 1px solid var(--borde);
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
-.tc-menu[hidden] {
+.tc-biblioteca[hidden],
+.tc-ficha[hidden],
+.tc-ficha-cuerpo[hidden],
+.tc-bib-cat[hidden],
+.tc-pieza[hidden],
+.tc-bib-vacio[hidden] {
   display: none;
 }
 
-.tc .tc-menu button {
-  border: 0;
-  border-radius: 6px;
+.tc-bib-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+}
+
+.tc .tc-cerrar {
+  min-height: 28px;
+  padding: 0 9px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tc .tc-buscar {
+  font: inherit;
+  color: var(--texto);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 7px 10px;
+  width: 100%;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.tc-bib-lista {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.tc-bib-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--suave);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 8px 2px 4px;
+}
+
+.tc .tc-pieza {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: transparent;
   text-align: left;
-  padding: 6px 10px;
+  padding: 6px;
+  cursor: grab;
+  touch-action: none;
 }
 
-.tc .tc-menu button:hover,
-.tc .tc-menu button:focus-visible {
+.tc .tc-pieza:hover,
+.tc .tc-pieza:focus-visible {
   background: var(--boton-hover);
+  border-color: var(--borde);
 }
 
-.tc .tc-menu button[disabled] {
-  color: var(--suave);
+.tc .tc-pieza[disabled] {
   cursor: default;
+  opacity: 0.5;
   background: transparent;
+}
+
+.tc-arrastrando .tc-pieza {
+  cursor: grabbing;
+}
+
+.tc-mini {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 46px;
+  border-radius: 6px;
+  background: var(--fondo);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tc-mini > svg {
+  width: 58px;
+  height: 42px;
+}
+
+.tc-pieza-texto {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tc-pieza-texto small {
+  color: var(--suave);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.tc-bib-vacio,
+.tc-bib-ayuda {
+  margin: 0;
+  font-size: 12px;
+  color: var(--suave);
+}
+
+.tc-fantasma {
+  position: absolute;
+  z-index: 20;
+  width: 80px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.85;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.tc-fantasma > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ficha de la pieza elegida: arriba a la derecha, sobre el lienzo. Se puede plegar. */
+.tc-ficha {
+  position: absolute;
+  z-index: 5;
+  top: 62px;
+  right: 8px;
+  width: min(290px, calc(100% - 16px));
+  max-height: calc(100% - 110px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: var(--barra);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+  font-size: 13px;
+  transition: opacity 0.15s;
+}
+
+.tc-ficha.tc-ficha-izq {
+  right: auto;
+  left: 8px;
+}
+
+.tc-ficha.tc-ficha-quieta {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.tc .tc-ficha-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: left;
+}
+
+.tc-ficha-flecha {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--suave);
+}
+
+.tc-ficha-info[hidden] {
+  display: none;
+}
+
+.tc-ficha-titulo small {
+  font-weight: 400;
+  color: var(--suave);
+}
+
+.tc-ficha-cuerpo {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.tc-ficha p {
+  margin: 0;
+}
+
+.tc-ficha-desc {
+  color: var(--suave);
+}
+
+.tc-ficha-props {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--fondo);
+}
+
+.tc-ficha-props .tc-campo {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--suave);
+}
+
+.tc-ficha-props select,
+.tc-ficha-props input[type="range"] {
+  width: 100%;
+}
+
+.tc-ficha dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  margin: 0;
+}
+
+.tc-ficha dt {
+  color: var(--suave);
+}
+
+.tc-ficha dd {
+  margin: 0;
+}
+
+.tc-ficha-val {
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid var(--borde);
+}
+
+.tc-ficha-val b {
+  display: block;
+}
+
+.tc-validado {
+  color: #1d6b31;
+  background: #e8f5ec;
+  border-color: #b7dfc2;
+}
+
+.tc-por-validar {
+  color: #8a4b00;
+  background: #fff4e0;
+  border-color: #f2d19b;
+}
+
+.tc.tc-oscuro .tc-validado {
+  color: #8fe0a4;
+  background: #16301e;
+  border-color: #275c36;
+}
+
+.tc.tc-oscuro .tc-por-validar {
+  color: #ffc773;
+  background: #3a2a10;
+  border-color: #6b4a14;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tc:not(.tc-claro) .tc-validado {
+    color: #8fe0a4;
+    background: #16301e;
+    border-color: #275c36;
+  }
+
+  .tc:not(.tc-claro) .tc-por-validar {
+    color: #ffc773;
+    background: #3a2a10;
+    border-color: #6b4a14;
+  }
 }

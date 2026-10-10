@@ -8,6 +8,7 @@ import '@wokwi/elements/dist/esm/pushbutton-element.js';
 import estilos from './lienzo.css';
 import { PLACAS, TIPOS, COLORES_CABLE, CODIGO_COLORES, NOMBRE_COLOR, colorPorDefecto } from './catalogo.js';
 import { netlistKiCad } from './kicad.js';
+import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -63,22 +64,27 @@ export function crearLienzo(elemento, opciones = {}) {
     <div class="tc-tip" hidden></div>
     <div class="tc-ayuda" aria-live="polite"></div>
   </div>
-  <div class="tc-menu" role="menu" aria-label="Agregar una pieza" hidden>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="led">LED</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="resistencia">Resistencia</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="potenciometro">Potenciómetro</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="pulsador">Botón</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="servo">Servo</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="motor_tt">Motor TT</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="shield_l293d">Shield L293D</button>
-    <button type="button" role="menuitem" data-accion="agregar" data-tipo="bateria_lipo">Batería LiPo 2S</button>
-    <button type="button" role="menuitem" data-accion="protoboard">Protoboard</button>
+  <div class="tc-menu tc-biblioteca" role="dialog" aria-label="Piezas" hidden>
+    <div class="tc-bib-cabeza">
+      <b>Piezas</b>
+      <button type="button" class="tc-cerrar" data-accion="cerrar" aria-label="Cerrar las piezas" title="Cerrar (Esc)">×</button>
+    </div>
+    <input type="search" class="tc-buscar" placeholder="Buscar: motor, luz, pila…" aria-label="Buscar una pieza" autocomplete="off">
+    <div class="tc-bib-lista"></div>
+    <p class="tc-bib-vacio" hidden></p>
+    <p class="tc-bib-ayuda">Clic: la pieza aparece en el centro · Arrástrala para ponerla donde quieras</p>
   </div>
+  <div class="tc-ficha" hidden></div>
+</div>
 </div>`;
   const $ = (s) => raiz.querySelector(s);
   const tc = $('.tc');
   const barra = $('.tc-barra');
-  const menu = $('.tc-menu');
+  const menu = $('.tc-biblioteca');
+  const buscador = $('.tc-buscar');
+  const bibLista = $('.tc-bib-lista');
+  const bibVacio = $('.tc-bib-vacio');
+  const ficha = $('.tc-ficha');
   const botonMenu = barra.querySelector('[data-accion="menu"]');
   const barraSel = $('.tc-sel');
   const area = $('.tc-area');
@@ -211,22 +217,26 @@ export function crearLienzo(elemento, opciones = {}) {
     return Promise.resolve();
   }
 
-  function agregarProtoboard() {
+  function agregarProtoboard(punto = null) {
     if (datos.protoboard) return;
-    // A la derecha de lo que ya hay, a la altura de la placa: donde suele estar en la mesa.
+    // A la derecha de lo que ya hay, a la altura de la placa: donde suele estar en la mesa. O donde se soltó.
     const caja = cajaDelCircuito();
-    datos.protoboard = { tipo: 'media', x: Math.round(Math.max(300, caja ? caja.x1 + 30 : 300)), y: 30 };
+    const t = TIPOS_PROTOBOARD.media;
+    datos.protoboard = punto
+      ? { tipo: 'media', x: Math.round(punto.x - t.ancho / 2), y: Math.round(punto.y - t.alto / 2) }
+      : { tipo: 'media', x: Math.round(Math.max(300, caja ? caja.x1 + 30 : 300)), y: 30 };
     crearVistaProtoboard();
     pintarAgregar();
     emitir('componente_agregado', { id: 'protoboard', tipo: 'protoboard' });
     seleccionar({ tipo: 'comp', id: 'protoboard' });
-    if (!camaraManual) encuadrar();
+    if (!camaraManual && !punto) encuadrar();
     cambio();
   }
 
   // «+ Protoboard» solo aparece si todavía no hay una.
   function pintarAgregar() {
     const b = menu.querySelector('[data-accion="protoboard"]');
+    if (!b) return; // en solo lectura no hay biblioteca
     b.disabled = !!datos.protoboard;
     b.title = datos.protoboard ? 'Ya hay una protoboard' : '';
     // Las piezas montadas sobre la placa (la shield) van una sola vez.
@@ -612,6 +622,7 @@ export function crearLienzo(elemento, opciones = {}) {
   }
 
   function pintarBarra() {
+    pintarFicha();
     barraSel.textContent = '';
     if (soloLectura || (!sel && !trazando)) return;
     const agregar = (html) => barraSel.insertAdjacentHTML('beforeend', html);
@@ -640,27 +651,207 @@ export function crearLienzo(elemento, opciones = {}) {
       const def = TIPOS[c.tipo];
       const v = vistas.get(c.id);
       agregar(`<span class="tc-etiqueta">${def ? def.nombre : 'Pieza desconocida'}</span>`);
-      for (const campo of def ? def.campos || (def.campo ? [def.campo] : []) : []) {
-        const actual = String(c.props[campo.prop]);
-        const opciones = campo.opciones
-          .map(([valor, texto]) => `<option value="${valor}"${actual === String(valor) ? ' selected' : ''}>${texto}</option>`)
-          .join('');
-        agregar(`<label class="tc-campo">${campo.etiqueta} <select data-prop="${campo.prop}">${opciones}</select></label>`);
-      }
-      if (def && def.perilla) {
-        const valor = Math.round((Number(c.props[def.perilla.prop]) || 0) * 100);
-        agregar(`<label class="tc-campo">${def.perilla.etiqueta} <input type="range" min="0" max="100" value="${valor}" data-perilla aria-label="${def.perilla.etiqueta} del potenciómetro"></label>`);
-      }
-      if (c.tipo === 'led') {
-        const encendido = v && v.el.value ? ' checked' : '';
-        agregar(`<label class="tc-check"><input type="checkbox" data-accion="encender"${encendido}> Ver encendido</label>`);
-      }
       if (!montada(c)) agregar('<button type="button" data-accion="girar">Girar</button>');
     }
     agregar('<button type="button" data-accion="borrar">Borrar</button>');
   }
 
-  function agregarComponente(tipo) {
+  // ---- Ficha de la pieza elegida: para qué sirve, sus propiedades, sus datos y si su modelo ya se probó con la placa real.
+
+  // Plegada, la ficha muestra solo el nombre y las propiedades; abierta, también para qué sirve, los datos y la
+  // validación. Empieza abierta si el lienzo es ancho; después queda como la dejó el aprendiz.
+  let fichaAbierta = null;
+  const escapar = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  function pintarFicha() {
+    const tipo = sel && sel.tipo === 'comp' && !trazando ? (sel.id === 'protoboard' ? 'protoboard' : (componente(sel.id) || {}).tipo) : null;
+    const f = tipo && FICHAS[tipo];
+    ficha.hidden = !f || !menu.hidden; // con el panel de piezas abierto, la ficha no se muestra
+    if (!f) return (ficha.textContent = '');
+    if (fichaAbierta === null && area.clientWidth) fichaAbierta = area.clientWidth >= 900;
+    const abierta = fichaAbierta !== false;
+    const c = sel.id === 'protoboard' ? null : componente(sel.id);
+    const def = c && TIPOS[c.tipo];
+    const v = c && vistas.get(c.id);
+    let props = '';
+    if (c && def && !soloLectura) {
+      for (const campo of def.campos || (def.campo ? [def.campo] : [])) {
+        const actual = String(c.props[campo.prop]);
+        const opciones = campo.opciones
+          .map(([valor, texto]) => `<option value="${valor}"${actual === String(valor) ? ' selected' : ''}>${texto}</option>`)
+          .join('');
+        props += `<label class="tc-campo">${campo.etiqueta} <select data-prop="${campo.prop}">${opciones}</select></label>`;
+      }
+      if (def.perilla) {
+        const valor = Math.round((Number(c.props[def.perilla.prop]) || 0) * 100);
+        props += `<label class="tc-campo">${def.perilla.etiqueta} <input type="range" min="0" max="100" value="${valor}" data-perilla aria-label="${def.perilla.etiqueta} del potenciómetro"></label>`;
+      }
+      if (c.tipo === 'led') {
+        const encendido = v && v.el.value ? ' checked' : '';
+        props += `<label class="tc-check"><input type="checkbox" data-accion="encender"${encendido}> Ver encendido</label>`;
+      }
+    }
+    ficha.innerHTML =
+      `<button type="button" class="tc-ficha-titulo" data-accion="ficha" aria-expanded="${abierta}" aria-label="Ficha de ${escapar(f.nombre)}: ${abierta ? 'ocultar los detalles' : 'ver los detalles'}">` +
+      `<span>${escapar(f.nombre)}${c ? ` <small>${escapar(c.id)}</small>` : ''}</span><span class="tc-ficha-flecha">${abierta ? 'menos ▴' : 'detalles ▾'}</span></button>` +
+      `<div class="tc-ficha-cuerpo"${abierta || props ? '' : ' hidden'}>` +
+      `<p class="tc-ficha-desc tc-ficha-info"${abierta ? '' : ' hidden'}>${escapar(f.descripcion)}</p>` +
+      (props ? `<div class="tc-ficha-props">${props}</div>` : '') +
+      `<div class="tc-ficha-datos tc-ficha-info"${abierta ? '' : ' hidden'}></div>` +
+      `</div>`;
+    pintarDatosFicha();
+    ubicarFicha();
+  }
+
+  // La ficha va del lado contrario a la pieza elegida, para no taparla.
+  function ubicarFicha() {
+    if (ficha.hidden || !sel) return;
+    const v = vistas.get(sel.id);
+    const p = sel.id === 'protoboard' ? datos.protoboard : componente(sel.id);
+    let izquierda = false;
+    if (v && p) {
+      const centro = camara.px + (p.x + v.w / 2) * camara.escala;
+      izquierda = centro > area.clientWidth / 2;
+    }
+    ficha.classList.toggle('tc-ficha-izq', izquierda);
+  }
+
+  // Los datos dependen de las propiedades (el modelo del servo, la carga de la batería): se rehacen al cambiarlas.
+  function pintarDatosFicha() {
+    const caja = ficha.querySelector('.tc-ficha-datos');
+    if (!caja || !sel) return;
+    const tipo = sel.id === 'protoboard' ? 'protoboard' : (componente(sel.id) || {}).tipo;
+    const f = FICHAS[tipo];
+    if (!f) return;
+    const props = sel.id === 'protoboard' ? {} : componente(sel.id).props || {};
+    const val = f.validacion(props);
+    caja.innerHTML =
+      `<dl>${f.datos(props).map(([k, d]) => `<dt>${escapar(k)}</dt><dd>${escapar(d)}</dd>`).join('')}</dl>` +
+      `<p class="tc-ficha-pines"><b>Pines:</b> ${escapar(f.pines)}</p>` +
+      (val
+        ? `<p class="tc-ficha-val ${val.estado === 'validado' ? 'tc-validado' : 'tc-por-validar'}">` +
+          `<b>${val.estado === 'validado' ? '✓ Probado con la placa real' : '◐ Por probar con la placa real'}</b> ${escapar(val.texto)}</p>`
+        : '');
+  }
+
+  ficha.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-accion="ficha"]')) return;
+    fichaAbierta = fichaAbierta === false;
+    pintarFicha();
+    ficha.querySelector('.tc-ficha-titulo').focus(); // el botón se rehízo: el foco (y las teclas) siguen ahí
+  });
+
+  // ---- Biblioteca de piezas («+ Agregar»): por categorías, con buscador, clic para agregar o arrastrar al lienzo.
+
+  let bibliotecaLista = false;
+  function armarBiblioteca() {
+    if (bibliotecaLista) return;
+    bibliotecaLista = true;
+    for (const cat of CATEGORIAS) {
+      const grupo = document.createElement('div');
+      grupo.className = 'tc-bib-cat';
+      grupo.innerHTML = `<div class="tc-bib-titulo">${cat.nombre}</div>`;
+      for (const tipo of cat.piezas) {
+        const f = FICHAS[tipo];
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tc-pieza';
+        b.dataset.accion = tipo === 'protoboard' ? 'protoboard' : 'agregar';
+        if (tipo !== 'protoboard') b.dataset.tipo = tipo;
+        b.dataset.pieza = tipo;
+        b.setAttribute('aria-label', f.nombre);
+        b.innerHTML = `<span class="tc-mini"></span><span class="tc-pieza-texto"><b>${escapar(f.nombre)}</b><small>${escapar(f.descripcion.split('. ')[0].replace(/\.$/, ''))}</small></span>`;
+        b.querySelector('.tc-mini').append(miniatura(tipo));
+        grupo.append(b);
+      }
+      bibLista.append(grupo);
+    }
+  }
+
+  // El dibujo de la pieza en chico: el SVG de las piezas Tecno y de la protoboard, o el elemento de Wokwi reducido.
+  function miniatura(tipo) {
+    const plantilla = document.createElement('template');
+    if (tipo === 'protoboard') {
+      plantilla.innerHTML = dibujarProtoboard('media');
+      return plantilla.content.firstElementChild;
+    }
+    const def = TIPOS[tipo];
+    if (def.dibujo) {
+      plantilla.innerHTML = def.dibujo.svg(tipo === 'motor_tt' ? { ...def.props, vista: 'rueda' } : def.props);
+      return plantilla.content.firstElementChild;
+    }
+    const el = document.createElement(def.etiqueta);
+    if (def.aplicar) def.aplicar(el, copia(def.props));
+    Promise.resolve(el.updateComplete).then(() => {
+      const t = tamanoNatural(el);
+      el.style.zoom = String(Math.min(1, 58 / t.w, 42 / t.h));
+    });
+    el.inert = true; // es un dibujo: la perilla de la miniatura no se gira
+    return el;
+  }
+
+  function filtrarBiblioteca() {
+    const quedan = new Set(buscarPiezas(buscador.value).map((x) => x.tipo));
+    for (const b of bibLista.querySelectorAll('.tc-pieza')) b.hidden = !quedan.has(b.dataset.pieza);
+    for (const g of bibLista.querySelectorAll('.tc-bib-cat')) g.hidden = !g.querySelector('.tc-pieza:not([hidden])');
+    bibVacio.hidden = quedan.size > 0;
+    bibVacio.textContent = quedan.size ? '' : `No hay piezas con «${buscador.value.trim()}». Prueba con otra palabra: motor, luz, pila…`;
+  }
+  buscador.addEventListener('input', filtrarBiblioteca);
+  buscador.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const primera = bibLista.querySelector('.tc-pieza:not([hidden]):not([disabled])');
+    if (primera) primera.click(); // Enter agrega la primera que quedó
+  });
+
+  // Arrastrar una pieza desde la biblioteca: un fantasma sigue al puntero y, al soltar sobre el lienzo, la pieza
+  // queda ahí (y se encaja si cae sobre la protoboard).
+  let arrastre = null;
+  let ignorarClic = false;
+  menu.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('.tc-pieza');
+    if (!b || b.disabled || soloLectura || e.button !== 0) return;
+    arrastre = { b, x0: e.clientX, y0: e.clientY, fantasma: null };
+    b.setPointerCapture(e.pointerId);
+  });
+  menu.addEventListener('pointermove', (e) => {
+    if (!arrastre) return;
+    if (!arrastre.fantasma) {
+      if (Math.hypot(e.clientX - arrastre.x0, e.clientY - arrastre.y0) < UMBRAL_CLIC) return;
+      const f = document.createElement('div');
+      f.className = 'tc-fantasma';
+      f.append(arrastre.b.querySelector('.tc-mini').firstElementChild.cloneNode(true));
+      tc.append(f);
+      arrastre.fantasma = f;
+      menu.classList.add('tc-arrastrando');
+    }
+    const t = tc.getBoundingClientRect();
+    arrastre.fantasma.style.left = e.clientX - t.left + 'px';
+    arrastre.fantasma.style.top = e.clientY - t.top + 'px';
+  });
+  function soltarArrastre(e, cancelar) {
+    if (!arrastre) return;
+    const { b, fantasma } = arrastre;
+    arrastre = null;
+    menu.classList.remove('tc-arrastrando');
+    if (!fantasma) return; // fue un clic: lo atiende el evento click
+    fantasma.remove();
+    ignorarClic = true;
+    setTimeout(() => (ignorarClic = false), 0);
+    if (cancelar) return;
+    const ra = area.getBoundingClientRect();
+    const rm = menu.getBoundingClientRect();
+    const dentro = (r) => e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!dentro(ra) || dentro(rm)) return; // soltada fuera del lienzo o sobre el panel: no se agrega
+    abrirMenu(false);
+    if (b.dataset.accion === 'protoboard') agregarProtoboard(aMundo(e));
+    else agregarComponente(b.dataset.tipo, aMundo(e));
+  }
+  menu.addEventListener('pointerup', (e) => soltarArrastre(e, false));
+  menu.addEventListener('pointercancel', (e) => soltarArrastre(e, true));
+
+  // `punto`: dónde soltó la pieza el aprendiz (en el mundo); sin él, aparece en el centro de lo que se ve.
+  function agregarComponente(tipo, punto = null) {
     const def = TIPOS[tipo];
     if (!def) return;
     let n = 1;
@@ -680,6 +871,15 @@ export function crearLienzo(elemento, opciones = {}) {
     };
     datos.componentes.push(c);
     crearVista(id, tipo, c.props).then(() => {
+      const v = vistas.get(id);
+      if (punto && v && !def.montada && componente(id) === c) {
+        // Centrada donde se soltó.
+        c.x = Math.round(punto.x - v.w / 2);
+        c.y = Math.round(punto.y - v.h / 2);
+        ubicar(v);
+        dibujarCables();
+        cambio();
+      }
       // Si aparece sobre la protoboard y sus patas caen en huecos libres, queda encajada.
       if (datos.protoboard && componente(id) === c && encajarPieza(c)) {
         emitir('componente_cambiado', { id, x: c.x, y: c.y, en: copia(c.en) });
@@ -755,20 +955,19 @@ export function crearLienzo(elemento, opciones = {}) {
 
   function abrirMenu(abrir) {
     menu.hidden = !abrir;
+    pintarFicha(); // la ficha se esconde mientras el panel de piezas está abierto
     botonMenu.setAttribute('aria-expanded', String(abrir));
     if (!abrir) return;
+    armarBiblioteca();
     pintarAgregar(); // lo que ya está (la protoboard, la shield) no se puede agregar otra vez
-    // El menú va fuera de la barra (que se desplaza de lado y lo cortaría): se ubica bajo el botón.
-    const b = botonMenu.getBoundingClientRect();
-    const t = tc.getBoundingClientRect();
-    menu.style.left = b.left - t.left + 'px';
-    menu.style.top = b.bottom - t.top + 4 + 'px';
-    menu.querySelector('button:not([disabled])').focus();
+    filtrarBiblioteca();
+    buscador.focus({ preventScroll: true });
   }
   menu.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-accion]');
-    if (!b) return;
+    if (!b || ignorarClic) return;
     abrirMenu(false);
+    if (b.dataset.accion === 'cerrar') return botonMenu.focus();
     alAccion(b);
   });
   menu.addEventListener('keydown', (e) => {
@@ -779,7 +978,7 @@ export function crearLienzo(elemento, opciones = {}) {
     }
   });
   raiz.addEventListener('pointerdown', (e) => {
-    if (!menu.hidden && !e.target.closest('.tc-menu') && e.target !== botonMenu) abrirMenu(false);
+    if (!menu.hidden && !e.target.closest('.tc-biblioteca') && e.target !== botonMenu) abrirMenu(false);
   });
 
   barra.addEventListener('click', (e) => {
@@ -807,7 +1006,7 @@ export function crearLienzo(elemento, opciones = {}) {
     }
   }
 
-  barra.addEventListener('change', (e) => {
+  function alCambiarPropiedad(e) {
     if (soloLectura || !sel || sel.tipo !== 'comp') return;
     const c = componente(sel.id);
     const v = vistas.get(sel.id);
@@ -823,16 +1022,21 @@ export function crearLienzo(elemento, opciones = {}) {
     c.props = { ...c.props, [prop]: valor };
     if (def.dibujo && def.dibujo.marco) rehacerVista(c); // cambia el tamaño o los pines del dibujo
     else def.aplicar(v.el, c.props);
+    pintarDatosFicha();
     emitir('componente_cambiado', { id: c.id, props: copia(c.props) });
     cambio();
-  });
+  }
 
-  barra.addEventListener('input', (e) => {
+  function alMoverPerilla(e) {
     if (soloLectura || !sel || sel.tipo !== 'comp' || !('perilla' in e.target.dataset)) return;
     const v = vistas.get(sel.id);
     girarPerilla(sel.id, Number(e.target.value) / 100);
     if (v) TIPOS.potenciometro.aplicar(v.el, componente(sel.id).props);
-  });
+  }
+  for (const caja of [barra, ficha]) {
+    caja.addEventListener('change', alCambiarPropiedad);
+    caja.addEventListener('input', alMoverPerilla);
+  }
 
   // Un botón se presiona o se suelta. El estado va al simulador (no es parte del circuito guardado); al soltar
   // queda el evento boton_pulsado con cuánto duró, que sirve de evidencia de cómo prueba el aprendiz su montaje.
@@ -862,8 +1066,9 @@ export function crearLienzo(elemento, opciones = {}) {
     const p = Math.max(0, Math.min(1, Math.round(posicion * 100) / 100));
     if (p === c.props[def.perilla.prop]) return;
     c.props = { ...c.props, [def.perilla.prop]: p };
-    const deslizador = sel && sel.tipo === 'comp' && sel.id === id && barraSel.querySelector('[data-perilla]');
+    const deslizador = sel && sel.tipo === 'comp' && sel.id === id && ficha.querySelector('[data-perilla]');
     if (deslizador && Number(deslizador.value) !== Math.round(p * 100)) deslizador.value = Math.round(p * 100);
+    if (sel && sel.id === id) pintarDatosFicha();
     cambio(); // el simulador lo ve al instante
     // El evento se anota una vez que la perilla se queda quieta, no por cada grado que gira.
     clearTimeout(tPerilla.get(id));
@@ -948,7 +1153,10 @@ export function crearLienzo(elemento, opciones = {}) {
       pulsar(g.id, false, performance.now() - g.desde);
     }
     if (gesto) {
-      if (!gesto.movido && Math.hypot(e.clientX - gesto.x0, e.clientY - gesto.y0) > UMBRAL_CLIC) gesto.movido = true;
+      if (!gesto.movido && Math.hypot(e.clientX - gesto.x0, e.clientY - gesto.y0) > UMBRAL_CLIC) {
+        gesto.movido = true;
+        ficha.classList.add('tc-ficha-quieta'); // mientras se arrastra, la ficha se aparta (casi transparente)
+      }
       if (gesto.movido && gesto.tipo === 'mover') {
         const c = pieza(gesto.id);
         const nx = Math.round(m.x - gesto.dx);
@@ -1008,6 +1216,8 @@ export function crearLienzo(elemento, opciones = {}) {
     const g = gesto;
     gesto = null;
     area.classList.remove('tc-paneando');
+    ficha.classList.remove('tc-ficha-quieta');
+    if (g && g.movido && g.tipo === 'mover') ubicarFicha();
     if (!g) return;
     if (g.tipo === 'pulsar') return pulsar(g.id, false, performance.now() - g.desde);
     if (g.tipo === 'mover' && g.movido) {
@@ -1431,6 +1641,7 @@ export function crearLienzo(elemento, opciones = {}) {
   });
   ro.observe(area);
   const vistaPlaca = crearVista('placa');
+  if (!soloLectura) armarBiblioteca(); // desde el inicio: quien use el lienzo encuentra los botones de cada pieza
   pintarAgregar();
   Promise.all([vistaPlaca, ...(datos.protoboard ? [crearVistaProtoboard()] : []), ...datos.componentes.map((c) => crearVista(c.id, c.tipo, c.props))]).then(() => {
     if (destruido) return;

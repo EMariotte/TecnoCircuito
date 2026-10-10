@@ -132,7 +132,7 @@ with sync_playwright() as p:
 
     # Agregar un LED desde la barra
     pg.get_by_role('button', name='+ Agregar').click()
-    pg.get_by_role('menuitem', name='LED', exact=True).click()
+    pg.get_by_role('button', name='LED', exact=True).click()
     ids = [k['id'] for k in pg.evaluate('lienzo.circuito()')['componentes']]
     revisar(ids == ['r1', 'led1', 'led2'], f'+ LED agrega led2: {ids}')
 

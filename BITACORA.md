@@ -683,3 +683,23 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
 - **Arreglo:** lo que leen las entradas se guarda por combinación de pines (`planDe`); una entrada solo se escribe si cambió; la clave de la combinación es un número que se actualiza con lo que cambió; el chip mira solo el puerto que se escribió; y `PinState` es una copia propia, sin los getters de esbuild. **Ahora va a 1,29×** (casi 6 veces más rápido). Ver `COMO-FUNCIONA.md`, sección 50.
 - **Prueba:** `probar_potencia.js`, sección 7: con órdenes sin pausa, M1 gira atrás y M2 adelante, y se informa la velocidad. `npm run probar`: 17 grupos, 452 comprobaciones.
 - **En TecnoBloques:** la lista de ejemplos se desplaza; antes los últimos (los de validación) quedaban fuera de la ventana.
+
+## 2026-10-10 — Biblioteca de piezas y ficha de cada pieza
+
+**Pedido de Efraín** (punto 4 del orden acordado): un panel de piezas con buscador y una ficha de cada pieza, como en Cirkit Designer o Tinkercad, pero propios. Hoy hay 9 piezas; con los módulos de 2027 pasarán de 15.
+
+- **`src/biblioteca.js`:** tiene `CATEGORIAS` (Básicas, Entradas, Actuadores, Potencia y energía), `FICHAS` y `buscarPiezas()`. Cada ficha trae nombre, para qué sirve, las palabras del aula, los pines, los datos y la validación. Los datos salen de los mismos modelos del simulador.
+- **Panel «+ Agregar»:**
+  - las miniaturas de cada pieza y un buscador que ignora tildes y mayúsculas (Enter agrega la primera);
+  - clic para agregar en el centro, o arrastrar para dejar la pieza donde se suelta, con encaje en la protoboard.
+- **Ficha:** reemplaza las propiedades de la barra.
+  - Va del lado contrario a la pieza, se aparta mientras se arrastra y se esconde con el panel abierto.
+  - Plegada muestra solo las propiedades; empieza plegada en la vista dividida de TecnoBloques.
+  - Muestra «✓ Probado con la placa real» o «◐ Por probar», con fecha y medidas.
+- **Pruebas:**
+  - `probar_biblioteca.py` (27 comprobaciones);
+  - el contrato revisa que ninguna pieza quede sin ficha ni categoría;
+  - las pruebas que usaban el menú buscan ahora los botones del panel;
+  - `npm run probar`: 18 grupos, 482 comprobaciones;
+  - `test:simulador` de TecnoBloques: todo bien.
+- **El contrato no cambia:** `crearLienzo` tiene la misma API, y los botones de cada pieza conservan `data-accion` y `data-tipo`.

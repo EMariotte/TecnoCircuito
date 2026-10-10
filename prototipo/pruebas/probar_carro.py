@@ -44,7 +44,7 @@ with sync_playwright() as p:
 
     def agregar(nombre):
         pg.get_by_role('button', name='+ Agregar').click()
-        pg.get_by_role('menuitem', name=nombre, exact=True).click()
+        pg.get_by_role('button', name=nombre, exact=True).click()
         pg.wait_for_timeout(300)
 
     # 1. La shield: va sobre el Uno, en (0, 0), con los nombres de sus tres integrados y sus 18 pines
@@ -58,7 +58,7 @@ with sync_playwright() as p:
     orden = pg.evaluate(f'[...{RAIZ}.querySelectorAll(".tc-comp")].map(d => d.dataset.id)')
     revisar(orden.index(sh['id']) == orden.index('placa') + 1, f'se dibuja justo encima de la placa: {orden}')
     pg.get_by_role('button', name='+ Agregar').click()
-    revisar(pg.get_by_role('menuitem', name='Shield L293D', exact=True).is_disabled(), 'el menú no deja agregar una segunda shield')
+    revisar(pg.get_by_role('button', name='Shield L293D', exact=True).is_disabled(), 'el menú no deja agregar una segunda shield')
     pg.get_by_role('button', name='+ Agregar').click()  # cierra el menú
     pg.locator(f'.tc-comp[data-id="{sh["id"]}"]').click(position={'x': 150, 'y': 110})
     revisar(pg.locator('main button[data-accion="girar"]').count() == 0, 'la shield no tiene «Girar»')

@@ -1143,3 +1143,37 @@ En cada cambio de pin el núcleo recalculaba qué entradas quedan al aire y qué
 | El chip mira solo los pines del puerto que se escribió, y `PinState` es una copia propia (sin los getters de esbuild) | `chip.js` |
 
 Resultado en Node: de **0,22×** a **1,29×** el chip real con ese programa. El carro del ejemplo va a 2,2×. `probar_potencia.js` lo prueba (sección 7) e informa la velocidad.
+
+## 51. La biblioteca de piezas y la ficha
+
+> Hecho el 10 de octubre de 2026 (punto 4 del orden acordado con Efraín). Datos en [src/biblioteca.js](src/biblioteca.js); el panel y la ficha, en [src/lienzo.js](src/lienzo.js).
+
+```
+  «+ Agregar»                                         pieza elegida
+  ┌──────────────────────────┐                        ┌───────────────────────────────┐
+  │ Piezas                 × │                        │ Servo servo1        detalles ▾│  ← plegada: nombre y propiedades
+  │ [Buscar: motor, luz, …]  │  buscarPiezas(texto):  │ Modelo [SG90 ▾]               │
+  │ BÁSICAS                  │  sin tildes ni         ├───────────────────────────────┤
+  │  ▭ Protoboard            │  mayúsculas; todas     │ Para qué sirve (descripción)  │  ← abierta: además los detalles
+  │  ▭ Resistencia  ─clic──► │  las palabras          │ Datos (del mismo modelo)      │
+  │  ▭ LED      ─arrastre──► pieza donde se suelta    │ Pines                         │
+  │ ENTRADAS …               │                        │ ✓ Probado con la placa real   │
+  └──────────────────────────┘                        └───────────────────────────────┘
+```
+
+**Datos, no dibujo.** Cada pieza tiene en `FICHAS` su nombre, una descripción corta (para qué sirve y el error típico), las palabras con que la buscaría un aprendiz, sus pines, `datos(props)` y `validacion(props)`. Los datos salen de los mismos modelos del simulador (`LED`, `MODELOS_SERVO`, `MOTOR_TT`, `CARGAS_LIPO`): si cambia un modelo, cambia la ficha. `CATEGORIAS` dice en qué grupo va cada una.
+
+**El panel** se arma una vez al crear el lienzo (quien use el lienzo encuentra los botones `data-accion="agregar"` de siempre). Cada pieza lleva su miniatura: el SVG de las piezas Tecno y de la protoboard, o el elemento de Wokwi reducido con `zoom`. El buscador filtra escondiendo, sin rehacer nada.
+
+**Arrastrar:** al apretar sobre una pieza del panel se captura el puntero; pasado el umbral de clic aparece un «fantasma» con la miniatura. Al soltar sobre el lienzo (y no sobre el panel), la pieza queda centrada en ese punto (`agregarComponente(tipo, punto)`) y, si cae sobre la protoboard, se encaja como siempre.
+
+**La ficha** reemplaza las propiedades de la barra (la barra queda con el nombre, Girar y Borrar):
+
+- va **del lado contrario a la pieza elegida**, para no taparla;
+- se vuelve casi transparente mientras se arrastra algo o se mueve la vista;
+- no se muestra con el panel de piezas abierto;
+- **plegada** muestra solo el nombre y las propiedades. Empieza abierta si el lienzo mide 900 px o más (la página de prueba, el circuito ampliado) y plegada en la vista dividida de TecnoBloques. Después queda como la deja el aprendiz.
+
+**La validación a la vista:** «✓ Probado con la placa real» (verde) o «◐ Por probar con la placa real» (ámbar), con la fecha y lo medido. Es la regla 2 del proyecto hecha visible: el aprendiz y el instructor saben qué tan confiable es cada modelo. Hoy: resistencia, LED, botón, potenciómetro y SG90 probados; MG90S, motor TT, shield y batería por probar.
+
+**Pruebas:** `probar_biblioteca.py` (Chromium, 27 comprobaciones): categorías, miniaturas, buscador («luz», «pila», «POTENCIOMETRO», «rueda carro», sin resultados), Enter, arrastrar al lienzo y al panel, Esc, la ficha del servo con los dos modelos, el lado contrario, plegar y la protoboard. `probar_contrato.js` revisa que cada pieza del catálogo tenga categoría y ficha completa.

@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 10 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 completa en software** (servo SG90/MG90S, energía del USB y, desde el 10 oct, shield L293D, motor TT y batería LiPo 2S como piezas Tecno; estas tres sin validar con la placa real). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 17 grupos (452 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
+> Actualizado: 10 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 completa en software** (servo SG90/MG90S, energía del USB y, desde el 10 oct, shield L293D, motor TT y batería LiPo 2S como piezas Tecno; estas tres sin validar con la placa real). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 18 grupos (482 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
 
 ---
 
@@ -112,6 +112,7 @@ TecnoCircuito/
 │   ├── energia.js        ← energía del USB: caída del 5V, reinicio por golpe de corriente y fusible (limiteUSB)
 │   ├── potencia.js       ← shield L293D (74HC595, PWM, puente H con su caída), motores TT y batería LiPo, cada 1 ms
 │   ├── mediciones.js     ← filasDeMediciones: la tabla en español de sim.mediciones()
+│   ├── biblioteca.js     ← categorías, búsqueda y ficha de cada pieza (panel «+ Agregar» y ficha del lienzo)
 │   ├── piezas/           ← piezas Tecno con dibujo propio: servo.js (SG90 y MG90S), shield_l293d.js, motor_tt.js y bateria_lipo.js
 │   ├── motor/            ← MNA, Newton-Raphson, reloj común con el chip
 │   ├── chip/             ← avr8js: puertos, ADC, temporizadores, USART; placas uno/nano/nano_old/mega
@@ -202,7 +203,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 **Hecho el 10 oct (solo software):** ✅ shield L293D «desarmada» (74HC595, dos L293D, borneras, EXT_PWR, puente PWR, servos en 10 y 9), ✅ motor TT (vistas eje y rueda, lado izquierdo o derecho) y ✅ batería LiPo 2S (llena, nominal, descargada, con aviso), con `src/potencia.js`, el programa `carro_motores` (AFMotor_R4) y el ejemplo «Carro». Ver `prototipo/COMO-FUNCIONA.md`, sección 49. **Falta validarlos con la placa real.**
 
 **Lo siguiente, solo software (orden acordado con Efraín el 10 oct):**
-1. **Biblioteca de piezas** con buscador y una «ficha» de cada pieza en el inspector (como los paneles de Cirkit Designer y Tinkercad, pero propios).
+1. ✅ **Biblioteca de piezas** (10 oct): panel con categorías, miniaturas, buscador y arrastre, y la ficha de cada pieza con su validación (`src/biblioteca.js`; COMO-FUNCIONA, sección 51). Una pieza nueva necesita su ficha (RECETA, paso 8).
 2. **Cable de balance** de la LiPo con sus pines y el **probador de celdas** («1-8S Lipo Li-ion Fe Batería Voltaje 2IN1 Probador Bajo Voltaje Zumbador Alarma»; hace falta una foto del probador del kit). Después, el estado «desbalanceada».
 3. **Netlist de KiCad con la shield desarmada** (sus integrados, borneras y conectores como piezas).
 4. En TecnoBloques (Fase 2d): CSV del monitor serial y graficador serial.

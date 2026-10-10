@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { revisarCircuito, ESQUEMA, PINES, PINES_PLACA, HUECO } = require('./contrato.js');
-const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD } = require('./codigo.cjs');
+const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS } = require('./codigo.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -33,6 +33,22 @@ for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
     revisar(mismo(pines, PINES[tipo]), `${tipo} (pieza Tecno${def.dibujo.marco ? ', ' + JSON.stringify(props) : ''}): los pines de su dibujo (${pines.join(', ')}) son los del esquema`);
   }
 }
+// La biblioteca de piezas: cada tipo del catálogo (y la protoboard) está en una sola categoría y tiene su ficha completa.
+{
+  const enCategorias = CATEGORIAS.flatMap((c) => c.piezas);
+  const tipos = [...Object.keys(TIPOS), 'protoboard'];
+  revisar(mismo(enCategorias, tipos) && new Set(enCategorias).size === enCategorias.length,
+    `biblioteca: cada pieza está en una sola categoría (${CATEGORIAS.map((c) => c.nombre + ': ' + c.piezas.length).join(', ')})`);
+  const incompletas = tipos.filter((t) => {
+    const f = FICHAS[t];
+    const props = (TIPOS[t] || {}).props || {};
+    return !f || !f.nombre || !f.descripcion || !f.pines || !Array.isArray(f.palabras) || !Array.isArray(f.datos(props)) || f.datos(props).some((d) => d.length !== 2 || d.some((x) => typeof x !== 'string' || /undefined|NaN/.test(x)));
+  });
+  revisar(!incompletas.length, `biblioteca: cada pieza tiene su ficha (descripción, pines, palabras y datos sin «undefined»)${incompletas.length ? ': faltan ' + incompletas : ''}`);
+  const nombres = Object.keys(TIPOS).filter((t) => FICHAS[t].nombre !== TIPOS[t].nombre);
+  revisar(!nombres.length, `biblioteca: el nombre de la ficha es el del catálogo${nombres.length ? ' (distintos: ' + nombres + ')' : ''}`);
+}
+
 // Los valores de cada campo del catálogo son los que el esquema acepta para esa propiedad.
 for (const [tipo, def] of Object.entries(TIPOS)) {
   const regla = D.componente.allOf.find((r) => r.if.properties.tipo.const === tipo);

@@ -43,7 +43,7 @@ with sync_playwright() as p:
 
     # Agregar un servo con el menú: aparece con sus 3 pines y el modelo SG90
     pg.get_by_role('button', name='+ Agregar').click()
-    pg.get_by_role('menuitem', name='Servo', exact=True).click()
+    pg.get_by_role('button', name='Servo', exact=True).click()
     pg.wait_for_timeout(300)
     servo = next((c for c in pg.evaluate('lienzo.circuito()')['componentes'] if c['tipo'] == 'servo'), None)
     revisar(servo is not None and servo['props'] == {'modelo': 'sg90'}, f'«+ Agregar → Servo» agrega {servo and servo["id"]} con el modelo SG90')
