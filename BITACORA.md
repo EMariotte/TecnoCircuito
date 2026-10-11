@@ -794,3 +794,17 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
 - el laboratorio (8 prácticas en CLAUDE.md, cada una con su ejemplo en TecnoBloques);
 - después, etiquetar la `v0.1.0` con `npm run preparar-version`;
 - el informe de la revisión de experiencia de uso, para decidir qué cambiar.
+
+## 2026-10-11 — Codex: revisión independiente y acuerdo de trabajo con Claude
+
+**Pedido de Efraín:** Codex toma el rol de revisor, evalúa el proyecto, verifica las pruebas documentadas por Claude y crea `AGENTS.md` a partir de la evidencia.
+
+- Revisión de partida: `38930661b36f55653cd9ec7ca562cbb603262c5f`, sin cambios iniciales ni etiquetas locales.
+- `npm run probar`: **593 comprobaciones, 19 grupos, 0 fallos**. KiCad 10.0.3 ejecutado: 108 checks, sin omisión. Las tres fixtures Mega verifican formato, sin ejecutar sus HEX.
+- TecnoBloques local: `test:simulador` **37 OK** y graficador **28 OK**. `npm test` terminó con código cero, pero registró `tbmedia/sprites.svg` ausente y sus scripts no fallan ante todos los errores del navegador (R8).
+- Los **15 programas** recompilaron para Uno con Arduino CLI 1.5.1 en salidas aisladas; la flash coincidió con cada HEX versionado.
+- [Informe independiente](docs/REVISION-CODEX-2026-10-11.md): ocho hallazgos abiertos, dos altos (fuentes eléctricas por los puentes de la shield; enfriamiento del fusible con pasos parciales durante apagado), cinco medios y uno menor. Incluye contraste de los siete registros físicos, límites de la evidencia y propuestas de regresión.
+- [Diagnóstico reproducible](docs/revision-2026-10-11.cjs) de R1–R6. Su ejecución confirma los casos; no es una suite aprobada ni corrige los defectos.
+- `npm pack --dry-run` no lleva aún el bundle de la raíz: queda pendiente prepararlo para la etiqueta. No se ejecutó la preparación de versión ni publicación.
+- [AGENTS.md](AGENTS.md) establece: Claude implementa, Codex revisa, Efraín decide; traspasos con archivos/revisión/pruebas, cierres por ID en esta bitácora y privacidad/licencias/validación física compartidas. CLAUDE.md enlaza el acuerdo y los pendientes.
+- **Alcance de esta entrega:** documentación y reproducciones, sin cambios funcionales, medidas nuevas, modificaciones de HEX, commit, push ni etiqueta. Las pruebas físicas se contrastaron con los registros; no se repitieron con hardware.

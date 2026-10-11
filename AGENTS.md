@@ -1,0 +1,85 @@
+# AGENTS.md — TecnoCircuito
+
+Instrucciones para Codex y los agentes que lean este archivo. Acuerdo inicial con Efraín: **Codex revisa; Claude implementa**. Efraín puede cambiar esa asignación. Responde en español, tutéalo y comunica resultados con evidencia.
+
+## Contexto y fuentes
+
+TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la TecnoAcademia Tolima (SENA). En 2026 el alcance es T1 (LED/botón), T2 (potenciómetro/PWM) y T3 (servo, shield L293D, motor TT, LiPo y probador). La API pública simula **Arduino Uno R3**; aceptar una placa en un esquema o una fixture no significa soportarla en la interfaz.
+
+- [CLAUDE.md](CLAUDE.md): estado del proyecto, decisiones y siguientes prácticas. Lee su estado al empezar; consulta el resto según la tarea.
+- [CONTRATO.md](CONTRATO.md) y [esquema](contrato/circuito.schema.json): fuente única del intercambio con TecnoBloques.
+- [BITACORA.md](BITACORA.md): historia compartida; añade entradas, nunca reescribas las anteriores.
+- [COMO-FUNCIONA.md](prototipo/COMO-FUNCIONA.md): explicaciones técnicas numeradas; consulta las secciones relacionadas.
+- [LEEME.md](prototipo/LEEME.md): uso y prácticas de laboratorio.
+- [validacion/](validacion/): mediciones registradas por Efraín; distingue dato medido, ajuste y supuesto.
+- [Revisión inicial de Codex](docs/REVISION-CODEX-2026-10-11.md): resultados, limitaciones y hallazgos abiertos R1–R8. Es un informe fechado, no una lista automáticamente resuelta por cambios posteriores.
+
+No mantengas una segunda copia extensa del estado en este archivo. Actualízalo cuando cambien las reglas de trabajo; el progreso va en la bitácora y el estado actual en CLAUDE.md.
+
+## Rol de revisor
+
+1. Comprueba primero `git status --short` y la revisión de código. Respeta cualquier trabajo existente.
+2. Revisa la implementación, el contrato, los ejemplos y las pruebas relacionadas. Busca casos fuera de los supuestos de la suite.
+3. Ejecuta las comprobaciones pertinentes y deja reproducciones mínimas para los defectos. Un diagnóstico que reproduce un error no es una prueba de regresión aprobada.
+4. Entrega hallazgos por gravedad con archivo, condición, resultado observado, impacto y comprobación que debe añadirse. Separa fallos del código, límites de la prueba y validaciones físicas pendientes.
+5. En el rol de revisor, escribe informes, instrucciones y reproducciones; deja las correcciones funcionales para el agente implementador, salvo encargo explícito de Efraín.
+6. No declares resuelto un hallazgo solo porque el implementador lo diga: revisa el diff y verifica el caso original, la regresión y los sistemas afectados.
+
+## Trabajo conjunto con Claude
+
+- Efraín decide prioridades. Claude implementa la corrección o propuesta; Codex revisa de forma independiente y comunica si está verificada o qué falta.
+- El traspaso de cada tarea incluye: objetivo o ID del hallazgo, revisión de Git, archivos cambiados, comandos y resultados, limitaciones y siguiente responsable.
+- Registra cada hito con fecha y autor en BITACORA.md. Conserva el informe original; el cierre posterior cita su ID y la evidencia nueva.
+- Antes de editar, comprueba que el archivo no haya cambiado durante la revisión. Evita que los dos agentes modifiquen simultáneamente el mismo archivo; para tareas simultáneas que lo requieran, acuerda ramas o worktrees separados.
+- Compartir archivos no envía automáticamente mensajes ni ejecuta al otro agente. No lances subagentes ni atribuyas a Claude acciones que no hayas observado.
+- Si cambia el contrato, actualiza su documentación y deja constancia en ambas bitácoras y en «Proyecto hermano» de TecnoBloques, según el alcance autorizado.
+
+## Arquitectura que hay que preservar
+
+El código vive en `prototipo/src/`. `motor/` resuelve MNA; `chip.js` ejecuta avr8js; `nucleo.js`, `energia.js` y `potencia.js` conectan reloj, entradas y consumo. `trabajador.js` ejecuta el núcleo en un Worker. `simulador.js` y `lienzo.js` llevan la interfaz; `biblioteca.js` contiene las fichas; `kicad.js` exporta la netlist. `piezas/shield_l293d.js` concentra las conexiones de la shield.
+
+- Mantén el núcleo independiente del DOM y el paquete como un IIFE único con Worker embebido, sin Node ni acceso a internet en ejecución.
+- Conserva las no idealidades configurables y el contrato 1 mientras no se acuerde un cambio.
+- Los modelos temporales deben avanzar por tiempo simulado: comprueba pasos completos, parciales y placa apagada. Los nodos equivalentes deben dar el mismo resultado aunque la conexión llegue por una shield o la protoboard.
+- Toda pieza tiene vista, modelo eléctrico, modelo lógico y ficha; sigue [RECETA-COMPONENTE-NUEVO.md](prototipo/RECETA-COMPONENTE-NUEVO.md).
+- Interfaz en español: explica qué pasó y cómo corregir el montaje, con textos comprensibles para adolescentes.
+
+## Comandos de comprobación — Windows / PowerShell
+
+Desde la raíz, con las dependencias y herramientas ya instaladas:
+
+```powershell
+npm.cmd run construir
+npm.cmd run probar
+npm.cmd --prefix prototipo run probar:motor
+npm.cmd --prefix prototipo run probar:nucleo
+npm.cmd --prefix prototipo run probar:kicad
+npm.cmd --prefix prototipo run probar:contrato
+npm.cmd --prefix prototipo run probar:fixtures
+node docs/revision-2026-10-11.cjs
+```
+
+La suite completa construye el paquete y ejecuta Node, 12 recorridos de Chromium/Playwright y KiCad. Necesita Python con Playwright y Chromium instalados; KiCad debe ejecutar su prueba, no quedar omitido. El diagnóstico de revisión necesita los `.cjs` generados por la suite y describe seis casos de R1–R6.
+
+Para integración, si existe el repositorio hermano y la tarea lo incluye:
+
+```powershell
+npm.cmd --prefix ../TecnoBloques run test:simulador
+npm.cmd --prefix ../TecnoBloques run test:graficador
+npm.cmd --prefix ../TecnoBloques test
+```
+
+`test:simulador` construye TecnoBloques con la copia local, abre Electron y compila programas con Arduino CLI. Las pruebas escriben capturas y salidas temporales. Examina también sus errores registrados: el código de salida por sí solo no basta (R8).
+
+`compilar` regenera HEX; `fixtures` copia datos del hermano. No los uses como comprobaciones de solo lectura: revisa los cambios o compila en salidas aisladas. Prueba con cargador cuando evalúes velocidad; declara las condiciones y no relajes umbrales para obtener un resultado favorable.
+
+## Validación, privacidad y entrega
+
+- Una suite aprobada demuestra comportamiento del software, no valida hardware. Nada llega al aula sin la prueba física correspondiente.
+- Criterios existentes: ±5 % en voltaje, ±10 % en corriente, ±1 % en tiempos y serial idéntico. Explicita la referencia del porcentaje y la resolución del instrumento; un parámetro ajustado o típico no es una medición directa.
+- La evidencia del LED rojo no valida todos los colores; el reposo de SG90 medido como menos de 10 mA no acredita 6 mA exactos. Shield, motor, LiPo, probador y MG90S mantienen pendientes físicos según el informe.
+- No pases contenido de `investigacion/`, datos de aprendices, registros ni tablas de alias a archivos públicos. Las imágenes de terceros son referencias locales excluidas de Git.
+- Código propio Apache-2.0; avr8js y Wokwi MIT, con sus avisos. No copies código GPL ni material incompatible; conserva SPDX y NOTICE.
+- Verifica el diff y las comprobaciones apropiadas antes de entregar. Indica lo que no pudiste probar y actualiza la documentación de estado cuando corresponda.
+- Commit y push requieren el sí explícito de Efraín, según CLAUDE.md. No crees etiquetas ni publiques como parte de una revisión. `dist/tecnocircuito.js` de la raíz se versiona únicamente al preparar una etiqueta; el build de desarrollo usa `0.1.0-dev`.
+- `npm.cmd run preparar-version` reconstruye y copia archivos aunque luego rechace un árbol sucio: no es una comprobación sin cambios. Antes de una entrega etiquetada revisa el paquete completo, incluida su entrada `dist/tecnocircuito.js`.

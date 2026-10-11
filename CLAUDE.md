@@ -9,6 +9,8 @@ Prototipo validado y publicado (https://github.com/EMariotte/TecnoCircuito). Tar
 
 ## Qué es
 
+**Trabajo conjunto con Codex:** Efraín asignó a Codex el rol de revisor independiente. Las reglas de coordinación están en [AGENTS.md](AGENTS.md). La [revisión del 11 oct](docs/REVISION-CODEX-2026-10-11.md) reprodujo los 593 checks, la integración (37) y el graficador (28), y recompiló los 15 programas con flash idéntica. Dejó **R1–R8 abiertos**, incluidos alimentación a través de la shield y reloj del fusible durante apagado. Claude implementa y Codex verifica; considerar estos pendientes antes de etiquetar. El informe distingue medidas físicas de supuestos.
+
 **Simulador de circuitos con microcontrolador** para TecnoBloques, el editor de bloques en español para Arduino de la **TecnoAcademia Tolima (SENA, Ibagué)**. El aprendiz arma el circuito en una protoboard dibujada, TecnoBloques compila su programa y TecnoCircuito lo ejecuta sobre ese circuito.
 
 - **Simulación híbrida:** eléctrica real (MNA) para LED, resistencias, botones, potenciómetros y motores; lógica por protocolo para los módulos.
