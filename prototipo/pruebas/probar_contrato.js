@@ -54,6 +54,7 @@ for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
   const led = (color) => FICHAS.led.validacion({ color }).estado;
   revisar(led('rojo') === 'validado' && led(undefined) === 'validado' && ['amarillo', 'verde', 'azul', 'blanco'].every((c) => led(c) === 'por_validar'),
     'ficha del LED: validado solo el rojo (el único medido); los otros colores, por validar');
+  revisar(/11 de 12/.test(FICHAS.led.validacion({ color: 'rojo' }).texto), 'ficha del LED rojo: 11 de 12 dentro del criterio (el porcentaje va respecto de la medida)');
   const sg90 = FICHAS.servo.validacion({ modelo: 'sg90' }).texto;
   revisar(/menos de 10 mA/.test(sg90) && /hoja de datos/.test(sg90), 'ficha del SG90: la corriente quieto se midió como «menos de 10 mA»; los 6 mA son de la hoja de datos');
   revisar(/estimación/.test(FICHAS.potenciometro.validacion({}).texto), 'ficha del potenciómetro: el ruido del ADC (0,1 pasos) dice que es una estimación');

@@ -852,3 +852,24 @@ Antes de cambiar nada, el diagnóstico `docs/revision-2026-10-11.cjs` reprodujo 
 - **Nano:** se inspeccionaron las ocho referencias locales. Roja y azul tienen disposición/conectores diferentes; Nano4 es la comparación detallada y Nano5 un icono. Las fotos permiten dibujar; continuidad, reguladores y alimentación deben confirmarse antes de compartir modelo eléctrico.
 - **Decisión KiCad guardada en AGENTS.md:** del conjunto Nano + expansión se exporta el **módulo Nano**, los componentes adicionales que regulan/filtran **5V y 3,3V**, el **jack** y los conectores **I2C/SPI** con sus redes. La electrónica del Nano permanece dentro del módulo; el resto del circuito mantiene su exportación normal. KiCad instalado trae `Module:Arduino_Nano` y la variante con agujeros; escoger según el montaje real.
 - **Alcance de la entrega:** instrucciones, informe y verificadores; tecnoparte Nano y exportador aún sin implementar. Sin cambios de producción, contrato, medidas, HEX, commit, push ni etiqueta. Imágenes comerciales y capturas permanecen excluidas de Git.
+
+## 2026-10-11 — Claude: el criterio respecto de la medida, en la prueba y en los textos (cierre documental de R6)
+
+**Pedido de Efraín**, tras la [verificación de Codex](docs/VERIFICACION-CODEX-R1-R8-2026-10-11.md): pasar `probar_motor.js` a la nueva referencia. Efraín confirmó la exactitud del UT33B+ en voltios DC: ±(0,5 % de la lectura + 2 dígitos). Autor: Claude. Revisión de partida: `6a19f9f`.
+
+- **La regla:** una comparación cumple si `|simulador − medida| ≤ criterio · |medida| + U`, donde U es la incertidumbre del multímetro.
+  - Voltaje: U = 0,005 · lectura + 2 × 0,01 V. Las lecturas tienen dos decimales, así que se tomaron en la escala de 20 V.
+  - Corriente (V/R): la misma incertidumbre relativa que su voltaje; la de la resistencia medida no se cuenta.
+  - No cambian los datos, las tolerancias ni el modelo.
+- **Resultado:**
+  - `probar_motor.js` informa **11 de 12 dentro del criterio y 12 de 12 sumando la incertidumbre**.
+  - El caso en el límite es la resistencia con 215 Ω: 5,01 % (5,008 % con la precisión completa del modelo, como calculó Codex), con 2,61 ± 0,033 V.
+  - Corrijo una cifra mía: el 5,02 % anotado antes en esta bitácora salía del valor redondeado de la tabla (2,741 V).
+- **Textos alineados:**
+  - La ficha del LED rojo dice «11 de 12 dentro del criterio; la que queda en el límite cumple con la incertidumbre del multímetro», con una prueba nueva en `probar_contrato.js`.
+  - README, CLAUDE.md y COMO-FUNCIONA, sección 57.
+  - El registro del 7 oct no se reescribe.
+- **Sigue abierto:**
+  - Codex verifica este cierre.
+  - La medida del caso con 215 Ω sigue sin cerrar por 0,13 V (contactos o momento de la medida): repetirla midiendo en las patas de la resistencia daría evidencia mejor que la incertidumbre.
+  - No hay medida física del ±1 % en tiempos.

@@ -7,7 +7,7 @@
 ## Qué hace hoy
 
 - **El programa real:** [avr8js](https://github.com/wokwi/avr8js) ejecuta el `.hex` que compila arduino-cli, instrucción por instrucción, con `delay()`, `millis()`, PWM, `analogRead()` y el monitor serial. Corre en un Web Worker, aparte de la página.
-- **El circuito real:** un solucionador eléctrico propio (análisis nodal modificado con Newton-Raphson) calcula voltajes y corrientes. Quedó validado con el multímetro contra la placa: 12 de 12 medidas dentro del criterio.
+- **El circuito real:** un solucionador eléctrico propio (análisis nodal modificado con Newton-Raphson) calcula voltajes y corrientes. Se comparó con el multímetro contra la placa: 11 de 12 medidas dentro del criterio, y la que queda en el límite (5,01 %) cumple al sumar la incertidumbre del multímetro.
 - **Las fallas, y un modo ideal que las apaga:**
   - LED quemado, pin que se pasa de su límite y chip que se pasa de su límite total;
   - entrada al aire que lee al azar;

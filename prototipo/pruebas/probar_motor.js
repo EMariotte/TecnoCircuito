@@ -206,19 +206,45 @@ for (const ohmios of [220, 330, 1000]) {
 }
 
 // Regresión contra la placa real: las medidas del multímetro (validacion/) deben seguir dentro del criterio.
+// El error se calcula respecto de la medida, |simulador − medida| / |medida| (decisión de Efraín, 11 oct 2026), y la
+// incertidumbre del multímetro va aparte: una comparación cumple si |simulador − medida| ≤ criterio · |medida| + U.
+// UT33B+ en voltios DC: ±(0,5 % de la lectura + 2 dígitos). Las lecturas tienen dos decimales (4,69 V, 2,61 V):
+// escala de 20 V, 1 dígito = 0,01 V. La corriente se calculó como V de la resistencia / R, así que lleva la misma
+// incertidumbre relativa que ese voltaje (la de la resistencia medida no se cuenta).
 {
   const archivo = require('path').join(__dirname, '..', '..', 'validacion', 'led-rojo-multimetro.json');
   const datos = JSON.parse(require('fs').readFileSync(archivo, 'utf8'));
   const { voltaje, corriente } = datos.criterio;
-  const err = (sim, real) => Math.abs(real - sim) / Math.abs(sim);
+  const UT33B = { lectura: 0.005, digitos: 2, resolucionV: 0.01 };
+  const incertidumbreV = (v) => UT33B.lectura * Math.abs(v) + UT33B.digitos * UT33B.resolucionV;
+  const pct = (x) => (x * 100).toFixed(2).replace('.', ',') + ' %';
+  // Una comparación: error respecto de la medida, si cumple el criterio solo y si cumple sumando la incertidumbre.
+  const comparar = (sim, real, criterio, u, unidad = 'V') => {
+    const dif = Math.abs(sim - real);
+    return { error: dif / Math.abs(real), solo: dif <= criterio * Math.abs(real), conU: dif <= criterio * Math.abs(real) + u, u: unidad === 'V' ? u : u * 1000, unidad: unidad === 'V' ? 'V' : 'mA' };
+  };
+  let total = 0;
+  let solo = 0;
+  let conU = 0;
   for (const d of datos.medidas) {
     const ohmios = d.ohmios_medido || d.ohmios_nominal;
     const m = medir(circuitoLed({ ohmios }));
-    const errores = [err(m.pines[0].v, d.v_pin), err(m.leds[0].v, d.v_led), err(m.resistencias[0].v, d.v_resistencia)];
-    const errI = err(m.leds[0].i, d.v_resistencia / ohmios);
-    revisar(errores.every((e) => e <= voltaje) && errI <= corriente,
-      `placa real con ${ohmios} Ω: voltajes a ${(Math.max(...errores) * 100).toFixed(1)} % y corriente a ${(errI * 100).toFixed(1)} % del simulador (criterio ${voltaje * 100} % y ${corriente * 100} %)`);
+    const iReal = d.v_resistencia / ohmios;
+    const c = [
+      comparar(m.pines[0].v, d.v_pin, voltaje, incertidumbreV(d.v_pin)),
+      comparar(m.leds[0].v, d.v_led, voltaje, incertidumbreV(d.v_led)),
+      comparar(m.resistencias[0].v, d.v_resistencia, voltaje, incertidumbreV(d.v_resistencia)),
+      comparar(m.leds[0].i, iReal, corriente, iReal * (incertidumbreV(d.v_resistencia) / d.v_resistencia), 'A'),
+    ];
+    total += c.length;
+    solo += c.filter((x) => x.solo).length;
+    conU += c.filter((x) => x.conU).length;
+    const peorV = c.slice(0, 3).reduce((a, b) => (b.error > a.error ? b : a));
+    const limite = c.filter((x) => !x.solo && x.conU).map((x) => `${pct(x.error)} queda en el límite: cumple con la incertidumbre del multímetro (±${x.u.toFixed(3).replace('.', ',')} ${x.unidad})`);
+    revisar(c.every((x) => x.conU),
+      `placa real con ${ohmios} Ω: voltajes hasta ${pct(peorV.error)} y corriente a ${pct(c[3].error)} de la medida (criterio ${voltaje * 100} % y ${corriente * 100} %)${limite.length ? '; ' + limite.join('; ') : ''}`);
   }
+  revisar(conU === total, `LED rojo del 7 oct: ${solo} de ${total} comparaciones dentro del criterio y ${conU} de ${total} sumando la incertidumbre del UT33B+`);
 }
 
 console.log('\n' + (fallos ? `${fallos} FALLAS` : 'TODO BIEN'));

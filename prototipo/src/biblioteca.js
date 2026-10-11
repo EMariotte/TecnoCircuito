@@ -61,7 +61,7 @@ export const FICHAS = {
     // Solo se midió el LED rojo: los otros colores usan el voltaje de la hoja de datos.
     validacion: (p) =>
       !p.color || p.color === 'rojo'
-        ? validado('Comparado con el multímetro el 7 oct 2026 (LED rojo con 220, 330 y 1 kΩ: 12 de 12 dentro del criterio).')
+        ? validado('Comparado con el multímetro el 7 oct 2026 (LED rojo con 220, 330 y 1 kΩ: 11 de 12 dentro del criterio; la que queda en el límite cumple con la incertidumbre del multímetro).')
         : porValidar(`Voltaje de la hoja de datos: se midió solo el LED rojo (7 oct 2026); falta medir el ${p.color}.`),
   },
   pulsador: {
