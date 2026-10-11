@@ -13,8 +13,17 @@ TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la T
 - [LEEME.md](prototipo/LEEME.md): uso y prácticas de laboratorio.
 - [validacion/](validacion/): mediciones registradas por Efraín; distingue dato medido, ajuste y supuesto.
 - [Revisión inicial de Codex](docs/REVISION-CODEX-2026-10-11.md): resultados, limitaciones y hallazgos abiertos R1–R8. Es un informe fechado, no una lista automáticamente resuelta por cambios posteriores.
+- [Verificación de las correcciones](docs/VERIFICACION-CODEX-R1-R8-2026-10-11.md): R1–R5, R7 y R8 verificados; R6 corregido en sus casos originales, con cierre documental pendiente por el nuevo criterio de porcentaje. Consulta este seguimiento junto al informe inicial.
 
 No mantengas una segunda copia extensa del estado en este archivo. Actualízalo cuando cambien las reglas de trabajo; el progreso va en la bitácora y el estado actual en CLAUDE.md.
+
+## Encargo futuro: Nano con expansión E/S
+
+Efraín pidió un conjunto visual Nano clásico + expansión E/S, con variantes **roja y azul**. Referencias locales: `prototipo/Imagenes_módulos/Nano1.avif` a `Nano8.avif` (incluye `nano2`, `nano3` y `Nano5.png`). Codex leyó las ocho: Nano4 es la comparación más detallada; Nano5 es un icono, no una fotografía de la placa. Las fotos anuncian funciones similares pero muestran diferencias de conectores y disposición: confirma cada mapa eléctrico, reguladores y alimentación. Las medidas anunciadas de la roja son 58 × 54 mm; comprobar en hardware antes de fijar geometría. Dibuja SVG originales, sin incorporar estas imágenes comerciales al repositorio público.
+
+**Exportación a KiCad decidida por Efraín:** del conjunto deben salir la huella del **Nano como módulo montable**, los componentes adicionales de la expansión que regulan/filtran las salidas **5V y 3,3V**, la **entrada del jack** y los conectores adicionales de comunicación **I2C y SPI**, con sus redes. Representa el Nano por su huella y pines de módulo, conservando dentro de él su electrónica. La exportación del conjunto se limita a esos elementos; el resto del circuito conserva su exportación normal. KiCad 10.0.3 instalado trae `Module:Arduino_Nano`; verifica pads, orientación y montaje frente a la pieza real. La selección de reguladores, condensadores, protecciones, puentes, jack y su polaridad depende de la evidencia de cada variante.
+
+Este encargo está **registrado, sin implementar**. Mantén separados la apariencia del conjunto, el único ATmega328P y la alimentación de la expansión. Integra `nano` y `nano_old`, A6/A7 solo analógicos, esquema, biblioteca, Worker, guardado, SVG y KiCad; comprueba equivalencia de conectores y placa, ambas variantes y hardware antes de declararlo validado.
 
 ## Rol de revisor
 
@@ -57,9 +66,12 @@ npm.cmd --prefix prototipo run probar:kicad
 npm.cmd --prefix prototipo run probar:contrato
 npm.cmd --prefix prototipo run probar:fixtures
 node docs/revision-2026-10-11.cjs
+node docs/verificar-correcciones-2026-10-11.cjs
 ```
 
 La suite completa construye el paquete y ejecuta Node, 12 recorridos de Chromium/Playwright y KiCad. Necesita Python con Playwright y Chromium instalados; KiCad debe ejecutar su prueba, no quedar omitido. El diagnóstico de revisión necesita los `.cjs` generados por la suite y describe seis casos de R1–R6.
+
+El diagnóstico inicial conserva notas históricas del defecto: para comprobar el código corregido usa `verificar-correcciones-2026-10-11.cjs` (aserciones y observación del criterio nuevo). `python -I docs/verificar-r8-2026-10-11.py` verifica los dos scripts originales del hermano con ejecución normal y errores JS/archivo inyectados en memoria; necesita su HTML construido, deja logs temporales y no cambia sus fuentes.
 
 Para integración, si existe el repositorio hermano y la tarea lo incluye:
 
