@@ -1098,6 +1098,8 @@ Cada foto toma un pedazo distinto de la onda, y su promedio salta. Algunas venta
 
 Sus transistores son bipolares: entre los dos lados del puente se comen unos **1,4 V más 1 V por amperio**. Con la batería llena, al motor le llegan 6,8 V a toda velocidad; en modo ideal, los 8,4 V. Por eso el carro va más lento con la shield que conectado directo a la batería.
 
+**La shield se puede agregar con la simulación corriendo.** El 74HC595, el pin 7 (habilitación) y el PWM de los pines 11, 3, 6 y 5 se siguen siempre, haya o no shield. Si el aprendiz la agrega después, ya sabe cómo están los pines: por ejemplo, con D7 en BAJO y un `analogWrite(…, 255)` que dejó el pin quieto en ALTO, los motores arrancan sin esperar un cambio (lo encontró la revisión de código del 11 oct).
+
 ### El PWM de los motores
 
 AFMotor_R4 pone el PWM a unos 1000 Hz: en un milisegundo puede haber uno o dos pulsos, y el ciclo útil de cada milisegundo salta. Se suaviza con una constante de tiempo de 4 ms (unos pocos períodos), como lo hace la inductancia del motor; un pin quieto en 0 o en 1 se toma exacto. El motor siente el voltaje medio: ciclo útil × (VS − caída).
@@ -1237,6 +1239,7 @@ No lleva diodos: el L293D los trae por dentro (es la «D» del nombre).
 - si sus cables van a un conector de la shield (bornera de un motor, EXT_PWR, SERVO_1/2), ese es su conector y no se agrega otro;
 - si llegan a la placa por otro lado (un motor directo al 5V, la batería al VIN), aparece una bornera de 2 (o el JST del balance, o la regleta de 9 del probador);
 - si no tocan la placa (el balance con el probador), no aparecen;
+- **cómo se decide si una pieza de afuera «llega» a la placa:** por los cables propios de cada pin (o la protoboard), con los nodos **sin** los puentes internos de la batería (`calcularNodos(circuito, { balanceInterno: false })`). Dentro de la batería, el − y el + del balance son los mismos puntos que los del cable de potencia; si se contaran, un balance que solo va al probador «llegaría» a GND y a VIN por el cable de potencia y sacaría conectores que no van (lo encontró la revisión de código del 11 oct);
 - un servo enchufado a SERVO_1 no repite su conector de 3 pines.
 
 **El puente PWR** es una pieza (JP1): en la netlist sus dos lados son redes distintas, `VMOT` y `VIN`, aunque en el circuito esté puesto.
@@ -1254,3 +1257,86 @@ No lleva diodos: el L293D los trae por dentro (es la «D» del nombre).
   - las 15 piezas nuevas se arman sobre la plantilla, cada pad encuentra su red y caben dentro del contorno del Uno, giradas si hace falta;
   - el DRC ve 63 conexiones por trazar y ningún solape;
   - el símbolo L293D de KiCad hereda sus patas del L293, y la prueba lo sigue.
+
+## 54. El reloj de los modelos «de cada milisegundo»
+
+> Corregido el 11 de octubre de 2026, con la revisión de código. Código: `correr()` en [src/chip.js](src/chip.js).
+
+Varios modelos avanzan **de a 1 ms simulado**: los servos (giran y piden corriente), los motores TT, la batería, el fusible y el 5V del USB, las entradas al aire, y la entrega de un byte del monitor serial. El chip los llama con `alCadaMs`.
+
+**El error.** `correr(ciclos)` ejecutaba el pedazo que le pedían y, al terminar cada pedazo, llamaba a los modelos, **aunque el pedazo no fuera un milisegundo entero**. El Worker no pide milisegundos exactos: pide lo que debe según el reloj real (por ejemplo 2,3 ms = 16 000 + 16 000 + 4 800 ciclos), así que los modelos corrían más veces de las que tocaba.
+
+```
+ antes:   |──── 16 000 ────|──── 16 000 ────|─ 4 800 ─|           3 llamadas en 2,3 ms
+                          ▲                ▲          ▲
+ ahora:   |──── 16 000 ────|──── 16 000 ────|─ 4 800 ─|─ …        2 llamadas en 2,3 ms
+                          ▲                ▲                      (la 3.ª, al cruzar los 3 ms)
+          proximoMs = 16 000, 32 000, 48 000…  (en ciclos absolutos del chip)
+```
+
+**El arreglo:** el chip guarda en qué ciclo cae el próximo milisegundo (`proximoMs`) y llama a los modelos **solo al cruzarlo**, sin importar de qué tamaño sean los pedazos.
+
+**Por qué las pruebas no lo veían:** las pruebas con Node avanzan de a milisegundos exactos, justo el caso en que el error no aparece. La prueba nueva (`probar_potencia.js`, sección 9) avanza el carro en pedazos de 4 801 ciclos y compara cuánto giró la rueda con el avance exacto. Con el código viejo, la rueda giraba **48°** cuando debía girar **125°**; con el arreglo, igual en los dos casos.
+
+**Qué cambia:** en la app, los servos, los motores y el fusible ahora van al mismo ritmo que en las pruebas de Node, que son las que se compararon con la placa real. Los modelos validados no cambian.
+
+## 55. En TecnoBloques: el monitor para analizar (CSV y gráfico) y los paneles plegables
+
+> Hecho el 11 de octubre de 2026 en TecnoBloques ([src/graficador.js](../../TecnoBloques/src/graficador.js)), con las decisiones de Efraín: CSV con «;» y coma decimal, y el gráfico solo en la pestaña Monitor serial. Se explica aquí, como la conexión de las secciones 31 y 32, porque usa el tiempo del simulador.
+
+```
+  placa (Web Serial) ──┐                                  ┌─► CSV  t_ms;origen;linea;min;max…  (Excel en español)
+                       ├─► agregarSalida (texto)          │
+  simulador ───────────┤                                  │
+  (sim.alSerial)       └─► registro.agregar(texto, origen, ms) ──► líneas { t, origen, linea, valores }
+                                                          │
+                                                          └─► graficador (canvas): una línea por variable
+```
+
+**El registro** guarda cada línea completa con su hora, su origen y sus números. Entiende `temp:25 luz:512`, `temp=25`, `Temperatura: 25.3 C`, `min 430 max 431` y números sueltos (`valor1`, `valor2`…). Un `nan` queda como hueco. Una etiqueta debe empezar con letra (así «12:30» no crea columnas), con un tope de 40 columnas y 20 000 líneas.
+
+**La hora:**
+
+- **con la placa:** los ms desde que se conectó;
+- **con el simulador:** el **tiempo simulado** (`sim.medidas().msSimulados`). Los datos no dependen de si la simulación iba al 100 % o al 60 %, así que son comparables con los de la placa;
+- al reconectar o simular de nuevo, el tiempo de ese origen sigue en vez de volver a 0.
+
+**El CSV:** separado por «;», con coma decimal y la marca UTF-8, para que se abra con doble clic en Excel en español. Una línea que empieza con `= + - @` lleva un apóstrofo, para que Excel no la tome como fórmula.
+
+**El gráfico:**
+
+- **Colores:** 8 en orden fijo (cada variable conserva el suyo), validados con un programa para que se distingan aun con daltonismo, en modo claro y oscuro. Tres de los claros se ven suaves sobre el fondo: por eso cada línea lleva su nombre y su último valor al final, la leyenda tiene casillas y al pasar el mouse se ven los valores.
+- **Controles:** pausa (el registro sigue guardando), ventana de 5 a 60 s y escala automática, de 0 a 1023 o de 0 a 5 V. La placa y el simulador no se mezclan: se grafica el origen del último dato.
+- **Solo se dibuja a la vista** y cuando llega algo nuevo, para no quitarle tiempo al simulador.
+
+**Los paneles plegables** de la pestaña Circuito: el monitor del simulador y las mediciones se ocultan con un botón arriba a la derecha y le dejan el espacio al circuito. Su estado queda en las preferencias, y con el monitor recogido un punto avisa que llegó texto.
+
+**Pruebas:** `npm run test:graficador` (Node: formatos, líneas en trozos, el tiempo, el CSV, los casos de la revisión) y `test:simulador` (con «Validar: ruido de analogRead()»: variables, casillas, pausa y CSV). Falta probarlo con la placa real (laboratorio).
+
+## 56. Cómo se publica una versión
+
+> Preparado el 11 de octubre de 2026; la primera etiqueta, `v0.1.0`, va después de validar la T3 en el laboratorio. Reglas en [CONTRATO.md](../CONTRATO.md), secciones 1 y 9.
+
+TecnoBloques no usa la carpeta `prototipo/`: instala **una versión fija** desde GitHub, y su instalador del aula solo acepta esa.
+
+```
+ TecnoCircuito                                        TecnoBloques
+ package.json  "version": "0.1.0"                     package.json
+      │                                                 "tecnocircuito": "github:EMariotte/TecnoCircuito#v0.1.0"
+      ▼                                                      │ npm install
+ npm run preparar-version                                    ▼
+   ├─ árbol limpio y la etiqueta no existe             node_modules/tecnocircuito/dist/tecnocircuito.js
+   ├─ construir.js --etiqueta → VERSION = "0.1.0"            │
+   ├─ copia a dist/tecnocircuito.js (raíz)                   ▼ node build.js  («simulador: etiqueta»)
+   ├─ revisa versión, contrato y lo que lleva            dist/TecnoBloques.html
+   └─ imprime los pasos: commit, git tag v0.1.0, push        │ npm run instalador
+                                                             ▼ empaquetar.js: ¿viene de una etiqueta, con esa versión?
+                                                         instalador del aula
+```
+
+- **`TecnoCircuito.VERSION`** sale del `package.json` de la raíz. En desarrollo dice `0.1.0-dev`, y solo `preparar-version` arma la exacta (`0.1.0`): una copia en desarrollo nunca se confunde con una versión.
+- **El paquete lleva solo lo necesario** (campo `files`): `dist/tecnocircuito.js`, `CONTRATO.md`, `contrato/`, la licencia y el README. Ni el prototipo, ni `validacion/`, ni `investigacion/`.
+- **`dist/tecnocircuito.js` de la raíz se commitea solo al etiquetar,** construido desde el código de esa etiqueta (regla 6).
+- **El instalador de TecnoBloques se niega** si el simulador es la copia local, o si no viene de `github:EMariotte/TecnoCircuito#vX.Y.Z` con esa misma versión instalada. Probado con un paquete armado a mano (rechazado), sin simulador (aceptado) y con la copia local (rechazada).
+- **Ensayo hecho el 11 oct, sin etiquetar:** el paquete instalado desde un archivo local en TecnoBloques; el armado lo tomó como «etiqueta», la app vio la 0.1.0 con contrato 1 y el carro simuló.
+

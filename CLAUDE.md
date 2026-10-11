@@ -66,7 +66,7 @@ prototipo/
 │   ├── catalogo.js     tipos de pieza (dibujo, pines, campos) · biblioteca.js: categorías, búsqueda y fichas
 │   ├── simulador.js    lado de la página: órdenes al Worker y dibujo de cada foto
 │   ├── trabajador.js   Web Worker (reloj); nucleo.js: chip + circuito + PWM + entradas + energía, sin DOM
-│   ├── chip.js         avr8js (guarda avrInstruction y PinState sin los getters de esbuild: sección 50)
+│   ├── chip.js         avr8js (sin los getters de esbuild: sección 50; los modelos «cada ms» al cruzar cada ms: sección 54)
 │   ├── motor/          MNA (mna.js) y armado de la red (red.js)
 │   ├── conexiones.js   nodos del circuito (cables, protoboard, puentes internos de shield y batería)
 │   ├── energia.js      USB del Uno (limiteUSB) · potencia.js: shield L293D, motores TT, LiPo y probador
@@ -83,7 +83,7 @@ validacion/                     medidas de la placa real (se vuelven pruebas)
 
 - **Un solo archivo de salida:** `dist/tecnocircuito.js`, un IIFE con avr8js y los dibujos dentro; TecnoBloques lo concatena sin bundler y funciona sin internet. **Nada de Node en el paquete.**
 - **Rendimiento:** chip y circuito en un Web Worker; el circuito se resuelve una vez por combinación de pines y el PWM se promedia (secciones 25 a 30); lo que leen las entradas también se guarda por combinación (sección 50).
-- **Publicar una versión** (en la raíz): `npm run preparar-version`; los pasos de la etiqueta los imprime el script (contrato, sección 9).
+- **Publicar una versión** (en la raíz): `npm run preparar-version`; los pasos de la etiqueta los imprime el script (contrato, sección 9; COMO-FUNCIONA, sección 56).
 - **Comandos** (en `prototipo/`): `npm run construir`, `npm run probar` (todo; con cargador: con batería fallan las pruebas de tiempo), `npm run probar:nucleo`, `npm run probar:kicad`, `npm run probar:contrato`, `npm run compilar`, `npm run fixtures`.
 
 ## Lo que hay que saber de TecnoBloques
@@ -95,7 +95,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 - **Probar con el simulador local:** en TecnoBloques, `node build.js --simulador-local` y `npm run test:simulador`. Para abrir la app desde Claude Code: `env -u ELECTRON_RUN_AS_NODE npx electron .` (con esa variable puesta, Electron no abre ventana).
 - **Kit:** shield L293D Rev4 (74HC595 en 4, 7, 8, 12; PWM M1 = 11, M2 = 3, M3 = 6, M4 = 5; SERVO_1 = 10, SERVO_2 = 9), librería **AFMotor_R4**; monitor serial en 0 y 1; I2C en A4 y A5.
 - **Trampa de Servo y PWM:** la librería Servo inutiliza `analogWrite` en 9 y 10 (Uno/Nano); el simulador lo reproduce porque usa los temporizadores reales.
-- TecnoBloques ya tiene el panel de mediciones, los paneles plegables, la biblioteca de ejemplos de validación, el CSV y el graficador del monitor serial (su `src/graficador.js`).
+- TecnoBloques ya tiene el panel de mediciones, los paneles plegables, la biblioteca de ejemplos de validación, el CSV y el graficador del monitor serial (su `src/graficador.js`; explicado en COMO-FUNCIONA, sección 55).
 
 ## Validación contra el circuito real
 
@@ -118,7 +118,10 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 **Software, en este orden (acordado el 11 oct):**
 1. ✅ Adelgazar este archivo.
 2. ✅ `/code-review` de los dos proyectos (11 oct): 19 hallazgos corregidos, con pruebas para los de comportamiento (el reloj de los modelos «cada ms» en el Worker era el más serio).
-3. Revisión de experiencia de uso con un agente aparte (capturas, accesibilidad, lenguaje para 14–17 años): Efraín la hará con otro agente en paralelo.
+3. Revisión de experiencia de uso con un agente aparte: Efraín la hará con otro agente en paralelo. El encargo (11 oct):
+   > Revisa la experiencia de uso de TecnoBloques y su simulador TecnoCircuito. Usuarios: aprendices de 14 a 17 años del SENA, en PC de aula. Abre la app con `env -u ELECTRON_RUN_AS_NODE npx electron .` en TecnoBloques (después de `node build.js --simulador-local`). Recorre: un ejemplo, la vista Dividido, la pestaña Circuito («+ Agregar», arrastrar, la ficha, Simular, Mediciones) y el Monitor serial (Texto/Gráfico, Exportar CSV), con capturas. Criterios: heurísticas de Nielsen, contraste WCAG AA, tamaño de botones, español claro para adolescentes, qué se entiende sin explicación. Entrega una lista priorizada (grave / medio / menor) con captura y propuesta concreta. **No cambies código: solo el informe.** Lee primero el CLAUDE.md de cada proyecto.
+
+   Cuando llegue el informe, se decide con Efraín qué cambiar.
 4. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
 
 **Pendientes conocidos:** el esquema de los eventos del contrato (falta desde la etapa 0; lo necesita el estudio); el circuito no siente la caída del 5V (solo los servos ven el voltaje real); el esquemático `.kicad_sch` con etiquetas; el diagrama de flujo del programa (en TecnoBloques); el símbolo de marca en la imagen SVG (`MARCA_SVG` en `src/lienzo.js`).

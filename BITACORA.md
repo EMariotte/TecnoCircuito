@@ -768,3 +768,29 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
   - Probado instalando el paquete en TecnoBloques desde un archivo: el armado lo toma como «etiqueta», la app ve la 0.1.0 con contrato 1 y el carro simula.
 - **Contrato, sección 9:** describe cómo se trabaja de verdad (`--simulador-local`) y que el instalador exige una etiqueta fija.
 - `npm run probar`: 19 grupos, 593 comprobaciones.
+
+## 2026-10-11 — Cierre de la sesión: documentación completa y el análisis de herramientas
+
+**El análisis que pidió Efraín** (¿hacen falta skills adicionales o puntos de vista distintos?):
+
+- **¿Una skill de diseño?** No como algo permanente: la que hay es para páginas publicadas, no para la app. Sí una **mirada independiente**: una revisión de experiencia de uso hecha por otro agente, que no trae nuestra conversación. El encargo está en CLAUDE.md («Próxima sesión», software 3). Lo que más pesa sigue siendo la **prueba con 2 o 3 aprendices**.
+- **¿Una skill de grafos para gastar menos tokens?** No hace falta: el proyecto es mediano y las búsquedas puntuales bastan. El gasto de más estaba en el CLAUDE.md (se carga en cada sesión): bajó de 33 a 14 KB.
+- **El riesgo de confiarnos:** las pruebas comparten los supuestos de quien las escribe. Las defensas son:
+  - la placa real (regla 2);
+  - la **revisión de código independiente** (`/code-review`): se hizo y encontró 19 problemas que las pruebas no veían, entre ellos el del reloj del Worker;
+  - la revisión de seguridad, que queda disponible.
+- **Decidido:** adelgazar el CLAUDE.md (hecho), `/code-review` en los dos proyectos (hecho), la revisión de experiencia de uso en paralelo (Efraín) y la publicación `v0.1.0` preparada (hecho, sin etiquetar).
+
+**COMO-FUNCIONA, al día:**
+
+- secciones nuevas:
+  - **54:** el reloj de los modelos «de cada milisegundo»;
+  - **55:** en TecnoBloques, el monitor para analizar y los paneles plegables;
+  - **56:** cómo se publica una versión;
+- **49 y 53**, ampliadas: la shield agregada en marcha y el criterio de las piezas de afuera en KiCad.
+
+**Quedó listo para la próxima sesión:**
+
+- el laboratorio (8 prácticas en CLAUDE.md, cada una con su ejemplo en TecnoBloques);
+- después, etiquetar la `v0.1.0` con `npm run preparar-version`;
+- el informe de la revisión de experiencia de uso, para decidir qué cambiar.
