@@ -200,7 +200,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 - ✅ **Promedio de señales lentas** (10 oct, sección 48 de COMO-FUNCIONA): promedio móvil de 100 ms si un pin cambió en los últimos 50 ms; si no, valor exacto. Antes, cuando la señal duraba más que una foto (16 ms), el promedio saltaba. Pasa con el servo (la tabla dice «Pin 9: 1,84 V» y un multímetro diría 0,3 a 0,6 V) y con el LED de la mano (cada foto entre 7 y 50 %; el promedio sí es 35 %). Arreglo: suavizar la medición con una constante de tiempo como la del ojo o del multímetro.
 - ✅ **Panel de mediciones en TecnoBloques** (10 oct): `sim.mediciones()` y `TecnoCircuito.filasDeMediciones()` en el contrato 1, y el panel a la derecha con el circuito ampliado.
 - **El circuito no siente la caída del 5V:** solo los servos ven el voltaje real.
-- En TecnoBloques (Fase 2d): exportar el monitor serial a **CSV** y un **graficador serial** con casillas por variable.
+- ✅ En TecnoBloques (Fase 2d, 11 oct): exportar el monitor serial a **CSV** y un **graficador serial** con casillas por variable.
 
 **Hecho el 10 oct (solo software):** ✅ shield L293D «desarmada» (74HC595, dos L293D, borneras, EXT_PWR, puente PWR, servos en 10 y 9), ✅ motor TT (vistas eje y rueda, lado izquierdo o derecho) y ✅ batería LiPo 2S (llena, nominal, descargada, con aviso), con `src/potencia.js`, el programa `carro_motores` (AFMotor_R4) y el ejemplo «Carro». Ver `prototipo/COMO-FUNCIONA.md`, sección 49. **Falta validarlos con la placa real.**
 
@@ -208,7 +208,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 1. ✅ **Biblioteca de piezas** (10 oct): panel con categorías, miniaturas, buscador y arrastre, y la ficha de cada pieza con su validación (`src/biblioteca.js`; COMO-FUNCIONA, sección 51). Una pieza nueva necesita su ficha (RECETA, paso 8).
 2. ✅ **Cable de balance y probador de celdas** (10 oct): pines `BAL0`–`BAL2`, carga «desbalanceada» y la pieza `probador_lipo` con su pantalla de 7 segmentos y su alarma (COMO-FUNCIONA, sección 52). Falta compararlo con el probador real.
 3. ✅ **Netlist de KiCad con la shield desarmada** (11 oct): U1/U2 L293D, U3 74HC595, borneras, servos, puente PWR, C1–C4 y el LED; las piezas de afuera llegan por conectores (COMO-FUNCIONA, sección 53). Falta que Efraín la abra en KiCad.
-4. En TecnoBloques (Fase 2d): CSV del monitor serial y graficador serial.
+4. ✅ En TecnoBloques (Fase 2d, 11 oct): CSV del monitor serial y graficador serial (`src/graficador.js` de TecnoBloques), para la placa y el simulador.
 
 **Con hardware:** la lista de «La próxima vez en el laboratorio», arriba. Después, la primera etiqueta `v0.1.0`.
 

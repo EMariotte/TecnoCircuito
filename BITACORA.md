@@ -744,3 +744,9 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
   - `probar_kicad_pcb.py`, que sigue el `extends` del símbolo L293D y acomoda las piezas en el primer lugar libre (girándolas si hace falta).
   - Con KiCad 10.0.3: 15 piezas nuevas sobre el Uno, 63 conexiones por trazar y ningún solape.
 - **Por hacer con Efraín:** abrir el carro en KiCad (plantilla «Arduino Uno Shield» → Importar netlist) y acomodar las piezas. Opcional en el laboratorio: continuidad en la shield del kit, para comparar su cableado con el dibujo.
+
+## 2026-10-11 — En TecnoBloques: CSV y graficador del monitor serial
+
+- TecnoBloques ya guarda lo que llega por el monitor serial (de la placa o del simulador) y lo exporta a CSV para Excel en español, o lo grafica con una casilla por variable (Fase 2d; ver su bitácora).
+- Del simulador usa el tiempo simulado (`sim.medidas().msSimulados`): los datos no dependen de la velocidad de la simulación.
+- No cambia el contrato.
