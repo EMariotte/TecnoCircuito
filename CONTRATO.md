@@ -9,7 +9,8 @@
 ## 1. Distribución
 
 - TecnoCircuito entrega **`dist/tecnocircuito.js`**: un IIFE sin dependencias externas que define **`window.TecnoCircuito`**. Lleva dentro avr8js y los dibujos.
-- El archivo se **commitea ya construido en cada etiqueta**. Instalarlo desde GitHub no compila nada.
+- El archivo se **commitea ya construido en cada etiqueta**. Instalarlo desde GitHub no compila nada. Lo arma `npm run preparar-version` (en la raíz): toma la versión del `package.json` (sin «-dev»), revisa el contrato y que el paquete lleve solo `dist/tecnocircuito.js`, `CONTRATO.md`, `contrato/`, `LICENSE`, `NOTICE` y `README.md` (campo `files`).
+- `TecnoCircuito.VERSION` sale del `package.json` de la raíz: exacta en una etiqueta y con «-dev» en cualquier otra copia.
 - TecnoBloques lo declara con una etiqueta fija:
 
   ```json
@@ -238,9 +239,9 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
    - **Aquí:** `prototipo/pruebas/fixtures/` guarda proyectos `.tbq.json` y `.hex` generados por TecnoBloques. `npm run fixtures` los copia desde `../TecnoBloques/test/salida/<caso>/` (`<caso>.tbq.json` y `<caso>.hex`, desde la 0.2.5) cuando la carpeta hermana existe. Se commitean, así que las pruebas corren sin TecnoBloques. `npm run probar:fixtures` revisa cada proyecto y su circuito contra el esquema, y corre cada `.hex` del ATmega328P en el chip simulado.
    - **En TecnoBloques:** `npm run test:simulador` compila sus programas de prueba, los corre con Node en la versión fija del simulador y comprueba que guardar y abrir un proyecto conserva `circuito` y cualquier campo desconocido.
 4. **Trabajo en los dos a la vez:**
-   - `npm run simulador:local` (en TecnoBloques) instala `file:../TecnoCircuito`;
-   - `npm run simulador:fijo` vuelve a la etiqueta de `package.json`;
-   - **`escritorio/empaquetar.js` se niega a armar el instalador si la dependencia no es una etiqueta.** Así un simulador en desarrollo nunca llega al aula por la actualización automática.
+   - `node build.js --simulador-local` (o `npm run app:simulador` y `npm run test:simulador`) en TecnoBloques usa la copia de `../TecnoCircuito/prototipo/dist/tecnocircuito.js`, sin instalar nada;
+   - `node build.js` usa la versión instalada desde la etiqueta (`node_modules/tecnocircuito`), o ninguna;
+   - **`escritorio/empaquetar.js` se niega a armar el instalador** si el HTML trae la copia local, o si trae un simulador que no viene de `github:EMariotte/TecnoCircuito#vX.Y.Z` con esa misma versión instalada. Así un simulador en desarrollo nunca llega al aula por la actualización automática.
 5. **Versión congelada.** Mientras el simulador se use en un estudio con aprendices, TecnoBloques no cambia la etiqueta. Se pueden publicar versiones de TecnoBloques sin tocarla.
 6. **Documentación cruzada.** Cada cambio del contrato se anota en las dos bitácoras con el mismo título («Contrato N: …»), se actualiza este archivo y la sección «Proyecto hermano» de TecnoBloques.
 7. **Claude en cada proyecto:** antes de tocar algo de las secciones 2 a 7, lee este archivo desde la carpeta hermana (`..\TecnoCircuito\CONTRATO.md` desde TecnoBloques).

@@ -1,4 +1,5 @@
 """Prueba el prototipo 1 en Chromium: avr8js ejecuta el .hex real y la regla de conexiones prende el LED."""
+import json
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -8,6 +9,7 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+VERSION_DEV = json.loads((Path(__file__).resolve().parents[2] / 'package.json').read_text(encoding='utf-8'))['version'] + '-dev'  # la pone construir.js
 fallos = []
 
 
@@ -45,7 +47,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(300)
 
     api = pg.evaluate('({ v: TecnoCircuito.VERSION, s: typeof TecnoCircuito.crearSimulador })')
-    revisar(api == {'v': '0.0.5-prototipo', 's': 'function'}, f'API con crearSimulador: {api}')
+    revisar(api == {'v': VERSION_DEV, 's': 'function'}, f'API con crearSimulador: {api}')
 
     # 1. Parpadeo en el pin 13 con el circuito bien armado
     pg.locator('#iniciar').click()

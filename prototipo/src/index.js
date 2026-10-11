@@ -5,7 +5,7 @@ import { PLACAS } from './catalogo.js';
 import { filasDeMediciones } from './mediciones.js';
 
 window.TecnoCircuito = Object.freeze({
-  VERSION: '0.0.5-prototipo',
+  VERSION: typeof __VERSION_TC__ === 'string' ? __VERSION_TC__ : '0.0.0-dev', // la pone construir.js (package.json de la raíz)
   CONTRATO: 1,
   PLACAS: Object.freeze(Object.keys(PLACAS)),
   crearLienzo,

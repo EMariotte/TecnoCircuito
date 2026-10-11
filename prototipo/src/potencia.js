@@ -24,12 +24,7 @@ import { PinState } from './chip.js';
 import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
 
 export const SHIELD = {
-  pinDatos: CONEXIONES_SHIELD.datos,
-  pinReloj: CONEXIONES_SHIELD.reloj,
-  pinCierre: CONEXIONES_SHIELD.cierre,
-  pinHabilita: CONEXIONES_SHIELD.habilita,
-  pwm: CONEXIONES_SHIELD.pwm,
-  bits: CONEXIONES_SHIELD.bits,
+  ...CONEXIONES_SHIELD, // datos, reloj, cierre, habilita, pwm y bits: los de AFMotor_R4
   caidaV: 1.4, // caída del puente H con poca corriente
   caidaPorA: 1.0, // y lo que sube por cada amperio
   maximoCanalA: 0.6, // corriente continua por canal del L293D
@@ -37,11 +32,11 @@ export const SHIELD = {
 };
 // El Uno toma su energía del VIN (por el regulador) cuando el VIN pasa de 6,6 V: un comparador apaga la del USB.
 export const VIN_MINIMO_V = 6.6;
-const PLACA_POR_VIN_A = 0.06;
+const PLACA_POR_VIN_A = 0.06; // lo que pide la placa al VIN (el regulador y el ATmega)
 // El PWM de los motores va a unos 1000 Hz: un milisegundo puede tener uno o dos pulsos. El ciclo útil se suaviza con
 // esta constante de tiempo (unos pocos períodos), como lo hace la inductancia del motor con la corriente.
 const PWM_MS = 4;
-const SUAVE = 1 - Math.exp(-1 / PWM_MS); // lo que pide la placa al VIN (el regulador y el ATmega)
+const SUAVE = 1 - Math.exp(-1 / PWM_MS);
 const PINES = ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
 const coma = (n, dec = 1) => n.toFixed(dec).replace('.', ',');
 
@@ -165,13 +160,13 @@ export function crearPotencia({ activas, avisar }) {
     motores = otros;
   }
 
-  // Un cambio en los pines del chip: el registro 74HC595 y el PWM de los motores.
+  // Un cambio en los pines del chip: el registro 74HC595 y el PWM de los motores. Se sigue aunque no haya shield:
+  // si el aprendiz la agrega con la simulación corriendo, ya sabe cómo están los pines.
   function pinesCambiaron(cambios, ahora, ciclos) {
-    if (!shield) return;
     const alto = (pin) => ahora[pin] === PinState.High;
-    if (SHIELD.pinReloj in cambios && alto(SHIELD.pinReloj)) registro = ((registro << 1) | (alto(SHIELD.pinDatos) ? 1 : 0)) & 0xff;
-    if (SHIELD.pinCierre in cambios && alto(SHIELD.pinCierre)) salidas = registro;
-    if (SHIELD.pinHabilita in cambios) habilitada = ahora[SHIELD.pinHabilita] === PinState.Low;
+    if (SHIELD.reloj in cambios && alto(SHIELD.reloj)) registro = ((registro << 1) | (alto(SHIELD.datos) ? 1 : 0)) & 0xff;
+    if (SHIELD.cierre in cambios && alto(SHIELD.cierre)) salidas = registro;
+    if (SHIELD.habilita in cambios) habilitada = ahora[SHIELD.habilita] === PinState.Low;
     for (const pin of Object.values(SHIELD.pwm)) {
       if (!(pin in cambios)) continue;
       const p = pwm[pin];

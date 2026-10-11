@@ -16,7 +16,9 @@ const PUENTES_UNO = [
 //   presionados: ids de los botones presionados ahora (al presionar se une la pata 1 con la 2).
 //   conduccion:  además une las patas de resistencias y potenciómetros. No sirve para resolver el circuito:
 //                sirve para saber si una entrada tiene algún camino a 5V, a GND o a un pin que la maneje.
-export function calcularNodos(circuito, { presionados = new Set(), conduccion = false } = {}) {
+//   balanceInterno: une el balance de la batería con sus cables de potencia (BAL0 = NEG, BAL2 = POS). La netlist lo
+//                apaga para saber si el cable de balance llega a la placa por sí mismo.
+export function calcularNodos(circuito, { presionados = new Set(), conduccion = false, balanceInterno = true } = {}) {
   const padre = new Map();
   const raiz = (r) => {
     if (!padre.has(r)) padre.set(r, r);
@@ -43,7 +45,7 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
       for (const [pin, otro] of PUENTES_SHIELD) unir(c.id + '.' + pin, otro);
       // Con el puente PWR puesto, la batería de EXT_PWR también llega al Vin del Uno.
       if (!c.props || c.props.puentePWR !== false) unir(c.id + '.EXT_POS', 'placa.VIN');
-    } else if (c.tipo === 'bateria_lipo') {
+    } else if (c.tipo === 'bateria_lipo' && balanceInterno) {
       // El cable de balance sale de los mismos puntos: BAL0 es el −, BAL2 es el + (BAL1, el punto entre las celdas).
       unir(c.id + '.BAL0', c.id + '.NEG');
       unir(c.id + '.BAL2', c.id + '.POS');

@@ -167,6 +167,14 @@ const soloBalance = fuera(
 revisar(Object.keys(soloBalance.piezas).length === 4, 'la batería con el probador no tocan la placa: no aparecen');
 const bateriaVin = fuera([{ id: 'bateria1', tipo: 'bateria_lipo', props: {} }], [{ de: 'bateria1.POS', a: 'placa.VIN' }, { de: 'bateria1.NEG', a: 'placa.GND2' }]);
 revisar(igual(bateriaVin.redes.VIN, ['J1.8', 'J5.1']) && !bateriaVin.piezas.J6, 'la batería al VIN llega por una bornera de 2; su balance, que no toca la placa, no agrega conector');
+// Revisión de código del 11 oct: con la batería al VIN y el probador en el balance, el balance comparte el − con GND
+// por dentro de la batería, pero sus cables solo van al probador: ni el balance ni el probador tocan la placa.
+const conProbador = fuera(
+  [{ id: 'bateria1', tipo: 'bateria_lipo', props: {} }, { id: 'probador1', tipo: 'probador_lipo', props: {} }],
+  [{ de: 'bateria1.POS', a: 'placa.VIN' }, { de: 'bateria1.NEG', a: 'placa.GND2' },
+    { de: 'bateria1.BAL0', a: 'probador1.NEG' }, { de: 'bateria1.BAL1', a: 'probador1.C1' }, { de: 'bateria1.BAL2', a: 'probador1.C2' }],
+);
+revisar(Object.keys(conProbador.piezas).join(',') === 'J1,J2,J3,J4,J5', `batería al VIN con el probador en el balance: solo la bornera de la batería (${Object.keys(conProbador.piezas).join(', ')})`);
 
 // La tabla de huellas y pads, para que probar_kicad_pcb.py la compare con las librerías de KiCad
 const tabla = Object.entries(PIEZAS_KICAD).map(([tipo, d]) => [tipo, { lib: d.lib, parte: d.parte, huella: d.huella, pads: d.pads }]);

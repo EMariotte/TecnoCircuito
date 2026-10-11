@@ -385,7 +385,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       return null;
     });
     p = { canales, alAire: alAireAqui, entradas, analogicos, refsAlAire: red.refsAlAire(e) };
-    planes.set(k, p);
+    if (m) planes.set(k, p); // sin solución no se guarda: cuando el circuito se pueda calcular, se rehace
     return p;
   }
   // Pone el nivel de una entrada digital solo si cambió.
@@ -704,7 +704,7 @@ function ciclosUtiles(partes, total, recientes = new Set()) {
   const vistos = new Set();
   for (const [k, t] of partes) {
     for (let i = 0; i < PINES_EN_ORDEN.length; i++) {
-      const alto = Math.floor(k / 4 ** i) % 4 === PinState.High;
+      const alto = Math.floor(k / PESO[PINES_EN_ORDEN[i]]) % 4 === PinState.High;
       altos[i] = (altos[i] || 0) + (alto ? t : 0);
       vistos.add(i);
     }

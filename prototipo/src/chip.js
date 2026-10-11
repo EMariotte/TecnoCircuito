@@ -21,6 +21,7 @@ import {
 import { leerHex } from './hex.js';
 
 export const FRECUENCIA = 16e6; // 16 MHz, el cristal del Uno
+const CICLOS_MS = FRECUENCIA / 1000;
 // La función que ejecuta cada instrucción, guardada una vez: al empaquetar, esbuild deja `avrInstruction` detrás de
 // dos «getters» de módulo, y llamarlos en cada instrucción (millones por segundo) costaba ~14 % del tiempo del chip.
 const ejecutarInstruccion = avrInstruction;
@@ -97,20 +98,25 @@ export function crearChip(hex) {
   }
   usart.onByteTransmit = (byte) => alByte.forEach((fn) => fn(byte));
 
-  // Avanza el chip `ciclos` ciclos de reloj. Cada 1 ms simulado entrega un byte pendiente del serial.
+  // Avanza el chip `ciclos` ciclos de reloj. Al cruzar cada milisegundo simulado (y solo entonces) entrega un byte
+  // pendiente del serial y corre los modelos «de cada ms» (servos, motores, energía, entradas al aire). El Worker
+  // avanza en pedazos que no son ms exactos: el próximo milisegundo se cuenta en ciclos absolutos, no por llamada.
+  let proximoMs = CICLOS_MS;
   function correr(ciclos) {
     const fin = cpu.cycles + ciclos;
     while (cpu.cycles < fin) {
-      const tramo = Math.min(fin, cpu.cycles + FRECUENCIA / 1000);
+      const tramo = Math.min(fin, proximoMs);
       while (cpu.cycles < tramo) {
         ejecutarInstruccion(cpu);
         cpu.tick();
       }
+      if (cpu.cycles < proximoMs) break; // el pedazo terminó antes del próximo milisegundo
+      proximoMs += CICLOS_MS;
       if (colaEntrada.length && !usart.rxBusy) {
         usart.writeByte(colaEntrada[0]); // si el programa no abrió el serial, el byte se pierde, como en la placa
         colaEntrada.shift();
       }
-      for (const fn of alMs) fn(); // cada 1 ms simulado (ruido de las entradas al aire)
+      for (const fn of alMs) fn();
     }
   }
 

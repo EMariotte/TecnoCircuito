@@ -25,7 +25,7 @@
 
 ## Estado
 
-Es un **prototipo**: demostró la viabilidad técnica del simulador y ya funciona dentro de TecnoBloques en modo de desarrollo. Las tareas T1 (LED y botón) y T2 (potenciómetro y brillo) están completas. La T3 (motor y servo con la shield L293D) viene después.
+Es un **prototipo**: demostró la viabilidad técnica del simulador y ya funciona dentro de TecnoBloques en modo de desarrollo. Las tareas T1 (LED y botón) y T2 (potenciómetro y brillo) están completas y validadas con la placa real. La T3 (servo, shield L293D, motor TT, batería LiPo y probador de celdas) está hecha en software; el servo SG90 y la energía del USB ya se validaron, y lo demás se valida en el laboratorio antes de la primera versión, `v0.1.0`.
 
 ## Probarlo
 

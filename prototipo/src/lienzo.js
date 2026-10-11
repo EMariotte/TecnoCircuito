@@ -75,7 +75,6 @@ export function crearLienzo(elemento, opciones = {}) {
     <p class="tc-bib-ayuda">Clic: la pieza aparece en el centro · Arrástrala para ponerla donde quieras</p>
   </div>
   <div class="tc-ficha" hidden></div>
-</div>
 </div>`;
   const $ = (s) => raiz.querySelector(s);
   const tc = $('.tc');

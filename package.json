@@ -6,8 +6,18 @@
   "license": "Apache-2.0",
   "author": "Efraín Guillermo Mariotte Parra (TecnoAcademia Tolima, SENA)",
   "repository": "github:EMariotte/TecnoCircuito",
+  "main": "dist/tecnocircuito.js",
+  "files": [
+    "dist/tecnocircuito.js",
+    "CONTRATO.md",
+    "contrato/",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
   "scripts": {
     "construir": "npm --prefix prototipo run construir",
-    "probar": "npm --prefix prototipo run probar"
+    "probar": "npm --prefix prototipo run probar",
+    "preparar-version": "node preparar-version.js"
   }
 }

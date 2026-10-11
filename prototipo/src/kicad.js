@@ -192,31 +192,33 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     return nodo((tipo === 'placa' ? 'placa' : shield.id) + '.' + pin);
   };
   const deShield = shield ? SHIELD_KICAD.map((d) => ({ ...d, id: `${shield.id}/${d.valor}${d.nota ? ' ' + d.nota : ''}`, enShield: true })) : [];
-  // Nodos con un conector de la shield para enchufar algo de afuera, y nodos que tocan algo de la placa.
-  const conConector = new Set(deShield.filter((d) => d.externo).flatMap((d) => Object.values(d.pads).map(clave)));
   const cableados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
   // Los pines del Uno que la shield toca por dentro (sus integrados, los servos en D9 y D10, GND, 5V, VIN) van aunque no
   // tengan cable: en la placa real llegan por los conectores apilables.
   const tocaShield = new Set(deShield.flatMap((d) => Object.values(d.pads).map(clave)));
   const pinesUno = Object.keys(PIN_SHIELD).filter((pin) => cableados.has('placa.' + pin) || tocaShield.has(nodo('placa.' + pin)));
   const delCircuito = circ.componentes.filter((c) => PIEZAS_KICAD[c.tipo]);
-  const enPlaca = new Set([
-    ...pinesUno.map((pin) => nodo('placa.' + pin)),
-    ...deShield.flatMap((d) => Object.values(d.pads).map(clave)),
-    ...delCircuito.flatMap((c) => Object.keys(PIEZAS_KICAD[c.tipo].pads).map((pin) => nodo(c.id + '.' + pin))),
-  ]);
-  // Unos pines de afuera necesitan su propio conector si alguno llega a la placa, por su propio cable o por la
-  // protoboard, a un punto que no sea un conector. (Dentro de la batería, el balance comparte el − y el + con el cable
-  // de potencia: no cuenta como cable propio.)
-  const conCable = (id, pin) => cableados.has(id + '.' + pin) || circ.componentes.some((c) => c.id === id && c.en && c.en[pin]);
-  const necesitaConector = (id, pines) => {
-    const llegan = pines.filter((pin) => conCable(id, pin) && enPlaca.has(nodo(id + '.' + pin)));
-    return llegan.some((pin) => !conConector.has(nodo(id + '.' + pin)));
+  // ¿Qué pines de una pieza llegan a la placa por sus propios cables (o la protoboard)? Se mira con los nodos sin los
+  // puentes internos de la batería: el balance comparte el − y el + con el cable de potencia, pero si solo va al
+  // probador no toca la placa.
+  const externo = calcularNodos(circ, { balanceInterno: false });
+  const claveExterna = (destino) => {
+    const [tipo, pin] = destino.split(':');
+    return pin === undefined ? '#' + destino : externo((tipo === 'placa' ? 'placa' : shield.id) + '.' + pin);
   };
+  const enPlacaExt = new Set([
+    ...pinesUno.map((pin) => externo('placa.' + pin)),
+    ...deShield.flatMap((d) => Object.values(d.pads).map(claveExterna)),
+    ...delCircuito.flatMap((c) => Object.keys(PIEZAS_KICAD[c.tipo].pads).map((pin) => externo(c.id + '.' + pin))),
+  ]);
+  const conConectorExt = new Set(deShield.filter((d) => d.externo).flatMap((d) => Object.values(d.pads).map(claveExterna)));
+  const llegan = (id, pines) => pines.filter((pin) => enPlacaExt.has(externo(id + '.' + pin)));
+  // Necesita su propio conector si algún pin llega a la placa por un punto que no es un conector de la shield.
+  const necesitaConector = (id, pines) => llegan(id, pines).some((pin) => !conConectorExt.has(externo(id + '.' + pin)));
   // Ya enchufada a un conector de la shield (un servo en SERVO_1): todo lo que llega a la placa llega por ahí.
   const enConector = (id, pines) => {
-    const llegan = pines.filter((pin) => conCable(id, pin) && enPlaca.has(nodo(id + '.' + pin)));
-    return llegan.length > 0 && llegan.every((pin) => conConector.has(nodo(id + '.' + pin)));
+    const l = llegan(id, pines);
+    return l.length > 0 && l.every((pin) => conConectorExt.has(externo(id + '.' + pin)));
   };
 
   // Las piezas: primero las del circuito, después la shield y al final los conectores de afuera. `pads`: pad → a qué va.

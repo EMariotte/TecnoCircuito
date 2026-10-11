@@ -4,6 +4,8 @@
 //   TecnoCircuito.filasDeMediciones(sim.mediciones())
 //     → [{ pieza: 'Pin 9', voltaje: '0,36 V', corriente: '0,00 mA', detalle: 'PWM 50 %' }, …]
 
+import { LIPO } from './piezas/bateria_lipo.js';
+
 const num = (x, dec) => x.toFixed(dec).replace('.', ',');
 const voltios = (v) => (v === null || v === undefined ? 'al aire' : num(v, 2) + ' V');
 const miliamperios = (i) => num(i * 1000, Math.abs(i) < 0.01 ? 2 : 1) + ' mA';
@@ -53,7 +55,7 @@ export function filasDeMediciones(m) {
     ...(m.baterias || []).map((b) => {
       const celdas = b.celdas || [b.voltios / 2, b.voltios / 2];
       return fila(`${b.id} (LiPo 2S)`, voltios(b.voltios), b.conectada ? miliamperios(b.i) : '',
-        `celdas ${celdas.map((v) => num(v, 2)).join(' y ')} V${Math.min(...celdas) < 3.3 ? ' · cárgala' : ''}${b.conectada ? '' : ' · sin conectar'}`);
+        `celdas ${celdas.map((v) => num(v, 2)).join(' y ')} V${Math.min(...celdas) < LIPO.avisoCeldaV ? ' · cárgala' : ''}${b.conectada ? '' : ' · sin conectar'}`);
     }),
     ...(m.probadores || []).map((p) =>
       fila(`${p.id} (probador)`, p.encendido ? voltios(p.total) : '', '',

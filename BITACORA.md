@@ -750,3 +750,21 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
 - TecnoBloques ya guarda lo que llega por el monitor serial (de la placa o del simulador) y lo exporta a CSV para Excel en español, o lo grafica con una casilla por variable (Fase 2d; ver su bitácora).
 - Del simulador usa el tiempo simulado (`sim.medidas().msSimulados`): los datos no dependen de la velocidad de la simulación.
 - No cambia el contrato.
+
+## 2026-10-11 — Revisión de código, CLAUDE.md más liviano y la publicación v0.1.0 preparada
+
+**Pedido de Efraín:** una mirada distinta a la nuestra antes de publicar.
+
+- **CLAUDE.md:** de 33 KB a 14 KB. Quedó como foto del estado, con la arquitectura real (la «prevista» nombraba carpetas que no existen); la historia sigue en esta bitácora.
+- **`/code-review` (TecnoCircuito, 9 hallazgos, todos corregidos):**
+  - **El más serio:** el chip corría los modelos «de cada milisegundo» al final de cada pedazo que le pedía el Worker, aunque no fuera un milisegundo entero. En la app, los servos, los motores, el fusible y las entradas al aire avanzaban de más; en pedazos de 4801 ciclos, una rueda giraba 48° cuando debía girar 125°. Las pruebas con Node no lo veían porque avanzan de a milisegundos exactos. Ahora el próximo milisegundo se cuenta en ciclos absolutos, con una prueba que lo atrapa.
+  - **La shield agregada con la simulación corriendo** no veía los pines que ya estaban (D7 en BAJO, PWM quieto en 255): ahora los sigue siempre.
+  - **La netlist:** con la batería al VIN y el probador en el balance, sacaba conectores del balance y del probador. Ahora mira los cables propios de cada pin, sin los puentes internos de la batería (`calcularNodos(…, { balanceInterno: false })`).
+  - **Lo que leen las entradas** ya no se guarda cuando el circuito no se pudo calcular.
+  - **Limpiezas:** el umbral «cárgala» sale del modelo de la batería; la tabla de la shield usa los mismos nombres que `CONEXIONES_SHIELD`; un comentario fuera de lugar; un `</div>` de más; `PESO` en `ciclosUtiles`.
+- **Publicación preparada, sin etiquetar:**
+  - `TecnoCircuito.VERSION` sale del `package.json` de la raíz (`0.1.0-dev` en desarrollo, `0.1.0` con `--etiqueta`).
+  - `npm run preparar-version` arma `dist/tecnocircuito.js` en la raíz y lo revisa: versión exacta, contrato y que el paquete lleve solo lo necesario (campo `files`). También pide el árbol limpio y que la etiqueta no exista.
+  - Probado instalando el paquete en TecnoBloques desde un archivo: el armado lo toma como «etiqueta», la app ve la 0.1.0 con contrato 1 y el carro simula.
+- **Contrato, sección 9:** describe cómo se trabaja de verdad (`--simulador-local`) y que el instalador exige una etiqueta fija.
+- `npm run probar`: 19 grupos, 593 comprobaciones.

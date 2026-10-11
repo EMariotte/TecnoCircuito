@@ -206,5 +206,31 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
   revisar(porPotencia.p.celdas.length === 2 && Math.abs(porPotencia.p.total - 7.4) < 0.01, 'el − y el + del balance son los mismos de los cables de potencia');
 }
 
+// 9. Revisión de código del 11 oct.
+{
+  // El Worker avanza en pedazos que no son milisegundos exactos: los modelos «de cada ms» deben correr igual.
+  const enPedazos = (ciclosPorPaso) => {
+    const n = crearNucleo({ hex, circuito: carro(), activas: REALISTA, semilla: 1 });
+    const total = FRECUENCIA * 1.5;
+    for (let hecho = 0; hecho < total; hecho += ciclosPorPaso) n.avanzar(Math.min(ciclosPorPaso, total - hecho));
+    return n.foto();
+  };
+  const exactos = enPedazos(FRECUENCIA / 1000);
+  const raros = enPedazos(4801);
+  // Lo que giró la rueda suma cada milisegundo del modelo: si corriera de más, giraría de más.
+  revisar(Math.abs(exactos.piezas.motor1.giro - raros.piezas.motor1.giro) < 1 && Math.abs(exactos.msSimulados - raros.msSimulados) < 1,
+    `en pedazos de 4801 ciclos la rueda gira lo mismo que de a 1 ms (${raros.piezas.motor1.giro.toFixed(1)}° y ${exactos.piezas.motor1.giro.toFixed(1)}°)`);
+  // La shield agregada con la simulación corriendo ve los pines como ya están (D7 en BAJO y el PWM de 255 quieto en ALTO).
+  const sinShield = carro();
+  sinShield.componentes = sinShield.componentes.filter((c) => c.tipo !== 'shield_l293d');
+  sinShield.cables = [];
+  const n = crearNucleo({ hex, circuito: sinShield, activas: REALISTA, semilla: 1 });
+  for (let t = 0; t < 3600; t += 16) { n.avanzar(CUADRO); n.foto(); } // ya va en «atras 255»
+  n.ponerCircuito(carro());
+  let f = null;
+  for (let t = 0; t < 800; t += 16) { n.avanzar(CUADRO); f = n.foto(); }
+  revisar(f.piezas.motor1.rpm < -150, `con la shield agregada en medio de «atras 255», el motor gira (${Math.round(f.piezas.motor1.rpm)} RPM)`);
+}
+
 console.log(fallos ? `\n${fallos} FALLAS` : '\nTodo bien.');
 process.exit(fallos ? 1 : 0);

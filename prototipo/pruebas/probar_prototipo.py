@@ -8,6 +8,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
+VERSION_DEV = json.loads((Path(__file__).resolve().parents[2] / 'package.json').read_text(encoding='utf-8'))['version'] + '-dev'  # la pone construir.js
 fallos = []
 
 
@@ -32,7 +33,7 @@ with sync_playwright() as p:
     pg.screenshot(path=str(SALIDA / '1_inicio.png'))
 
     api = pg.evaluate('({ v: TecnoCircuito.VERSION, c: TecnoCircuito.CONTRATO, p: TecnoCircuito.PLACAS })')
-    revisar(api == {'v': '0.0.5-prototipo', 'c': 1, 'p': ['uno']}, f'API del contrato: {api}')
+    revisar(api == {'v': VERSION_DEV, 'c': 1, 'p': ['uno']}, f'API del contrato: {api}')
     pines = pg.locator('.tc-pin').count()
     revisar(pines == 31 + 2 + 2, f'pines dibujados: {pines} (31 de la placa + 2 + 2)')
     desfases = pg.evaluate('''() => [...document.querySelector("main .tecnocircuito").shadowRoot.querySelectorAll(".tc-comp")]

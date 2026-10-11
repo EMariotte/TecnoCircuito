@@ -6,6 +6,10 @@ const path = require('path');
 const esbuild = require('esbuild');
 
 const aqui = (f) => path.join(__dirname, f);
+// La versión del paquete sale del package.json de la raíz: exacta al preparar una etiqueta (--etiqueta, la usa
+// preparar-version.js) y con «-dev» en todo lo demás, para que nunca se confunda una copia en desarrollo con una versión.
+const versionRaiz = require('../package.json').version;
+const VERSION = process.argv.includes('--etiqueta') ? versionRaiz : versionRaiz + '-dev';
 const esc = (s) => s.replace(/<\/script/gi, '<\\/script'); // igual que build.js de TecnoBloques
 
 // 1. El Web Worker (chip + circuito) se arma aparte y entra al paquete como texto: así el paquete sigue
@@ -22,7 +26,7 @@ const trabajador = esbuild.buildSync({
 
 // 2. El paquete: lienzo, simulador (lado de la página) y el Worker embebido.
 const { outputFiles } = esbuild.buildSync({
-  define: { __CODIGO_TRABAJADOR__: JSON.stringify(trabajador) },
+  define: { __CODIGO_TRABAJADOR__: JSON.stringify(trabajador), __VERSION_TC__: JSON.stringify(VERSION) },
   entryPoints: [aqui('src/index.js')],
   bundle: true,
   format: 'iife',
@@ -51,4 +55,4 @@ const html = fs
   .replace('<!--PAQUETE-->', () => `<script>${esc(js)}</script>`)
   .replace('<!--PROGRAMAS-->', () => `<script>window.PROGRAMAS = ${esc(JSON.stringify(programas))};</script>`);
 fs.writeFileSync(aqui('dist/prototipo.html'), html);
-console.log(`dist/tecnocircuito.js ${(js.length / 1024).toFixed(0)} KB (Worker: ${(trabajador.length / 1024).toFixed(0)} KB) · dist/prototipo.html listo`);
+console.log(`dist/tecnocircuito.js ${VERSION} · ${(js.length / 1024).toFixed(0)} KB (Worker: ${(trabajador.length / 1024).toFixed(0)} KB) · dist/prototipo.html listo`);
