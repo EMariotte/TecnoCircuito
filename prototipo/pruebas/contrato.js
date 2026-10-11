@@ -21,6 +21,7 @@ const PINES = {
   shield_l293d: D['pines-shield_l293d'].enum,
   motor_tt: D['pines-motor_tt'].enum,
   bateria_lipo: D['pines-bateria_lipo'].enum,
+  probador_lipo: D['pines-probador_lipo'].enum,
 };
 const PINES_PLACA = { uno: D['pines-placa-uno'].enum };
 

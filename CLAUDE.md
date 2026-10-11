@@ -1,7 +1,7 @@
 # CLAUDE.md — TecnoCircuito
 
 > Memoria técnica del proyecto para Claude Code.
-> Actualizado: 10 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 completa en software** (servo SG90/MG90S, energía del USB y, desde el 10 oct, shield L293D, motor TT y batería LiPo 2S como piezas Tecno; estas tres sin validar con la placa real). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 18 grupos (482 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
+> Actualizado: 10 de octubre de 2026 · Estado: **prototipo validado y repositorio publicado** (https://github.com/EMariotte/TecnoCircuito). En `prototipo/` están los prototipos 0 a 4, **T1 y T2 completas** y **la T3 completa en software** (servo SG90/MG90S, energía del USB y, desde el 10 oct, shield L293D, motor TT y batería LiPo 2S como piezas Tecno; estas tres sin validar con la placa real). **El 9 oct Efraín validó con la placa real** la velocidad en el PC del aula, el ruido del ADC, la entrada al aire, los ángulos y la corriente del SG90, y el 5V del USB con servos. Los modelos quedaron ajustados a esas medidas (`validacion/`), y la entrada al aire tiene un modelo nuevo: «la mano es el mouse» (60 Hz). `npm run probar` pasa 19 grupos (508 comprobaciones) y `test:simulador` de TecnoBloques 28 de 28. Falta la primera etiqueta con `dist/tecnocircuito.js` para que el simulador llegue al instalador.
 
 ---
 
@@ -113,7 +113,7 @@ TecnoCircuito/
 │   ├── potencia.js       ← shield L293D (74HC595, PWM, puente H con su caída), motores TT y batería LiPo, cada 1 ms
 │   ├── mediciones.js     ← filasDeMediciones: la tabla en español de sim.mediciones()
 │   ├── biblioteca.js     ← categorías, búsqueda y ficha de cada pieza (panel «+ Agregar» y ficha del lienzo)
-│   ├── piezas/           ← piezas Tecno con dibujo propio: servo.js (SG90 y MG90S), shield_l293d.js, motor_tt.js y bateria_lipo.js
+│   ├── piezas/           ← piezas Tecno con dibujo propio: servo.js (SG90 y MG90S), shield_l293d.js, motor_tt.js, bateria_lipo.js y probador_lipo.js
 │   ├── motor/            ← MNA, Newton-Raphson, reloj común con el chip
 │   ├── chip/             ← avr8js: puertos, ADC, temporizadores, USART; placas uno/nano/nano_old/mega
 │   ├── componentes/      ← un archivo por componente: vista + modelo eléctrico + modelo lógico
@@ -193,6 +193,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 3. Opcional: repetir el ADC con el programa corregido para tener la desviación exacta.
 4. La protoboard con dos o tres aprendices, y la velocidad con TecnoBloques en el aula cuando exista `v0.1.0`.
 5. **Shield L293D y motor TT** (Ejemplos → «Validar: carro con la shield L293D»; pasos en `prototipo/LEEME.md`): voltaje de la LiPo quieta y con motores, caída del L293D en los bornes de M1, corriente y RPM del motor sin carga, corriente bloqueado (≤ 1 s) y hacia dónde gira cada rueda con FORWARD.
+6. **Probador de celdas** (Ejemplos → «Validar: probador de celdas LiPo»; pasos en `prototipo/LEEME.md`): la secuencia de la pantalla y su duración, el umbral de fábrica y cada celda con el multímetro.
 
 **Pendientes de software que salieron de las validaciones:**
 - ✅ **Promedio de señales lentas** (10 oct, sección 48 de COMO-FUNCIONA): promedio móvil de 100 ms si un pin cambió en los últimos 50 ms; si no, valor exacto. Antes, cuando la señal duraba más que una foto (16 ms), el promedio saltaba. Pasa con el servo (la tabla dice «Pin 9: 1,84 V» y un multímetro diría 0,3 a 0,6 V) y con el LED de la mano (cada foto entre 7 y 50 %; el promedio sí es 35 %). Arreglo: suavizar la medición con una constante de tiempo como la del ojo o del multímetro.
@@ -204,7 +205,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 
 **Lo siguiente, solo software (orden acordado con Efraín el 10 oct):**
 1. ✅ **Biblioteca de piezas** (10 oct): panel con categorías, miniaturas, buscador y arrastre, y la ficha de cada pieza con su validación (`src/biblioteca.js`; COMO-FUNCIONA, sección 51). Una pieza nueva necesita su ficha (RECETA, paso 8).
-2. **Cable de balance** de la LiPo con sus pines y el **probador de celdas** («1-8S Lipo Li-ion Fe Batería Voltaje 2IN1 Probador Bajo Voltaje Zumbador Alarma»; hace falta una foto del probador del kit). Después, el estado «desbalanceada».
+2. ✅ **Cable de balance y probador de celdas** (10 oct): pines `BAL0`–`BAL2`, carga «desbalanceada» y la pieza `probador_lipo` con su pantalla de 7 segmentos y su alarma (COMO-FUNCIONA, sección 52). Falta compararlo con el probador real.
 3. **Netlist de KiCad con la shield desarmada** (sus integrados, borneras y conectores como piezas).
 4. En TecnoBloques (Fase 2d): CSV del monitor serial y graficador serial.
 

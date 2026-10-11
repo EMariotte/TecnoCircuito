@@ -6,6 +6,7 @@ import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } fro
 import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, dibujarShield } from './piezas/shield_l293d.js';
 import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
+import { PROBADOR, TAMANO_PROBADOR, PINES_PROBADOR, dibujarProbador, mostrarProbador } from './piezas/probador_lipo.js';
 
 // En el orden del código de colores de las resistencias: la tecla 0 a 9 elige el color de ese número.
 // Las claves son las del contrato; «morado» se conserva por los circuitos ya guardados y se muestra como violeta.
@@ -196,20 +197,55 @@ export const TIPOS = {
       mostrarMotor(el, props || {}, estado);
     },
   },
-  // Tarea T3. Pieza Tecno: batería LiPo 2S (src/piezas/bateria_lipo.js), con tres estados de carga.
+  // Tarea T3. Pieza Tecno: batería LiPo 2S (src/piezas/bateria_lipo.js), con cuatro estados de carga y su cable de balance.
   bateria_lipo: {
     nombre: 'Batería LiPo 2S',
     prefijo: 'bateria',
     props: { carga: 'nominal' },
     dibujo: { ancho: TAMANO_LIPO.ancho, alto: TAMANO_LIPO.alto, pines: PINES_LIPO, svg: (props) => dibujarLipo(props.carga) },
-    rotulo: (pin) => ({ POS: '+ · cable rojo de potencia', NEG: '− · cable negro de potencia' })[pin] || pin,
-    campos: [{ prop: 'carga', etiqueta: 'Carga', opciones: Object.entries(CARGAS_LIPO).map(([k, c]) => [k, `${c.nombre} (${String(c.voltios).replace('.', ',')} V)`]) }],
+    rotulo: (pin) =>
+      ({
+        POS: '+ · cable rojo de potencia',
+        NEG: '− · cable negro de potencia',
+        BAL0: 'balance − · el mismo − de la batería',
+        BAL1: 'balance · entre la celda 1 y la 2',
+        BAL2: 'balance + · el mismo + de la batería',
+      })[pin] || pin,
+    campos: [
+      {
+        prop: 'carga',
+        etiqueta: 'Carga',
+        opciones: Object.entries(CARGAS_LIPO).map(([k, c]) => [k, `${c.nombre} (${String(c.voltios).replace('.', ',')} V: ${c.celdas.map((v) => String(v).replace('.', ',')).join(' + ')})`]),
+      },
+    ],
     aplicar(el, props) {
       const nuevo = new DOMParser().parseFromString(dibujarLipo(props.carga), 'image/svg+xml').documentElement;
       el.replaceChildren(...[...nuevo.childNodes].map((n) => el.ownerDocument.importNode(n, true)));
     },
     mostrar(el, estado, props) {
       mostrarLipo(el, (props || {}).carga, estado);
+    },
+  },
+  // Tarea T3. Pieza Tecno: probador de celdas LiPo 1-8S con zumbador (src/piezas/probador_lipo.js). Se conecta al
+  // cable de balance; muestra el total, el número de celdas y cada celda, y pita si una baja del umbral.
+  probador_lipo: {
+    nombre: 'Probador de celdas',
+    prefijo: 'probador',
+    props: { umbral: PROBADOR.umbralV },
+    dibujo: { ancho: TAMANO_PROBADOR.ancho, alto: TAMANO_PROBADOR.alto, pines: PINES_PROBADOR, svg: (props) => dibujarProbador(props.umbral) },
+    rotulo: (pin) => (pin === 'NEG' ? '− · al negro del balance' : `celda ${pin.slice(1)} · al + de la celda ${pin.slice(1)}`),
+    campos: [
+      {
+        prop: 'umbral',
+        etiqueta: 'Alarma (pita por debajo de)',
+        opciones: PROBADOR.umbrales.map((u) => [u, u ? `${String(u).replace('.', ',')} V por celda` : 'apagada']),
+      },
+    ],
+    aplicar(el, props) {
+      mostrarProbador(el, props, null);
+    },
+    mostrar(el, estado, props) {
+      mostrarProbador(el, props || {}, estado);
     },
   },
   // Prototipo 3 (tarea T2). «posicion» va de 0 (perilla hacia GND) a 1 (hacia VCC).

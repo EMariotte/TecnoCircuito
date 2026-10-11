@@ -86,7 +86,7 @@ const p1 = revisarCircuito(delContrato);
 revisar(!p1.length, 'el ejemplo de CONTRATO.md, sección 4' + (p1.length ? ': ' + p1.join(' | ') : ''));
 const pagina = fs.readFileSync(path.join(__dirname, '..', 'pagina.html'), 'utf8');
 const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf('const $ = (id)'));
-const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS, EJEMPLO_CARRO };')();
+const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS, EJEMPLO_CARRO, EJEMPLO_PROBADOR };')();
 for (const [nombre, circuito] of Object.entries(ejemplos)) {
   const p = revisarCircuito(circuito);
   revisar(!p.length, `${nombre} de la página de prueba` + (p.length ? ': ' + p.join(' | ') : ''));

@@ -4,7 +4,7 @@
 // Uso: npm run probar:nucleo   (arma pruebas/nucleo.cjs y corre este archivo después de probar_nucleo.js)
 const fs = require('fs');
 const path = require('path');
-const { crearNucleo, FRECUENCIA } = require('./nucleo.cjs');
+const { crearNucleo, FRECUENCIA, pantallaProbador } = require('./nucleo.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -149,6 +149,61 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
   revisar(f.piezas.motor1.rpm < -200 && f.piezas.motor2.rpm > 200, `órdenes sin pausa: M1 atrás (${Math.round(f.piezas.motor1.rpm)} RPM) y M2 adelante (${Math.round(f.piezas.motor2.rpm)} RPM)`);
   // Informativo (depende del PC y del cargador): antes del 10 oct iba a 0,22 veces el chip real.
   console.log(`      2 s simulados en ${ms.toFixed(0)} ms → ${(2000 / ms).toFixed(2)} veces el chip real`);
+}
+
+// 8. El probador de celdas en el cable de balance: la pantalla, la alarma y los errores de cableado.
+{
+  const texto = (p) => (p ? p.map((d) => d.c + (d.punto ? '.' : '')).join('') : 'apagada');
+  const e = { encendido: true, celdas: [3.7, 3.7], total: 7.4 };
+  const secuencia = [0, 800, 1600, 2400, 3200, 4000, 4800].map((ms) => texto(pantallaProbador(e, ms)));
+  revisar(secuencia.join(' | ') === '7.40 |  2S | -1- | 3.70 | -2- | 3.70 | 7.40',
+    `la pantalla repite: total, celdas, «-1-», celda 1, «-2-», celda 2 (${secuencia.join(' | ')})`);
+  revisar(texto(pantallaProbador({ encendido: true, celdas: [4.2, 4.2, 4.2], total: 12.6 }, 0)) === '12.6', 'con 12,6 V muestra «12.6»');
+  revisar(pantallaProbador({ encendido: false, celdas: [], total: 0 }, 0) === null, 'sin batería, la pantalla queda apagada');
+
+  const conProbador = (carga, cables, umbral = 3.3) => ({
+    formato: 1,
+    placa: 'uno',
+    componentes: [
+      { id: 'bateria1', tipo: 'bateria_lipo', x: 0, y: 250, props: { carga } },
+      { id: 'probador1', tipo: 'probador_lipo', x: 330, y: 200, props: { umbral } },
+    ],
+    cables: cables.map(([de, a]) => ({ de: 'bateria1.' + de, a: 'probador1.' + a })),
+  });
+  const BIEN = [['BAL0', 'NEG'], ['BAL1', 'C1'], ['BAL2', 'C2']];
+  const medir = (circuito) => {
+    const n = crearNucleo({ hex, circuito, activas: REALISTA });
+    const fallas = [];
+    let f = null;
+    for (let t = 0; t < 300; t += 16) {
+      n.avanzar(CUADRO);
+      f = n.foto();
+      fallas.push(...f.fallas);
+    }
+    return { p: f.piezas.probador1, fallas, m: f.medicion };
+  };
+  const nominal = medir(conProbador('nominal', BIEN));
+  revisar(nominal.p.encendido && nominal.p.celdas.length === 2 && Math.abs(nominal.p.total - 7.4) < 0.01 && !nominal.p.alarma,
+    `nominal: el probador ve 2 celdas de ${nominal.p.celdas.map((v) => coma(v)).join(' y ')} V y no pita`);
+  const fila = nominal.m && nominal.m.probadores && nominal.m.probadores[0];
+  revisar(!!fila && fila.celdas.length === 2, 'la tabla de mediciones trae el probador');
+  const desb = medir(conProbador('desbalanceada', BIEN, 3.5));
+  const aviso = desb.fallas.find((x) => x.tipo === 'probador_alarma');
+  revisar(desb.p.alarma && aviso && /celda 2/.test(aviso.mensaje), `desbalanceada (3,95 y 3,45 V) con alarma en 3,5 V: pita por la celda 2 («${aviso && aviso.mensaje}»)`);
+  revisar(desb.fallas.some((x) => x.tipo === 'bateria_desbalanceada'), 'y la batería avisa que está desbalanceada');
+  const descargada = medir(conProbador('descargada', BIEN));
+  revisar(descargada.p.alarma, 'descargada (3,2 V por celda) con la alarma de fábrica (3,3 V): pita');
+  const apagada = medir(conProbador('descargada', BIEN, 0));
+  revisar(!apagada.p.alarma && apagada.p.encendido, 'con la alarma apagada no pita, pero sigue midiendo');
+  const cruzado = medir(conProbador('nominal', [['BAL0', 'NEG'], ['BAL2', 'C1'], ['BAL1', 'C2']]));
+  revisar(Math.abs(cruzado.p.celdas[0] - 7.4) < 0.01 && cruzado.p.alarma,
+    `cables cruzados (1 al + y 2 al medio): la celda 1 sale en ${coma(cruzado.p.celdas[0])} V y la 2 en ${coma(cruzado.p.celdas[1])}: pita, como el real`);
+  const sinNeg = medir(conProbador('nominal', [['BAL1', 'C1'], ['BAL2', 'C2']]));
+  revisar(!sinNeg.p.encendido, 'sin el − conectado, el probador no enciende');
+  const unaCelda = medir(conProbador('nominal', [['BAL0', 'NEG'], ['BAL1', 'C1']]));
+  revisar(unaCelda.p.encendido && unaCelda.p.celdas.length === 1, 'con solo el − y el 1: ve una celda (1S) y se alimenta de ella');
+  const porPotencia = medir(conProbador('nominal', [['NEG', 'NEG'], ['BAL1', 'C1'], ['POS', 'C2']]));
+  revisar(porPotencia.p.celdas.length === 2 && Math.abs(porPotencia.p.total - 7.4) < 0.01, 'el − y el + del balance son los mismos de los cables de potencia');
 }
 
 console.log(fallos ? `\n${fallos} FALLAS` : '\nTodo bien.');

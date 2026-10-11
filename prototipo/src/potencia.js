@@ -18,7 +18,8 @@
 // El PWM se promedia en cada milisegundo: el motor siente el voltaje medio (ciclo útil × voltaje), porque su
 // inductancia y su inercia filtran los pulsos. El voltaje de la batería baja con la corriente (resistencia interna).
 import { crearMotor } from './piezas/motor_tt.js';
-import { LIPO, voltiosLipo } from './piezas/bateria_lipo.js';
+import { LIPO, voltiosLipo, celdasLipo } from './piezas/bateria_lipo.js';
+import { PROBADOR } from './piezas/probador_lipo.js';
 import { PinState } from './chip.js';
 
 export const SHIELD = {
@@ -46,7 +47,8 @@ const coma = (n, dec = 1) => n.toFixed(dec).replace('.', ',');
 export function crearPotencia({ activas, avisar }) {
   let shield = null; // { id, puente }
   let motores = new Map(); // id → { logico, lado, a, b, canal, iAntes, sumaV, sumaI, ms, sobreMs }
-  let baterias = new Map(); // id → { carga, voc, v, valida, motores, vin, iAntes, sumaI, ms }
+  let baterias = new Map(); // id → { carga, voc, celdas, v, valida, motores, vin, iAntes, sumaI, ms }
+  let probadores = new Map(); // id → { umbral, fuente (batería de su −), puntos: punto del balance de C1…C8 (0, 1, 2 o null) }
   let registro = 0; // lo que entró por el pin de datos
   let salidas = 0; // lo que muestran Q0 a Q7 (desde el último cierre)
   let habilitada = false; // OE en BAJO
@@ -80,12 +82,19 @@ export function crearPotencia({ activas, avisar }) {
       const antes = baterias.get(k.id);
       const POS = k.id + '.POS';
       const NEG = k.id + '.NEG';
-      const b = { carga, voc, v: antes && antes.carga === carga ? antes.v : voc, iAntes: 0, sumaI: 0, ms: 0, motores: false, vin: false, valida: false };
+      const b = { carga, voc, celdas: celdasLipo(carga), v: antes && antes.carga === carga ? antes.v : voc, iAntes: 0, sumaI: 0, ms: 0, motores: false, vin: false, valida: false };
       if (carga === 'descargada') {
         avisar({
           tipo: 'bateria_baja',
           componente: k.id,
           mensaje: `La batería ${k.id} está descargada: ${coma(voc)} V, ${coma(voc / LIPO.celdas, 2)} V por celda. Corre el riesgo de perder sus celdas: por debajo de ${coma(LIPO.minimoCeldaV)} V por celda una LiPo se daña y puede inflarse. Cárgala antes de seguir.`,
+        });
+      }
+      if (carga === 'desbalanceada') {
+        avisar({
+          tipo: 'bateria_desbalanceada',
+          componente: k.id,
+          mensaje: `Las celdas de la batería ${k.id} están desbalanceadas: ${b.celdas.map((v) => coma(v, 2) + ' V').join(' y ')}. La más baja se descarga primero y se puede dañar. Cárgala con un cargador de balance (por el cable blanco).`,
         });
       }
       const conectada = (ref) => (shield && mismo(ref, shield.id + '.EXT_POS')) || mismo(ref, 'placa.VIN') || mismo(ref, 'placa.5V');
@@ -105,6 +114,21 @@ export function crearPotencia({ activas, avisar }) {
       nuevas.set(k.id, b);
     }
     baterias = nuevas;
+    // Probadores de celdas: su − debe ir al − del balance (BAL0) de una batería; cada pin de celda, a un punto del balance.
+    const otrosProbadores = new Map();
+    for (const k of circuito.componentes) {
+      if (k.tipo !== 'probador_lipo') continue;
+      const umbral = k.props && typeof k.props.umbral === 'number' ? k.props.umbral : PROBADOR.umbralV;
+      let fuente = null;
+      for (const id of baterias.keys()) if (mismo(k.id + '.NEG', id + '.BAL0')) fuente = id;
+      const puntos = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8'].map((pin) => {
+        if (!fuente) return null;
+        for (const j of [0, 1, 2]) if (mismo(`${k.id}.${pin}`, `${fuente}.BAL${j}`)) return j;
+        return null;
+      });
+      otrosProbadores.set(k.id, { umbral, fuente, puntos });
+    }
+    probadores = otrosProbadores;
     // Cada borne de un motor: a qué va (un borne de la shield, GND, 5V, la batería, un pin del chip o nada).
     const borne = (ref) => {
       if (shield) {
@@ -271,11 +295,12 @@ export function crearPotencia({ activas, avisar }) {
       b.iAntes = amperios;
       b.sumaI += amperios;
       b.ms++;
-      if (b.v / LIPO.celdas < LIPO.minimoCeldaV) {
+      const baja = Math.min(...celdasCargadas(b));
+      if (baja < LIPO.minimoCeldaV) {
         avisar({
           tipo: 'bateria_celdas',
           componente: id,
-          mensaje: `La batería ${id} bajó a ${coma(b.v, 2)} V con los motores: menos de ${coma(LIPO.minimoCeldaV)} V por celda. Así se dañan las celdas: cárgala.`,
+          mensaje: `La batería ${id} bajó a ${coma(b.v, 2)} V con los motores y una celda quedó en ${coma(baja, 2)} V: menos de ${coma(LIPO.minimoCeldaV)} V por celda. Así se dañan las celdas: cárgala.`,
         });
       }
     }
@@ -284,10 +309,44 @@ export function crearPotencia({ activas, avisar }) {
     return { i5V, porVin };
   }
 
-  // Lo que se ve de cada pieza y lo que mide un multímetro, promediado desde la foto anterior.
-  function foto() {
+  // Voltaje de cada celda ahora: cada una pierde su parte de la caída por la resistencia interna.
+  function celdasCargadas(b) {
+    const i = b.valida ? b.iAntes : 0;
+    return b.celdas.map((v) => Math.max(0, v - (LIPO.ohmios / b.celdas.length) * i));
+  }
+
+  // Lo que muestra cada probador: el voltaje de cada celda que tiene conectada, del − hacia arriba (C1, C2…).
+  // Un cable cruzado da una celda rara (negativa o del doble), como en el real.
+  function medirProbador(id, p, ms) {
+    const b = p.fuente && baterias.get(p.fuente);
+    if (!b) return { encendido: false, celdas: [], total: 0, alarma: false, ms };
+    const c = celdasCargadas(b);
+    const potencial = [0, c[0], c[0] + c[1]];
+    const celdas = [];
+    let antes = 0;
+    for (const j of p.puntos) {
+      if (j === null) break;
+      celdas.push(potencial[j] - antes);
+      antes = potencial[j];
+    }
+    const encendido = celdas.length > 0 && antes >= 2.5; // se alimenta de la misma batería
+    const baja = celdas.findIndex((v) => v < p.umbral);
+    const alarma = encendido && p.umbral > 0 && baja >= 0;
+    if (alarma) {
+      avisar({
+        tipo: 'probador_alarma',
+        componente: id,
+        mensaje: `El probador ${id} pita: la celda ${baja + 1} está en ${coma(Math.max(0, celdas[baja]), 2)} V, por debajo de ${coma(p.umbral)} V. Desconecta la batería y cárgala con un cargador de balance.`,
+      });
+    }
+    return { encendido, celdas: celdas.map((v) => Math.max(0, v)), total: antes, alarma, umbral: p.umbral, ms };
+  }
+
+  // Lo que se ve de cada pieza y lo que mide un multímetro, promediado desde la foto anterior. `ms`: el tiempo simulado
+  // (la pantalla del probador avanza con él).
+  function foto(ms = 0) {
     const piezas = {};
-    const lista = { motores: [], baterias: [], shield: null };
+    const lista = { motores: [], baterias: [], shield: null, probadores: [] };
     for (const [id, m] of motores) {
       const e = m.logico.estado();
       const r = { rpm: e.rpm, giro: e.giro, velocidad: e.velocidad, i: m.ms ? m.sumaI / m.ms : Math.abs(e.i), voltios: m.ms ? m.sumaV / m.ms : 0 };
@@ -296,7 +355,7 @@ export function crearPotencia({ activas, avisar }) {
       Object.assign(m, { sumaI: 0, sumaV: 0, ms: 0 });
     }
     for (const [id, b] of baterias) {
-      const r = { voltios: b.valida ? b.v : b.voc, i: b.ms ? b.sumaI / b.ms : 0, carga: b.carga, conectada: b.motores || b.vin };
+      const r = { voltios: b.valida ? b.v : b.voc, celdas: celdasCargadas(b), i: b.ms ? b.sumaI / b.ms : 0, carga: b.carga, conectada: b.motores || b.vin };
       piezas[id] = r;
       lista.baterias.push({ id, ...r });
       Object.assign(b, { sumaI: 0, ms: 0 });
@@ -305,6 +364,11 @@ export function crearPotencia({ activas, avisar }) {
       const motoresV = vsMs ? vsSuma / vsMs : vs;
       piezas[shield.id] = { motoresV };
       lista.shield = { id: shield.id, motoresV, puente: shield.puente, habilitada, salidas };
+    }
+    for (const [id, p] of probadores) {
+      const r = medirProbador(id, p, ms);
+      piezas[id] = r;
+      lista.probadores.push({ id, ...r });
     }
     vsSuma = 0;
     vsMs = 0;
@@ -318,7 +382,7 @@ export function crearPotencia({ activas, avisar }) {
     cadaMs,
     foto,
     get hay() {
-      return !!shield || motores.size > 0 || baterias.size > 0;
+      return !!shield || motores.size > 0 || baterias.size > 0 || probadores.size > 0;
     },
   };
 }

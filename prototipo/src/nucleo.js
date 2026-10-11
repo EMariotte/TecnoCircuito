@@ -16,6 +16,7 @@ import { crearPotencia } from './potencia.js';
 
 export { FRECUENCIA, PinState };
 export { USB, crearFusible } from './energia.js';
+export { pantallaProbador } from './piezas/probador_lipo.js'; // para probar la pantalla con Node
 
 const DESTELLO_TX_MS = 60; // cuánto queda prendido el LED TX de la placa después de enviar
 const ANALOGICOS = [['A0'], ['A1'], ['A2'], ['A3'], ['A4', 'SDA'], ['A5', 'SCL']];
@@ -545,7 +546,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     serial = [];
     const vistaServos = fotoServos();
     const energia = fotoEnergia();
-    const pot = potencia.foto();
+    const pot = potencia.foto(ms());
     iCircuito = medicion ? medicion.fuentes.reduce((t, f) => t + Math.max(0, f.i), 0) : 0;
     if (medicion) {
       medicion.usb = energia;
@@ -582,7 +583,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       msSimulados: ms(),
       evaluaciones,
       servos: fotoServos(),
-      piezas: potencia.foto().piezas,
+      piezas: potencia.foto(ms()).piezas,
       energia: fotoEnergia(),
       leds: {},
       quemados: [...quemados],

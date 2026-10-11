@@ -703,3 +703,26 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
   - `npm run probar`: 18 grupos, 482 comprobaciones;
   - `test:simulador` de TecnoBloques: todo bien.
 - **El contrato no cambia:** `crearLienzo` tiene la misma API, y los botones de cada pieza conservan `data-accion` y `data-tipo`.
+
+## 2026-10-10 — Cable de balance de la LiPo y probador de celdas (punto 5)
+
+**Pedido de Efraín:** el probador del kit, con foto en `Imagenes_módulos`. Tiene 3 dígitos de 7 segmentos y muestra el voltaje total, el número de celdas (2S, 3S), «-1-» y el voltaje de esa celda, y así con cada una, y vuelve a empezar.
+
+- **Batería:**
+  - el cable de balance tiene sus pines (`BAL0` −, `BAL1` medio, `BAL2` +); `BAL0` y `BAL2` son los mismos puntos que `NEG` y `POS`;
+  - cada carga dice el voltaje de cada celda;
+  - nueva carga **desbalanceada** (3,95 + 3,45 V), con su aviso al empezar.
+- **Probador de celdas** (`src/piezas/probador_lipo.js`, pieza Tecno original hecha a partir de la foto):
+  - 9 pines (− y 1 a 8), dos zumbadores y la pantalla de 3 dígitos;
+  - la secuencia total → «2S» → «-1-» → celda 1 → «-2-» → celda 2, cada 0,8 s;
+  - pita y parpadea si una celda baja del umbral (3,3 V de fábrica; se elige en la ficha);
+  - se alimenta de la batería y cuenta las celdas por lo que tiene conectado; un cable cruzado da una celda rara, como en el real.
+- **Fallas nuevas:** `bateria_desbalanceada` y `probador_alarma`. `mediciones()` trae `probadores` y las `celdas` de cada batería, y la tabla los muestra.
+- **Biblioteca:** el probador entra en «Potencia y energía» con su ficha. Ejemplos: «Probador de celdas (T3)» en la página y «Validar: probador de celdas LiPo» en TecnoBloques.
+- **Pruebas:** `probar_potencia.js` (sección 8, 15 comprobaciones) y `probar_probador.py` (10). `npm run probar`: 19 grupos, 508 comprobaciones. `test:simulador` y `npm test` de TecnoBloques: todo bien.
+- **Falta:** comparar la pantalla con la del probador real (cuánto dura cada cosa, el umbral de fábrica) y medir las celdas de la LiPo del kit (LEEME, «Validar el probador de celdas con el real»).
+
+## 2026-10-10 — Cierre de la sesión
+
+- `probar_pwm.py`: el desvanecido se muestrea 4 s en vez de 2,5 s. Con toda la suite corriendo, la ventana corta a veces no alcanzaba el pico (falló una vez con 61 %; sola, 3 de 3 con 78 %).
+- `npm run probar`: 19 grupos, 508 comprobaciones. TecnoBloques: `test:simulador` 33 de 33 y `npm test` sin fallas.

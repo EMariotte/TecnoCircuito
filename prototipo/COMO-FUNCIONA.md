@@ -1177,3 +1177,27 @@ Resultado en Node: de **0,22×** a **1,29×** el chip real con ese programa. El 
 **La validación a la vista:** «✓ Probado con la placa real» (verde) o «◐ Por probar con la placa real» (ámbar), con la fecha y lo medido. Es la regla 2 del proyecto hecha visible: el aprendiz y el instructor saben qué tan confiable es cada modelo. Hoy: resistencia, LED, botón, potenciómetro y SG90 probados; MG90S, motor TT, shield y batería por probar.
 
 **Pruebas:** `probar_biblioteca.py` (Chromium, 27 comprobaciones): categorías, miniaturas, buscador («luz», «pila», «POTENCIOMETRO», «rueda carro», sin resultados), Enter, arrastrar al lienzo y al panel, Esc, la ficha del servo con los dos modelos, el lado contrario, plegar y la protoboard. `probar_contrato.js` revisa que cada pieza del catálogo tenga categoría y ficha completa.
+
+## 52. El cable de balance y el probador de celdas (pieza Tecno)
+
+> Hecho el 10 de octubre de 2026 (punto 5 del orden acordado), con la foto del probador del kit y la descripción de Efraín de su pantalla. Archivos: [src/piezas/probador_lipo.js](src/piezas/probador_lipo.js) y [src/piezas/bateria_lipo.js](src/piezas/bateria_lipo.js); la lógica, en [src/potencia.js](src/potencia.js).
+
+```
+   LiPo 2S                                   probador 1-8S                       pantalla (cada 0,8 s)
+  ┌───────────────┐  BAL0 (−) ─────────────► −                                ┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐
+  │ celda 1  3,7 V│  BAL1 (medio) ─────────► 1   celda 1 = V(1) − V(−)        │7.40 ││ 2S  ││ -1- ││3.70 ││ -2- ││3.70 │ → otra vez
+  │ celda 2  3,7 V│  BAL2 (+) ─────────────► 2   celda 2 = V(2) − V(1)        └─────┘└─────┘└─────┘└─────┘└─────┘└─────┘
+  └───────────────┘  POS (+) y NEG (−): los mismos puntos que BAL2 y BAL0    si una celda < umbral: pita y parpadea
+```
+
+**El cable de balance.** La batería tiene ahora sus 3 pines de balance (`BAL0`, `BAL1`, `BAL2`). Por dentro, `BAL0` es el mismo − del cable negro y `BAL2` el mismo + del rojo (`conexiones.js` los une), y `BAL1` es el punto entre las dos celdas. Cada carga dice el voltaje de cada celda; con corriente, cada celda pierde su parte de la caída por la resistencia interna.
+
+**Carga «desbalanceada»** (la habíamos dejado para después): 7,4 V en total, pero 3,95 + 3,45 V. Avisa al empezar (`bateria_desbalanceada`), y es la que hace útil al probador: el total parece normal, pero una celda está baja.
+
+**El probador** se alimenta de la misma batería, por el cable de balance (necesita el − y al menos el 1). Mide, en orden, el voltaje de cada pin respecto al anterior: C1 − (−), C2 − C1… hasta el primer pin sin conectar. Así cuenta las celdas («2S», «3S») y, con un cable cruzado, muestra una celda rara (7,4 V y 0 V) y pita, como el real.
+
+**La pantalla** son 3 dígitos de 7 segmentos dibujados uno a uno (`data-seg`); `pantallaProbador(estado, ms)` es una función pura que dice qué mostrar en cada instante: el total («7.40», o «12.6» desde 10 V), «2S», y por cada celda «-1-» y su voltaje. Avanza con el tiempo simulado. Con la alarma, la pantalla parpadea 4 veces por segundo y se dibujan las ondas del pitido junto a los zumbadores. El umbral (2,7 a 3,8 V, o apagada) se elige en la ficha; en el real se cambia con su botón.
+
+**Solo se ve al simular:** el probador no usa el Arduino, pero el simulador calcula su pantalla en el Worker, junto con la batería.
+
+**Pruebas:** `probar_potencia.js`, sección 8 (15: la secuencia, «12.6», nominal, desbalanceada con alarma en 3,5 V, descargada, alarma apagada, cables cruzados, sin −, una sola celda y el balance por los cables de potencia) y `probar_probador.py` (Chromium, 10: los 9 pines, los 3 del balance, la pantalla leída segmento a segmento, la tabla, el pitido y el apagado al detener).

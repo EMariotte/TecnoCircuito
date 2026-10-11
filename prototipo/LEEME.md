@@ -28,7 +28,7 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
 - **Vista:** la rueda del mouse hace zoom y arrastrar el fondo mueve la vista.
 - **Simulación:**
   - elige el programa (parpadeo, PWM, potenciómetro, botón con pull-down o con pull-up interna, y los dos de validación) y el modo (realista o ideal), y usa Iniciar, Pausar, Reiniciar y Detener;
-  - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)», «Ejemplo con potenciómetro (T2)», «Ejemplo con servo (T3)», «Cuatro servos en el USB (T3)», «Seis servos en el USB (T3)» y «Carro con la shield L293D (T3)» arman el circuito de cada tarea y eligen su programa;
+  - «Ejemplo con botón (T1)», «Ejemplo en protoboard (T1)», «Ejemplo con potenciómetro (T2)», «Ejemplo con servo (T3)», «Cuatro servos en el USB (T3)», «Seis servos en el USB (T3)», «Carro con la shield L293D (T3)» y «Probador de celdas (T3)» arman el circuito de cada tarea y eligen su programa;
   - mientras corre, los botones se presionan manteniendo el clic sobre ellos;
   - **la mano es el mouse:** en modo realista, el mouse sobre el cable o el pin de una entrada al aire hace que esta capte la red de 60 Hz, como la mano cerca de la placa real;
   - el cableado y los valores se pueden cambiar mientras corre;
@@ -95,6 +95,14 @@ Los valores del motor TT y de la caída del L293D son de hojas de datos. Con el 
 5. **Hacia dónde gira cada rueda** con FORWARD, con los dos motores cableados igual (rojo en A): en el simulador, la del lado derecho va hacia atrás.
 
 Las medidas van a `validacion/` y se vuelven pruebas.
+
+## Validar el probador de celdas con el real
+
+Con «Validar: probador de celdas LiPo» (la LiPo del kit por el cable de balance al probador):
+
+1. **La pantalla:** ¿repite lo mismo que el simulador (total, «2S», «-1-» y la celda 1, «-2-» y la celda 2)? Anota cuánto dura cada cosa (el simulador usa 0,8 s, `PROBADOR.pasoMs`).
+2. **Cada celda con el multímetro** (en el conector de balance: negro al medio y medio al rojo) y lo que dice el probador.
+3. **La alarma:** el umbral de fábrica (el simulador usa 3,3 V) y cómo se cambia con el botón.
 
 ## Llevar el circuito a KiCad
 

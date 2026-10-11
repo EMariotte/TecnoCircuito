@@ -43,6 +43,10 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
       for (const [pin, otro] of PUENTES_SHIELD) unir(c.id + '.' + pin, otro);
       // Con el puente PWR puesto, la batería de EXT_PWR también llega al Vin del Uno.
       if (!c.props || c.props.puentePWR !== false) unir(c.id + '.EXT_POS', 'placa.VIN');
+    } else if (c.tipo === 'bateria_lipo') {
+      // El cable de balance sale de los mismos puntos: BAL0 es el −, BAL2 es el + (BAL1, el punto entre las celdas).
+      unir(c.id + '.BAL0', c.id + '.NEG');
+      unir(c.id + '.BAL2', c.id + '.POS');
     } else if (c.tipo === 'pulsador') {
       unir(c.id + '.1i', c.id + '.1d'); // misma lámina de metal por dentro
       unir(c.id + '.2i', c.id + '.2d');

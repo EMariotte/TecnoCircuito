@@ -95,7 +95,7 @@ with sync_playwright() as p:
     # 4. Desvanecer: el brillo pasa por valores intermedios (PWM promediado), no solo prendido o apagado
     pg.locator('#programa').select_option('desvanecer9')
     pg.locator('#iniciar').click()
-    b = pg.evaluate(BRILLOS, 2.5)
+    b = pg.evaluate(BRILLOS, 4)  # 4 s: con la suite completa corriendo, 2,5 s a veces no alcanzaban el pico
     intermedios = len([x for x in b if 0.1 < x < 0.7])
     revisar(max(b) > 0.7 and min(b) < 0.05, f'el brillo va de {min(b) * 100:.0f} % a {max(b) * 100:.0f} %')
     revisar(intermedios > len(b) * 0.4, f'el {intermedios * 100 // len(b)} % de las muestras son brillos intermedios')

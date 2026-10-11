@@ -47,7 +47,7 @@ with sync_playwright() as p:
     cats = pg.evaluate(f'[...{RAIZ}.querySelectorAll(".tc-bib-titulo")].map(t => t.textContent)')
     revisar(cats == ['Básicas', 'Entradas', 'Actuadores', 'Potencia y energía'], f'cuatro categorías: {cats}')
     todas = visibles()
-    revisar(len(todas) == 9, f'nueve piezas: {todas}')
+    revisar(len(todas) == 10, f'diez piezas: {todas}')
     minis = pg.evaluate(f'[...{RAIZ}.querySelectorAll(".tc-pieza .tc-mini")].map(m => m.firstElementChild ? m.firstElementChild.tagName.toLowerCase() : "")')
     revisar(all(minis), f'cada pieza tiene su dibujo en chico: {minis}')
     revisar(pg.evaluate(f'{RAIZ}.activeElement && {RAIZ}.activeElement.classList.contains("tc-buscar")'), 'al abrir, el cursor queda en el buscador')

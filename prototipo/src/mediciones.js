@@ -50,9 +50,14 @@ export function filasDeMediciones(m) {
       return fila(`${x.id} (${x.canal || 'sin shield'})`, voltios(x.voltios), miliamperios(x.i),
         Math.abs(x.rpm) < 1 ? 'quieto' : `${Math.round(Math.abs(x.rpm))} RPM · ${sentido} ${Math.round(cms)} cm/s`);
     }),
-    ...(m.baterias || []).map((b) =>
-      fila(`${b.id} (LiPo 2S)`, voltios(b.voltios), b.conectada ? miliamperios(b.i) : '',
-        `${num(b.voltios / 2, 2)} V por celda${b.voltios / 2 < 3.3 ? ' · cárgala' : ''}${b.conectada ? '' : ' · sin conectar'}`)),
+    ...(m.baterias || []).map((b) => {
+      const celdas = b.celdas || [b.voltios / 2, b.voltios / 2];
+      return fila(`${b.id} (LiPo 2S)`, voltios(b.voltios), b.conectada ? miliamperios(b.i) : '',
+        `celdas ${celdas.map((v) => num(v, 2)).join(' y ')} V${Math.min(...celdas) < 3.3 ? ' · cárgala' : ''}${b.conectada ? '' : ' · sin conectar'}`);
+    }),
+    ...(m.probadores || []).map((p) =>
+      fila(`${p.id} (probador)`, p.encendido ? voltios(p.total) : '', '',
+        !p.encendido ? 'apagado: conéctalo al cable de balance' : `${p.celdas.length}S · ${p.celdas.map((v, i) => `${i + 1}: ${num(v, 2)} V`).join(' · ')}${p.alarma ? ' · ¡pita!' : ''}`)),
     ...(servos.length ? [fila('5V de la placa (USB)', '', miliamperios(m.consumo5V), 'el USB da hasta 500 mA')] : []),
     ...(usb && (servos.length || usb.reinicios || usb.pico > 0.2)
       ? [fila('USB (placa y circuito)', voltios(usb.voltios), miliamperios(usb.amperios),

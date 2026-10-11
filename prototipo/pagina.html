@@ -84,6 +84,7 @@
     <button type="button" id="ejemploServos">Cuatro servos en el USB (T3)</button>
     <button type="button" id="ejemploSeis">Seis servos en el USB (T3)</button>
     <button type="button" id="ejemploCarro">Carro con la shield L293D (T3)</button>
+    <button type="button" id="ejemploProbador">Probador de celdas (T3)</button>
     <button type="button" id="limpiar">Empezar de nuevo</button>
     <button type="button" id="copiar">Copiar el circuito</button>
     <button type="button" id="imagen">Guardar imagen (SVG)</button>
@@ -258,6 +259,22 @@
     ],
     protoboard: null,
   };
+  // Tarea T3: la LiPo con su cable de balance en el probador de celdas (− al negro, 1 al punto medio y 2 al +).
+  // El probador se alimenta de la batería: no necesita el Arduino, pero se ve al simular.
+  const EJEMPLO_PROBADOR = {
+    formato: 1,
+    placa: 'uno',
+    componentes: [
+      { id: 'bateria1', tipo: 'bateria_lipo', x: 0, y: 250, rot: 0, props: { carga: 'nominal' } },
+      { id: 'probador1', tipo: 'probador_lipo', x: 390, y: 200, rot: 0, props: { umbral: 3.3 } },
+    ],
+    cables: [
+      { de: 'bateria1.BAL0', a: 'probador1.NEG', color: 'negro', puntos: [[472, 354.5]] },
+      { de: 'bateria1.BAL1', a: 'probador1.C1', color: 'rojo', puntos: [[481.6, 364.1]] },
+      { de: 'bateria1.BAL2', a: 'probador1.C2', color: 'rojo', puntos: [[491.2, 373.7]] },
+    ],
+    protoboard: null,
+  };
   const $ = (id) => document.getElementById(id);
   let lienzo = null;
 
@@ -359,6 +376,7 @@
   $('ejemploServos').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SERVOS); };
   $('ejemploSeis').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SEIS); };
   $('ejemploCarro').onclick = () => { $('programa').value = 'carro_motores'; abrir(EJEMPLO_CARRO); };
+  $('ejemploProbador').onclick = () => { $('programa').value = 'parpadeo13'; abrir(EJEMPLO_PROBADOR); };
   $('ejemploT1').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_T1); };
   $('ejemploPB').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_PB); };
   $('ejemploT2').onclick = () => { $('programa').value = 'potenciometro'; abrir(EJEMPLO_T2); };

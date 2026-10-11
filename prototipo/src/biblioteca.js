@@ -8,6 +8,7 @@ import { LED } from './motor/red.js';
 import { MODELOS_SERVO } from './piezas/servo.js';
 import { MOTOR_TT } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, LIPO } from './piezas/bateria_lipo.js';
+import { PROBADOR } from './piezas/probador_lipo.js';
 
 const coma = (n, dec = 1) => (Number.isInteger(n) ? String(n) : n.toFixed(dec).replace('.', ','));
 const ohmios = (r) => (r >= 1000 ? coma(r / 1000) + ' kΩ' : r + ' Ω');
@@ -18,7 +19,7 @@ export const CATEGORIAS = [
   { nombre: 'Básicas', piezas: ['protoboard', 'resistencia', 'led'] },
   { nombre: 'Entradas', piezas: ['pulsador', 'potenciometro'] },
   { nombre: 'Actuadores', piezas: ['servo', 'motor_tt'] },
-  { nombre: 'Potencia y energía', piezas: ['shield_l293d', 'bateria_lipo'] },
+  { nombre: 'Potencia y energía', piezas: ['shield_l293d', 'bateria_lipo', 'probador_lipo'] },
 ];
 
 export const FICHAS = {
@@ -136,17 +137,31 @@ export const FICHAS = {
     nombre: 'Batería LiPo 2S',
     descripcion: 'Batería recargable de 2 celdas para los motores. Va a EXT_PWR de la shield. Por debajo de 3,0 V por celda se daña: hay que cargarla a tiempo.',
     palabras: ['bateria', 'pila', 'lipo', 'energia', 'alimentacion', 'voltaje', 'celda', 'fuente', 'carga'],
-    pines: 'POS (+, rojo) y NEG (−, negro). El cable blanco de balance es para el cargador',
+    pines: 'potencia: POS (+, rojo) y NEG (−, negro). Balance: BAL0 (−), BAL1 (entre las celdas) y BAL2 (+), para el cargador y el probador',
     datos: (p) => {
       const c = CARGAS_LIPO[p.carga] || CARGAS_LIPO.nominal;
       return [
-        ['Carga', `${c.nombre}: ${coma(c.voltios)} V (${coma(c.voltios / LIPO.celdas, 2)} V por celda)`],
+        ['Carga', `${c.nombre}: ${coma(c.voltios)} V`],
+        ['Celdas', c.celdas.map((v, i) => `${i + 1}: ${coma(v, 2)} V`).join(' · ')],
         ['Llena / nominal / descargada', `${coma(CARGAS_LIPO.llena.voltios)} / ${coma(CARGAS_LIPO.nominal.voltios)} / ${coma(CARGAS_LIPO.descargada.voltios)} V`],
         ['Mínimo', `${coma(LIPO.minimoCeldaV)} V por celda (${coma(LIPO.minimoCeldaV * LIPO.celdas)} V)`],
         ['Capacidad', '1300 mAh'],
       ];
     },
     validacion: () => porValidar('Valores típicos de una LiPo 2S: falta medir la del kit con los motores.'),
+  },
+  probador_lipo: {
+    nombre: 'Probador de celdas',
+    descripcion: 'Se conecta al cable de balance y muestra el voltaje total, cuántas celdas hay y el de cada una. Si una celda baja del umbral, pita.',
+    palabras: ['probador', 'medidor', 'zumbador', 'alarma', 'checker', 'tester', 'celdas', 'bateria', 'lipo', 'voltimetro', 'balance'],
+    pines: '− (al negro del balance) y 1 a 8 (el + de cada celda, en orden)',
+    datos: (p) => [
+      ['Pantalla', 'total → «2S» → «-1-» y su voltaje → «-2-» y su voltaje…'],
+      ['Alarma', p.umbral ? `pita si una celda baja de ${coma(p.umbral)} V` : 'apagada'],
+      ['Mide', `de 1 a 8 celdas (LiPo, Li-ion, LiFe); de fábrica pita en ${coma(PROBADOR.umbralV)} V`],
+      ['Energía', 'la toma de la misma batería, por el cable de balance'],
+    ],
+    validacion: () => porValidar('Hecho a partir del probador del kit: falta comparar su pantalla con la del real.'),
   },
 };
 
