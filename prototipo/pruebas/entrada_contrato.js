@@ -3,3 +3,4 @@ export { COLORES_CABLE, TIPOS, PLACAS } from '../src/catalogo.js';
 export { huecos } from '../src/protoboard.js';
 export { PIEZAS_KICAD, CONECTORES_SHIELD } from '../src/kicad.js';
 export { CATEGORIAS, FICHAS } from '../src/biblioteca.js';
+export { leerHex } from '../src/hex.js';

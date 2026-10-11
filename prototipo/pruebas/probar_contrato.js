@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { revisarCircuito, ESQUEMA, PINES, PINES_PLACA, HUECO } = require('./contrato.js');
-const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS } = require('./codigo.cjs');
+const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex } = require('./codigo.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -47,6 +47,38 @@ for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
   revisar(!incompletas.length, `biblioteca: cada pieza tiene su ficha (descripción, pines, palabras y datos sin «undefined»)${incompletas.length ? ': faltan ' + incompletas : ''}`);
   const nombres = Object.keys(TIPOS).filter((t) => FICHAS[t].nombre !== TIPOS[t].nombre);
   revisar(!nombres.length, `biblioteca: el nombre de la ficha es el del catálogo${nombres.length ? ' (distintos: ' + nombres + ')' : ''}`);
+}
+
+// Las fichas solo dicen «probado con la placa real» de lo que se midió (revisión de Codex del 11 oct, R6).
+{
+  const led = (color) => FICHAS.led.validacion({ color }).estado;
+  revisar(led('rojo') === 'validado' && led(undefined) === 'validado' && ['amarillo', 'verde', 'azul', 'blanco'].every((c) => led(c) === 'por_validar'),
+    'ficha del LED: validado solo el rojo (el único medido); los otros colores, por validar');
+  const sg90 = FICHAS.servo.validacion({ modelo: 'sg90' }).texto;
+  revisar(/menos de 10 mA/.test(sg90) && /hoja de datos/.test(sg90), 'ficha del SG90: la corriente quieto se midió como «menos de 10 mA»; los 6 mA son de la hoja de datos');
+  revisar(/estimación/.test(FICHAS.potenciometro.validacion({}).texto), 'ficha del potenciómetro: el ruido del ADC (0,1 pasos) dice que es una estimación');
+}
+
+// El .hex: cada línea trae largo + 5 bytes y su tipo tiene un largo fijo; una línea cortada con la suma correcta no
+// puede colarse como programa (R5).
+{
+  const linea = (bytes) => ':' + [...bytes, (0x100 - (bytes.reduce((t, b) => t + b, 0) & 0xff)) & 0xff].map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join('');
+  const fin = ':00000001FF';
+  const rechaza = (texto) => {
+    try {
+      leerHex(texto);
+      return false;
+    } catch (e) {
+      return /dañado/.test(e.message);
+    }
+  };
+  const bueno = leerHex(fs.readFileSync(path.join(__dirname, '..', 'programas', 'fijo13.hex'), 'utf8'));
+  const dos = leerHex(linea([2, 0, 0, 0, 0x0c, 0x94]) + '\n' + fin);
+  revisar(bueno[0] !== 0 && dos[0] === 0x940c, 'un .hex correcto se lee (fijo13 y una línea de 2 bytes)');
+  revisar(rechaza(':0200000001FD\n' + fin), 'una línea que dice 2 bytes y trae 1 (con la suma correcta) se rechaza');
+  revisar(rechaza(linea([1, 0, 0, 0, 0x0c, 0x94]) + '\n' + fin), 'una línea que dice 1 byte y trae 2 (con la suma correcta) se rechaza');
+  revisar(rechaza(linea([1, 0, 0, 2, 0x10]) + '\n' + fin) && rechaza(linea([1, 0, 0, 1, 0]) + '\n' + fin) && rechaza(linea([0, 0, 0, 7]) + '\n' + fin),
+    'una dirección de segmento de 1 byte, un fin con datos y un tipo que no existe se rechazan');
 }
 
 // Los valores de cada campo del catálogo son los que el esquema acepta para esa propiedad.

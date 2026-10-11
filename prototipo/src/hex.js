@@ -1,6 +1,9 @@
 // Lee un archivo Intel HEX (el que deja arduino-cli) y devuelve la memoria de programa.
 // Va aparte del chip para que la página pueda revisar el .hex sin cargar avr8js (el chip corre en el Worker).
 const MEMORIA_PROGRAMA = 0x8000; // 32 KB de flash del ATmega328P
+// Bytes de datos de cada tipo de línea: 0 datos (cualquier largo), 1 fin, 2 segmento, 3 inicio de segmento,
+// 4 dirección lineal, 5 inicio lineal. Los tipos 3 y 5 no cambian la memoria: se aceptan y se ignoran.
+const LARGO_POR_TIPO = { 0: null, 1: 0, 2: 2, 3: 4, 4: 2, 5: 4 };
 
 export function leerHex(texto) {
   const bytes = new Uint8Array(MEMORIA_PROGRAMA);
@@ -13,6 +16,11 @@ export function leerHex(texto) {
     const datos = linea.slice(1).match(/../g).map((h) => parseInt(h, 16));
     if (datos.reduce((s, b) => s + b, 0) & 0xff) throw new Error(`El .hex está dañado (línea ${n + 1}).`);
     const [largo, dirAlta, dirBaja, tipo] = datos;
+    // La suma no basta: una línea cortada puede sumar bien y usar su propia suma como dato. Cada línea trae
+    // largo + 5 bytes (largo, dirección, tipo, datos y suma), y cada tipo tiene su largo.
+    if (datos.length !== largo + 5 || !(tipo in LARGO_POR_TIPO) || (LARGO_POR_TIPO[tipo] !== null && largo !== LARGO_POR_TIPO[tipo])) {
+      throw new Error(`El .hex está dañado (línea ${n + 1}).`);
+    }
     const contenido = datos.slice(4, 4 + largo);
     if (tipo === 0) {
       const dir = base + ((dirAlta << 8) | dirBaja);

@@ -43,7 +43,7 @@ El panel de la derecha también muestra el circuito en el formato 1 del contrato
 npm install
 npm run compilar      # solo si cambian los .ino de programas/ (necesita arduino-cli)
 npm run construir
-npm run probar        # arma, prueba el motor y el núcleo con Node y corre ocho pruebas en Chromium
+npm run probar        # arma, prueba con Node (motor, núcleo, potencia, KiCad, contrato y fixtures), la PCB con KiCad y doce recorridos en Chromium
 npm run probar:nucleo # solo el núcleo (PWM, potenciómetro, botón, entradas al aire, ruido del ADC), sin navegador
 npm run probar:motor  # solo el motor eléctrico, sin navegador, con la tabla para el multímetro
 npm run probar:kicad  # solo la netlist de KiCad, sin navegador
@@ -70,7 +70,7 @@ El criterio es ±5 % en voltaje y ±10 % en corriente.
 Son dos programas que dan números para comparar con el simulador:
 
 1. **Ruido de `analogRead()`:** potenciómetro en A0 (patas a GND y 5V), perilla quieta. Sube `programas/validar_adc/validar_adc.ino` y anota lo que imprime cada segundo: mínimo, máximo, promedio y desviación de 200 lecturas. En la placa real (9 oct 2026) la lectura no se mueve, salvo en el borde entre dos valores; el simulador usa 0,1 pasos de desviación.
-2. **Entrada al aire:** el pin 2 sin nada conectado. Sube `programas/validar_flotante/validar_flotante.ino` y anota cuántos cambios cuenta en 2 s y el porcentaje en ALTO. Repite acercando la mano al cable o tocando el pin. El simulador cambia en promedio cada 120 ms (unos 16 cambios en 2 s).
+2. **Entrada al aire:** el pin 2 sin nada conectado. Sube `programas/validar_flotante/validar_flotante.ino` y anota cuántos cambios cuenta en 2 s y el porcentaje en ALTO. Repite acercando la mano al cable o tocando el pin. En la placa real (9 oct 2026) se queda en su nivel y, con la mano cerca, capta los 60 Hz de la red; el simulador hace lo mismo (sin nada cerca cambia en promedio cada 10 s; la mano es el mouse).
 
 Con esos números se ajustan `RUIDO_ADC_V` y `CAMBIO_AL_AIRE_POR_MS` en `src/nucleo.js`. Los mismos programas también corren en el simulador, para compararlos.
 
@@ -138,4 +138,4 @@ Ver [RECETA-COMPONENTE-NUEVO.md](RECETA-COMPONENTE-NUEVO.md): los 10 pasos que s
 
 ## Qué no hace
 
-Solo dibuja y simula el Uno y la media protoboard. De la tarea T3 ya tiene el servo, la energía del USB, la shield L293D, el motor TT y la batería LiPo 2S; falta validarlos con la placa real (arriba). La netlist de KiCad todavía no incluye la shield, el motor ni la batería. No tiene los módulos de 2027.
+Solo dibuja y simula el Uno y la media protoboard. De la tarea T3 ya tiene el servo, la energía del USB, la shield L293D, el motor TT y la batería LiPo 2S; el servo SG90 y el USB ya se validaron; la shield, el motor, la LiPo y el probador faltan por validar con la placa real (arriba). La netlist de KiCad trae la shield desarmada; el motor, la batería y el probador llegan a sus borneras. No tiene los módulos de 2027.

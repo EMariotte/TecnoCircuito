@@ -445,6 +445,29 @@ const desviacion = (xs) => {
   }
   revisar(seApago > 5000 && seApago < 20000 && !ledOn && avisoFusible, `con 1 A sostenido, la placa se apaga a los ${(seApago / 1000).toFixed(1).replace('.', ',')} s: «${avisoFusible && avisoFusible.mensaje}»`);
   revisar(volvio !== null && volvio - seApago > 1000 && volvio - seApago < 6000, `y vuelve a encender ${volvio ? ((volvio - seApago) / 1000).toFixed(1).replace('.', ',') : '?'} s después, cuando el fusible se enfría`);
+  // Con la placa apagada, el fusible se enfría según el tiempo simulado, no según cuántas veces avanza el Worker
+  // (revisión de Codex del 11 oct, R2: con pedazos de 4801 ciclos se enfriaba unas 3 veces más rápido).
+  const vuelveCon = (pasos) => {
+    const n = crearNucleo({ hex: hex('parpadeo13'), circuito: carga, activas: { limiteUSB: true }, semilla: 1 });
+    for (let t = 0; t < 25000 && !n.foto().energia.apagada; t += 16) n.avanzar(CUADRO);
+    const desde = n.ciclos;
+    for (let k = 0; n.foto().energia.apagada && n.ciclos - desde < FRECUENCIA * 10; k++) n.avanzar(pasos[k % pasos.length]);
+    return ((n.ciclos - desde) / FRECUENCIA) * 1000;
+  };
+  const conMs = vuelveCon([FRECUENCIA / 1000]);
+  const otros = [[4801], [4801, 16000, 333, 9000, 160000]].map(vuelveCon);
+  revisar(otros.every((x) => Math.abs(x - conMs) <= 11),
+    `apagada, vuelve a encender a los ${Math.round(conMs)} ms avanzando de a 1 ms, ${otros.map(Math.round).join(' y ')} ms con pedazos de 4801 ciclos o mezclados`);
+  // Lo que entrega un pin en ALTO sale del USB por la pata VCC del chip: también cuenta en el consumo (R3).
+  // fijo13: el pin 13 siempre en ALTO, con 220 Ω a GND; y otra de 220 Ω entre el 5V y GND.
+  const consumo = (cables) => {
+    const c = { formato: 1, placa: 'uno', componentes: [{ id: 'r1', tipo: 'resistencia', x: 0, y: 0, rot: 0, props: { ohmios: 220 } }, { id: 'r2', tipo: 'resistencia', x: 0, y: 0, rot: 0, props: { ohmios: 220 } }], cables };
+    const f = correr(crearNucleo({ hex: hex('fijo13'), circuito: c, activas: { limiteUSB: true }, semilla: 1 }), 200);
+    return { usb: f.energia.amperios, pin: (f.medicion.pines.find((p) => p.pin === 'D13') || { i: 0 }).i, del5V: (f.medicion.fuentes.find((x) => x.pin === '5V') || { i: 0 }).i };
+  };
+  const conPin = consumo([{ de: 'placa.D13', a: 'r1.1' }, { de: 'r1.2', a: 'placa.GND1' }, { de: 'placa.5V', a: 'r2.1' }, { de: 'r2.2', a: 'placa.GND2' }]);
+  revisar(conPin.pin > 0.019 && Math.abs(conPin.usb - (0.05 + conPin.pin + conPin.del5V)) < 1e-4,
+    `el USB entrega ${mA(conPin.usb)}: 50 mA de la placa, ${mA(conPin.del5V)} del pin 5V y ${mA(conPin.pin)} que entrega el pin 13`);
 }
 
 // 5. Cuánto tarda el chip (Node, este PC): sin PWM, con PWM y con el potenciómetro.

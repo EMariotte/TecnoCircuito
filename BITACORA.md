@@ -808,3 +808,34 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
 - `npm pack --dry-run` no lleva aún el bundle de la raíz: queda pendiente prepararlo para la etiqueta. No se ejecutó la preparación de versión ni publicación.
 - [AGENTS.md](AGENTS.md) establece: Claude implementa, Codex revisa, Efraín decide; traspasos con archivos/revisión/pruebas, cierres por ID en esta bitácora y privacidad/licencias/validación física compartidas. CLAUDE.md enlaza el acuerdo y los pendientes.
 - **Alcance de esta entrega:** documentación y reproducciones, sin cambios funcionales, medidas nuevas, modificaciones de HEX, commit, push ni etiqueta. Las pruebas físicas se contrastaron con los registros; no se repitieron con hardware.
+
+## 2026-10-11 — Claude: corrección de R1 a R8 de la revisión de Codex
+
+**Pedido de Efraín:** Claude evalúa la revisión de Codex, la confirma y corrige los puntos acordados. Para R4, Efraín decide revisar 200 mA por VCC y 200 mA por GND. Autor: Claude (implementa). Revisión de partida: `987980f`. Codex debe verificar cada cierre (AGENTS.md).
+
+Antes de cambiar nada, el diagnóstico `docs/revision-2026-10-11.cjs` reprodujo los seis casos (R1–R6). Cierres, con su explicación en COMO-FUNCIONA, sección 57:
+
+- **R1 (alta), fuentes por la shield:** `armarRed` (`src/motor/red.js`) decide si un pin de la placa está conectado por **su nodo** (`conectado(pin)`) y ya no por el texto del cable. Una resistencia de 1 kΩ en el conector de servo da 5 mA, igual que con cables al 5V; antes daba 0. Los voltajes de los pines conectados por la shield también se miden, así que una entrada en S1/S2_SIG se lee. Pruebas: `probar_motor.js` 9c (4).
+- **R2 (alta), reloj con la placa apagada:** `seguirApagada` (`src/nucleo.js`) cuenta los ciclos que no completan un milisegundo (`ciclosApagada`). Prueba: con pasos de 1 ms, de 4 801 ciclos y mezclados, la placa vuelve a encender a los 2 991 ms en los tres casos. El diagnóstico da un calor de 0,99 tras 30 ms (antes 0,96).
+- **R3 (menor por magnitud), corriente de los pines en el USB:** `iCircuito` suma lo que entregan los pines en ALTO; lo que reciben en BAJO no se cuenta dos veces. Prueba: 50 + 22,7 + 20,4 = 93,1 mA. El diagnóstico da 70,4 mA (antes 50).
+- **R4 (media), límite del chip:** falla nueva `corriente_chip`, por encima de 200 mA entregados (VCC) o recibidos (GND), con `componente` `placa.VCC` o `placa.GND`. No se revisan los límites de 100 mA por grupo de puertos (no son de daño). Contrato: falla y tabla de `limitePin` documentadas, más una fila en el historial; sin cambios de API. Pruebas: `probar_motor.js` 9d (5), entre ellas diez LED con 100 Ω (23,8 mA cada uno, 238 mA en total).
+- **R5 (media), HEX:** `src/hex.js` exige `largo + 5` bytes por línea y el largo de cada tipo. Pruebas en `probar_contrato.js` (4): una línea corta, una con bytes de más, un tipo con largo equivocado y un tipo inexistente.
+- **R6 (media), fichas:** el LED solo dice «validado» en rojo; el SG90 dice quieto «menos de 10 mA» (los 6 mA son de la hoja de datos); el ruido del ADC es «una estimación». Los modelos no cambian. Pruebas en `probar_contrato.js` (3).
+- **R7 (menor), documentos:** LEEME, README y el comentario de `servos_cuatro.ino` (el `.hex` no cambia). No se tocaron registros fechados.
+- **R8 (media, en TecnoBloques):** ver su bitácora. `npm test` ya falla ante errores de JavaScript o un archivo local que no carga, y `tbmedia/sprites.svg` dejó de pedirse.
+
+**Pruebas:** `npm run probar` con **611 comprobaciones** en 19 grupos, sin fallos (eran 593; 18 nuevas). KiCad se ejecutó. En TecnoBloques, con la copia local: `test:simulador` 37 de 37, `test:graficador` y `npm test` sin errores. El diagnóstico de Codex ya da los valores corregidos en R1–R6.
+
+**Abierto:**
+
+- Codex verifica R1–R8.
+- Efraín decide la referencia del porcentaje del criterio (respecto de la medida, 5,02 % en la resistencia con 215 Ω; respecto del simulador, 4,8 %) y si se suma la incertidumbre del multímetro. No se cambiaron datos ni tolerancias.
+- No hay medida física del ±1 % en tiempos.
+- Sin commit ni etiqueta.
+
+## 2026-10-11 — Decisión: el porcentaje del criterio se calcula respecto de la medida
+
+**Decisión de Efraín**, a partir de la observación de Codex. El error de validación es `|simulador − medida| / |medida|`, y la incertidumbre del multímetro se informa aparte; ni los datos ni las tolerancias cambian.
+
+- Con esta referencia, el LED rojo con 215 Ω da **5,02 %** en el voltaje de la resistencia (2,61 V medidos contra 2,741 V simulados). El resultado del 7 oct queda en **11 de 12 dentro y 1 en el límite**. El registro de ese día no se reescribe.
+- **Falta:** tomar la exactitud del UT33B+ de su manual y pasar `probar_motor.js` a esta referencia (hoy divide por el simulador).

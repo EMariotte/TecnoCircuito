@@ -1340,3 +1340,82 @@ TecnoBloques no usa la carpeta `prototipo/`: instala **una versión fija** desde
 - **El instalador de TecnoBloques se niega** si el simulador es la copia local, o si no viene de `github:EMariotte/TecnoCircuito#vX.Y.Z` con esa misma versión instalada. Probado con un paquete armado a mano (rechazado), sin simulador (aceptado) y con la copia local (rechazada).
 - **Ensayo hecho el 11 oct, sin etiquetar:** el paquete instalado desde un archivo local en TecnoBloques; el armado lo tomó como «etiqueta», la app vio la 0.1.0 con contrato 1 y el carro simuló.
 
+## 57. Lo que corrigió la revisión de Codex (R1 a R8)
+
+> Corregido el 11 de octubre de 2026. El informe es [docs/REVISION-CODEX-2026-10-11.md](../docs/REVISION-CODEX-2026-10-11.md) y su diagnóstico, [docs/revision-2026-10-11.cjs](../docs/revision-2026-10-11.cjs). Codex revisa y Claude implementa ([AGENTS.md](../AGENTS.md)). Las 593 pruebas pasaban: ninguna miraba estos casos.
+
+### R1. Dos montajes iguales deben dar lo mismo: se decide por nodo, no por el nombre del cable
+
+`armarRed` ([src/motor/red.js](src/motor/red.js)) creaba la fuente de 5V solo si algún cable decía `placa.5V`, y la de un pin solo si algún cable decía `placa.D9`. Pero la shield une por dentro su conector de servo con esos pines (`PUENTES_SHIELD` en [src/piezas/shield_l293d.js](src/piezas/shield_l293d.js)):
+
+```
+   cable directo                       por la shield
+   placa.5V ──── r1 ──── placa.GND1    shield1.S2_POS ──── r1 ──── shield1.S2_GND
+                                            │ (puente interno)          │
+                                         placa.5V                   placa.GND1
+   antes: 5 mA                         antes: 0 mA (ningún cable decía «placa.5V»: no había fuente)
+   ahora: 5 mA                         ahora: 5 mA
+```
+
+**El arreglo:** se calcula el nodo de cada punta de cable (`raicesUsadas`), y un pin de la placa cuenta como conectado si **su nodo** está entre ellos (`conectado(pin)`). Vale para el 5V, el 3,3V, los 20 pines y las entradas: un botón leído por la señal del servo de la shield ahora se lee. La shield sola, sin nada en sus conectores, no conecta ningún pin. Pruebas: `probar_motor.js`, 9c (la resistencia por la shield, un LED en la señal S2 con D9 en ALTO, el corto del + al − del conector y la shield sola).
+
+### R2. Con la placa apagada, el fusible también se enfría con el tiempo simulado
+
+Es el mismo error de la sección 54, en otro camino. Con el fusible abierto el chip no corre, y `seguirApagada` ([src/nucleo.js](src/nucleo.js)) avanza el tiempo. Llamaba a los modelos «de cada ms» **en cada pedazo** del Worker, aunque el pedazo fuera de 4 801 ciclos (0,3 ms). El fusible se enfriaba un milisegundo entero cada vez, unas 3 veces más rápido de lo real, y la placa volvía a encender antes de tiempo.
+
+**El arreglo:** `ciclosApagada` cuenta los ciclos que aún no completan un milisegundo, y los modelos corren solo al completarlo, como `proximoMs` en el chip. Prueba: `probar_nucleo.js` apaga la placa con 4,7 Ω y la deja enfriar avanzando de a 1 ms, de a 4 801 ciclos y con pedazos mezclados. Vuelve a encender a los 2 991 ms en los tres casos (± un pedazo).
+
+### R3. Lo que entregan los pines también sale del USB
+
+```
+   USB (5,11 V − 1,66 Ω × I) ──► 5V de la placa ─┬─► 50 mA: la placa sola
+                                                 ├─► pin 5V y 3,3V ─► el circuito
+                                                 └─► pata VCC del chip ─► pines en ALTO ─► el circuito   ← faltaba
+```
+
+Un pin en ALTO saca su corriente del 5V por la pata VCC del chip. Ahora `iCircuito` suma lo que entregan el 5V, el 3,3V **y los pines en ALTO**. Lo que reciben los pines en BAJO no se suma: esa corriente ya salió de otra fuente y se contaría dos veces. El efecto es pequeño (un LED de 20 mA baja el 5V unos 33 mV), pero el fusible y el reinicio ven la corriente completa. `consumo5V` sigue siendo solo lo que sale por el pin 5V. Prueba: el pin 13 con 220 Ω, más otra de 220 Ω en el 5V, da 50 + 22,7 + 20,4 = 93,1 mA.
+
+### R4. El chip entero: 200 mA por VCC y 200 mA por GND
+
+La hoja de datos del ATmega328P da dos límites: **40 mA por pin** y **200 mA por las patas VCC y por las GND**. El contrato los prometía los dos (`limitePin`) y solo se revisaba el primero.
+
+```
+                 ┌────────── ATmega328P ──────────┐
+   5V ──► VCC ───┤  pines en ALTO: entregan ─────►│── D2 … D13, A0 … A5
+                 │  suma ≤ 200 mA                 │
+   GND ◄── GND ──┤  pines en BAJO: reciben ◄──────│
+                 │  suma ≤ 200 mA                 │
+                 └────────────────────────────────┘
+```
+
+`revisarFallas` suma aparte lo que entregan y lo que reciben (una corriente no pasa por las dos patas) y avisa `corriente_chip`, con `componente` `placa.VCC` o `placa.GND`: «Entre todos, los pines entregan 238 mA y el chip aguanta 200 mA en total… Usa resistencias más grandes o menos pines a la vez.» Ejemplo de la prueba (`probar_motor.js`, 9d): diez LED rojos con 100 Ω dan 23,8 mA por pin (bajo 40) y 238 mA entre todos; con ocho son 190 mA y no hay falla. **No** se revisan los límites de 100 mA por grupo de puertos de la hoja de datos: son condiciones para que el pin dé su voltaje, no de daño, y para un aprendiz serían ruido (decisión de Efraín, 11 oct).
+
+### R5. El .hex: cada línea con su largo
+
+```
+   :  02   00 00   00   0C 94   5E
+      │    │       │    │       └─ suma: el byte que deja todo en 0
+      │    │       │    └───────── datos: tantos como dice el largo
+      │    │       └────────────── tipo: 0 datos, 1 fin, 2 y 4 dirección (2 bytes), 3 y 5 inicio (4 bytes)
+      │    └────────────────────── dirección
+      └─────────────────────────── largo
+```
+
+La suma sola no basta: `:0200000001FD` dice 2 bytes, trae 1 y su suma da bien, así que el lector tomaba la suma como segundo byte del programa. Ahora [src/hex.js](src/hex.js) exige `largo + 5` bytes por línea y el largo de cada tipo. El `.hex` lo hace arduino-cli, así que en el aula casi no pasa; pero un archivo dañado no debe correr instrucciones distintas. Pruebas en `probar_contrato.js`.
+
+### R6. La ficha dice «probado con la placa real» solo de lo que se midió
+
+| Ficha | Antes | Ahora |
+|---|---|---|
+| LED de otro color | «validado» (se midió solo el rojo) | «por validar»: voltaje de la hoja de datos |
+| SG90 | corriente «6, ~100 y 590 mA» medida | quieto **menos de 10 mA** (lo mínimo que muestra el multímetro); los 6 mA son de la hoja de datos |
+| Potenciómetro | ruido «medido» de 0,1 pasos | 0,1 pasos es una **estimación**; falta repetirlo con el programa corregido |
+
+Los valores del modelo no cambian: cambia lo que se dice de ellos. Importa porque el simulador es el instrumento del estudio de 2027. Pruebas en `probar_contrato.js`.
+
+### R7 y R8. Documentos y pruebas de TecnoBloques
+
+- **R7:** LEEME (doce recorridos de Chromium, la entrada al aire medida, la netlist con la shield), README (las piezas de potencia) y el comentario de `servos_cuatro.ino` (con cuatro SG90 la placa no se reinicia). Los registros fechados y la bitácora no se reescriben.
+- **R8 (TecnoBloques):** `npm test` terminaba en 0 aunque imprimía errores. Ahora `test/prueba.py` y `test/prueba_todo.py` salen con 1 si hay un error de JavaScript o un archivo local que no carga. El que faltaba era `tbmedia/sprites.svg`: los estilos de Blockly lo piden por ruta, e `inject` mide el texto, lo que ya pide los fondos. Ahora los estilos se ponen con `Blockly.Css.inject` **antes** del `inject`, y sus rutas se cambian por las imágenes que van dentro del HTML (también los cursores `.cur`).
+
+**El porcentaje del criterio** (decisión de Efraín, 11 oct) se calcula **respecto de la medida**, con la incertidumbre del multímetro aparte: `|simulador − medida| / |medida|`. El LED con 215 Ω queda en 5,02 % en la resistencia: 11 de 12 dentro y 1 en el límite. El registro del 7 oct no se reescribe. Falta llevar `probar_motor.js` a esa referencia, con la exactitud del UT33B+ tomada de su manual.

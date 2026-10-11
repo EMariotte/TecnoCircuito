@@ -58,7 +58,11 @@ export const FICHAS = {
       ['Corriente', `de 5 a ${LED.normalmA} mA; se quema desde ${LED.quemamA} mA`],
       ['Resistencia con 5 V', `${Math.ceil((5 - (LED.vf[p.color] || LED.vf.rojo)) / (LED.normalmA / 1000) / 10) * 10} Ω o más`],
     ],
-    validacion: () => validado('Comparado con el multímetro el 7 oct 2026 (LED rojo con 220, 330 y 1 kΩ: 12 de 12 dentro del criterio).'),
+    // Solo se midió el LED rojo: los otros colores usan el voltaje de la hoja de datos.
+    validacion: (p) =>
+      !p.color || p.color === 'rojo'
+        ? validado('Comparado con el multímetro el 7 oct 2026 (LED rojo con 220, 330 y 1 kΩ: 12 de 12 dentro del criterio).')
+        : porValidar(`Voltaje de la hoja de datos: se midió solo el LED rojo (7 oct 2026); falta medir el ${p.color}.`),
   },
   pulsador: {
     nombre: 'Botón',
@@ -82,7 +86,7 @@ export const FICHAS = {
       ['Perilla', `${Math.round((Number(p.posicion) || 0) * 100)} %`],
       ['Lectura', 'analogRead(): 0 a 1023 (5 V / 1024 por paso)'],
     ],
-    validacion: () => validado('Lectura analógica revisada el 7 oct 2026 y ruido del ADC medido el 9 oct (0,1 pasos).'),
+    validacion: () => validado('Lectura analógica revisada el 7 oct 2026. El ruido del ADC (unos 0,1 pasos) es una estimación del 9 oct: falta repetirlo con el programa corregido.'),
   },
   servo: {
     nombre: 'Servo',
@@ -102,7 +106,7 @@ export const FICHAS = {
     validacion: (p) =>
       p.modelo === 'mg90s'
         ? porValidar('Valores de la hoja de datos: falta medir el MG90S del kit (corriente y ángulos).')
-        : validado('SG90 medido con la placa real el 9 oct 2026: ángulos (7°, 90° y 175°) y corriente (6, ~100 y 590 mA).'),
+        : validado('SG90 medido con la placa real el 9 oct 2026: ángulos (7°, 90° y 175°) y corriente (quieto menos de 10 mA, lo mínimo que muestra el multímetro; ~100 mA moviéndose; 590 mA bloqueado). Los 6 mA quieto son de la hoja de datos.'),
   },
   motor_tt: {
     nombre: 'Motor TT',

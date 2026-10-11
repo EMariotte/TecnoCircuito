@@ -1,5 +1,6 @@
-// Cuatro servos alimentados por el USB se mueven a la vez de un extremo al otro: juntos piden más corriente
-// de la que da el puerto USB. Con la placa real, así se reinicia el Arduino (tarea T3).
+// Cuatro servos alimentados por el USB se mueven a la vez de un extremo al otro: juntos piden mucha corriente y el
+// 5V baja (tarea T3). Medido el 9 oct 2026: con cuatro SG90 la placa NO se reinicia (el 5V llega a 4,30 V moviéndose
+// y el modelo da 2,8 V en el arranque, apenas sobre los 2,7 V del reinicio). Con 5 o 6 el simulador predice reinicio.
 #include <Servo.h>
 
 Servo servos[4];

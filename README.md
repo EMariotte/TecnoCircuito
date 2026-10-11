@@ -9,11 +9,12 @@
 - **El programa real:** [avr8js](https://github.com/wokwi/avr8js) ejecuta el `.hex` que compila arduino-cli, instrucción por instrucción, con `delay()`, `millis()`, PWM, `analogRead()` y el monitor serial. Corre en un Web Worker, aparte de la página.
 - **El circuito real:** un solucionador eléctrico propio (análisis nodal modificado con Newton-Raphson) calcula voltajes y corrientes. Quedó validado con el multímetro contra la placa: 12 de 12 medidas dentro del criterio.
 - **Las fallas, y un modo ideal que las apaga:**
-  - LED quemado y pin que se pasa de su límite;
+  - LED quemado, pin que se pasa de su límite y chip que se pasa de su límite total;
   - entrada al aire que lee al azar;
   - ruido en `analogRead()`;
-  - servos que piden más corriente de la que da el USB: el 5V baja, la placa se reinicia o el fusible la apaga, como en la real.
-- **Piezas:** Arduino Uno, LED, resistencia, potenciómetro, botón, microservo (SG90 o MG90S) y una media protoboard de 400 puntos en la que las piezas se encajan solas. La protoboard y el servo son **piezas Tecno**: dibujos propios, hechos desde la pieza real.
+  - servos que piden más corriente de la que da el USB: el 5V baja, la placa se reinicia o el fusible la apaga, como en la real;
+  - caída de voltaje del L293D y batería LiPo que se descarga o se desbalancea.
+- **Piezas:** Arduino Uno, LED, resistencia, potenciómetro, botón, microservo (SG90 o MG90S), shield de motores L293D, motor TT, batería LiPo 2S, probador de celdas y una media protoboard de 400 puntos en la que las piezas se encajan solas. La protoboard, el servo y las piezas de potencia son **piezas Tecno**: dibujos propios, hechos desde la pieza real.
 - **Para documentar:** el circuito se guarda como imagen SVG, para un proyecto o una evidencia.
 - **Para hacer una placa:** el circuito se exporta como netlist de KiCad. Sobre la plantilla «Arduino Uno Shield» de KiCad aparecen las piezas con sus conexiones a los conectores del Uno, listas para diseñar un shield.
 

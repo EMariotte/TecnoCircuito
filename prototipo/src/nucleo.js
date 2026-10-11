@@ -92,8 +92,9 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let base = 0;
   const fusible = crearFusible();
   let apagada = false; // el fusible se abrió: la placa no tiene energía hasta que se enfríe
+  let ciclosApagada = 0; // ciclos sin energía que aún no completan un milisegundo (el Worker avanza en pedazos)
   let corteUSB = null; // { motivo: 'puerto' | 'fusible', amperios }: pasó en este milisegundo; se atiende al terminar
-  let iCircuito = 0; // lo que el circuito le pide al 5V y al 3,3V (de la última foto)
+  let iCircuito = 0; // lo que el circuito le pide al USB: el 5V, el 3,3V y lo que entregan los pines (de la última foto)
   let v5 = USB.idealV;
   let reinicios = 0;
   let usbSuma = 0;
@@ -285,6 +286,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
         mensaje: `La placa se apagó: el fusible del USB se calentó porque se le pidieron ${Math.round(amperios * 1000)} mA por varios segundos y aguanta 500 mA. Vuelve a encender cuando se enfríe. Alimenta los servos y motores con una fuente aparte.`,
       });
       apagada = true;
+      ciclosApagada = 0;
     }
     reinicios++;
     // Chip nuevo: el programa empieza otra vez (si quedó apagada, empieza cuando vuelva la energía).
@@ -293,14 +295,19 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     actualizarEntradas();
   }
 
-  // Sin energía (fusible abierto): el tiempo pasa, el fusible se enfría y el chip espera.
+  // Sin energía (fusible abierto): el tiempo pasa, el fusible se enfría y el chip espera. Los modelos «de cada ms»
+  // corren solo al completar un milisegundo, como en chip.correr: con pedazos de 4801 ciclos el fusible no puede
+  // enfriarse un ms entero en cada pedazo (se enfriaría 3 veces más rápido que el tiempo simulado).
   function seguirApagada(ciclos) {
     const porMs = FRECUENCIA / 1000;
     let resto = ciclos;
     while (resto > 0 && apagada) {
-      const paso = Math.min(resto, porMs);
+      const paso = Math.min(resto, porMs - ciclosApagada);
       base += paso;
       resto -= paso;
+      ciclosApagada += paso;
+      if (ciclosApagada < porMs) break; // el pedazo terminó antes de completar el milisegundo
+      ciclosApagada = 0;
       avanzarServos();
       if (!fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
     }
@@ -547,7 +554,11 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     const vistaServos = fotoServos();
     const energia = fotoEnergia();
     const pot = potencia.foto(ms());
-    iCircuito = medicion ? medicion.fuentes.reduce((t, f) => t + Math.max(0, f.i), 0) : 0;
+    // Lo que sale del USB por el circuito: lo que entregan el 5V y el 3,3V más lo que entregan los pines en ALTO (sale
+    // del 5V por la pata VCC del chip). Lo que reciben los pines en BAJO ya lo entregó otra fuente: no se cuenta dos veces.
+    iCircuito = medicion
+      ? medicion.fuentes.reduce((t, f) => t + Math.max(0, f.i), 0) + medicion.pines.reduce((t, p) => t + Math.max(0, p.i), 0)
+      : 0;
     if (medicion) {
       medicion.usb = energia;
       medicion.servos = Object.entries(vistaServos).map(([id, s]) => ({ id, ...s }));
@@ -644,6 +655,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   function energiaDeNuevo() {
     base = 0;
     apagada = false;
+    ciclosApagada = 0;
     corteUSB = null;
     picos = [];
     fusible.reiniciar();

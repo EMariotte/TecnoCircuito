@@ -5,11 +5,11 @@
 
 ## Estado en una línea
 
-Prototipo validado y publicado (https://github.com/EMariotte/TecnoCircuito). Tareas **T1 y T2 completas y validadas con la placa real; T3 completa en software** (servo, energía del USB, shield L293D, motor TT, LiPo 2S, probador de celdas), con el servo SG90 y el USB validados y el resto **por validar en el laboratorio**. `npm run probar` (en `prototipo/`): 19 grupos, 593 comprobaciones. Falta la primera etiqueta `v0.1.0` para que el simulador llegue al instalador de TecnoBloques.
+Prototipo validado y publicado (https://github.com/EMariotte/TecnoCircuito). Tareas **T1 y T2 completas y validadas con la placa real; T3 completa en software** (servo, energía del USB, shield L293D, motor TT, LiPo 2S, probador de celdas), con el servo SG90 y el USB validados y el resto **por validar en el laboratorio**. `npm run probar` (en `prototipo/`): 19 grupos, 611 comprobaciones. Falta la primera etiqueta `v0.1.0` para que el simulador llegue al instalador de TecnoBloques.
 
 ## Qué es
 
-**Trabajo conjunto con Codex:** Efraín asignó a Codex el rol de revisor independiente. Las reglas de coordinación están en [AGENTS.md](AGENTS.md). La [revisión del 11 oct](docs/REVISION-CODEX-2026-10-11.md) reprodujo los 593 checks, la integración (37) y el graficador (28), y recompiló los 15 programas con flash idéntica. Dejó **R1–R8 abiertos**, incluidos alimentación a través de la shield y reloj del fusible durante apagado. Claude implementa y Codex verifica; considerar estos pendientes antes de etiquetar. El informe distingue medidas físicas de supuestos.
+**Trabajo conjunto con Codex:** Efraín asignó a Codex el rol de revisor independiente. Las reglas de coordinación están en [AGENTS.md](AGENTS.md). La [revisión del 11 oct](docs/REVISION-CODEX-2026-10-11.md) reprodujo los 593 checks, la integración (37) y el graficador (28), y recompiló los 15 programas con flash idéntica. Dejó R1–R8, que **Claude corrigió el mismo 11 oct** (COMO-FUNCIONA, sección 57; R4 con 200 mA por VCC y por GND, decidido por Efraín). **Falta que Codex verifique cada cierre** antes de etiquetar. El informe distingue medidas físicas de supuestos.
 
 **Simulador de circuitos con microcontrolador** para TecnoBloques, el editor de bloques en español para Arduino de la **TecnoAcademia Tolima (SENA, Ibagué)**. El aprendiz arma el circuito en una protoboard dibujada, TecnoBloques compila su programa y TecnoCircuito lo ejecuta sobre ese circuito.
 
@@ -102,8 +102,9 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 ## Validación contra el circuito real
 
 - El mismo programa en la placa real y en el simulador. Criterios: **±5 % en voltaje, ±10 % en corriente, ±1 % en tiempos**; monitor serial idéntico.
+- **El porcentaje se calcula respecto de la medida** (decisión de Efraín, 11 oct), con la incertidumbre del multímetro aparte. Así, el LED con 215 Ω da 5,02 % en la resistencia: **11 de 12 dentro y 1 en el límite**. Falta: tomar la exactitud del UT33B+ de su manual y pasar `probar_motor.js` a esa referencia (hoy divide por el simulador). Ninguna medida física respalda aún el ±1 % en tiempos.
 - Instrumentos: multímetro UNI-T UT33B+; analizador lógico USB de 8 canales (pedido) con PulseView.
-- **Validado** (registros en `validacion/`): LED rojo con 215/326/1000 Ω (7 oct, 12 de 12); velocidad en el PC del aula HP ProBook 450 G7 (≥ 90 %); ruido del ADC (0,1 pasos); entrada al aire (se queda en su nivel; con la mano capta 60 Hz: «la mano es el mouse»); SG90 (ángulos 7°/90°/175°; corriente 6, ~100 y 590 mA); 5V del USB (5,11 V − 1,66 Ω; 4 SG90 no reinician).
+- **Validado** (registros en `validacion/`): LED rojo con 215/326/1000 Ω (7 oct, 12 de 12); velocidad en el PC del aula HP ProBook 450 G7 (≥ 90 %); ruido del ADC (0,1 pasos); entrada al aire (se queda en su nivel; con la mano capta 60 Hz: «la mano es el mouse»); SG90 (ángulos 7°/90°/175°; corriente quieto < 10 mA, ~100 y 590 mA); 5V del USB (5,11 V − 1,66 Ω; 4 SG90 no reinician).
 
 ## Próxima sesión
 
@@ -124,7 +125,8 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
    > Revisa la experiencia de uso de TecnoBloques y su simulador TecnoCircuito. Usuarios: aprendices de 14 a 17 años del SENA, en PC de aula. Abre la app con `env -u ELECTRON_RUN_AS_NODE npx electron .` en TecnoBloques (después de `node build.js --simulador-local`). Recorre: un ejemplo, la vista Dividido, la pestaña Circuito («+ Agregar», arrastrar, la ficha, Simular, Mediciones) y el Monitor serial (Texto/Gráfico, Exportar CSV), con capturas. Criterios: heurísticas de Nielsen, contraste WCAG AA, tamaño de botones, español claro para adolescentes, qué se entiende sin explicación. Entrega una lista priorizada (grave / medio / menor) con captura y propuesta concreta. **No cambies código: solo el informe.** Lee primero el CLAUDE.md de cada proyecto.
 
    Cuando llegue el informe, se decide con Efraín qué cambiar.
-4. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
+4. ✅ **Revisión de Codex (R1–R8) corregida** (11 oct), con 18 pruebas nuevas y `npm test` de TecnoBloques que ya falla ante errores. Sigue: **Codex verifica**. El porcentaje va respecto de la medida (decidido); falta pasar la prueba a esa referencia con la incertidumbre del UT33B+.
+5. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
 
 **Pendientes conocidos:** el esquema de los eventos del contrato (falta desde la etapa 0; lo necesita el estudio); el circuito no siente la caída del 5V (solo los servos ven el voltaje real); el esquemático `.kicad_sch` con etiquetas; el diagrama de flujo del programa (en TecnoBloques); el símbolo de marca en la imagen SVG (`MARCA_SVG` en `src/lienzo.js`).
 

@@ -8,9 +8,10 @@ import { PinState } from 'avr8js';
 // ---- Modelos. Valores de partida tomados de hojas de datos; se ajustan con el multímetro (validación).
 
 // Pin del ATmega328P a 5 V: en ALTO entrega 5 V detrás de unos 25 Ω, en BAJO se va a 0 V detrás de unos 22 Ω.
-export const PIN = { voltios: 5, rAlto: 25, rBajo: 22, rPullUp: 35000, maxmA: 40 };
+// maxmA: máximo absoluto por pin. chipMaxmA: máximo absoluto por las patas VCC y por las GND del chip (hoja de datos,
+// «DC Current VCC and GND Pins»): lo que entregan todos los pines en ALTO sale por VCC; lo que reciben en BAJO, por GND.
+export const PIN = { voltios: 5, rAlto: 25, rBajo: 22, rPullUp: 35000, maxmA: 40, chipMaxmA: 200 };
 const PINES_UNO = [...Array.from({ length: 14 }, (_, i) => 'D' + i), 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
-const ALIAS = { A4: 'SDA', A5: 'SCL' };
 
 // LED de 5 mm: voltaje directo a 20 mA según el color, factor de idealidad n y resistencia interna.
 export const LED = {
@@ -56,6 +57,13 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   const fuentes = [];
   const fallasFijas = [];
   const usados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
+  // Un pin de la placa está conectado si un cable llega a su nodo, aunque no lo nombre: el conector de servo de la
+  // shield ES el 5V, el GND y el D9/D10 del Uno (puentes internos de conexiones.js). Se decide por nodo, no por el
+  // texto del cable, para que dos montajes eléctricamente iguales den lo mismo.
+  const raicesUsadas = new Set([...usados].map(raiz));
+  const conectado = (pin) => raicesUsadas.has(raiz('placa.' + pin));
+  // Pines de la placa que se miden (su voltaje lo leen las entradas y la tabla), lleguen o no por un cable directo.
+  const refsPlaca = [...PINES_UNO, '5V', '3V3'].filter(conectado).map((pin) => 'placa.' + pin);
   // Huecos de la protoboard cuya tira toca algo (un cable o una pata encajada): el rótulo de cualquiera de ellos
   // muestra el voltaje de la tira, como la punta de un multímetro.
   const huecosConAlgo = [];
@@ -71,7 +79,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   // 5 V y 3,3 V de la placa: fuentes de voltaje ideales.
   const nodosFuente = new Map();
   for (const [pin, voltios] of [['5V', 5], ['3V3', 3.3]]) {
-    if (!usados.has('placa.' + pin)) continue;
+    if (!conectado(pin)) continue;
     const k = nodo('placa.' + pin);
     const choque = k === -1 ? 'GND' : nodosFuente.get(k);
     if (choque) {
@@ -87,7 +95,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   // Pines del chip que tienen algo conectado: una fuente con resistencia que cambia según el estado del pin.
   const pines = {};
   for (const pin of PINES_UNO) {
-    if (!usados.has('placa.' + pin) && !usados.has('placa.' + ALIAS[pin])) continue;
+    if (!conectado(pin)) continue; // A4 y A5 cuentan también por SDA y SCL: son el mismo nodo
     pines[pin] = fuenteConResistencia(nodo('placa.' + pin));
     elementos.push(pines[pin]);
   }
@@ -130,14 +138,14 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   // Grupos (por conducción) que tienen algo que fija su voltaje: GND, 5V, 3,3V, un pin de salida o una pull-up.
   function gruposManejados(estados) {
     const manejados = new Set([conduce('placa.GND1')]);
-    for (const p of ['5V', '3V3']) if (usados.has('placa.' + p)) manejados.add(conduce('placa.' + p));
+    for (const p of ['5V', '3V3']) if (conectado(p)) manejados.add(conduce('placa.' + p));
     for (const pin of PINES_UNO) {
       const e = estados[pin];
       if (e === PinState.High || e === PinState.Low || e === PinState.InputPullUp) manejados.add(conduce('placa.' + pin));
     }
     return manejados;
   }
-  const todasLasRefs = new Set([...usados, ...huecosConAlgo]);
+  const todasLasRefs = new Set([...usados, ...refsPlaca, ...huecosConAlgo]);
   for (const c of circuito.componentes) for (const p of PATAS[c.tipo] || []) todasLasRefs.add(c.id + '.' + p);
 
   return {
@@ -176,6 +184,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
       };
       const voltajes = {};
       for (const ref of usados) voltajes[ref] = V(ref);
+      for (const ref of refsPlaca) voltajes[ref] = V(ref);
       for (const ref of huecosConAlgo) voltajes[ref] = V(ref);
       for (const c of circuito.componentes) {
         for (const p of PATAS[c.tipo] || []) {
@@ -248,6 +257,20 @@ export function revisarFallas(m, activas) {
           componente: 'placa.' + p.pin,
           corriente_mA: +(Math.abs(p.i) * 1000).toFixed(1),
           mensaje: `El ${nombre} entrega ${mA(p.i)} mA y aguanta ${PIN.maxmA} mA: en la placa real se puede dañar. Revisa que haya una resistencia.`,
+        });
+      }
+    }
+    // El chip entero: cada pin puede estar bajo 40 mA y aun así la suma pasar de 200 mA por VCC (pines en ALTO
+    // que entregan) o por GND (pines en BAJO que reciben). Son dos sumas aparte: una corriente no pasa por las dos.
+    const entrega = m.pines.reduce((t, p) => t + Math.max(0, p.i), 0);
+    const recibe = m.pines.reduce((t, p) => t + Math.max(0, -p.i), 0);
+    for (const [suma, pata, verbo] of [[entrega, 'VCC', 'entregan'], [recibe, 'GND', 'reciben']]) {
+      if (suma * 1000 > PIN.chipMaxmA) {
+        fallas.push({
+          tipo: 'corriente_chip',
+          componente: 'placa.' + pata, // VCC y GND se avisan aparte (una falla por tipo y componente)
+          corriente_mA: +(suma * 1000).toFixed(1),
+          mensaje: `Entre todos, los pines ${verbo} ${mA(suma)} mA y el chip aguanta ${PIN.chipMaxmA} mA en total: en la placa real se puede dañar. Usa resistencias más grandes o menos pines a la vez.`,
         });
       }
     }
