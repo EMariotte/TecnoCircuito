@@ -194,6 +194,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 4. La protoboard con dos o tres aprendices, y la velocidad con TecnoBloques en el aula cuando exista `v0.1.0`.
 5. **Shield L293D y motor TT** (Ejemplos → «Validar: carro con la shield L293D»; pasos en `prototipo/LEEME.md`): voltaje de la LiPo quieta y con motores, caída del L293D en los bornes de M1, corriente y RPM del motor sin carga, corriente bloqueado (≤ 1 s) y hacia dónde gira cada rueda con FORWARD.
 6. **Probador de celdas** (Ejemplos → «Validar: probador de celdas LiPo»; pasos en `prototipo/LEEME.md`): la secuencia de la pantalla y su duración, el umbral de fábrica y cada celda con el multímetro.
+7. **Continuidad de la shield L293D del kit** (sin conectarla; multímetro en continuidad; pasos en `prototipo/LEEME.md`, «Revisar la shield del kit con continuidad»): a qué pata de cada L293D y del 74HC595 llega cada pin del Uno, cada borne y EXT_PWR. Se compara con la tabla de la netlist (`SHIELD_KICAD`, COMO-FUNCIONA sección 53) y con el dibujo; las diferencias van a `validacion/`.
 
 **Pendientes de software que salieron de las validaciones:**
 - ✅ **Promedio de señales lentas** (10 oct, sección 48 de COMO-FUNCIONA): promedio móvil de 100 ms si un pin cambió en los últimos 50 ms; si no, valor exacto. Antes, cuando la señal duraba más que una foto (16 ms), el promedio saltaba. Pasa con el servo (la tabla dice «Pin 9: 1,84 V» y un multímetro diría 0,3 a 0,6 V) y con el LED de la mano (cada foto entre 7 y 50 %; el promedio sí es 35 %). Arreglo: suavizar la medición con una constante de tiempo como la del ojo o del multímetro.
@@ -206,7 +207,7 @@ Léelo en `..\TecnoBloques\CLAUDE.md`, sobre todo las secciones «Proyecto herma
 **Lo siguiente, solo software (orden acordado con Efraín el 10 oct):**
 1. ✅ **Biblioteca de piezas** (10 oct): panel con categorías, miniaturas, buscador y arrastre, y la ficha de cada pieza con su validación (`src/biblioteca.js`; COMO-FUNCIONA, sección 51). Una pieza nueva necesita su ficha (RECETA, paso 8).
 2. ✅ **Cable de balance y probador de celdas** (10 oct): pines `BAL0`–`BAL2`, carga «desbalanceada» y la pieza `probador_lipo` con su pantalla de 7 segmentos y su alarma (COMO-FUNCIONA, sección 52). Falta compararlo con el probador real.
-3. **Netlist de KiCad con la shield desarmada** (sus integrados, borneras y conectores como piezas).
+3. ✅ **Netlist de KiCad con la shield desarmada** (11 oct): U1/U2 L293D, U3 74HC595, borneras, servos, puente PWR, C1–C4 y el LED; las piezas de afuera llegan por conectores (COMO-FUNCIONA, sección 53). Falta que Efraín la abra en KiCad.
 4. En TecnoBloques (Fase 2d): CSV del monitor serial y graficador serial.
 
 **Con hardware:** la lista de «La próxima vez en el laboratorio», arriba. Después, la primera etiqueta `v0.1.0`.
@@ -276,6 +277,7 @@ El 7 oct quedaron los prototipos 0 a 4 funcionando, con T1 y T2 completas. **Par
 - **Esquemático para KiCad,** para que quien quiera hacer una placa de circuito impreso no empiece de cero. Recomendación, en dos pasos:
   1. ✅ **Netlist de KiCad** (8 oct): `src/kicad.js`, `lienzo.exportarNetlist()`, «Llevar a KiCad» en TecnoBloques. Probada con las huellas y los símbolos de KiCad 10, y por Efraín en el editor de placas. Ver `prototipo/COMO-FUNCIONA.md`, sección 43.
      - ✅ **Shield sin solapes** (8 oct): la netlist lleva los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad. El DRC de la prueba no ve solapes.
+     - ✅ **Shield L293D desarmada** (11 oct): el carro sale con sus 15 piezas reales y cabe sobre el Uno (sección 53).
   2. **Después, el esquemático (`.kicad_sch`)** con **etiquetas en vez de cables:** cada símbolo en una cuadrícula y una etiqueta con el nombre de su red en cada pata. Así no hay que trazar cables. Reutiliza la tabla de huellas y pads de `src/kicad.js`.
 - **Diagrama de flujo del programa,** en TecnoBloques: se arma a partir de los bloques (inicio, acciones, decisiones «si» y repeticiones) y se dibuja como SVG. Sirve para la documentación del proyecto y como evidencia. Está anotado también en el CLAUDE.md de TecnoBloques.
 - Las dos se pueden guardar en SVG, como el circuito (`lienzo.exportarSVG()`), y subir a TecnoRuta.

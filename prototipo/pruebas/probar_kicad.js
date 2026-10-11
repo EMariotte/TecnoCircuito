@@ -3,7 +3,7 @@
 // Uso: npm run probar:kicad   (arma pruebas/kicad.cjs con esbuild y corre este archivo)
 const fs = require('fs');
 const path = require('path');
-const { netlistKiCad, PIEZAS_KICAD, CONECTORES_SHIELD } = require('./kicad.cjs');
+const { netlistKiCad, PIEZAS_KICAD, CONECTORES_SHIELD, SHIELD_KICAD, FUERA_KICAD } = require('./kicad.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -106,8 +106,72 @@ revisar(igual(corto, { GND: ['J2.4', 'J2.5'] }), 'un corto de D13 a GND queda en
 const raro = netlistKiCad({ formato: 1, placa: 'uno', componentes: [], cables: [] }, { nombre: 'Proyecto "uno" \\ prueba', fecha: FECHA });
 revisar(raro.includes('(source "Proyecto \\"uno\\" \\\\ prueba")') && balanceado(raro), 'las comillas del nombre se escapan como en KiCad');
 
+// 5. El carro con la shield L293D desarmada (el ejemplo de la página)
+const EJEMPLO_CARRO = new Function(pagina.slice(pagina.indexOf('const EJEMPLO_CARRO = '), pagina.indexOf('const EJEMPLO_PROBADOR')) + '; return EJEMPLO_CARRO;')();
+const textoCarro = netlistKiCad(EJEMPLO_CARRO, { nombre: 'Carro con la shield L293D', fecha: FECHA });
+fs.writeFileSync(path.join(SALIDA, 't3_carro.net'), textoCarro);
+const carro = leer(textoCarro);
+const valores = Object.fromEntries([...textoCarro.matchAll(/\(ref "([^"]+)"\)\s*\(value "([^"]*)"\)/g)].map((m) => [m[1], m[2]]));
+revisar(
+  igual(valores, {
+    J1: 'Power', J2: 'Digital/PWM', J3: 'Analog', J4: 'Digital/PWM', U1: 'L293D', U2: 'L293D', U3: '74HC595',
+    J5: 'M1 GND M2', J6: 'M4 GND M3', J7: 'EXT_PWR', J8: 'SERVO_1', J9: 'SERVO_2', JP1: 'PWR',
+    C1: '100nF', C2: '100nF', C3: '100nF', C4: '100uF 25V', R1: '1k', D1: 'LED verde',
+  }),
+  'la shield sale desarmada: U1 y U2 (L293D), U3 (74HC595), borneras J5 a J7, servos J8 y J9, puente JP1, C1 a C4 y el LED con su R',
+);
+revisar(carro.piezas.U1 === 'Package_DIP:DIP-16_W7.62mm' && carro.piezas.J5 === 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-05P_1x05_P5.00mm',
+  'huellas: DIP-16 para los integrados y borneras de 5 mm');
+// Lo que dice AFMotor_R4 (escrito aquí aparte de src/: si alguien cambia la tabla de la shield, esta prueba lo nota):
+// PWM M1 = 11, M2 = 3, M3 = 6, M4 = 5; sentido A y B de cada motor en Q2/Q3, Q1/Q4, Q5/Q7 y Q0/Q6 del 74HC595.
+const PATA_Q = { 0: 15, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7 };
+const AFMOTOR = { 1: ['D11', 2, 3], 2: ['D3', 1, 4], 3: ['D6', 5, 7], 4: ['D5', 0, 6] };
+const CANAL = { 1: ['U1', 1, 2, 3, 7, 6], 2: ['U1', 9, 10, 11, 15, 14], 3: ['U2', 1, 2, 3, 7, 6], 4: ['U2', 9, 10, 11, 15, 14] }; // en, inA, outA, inB, outB
+const malos = [];
+for (const [m, [pwm, qa, qb]] of Object.entries(AFMOTOR)) {
+  const [u, en, inA, outA, inB, outB] = CANAL[m];
+  if (!(carro.redes[pwm] || []).includes(`${u}.${en}`)) malos.push(`M${m}: ${pwm} no llega a ${u}.${en}`);
+  if (!igual(carro.redes[`IN_M${m}A`], [`${u}.${inA}`, `U3.${PATA_Q[qa]}`].sort())) malos.push(`M${m} A: ${carro.redes[`IN_M${m}A`]}`);
+  if (!igual(carro.redes[`IN_M${m}B`], [`${u}.${inB}`, `U3.${PATA_Q[qb]}`].sort())) malos.push(`M${m} B: ${carro.redes[`IN_M${m}B`]}`);
+  if (!(carro.redes[`M${m}_A`] || []).includes(`${u}.${outA}`) || !(carro.redes[`M${m}_B`] || []).includes(`${u}.${outB}`)) malos.push(`M${m}: salidas`);
+}
+revisar(!malos.length, 'cada motor: su PWM llega a la habilitación de su canal y su sentido sale de la Q del 74HC595 que usa AFMotor_R4' + (malos.length ? ': ' + malos.join('; ') : ''));
+revisar(igual(carro.redes.D8, ['J2.10', 'U3.14']) && igual(carro.redes.D4, ['J4.4', 'U3.11']) && igual(carro.redes.D12, ['J2.6', 'U3.12']) && igual(carro.redes.D7, ['J4.1', 'U3.13']),
+  '74HC595: datos D8 (pata 14), reloj D4 (11), cierre D12 (12) y habilitación D7 (13)');
+revisar(carro.redes['+5V'].includes('U3.10') && carro.redes['+5V'].includes('U1.16') && carro.redes['+5V'].includes('U2.16'), 'el 74HC595 (pata 10, borrado) y la lógica de los L293D (pata 16) van a +5V');
+revisar(igual(carro.redes.VMOT, ['C4.1', 'J7.1', 'JP1.1', 'R1.1', 'U1.8', 'U2.8']) && igual(carro.redes.VIN, ['J1.8', 'JP1.2']),
+  'VMOT: EXT_PWR, los motores de los L293D (pata 8), C4 y el LED; el puente PWR une VMOT con VIN');
+revisar(igual(carro.redes.D10, ['J2.8', 'J8.1']) && igual(carro.redes.D9, ['J2.9', 'J9.1']), 'SERVO_1 va al pin 10 y SERVO_2 al 9');
+revisar(['U1.4', 'U1.5', 'U1.12', 'U1.13', 'U2.4', 'U3.8', 'J5.3', 'J6.3', 'J7.2', 'C4.2', 'D1.1'].every((p) => carro.redes.GND.includes(p)), 'GND: los integrados, las borneras, EXT_PWR, C4 y el LED');
+revisar(!/Motor TT|LiPo/.test(textoCarro.split('(nets')[0]), 'los motores y la batería usan las borneras de la shield: no agregan conectores');
+revisar(netlistKiCad(EJEMPLO_CARRO, { nombre: 'Carro con la shield L293D', fecha: FECHA }) === textoCarro, 'exportar dos veces da el mismo texto');
+
+// 6. Piezas de afuera: un conector solo si llegan a la placa por otro lado
+const fuera = (componentes, cables) => leer(netlistKiCad({ formato: 1, placa: 'uno', componentes, cables }, { fecha: FECHA }));
+const motorDirecto = fuera([{ id: 'motor1', tipo: 'motor_tt', props: {} }], [{ de: 'motor1.A', a: 'placa.5V' }, { de: 'motor1.B', a: 'placa.GND1' }]);
+revisar(motorDirecto.piezas.J5 === 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm' && igual(motorDirecto.redes['+5V'], ['J1.5', 'J5.1']),
+  'un motor directo al 5V (sin shield) llega por una bornera de 2 (J5)');
+const servoEnShield = fuera(
+  [{ id: 'shield1', tipo: 'shield_l293d', props: {} }, { id: 'servo1', tipo: 'servo', props: { modelo: 'sg90' } }],
+  [{ de: 'servo1.SIG', a: 'shield1.S1_SIG' }, { de: 'servo1.VCC', a: 'shield1.S1_POS' }, { de: 'servo1.GND', a: 'shield1.S1_GND' }],
+);
+revisar(!servoEnShield.piezas.M1, 'un servo enchufado en SERVO_1 no repite su conector: usa J8');
+const servoSuelto = fuera([{ id: 'servo1', tipo: 'servo', props: { modelo: 'sg90' } }], [{ de: 'servo1.SIG', a: 'placa.D9' }]);
+revisar(servoSuelto.piezas.M1 === 'Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical', 'sin shield, el servo sigue siendo su conector de 3 pines (M1)');
+const servoSinCables = fuera([{ id: 'servo1', tipo: 'servo', props: { modelo: 'sg90' } }], []);
+revisar(!!servoSinCables.piezas.M1, 'un servo sin cables entra a las piezas, como cualquier pieza');
+const soloBalance = fuera(
+  [{ id: 'bateria1', tipo: 'bateria_lipo', props: {} }, { id: 'probador1', tipo: 'probador_lipo', props: {} }],
+  [{ de: 'bateria1.BAL0', a: 'probador1.NEG' }, { de: 'bateria1.BAL1', a: 'probador1.C1' }, { de: 'bateria1.BAL2', a: 'probador1.C2' }],
+);
+revisar(Object.keys(soloBalance.piezas).length === 4, 'la batería con el probador no tocan la placa: no aparecen');
+const bateriaVin = fuera([{ id: 'bateria1', tipo: 'bateria_lipo', props: {} }], [{ de: 'bateria1.POS', a: 'placa.VIN' }, { de: 'bateria1.NEG', a: 'placa.GND2' }]);
+revisar(igual(bateriaVin.redes.VIN, ['J1.8', 'J5.1']) && !bateriaVin.piezas.J6, 'la batería al VIN llega por una bornera de 2; su balance, que no toca la placa, no agrega conector');
+
 // La tabla de huellas y pads, para que probar_kicad_pcb.py la compare con las librerías de KiCad
 const tabla = Object.entries(PIEZAS_KICAD).map(([tipo, d]) => [tipo, { lib: d.lib, parte: d.parte, huella: d.huella, pads: d.pads }]);
+for (const d of SHIELD_KICAD) tabla.push([`shield ${d.valor} ${d.nota || ''}`.trim(), { lib: d.lib, parte: d.parte, huella: d.huella, pads: Object.fromEntries(Object.keys(d.pads).map((pad) => [pad, pad])) }]);
+for (const [tipo, grupos] of Object.entries(FUERA_KICAD)) for (const g of grupos) tabla.push([`${tipo} ${g.valor()}`, { lib: g.lib, parte: g.parte, huella: g.huella, pads: g.pines }]);
 fs.writeFileSync(path.join(SALIDA, 'piezas.json'), JSON.stringify({ piezas: Object.fromEntries(tabla), conectores: CONECTORES_SHIELD }, null, 2));
 
 console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');

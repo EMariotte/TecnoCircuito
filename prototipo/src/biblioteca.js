@@ -130,6 +130,7 @@ export const FICHAS = {
       ['Caída del L293D', '1,4 a 2 V: al motor le llega menos que la batería'],
       ['Puente PWR', p.puentePWR === false ? 'quitado: la batería solo va a los motores' : 'puesto: la batería también alimenta el Uno por VIN'],
       ['Librería', 'AFMotor_R4'],
+      ['En KiCad', 'sale desarmada: U1 y U2 (L293D), U3 (74HC595), borneras, servos, puente PWR, C1 a C4 y el LED'],
     ],
     validacion: () => porValidar('Conexiones de la librería del kit y de las hojas de datos: falta medir la caída del L293D en la placa real.'),
   },

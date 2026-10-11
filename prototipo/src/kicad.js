@@ -10,6 +10,7 @@
 
 import { calcularNodos } from './conexiones.js';
 import { MODELOS_SERVO } from './piezas/servo.js';
+import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
 
 // Los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad (share/kicad/template/Arduino_Uno), con sus mismas
 // referencias y sus mismos UUID: al importar, KiCad reconoce los que ya están en la placa de la plantilla, sobre el
@@ -76,6 +77,87 @@ export const PIEZAS_KICAD = {
   },
 };
 
+// ---- La shield L293D desarmada (pieza Tecno shield_l293d): sus piezas reales y cómo se unen por dentro.
+// Así el aprendiz diseña su propia shield de motores sobre la plantilla del Uno, y funciona con el mismo programa
+// del kit (AFMotor_R4). Lo que viene de la librería (pines del Uno y salidas del 74HC595) está en CONEXIONES_SHIELD,
+// la misma tabla que usa el simulador; las patas de cada integrado, de su hoja de datos; lo demás (qué canal lleva
+// cada motor, condensadores, LED) es diseño propio, sin mirar el esquema de Adafruit (que es «compartir igual»).
+// No lleva diodos: el L293D los trae por dentro (es la «D» del nombre).
+//
+// Cada pad dice a qué va: 'placa:PIN' un pin del Uno, 'pieza:PIN' un pin de la shield en el circuito (sigue sus
+// cables: bornes, EXT_PWR, servos) o una red propia de la placa ('IN_M1A', 'LED_PWR').
+const GND = 'placa:GND1';
+const V5 = 'placa:5V';
+const VMOT = 'pieza:EXT_POS';
+// Patas del 74HC595 según la salida Q0 a Q7 (QA = pata 15; QB a QH = patas 1 a 7).
+const PATA_Q = [15, 1, 2, 3, 4, 5, 6, 7];
+// Un L293D maneja dos motores: el primero con los canales 1 y 2, el segundo con el 3 y el 4.
+function l293d(m1, m2) {
+  const pwm = CONEXIONES_SHIELD.pwm;
+  return {
+    1: 'placa:' + pwm[m1], 2: `IN_M${m1}A`, 3: `pieza:M${m1}A`, 6: `pieza:M${m1}B`, 7: `IN_M${m1}B`,
+    9: 'placa:' + pwm[m2], 10: `IN_M${m2}A`, 11: `pieza:M${m2}A`, 14: `pieza:M${m2}B`, 15: `IN_M${m2}B`,
+    4: GND, 5: GND, 12: GND, 13: GND, 8: VMOT, 16: V5,
+  };
+}
+function hc595() {
+  const c = CONEXIONES_SHIELD;
+  const pads = { 8: GND, 16: V5, 10: V5, 11: 'placa:' + c.reloj, 12: 'placa:' + c.cierre, 13: 'placa:' + c.habilita, 14: 'placa:' + c.datos };
+  for (const [m, { A, B }] of Object.entries(c.bits)) {
+    pads[PATA_Q[A]] = `IN_M${m}A`;
+    pads[PATA_Q[B]] = `IN_M${m}B`;
+  }
+  return pads;
+}
+const BORNERA_5 = 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-05P_1x05_P5.00mm';
+const BORNERA_2 = 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm';
+const PINES_3 = 'Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical';
+const DIP16 = 'Package_DIP:DIP-16_W7.62mm';
+const C_100NF = { ref: 'C', lib: 'Device', parte: 'C', huella: 'Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm', valor: '100nF' };
+// `externo`: un conector donde se enchufa algo de afuera (motores, batería, servos).
+export const SHIELD_KICAD = [
+  { ref: 'U', lib: 'Driver_Motor', parte: 'L293D', huella: DIP16, valor: 'L293D', nota: 'M1 y M2', pads: l293d(1, 2) },
+  { ref: 'U', lib: 'Driver_Motor', parte: 'L293D', huella: DIP16, valor: 'L293D', nota: 'M3 y M4', pads: l293d(3, 4) },
+  { ref: 'U', lib: '74xx', parte: '74HC595', huella: DIP16, valor: '74HC595', nota: 'sentido de los motores', pads: hc595() },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x05', huella: BORNERA_5, valor: 'M1 GND M2', externo: true,
+    pads: { 1: 'pieza:M1A', 2: 'pieza:M1B', 3: 'pieza:GND_IZQ', 4: 'pieza:M2A', 5: 'pieza:M2B' } },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x05', huella: BORNERA_5, valor: 'M4 GND M3', externo: true,
+    pads: { 1: 'pieza:M4A', 2: 'pieza:M4B', 3: 'pieza:GND_DER', 4: 'pieza:M3A', 5: 'pieza:M3B' } },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x02', huella: BORNERA_2, valor: 'EXT_PWR', externo: true, pads: { 1: VMOT, 2: 'pieza:EXT_GND' } },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x03', huella: PINES_3, valor: 'SERVO_1', externo: true, pads: { 1: 'pieza:S1_SIG', 2: 'pieza:S1_POS', 3: 'pieza:S1_GND' } },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x03', huella: PINES_3, valor: 'SERVO_2', externo: true, pads: { 1: 'pieza:S2_SIG', 2: 'pieza:S2_POS', 3: 'pieza:S2_GND' } },
+  // El puente PWR: puesto, la batería de EXT_PWR también alimenta el VIN del Uno.
+  { ref: 'JP', lib: 'Jumper', parte: 'Jumper_2_Open', huella: 'Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical', valor: 'PWR', pads: { 1: VMOT, 2: 'placa:VIN' } },
+  // Un condensador de 100 nF junto a cada integrado y uno grande en el voltaje de los motores: sin ellos, el ruido de
+  // los motores puede reiniciar el Arduino.
+  { ...C_100NF, nota: 'junto a U1', pads: { 1: V5, 2: GND } },
+  { ...C_100NF, nota: 'junto a U2', pads: { 1: V5, 2: GND } },
+  { ...C_100NF, nota: 'junto a U3', pads: { 1: V5, 2: GND } },
+  { ref: 'C', lib: 'Device', parte: 'C_Polarized', huella: 'Capacitor_THT:CP_Radial_D6.3mm_P2.50mm', valor: '100uF 25V', nota: 'voltaje de motores', pads: { 1: VMOT, 2: GND } },
+  // LED de energía de los motores: con 1 kΩ, unos 5 mA con la LiPo y 10 mA con 12 V.
+  { ref: 'R', lib: 'Device', parte: 'R', huella: 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal', valor: '1k', nota: 'LED PWR', pads: { 1: VMOT, 2: 'LED_PWR' } },
+  { ref: 'D', lib: 'Device', parte: 'LED', huella: 'LED_THT:LED_D3.0mm', valor: 'LED verde', nota: 'PWR', pads: { 1: GND, 2: 'LED_PWR' } },
+];
+// Nombre de la red de cada pin de la shield que no toca el Uno.
+const RED_SHIELD = { EXT_POS: 'VMOT', M1A: 'M1_A', M1B: 'M1_B', M2A: 'M2_A', M2B: 'M2_B', M3A: 'M3_A', M3B: 'M3_B', M4A: 'M4_A', M4B: 'M4_B' };
+
+// ---- Piezas que no van en la placa (el motor, la batería, el probador): sus cables llegan a un conector. Si ya llegan
+// a un conector de la shield (una bornera, EXT_PWR, un pin de servo), ese es su conector y no se agrega otro; si no
+// tocan la placa (el balance con el probador), no aparecen.
+export const FUERA_KICAD = {
+  motor_tt: [{ ref: 'J', lib: 'Connector', parte: 'Screw_Terminal_01x02', huella: BORNERA_2, valor: () => 'Motor TT', pines: { A: '1', B: '2' } }],
+  bateria_lipo: [
+    { ref: 'J', lib: 'Connector', parte: 'Screw_Terminal_01x02', huella: BORNERA_2, valor: () => 'LiPo 2S', pines: { POS: '1', NEG: '2' } },
+    { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x03', huella: 'Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical', valor: () => 'Balance LiPo', sufijo: '/balance', pines: { BAL0: '1', BAL1: '2', BAL2: '3' } },
+  ],
+  probador_lipo: [
+    { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x09', huella: 'Connector_PinSocket_2.54mm:PinSocket_1x09_P2.54mm_Vertical', valor: () => 'Probador de celdas',
+      pines: { NEG: '1', C1: '2', C2: '3', C3: '4', C4: '5', C5: '6', C6: '7', C7: '8', C8: '9' } },
+  ],
+};
+// El servo es pieza de la placa (su conector de 3 pines), salvo que ya vaya enchufado a SERVO_1 o SERVO_2.
+const SE_CUBRE = new Set(['servo']);
+
 // Texto entre comillas, como lo escribe KiCad.
 const q = (s) => '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
 
@@ -91,38 +173,93 @@ function uuidDe(texto) {
 }
 
 // Devuelve la netlist como texto. opciones: { nombre, fecha (ISO), herramienta }.
-//   Piezas: los 4 conectores del shield y cada componente que KiCad conoce (la protoboard no es pieza).
-//   Redes: los grupos de calcularNodos() con dos pads o más. Del Uno solo entran los pines con un cable:
-//   son los que usa el shield (los demás pines de los conectores quedan sin red).
+//   Piezas: los 4 conectores del shield, cada componente que KiCad conoce, la shield L293D desarmada y un conector
+//   por cada pieza de afuera que llegue a la placa (la protoboard no es pieza).
+//   Redes: los grupos de calcularNodos() con dos pads o más, más las redes propias de la shield. Del Uno entran los
+//   pines con un cable y los que usa la shield (los demás pines de los conectores quedan sin red).
 export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date().toISOString().slice(0, 19), herramienta = 'TecnoCircuito' } = {}) {
-  const piezas = circuito.componentes.filter((c) => PIEZAS_KICAD[c.tipo]).map((c) => ({ ...c }));
-  const cuenta = {};
-  for (const p of piezas) {
-    const def = PIEZAS_KICAD[p.tipo];
-    cuenta[def.ref] = (cuenta[def.ref] || 0) + 1;
-    p.ref = def.ref + cuenta[def.ref];
+  // En la placa, el puente PWR es una pieza (JP1): sus dos lados son redes distintas aunque en el circuito esté puesto.
+  const circ = {
+    ...circuito,
+    componentes: circuito.componentes.map((c) => (c.tipo === 'shield_l293d' ? { ...c, props: { ...c.props, puentePWR: false } } : c)),
+  };
+  const nodo = calcularNodos(circ);
+  const shield = circ.componentes.find((c) => c.tipo === 'shield_l293d') || null;
+  // A qué red va un pad de la shield: un pin del circuito (su nodo) o una red propia ('#IN_M1A').
+  const clave = (destino) => {
+    const [tipo, pin] = destino.split(':');
+    if (pin === undefined) return '#' + destino;
+    return nodo((tipo === 'placa' ? 'placa' : shield.id) + '.' + pin);
+  };
+  const deShield = shield ? SHIELD_KICAD.map((d) => ({ ...d, id: `${shield.id}/${d.valor}${d.nota ? ' ' + d.nota : ''}`, enShield: true })) : [];
+  // Nodos con un conector de la shield para enchufar algo de afuera, y nodos que tocan algo de la placa.
+  const conConector = new Set(deShield.filter((d) => d.externo).flatMap((d) => Object.values(d.pads).map(clave)));
+  const cableados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
+  // Los pines del Uno que la shield toca por dentro (sus integrados, los servos en D9 y D10, GND, 5V, VIN) van aunque no
+  // tengan cable: en la placa real llegan por los conectores apilables.
+  const tocaShield = new Set(deShield.flatMap((d) => Object.values(d.pads).map(clave)));
+  const pinesUno = Object.keys(PIN_SHIELD).filter((pin) => cableados.has('placa.' + pin) || tocaShield.has(nodo('placa.' + pin)));
+  const delCircuito = circ.componentes.filter((c) => PIEZAS_KICAD[c.tipo]);
+  const enPlaca = new Set([
+    ...pinesUno.map((pin) => nodo('placa.' + pin)),
+    ...deShield.flatMap((d) => Object.values(d.pads).map(clave)),
+    ...delCircuito.flatMap((c) => Object.keys(PIEZAS_KICAD[c.tipo].pads).map((pin) => nodo(c.id + '.' + pin))),
+  ]);
+  // Unos pines de afuera necesitan su propio conector si alguno llega a la placa, por su propio cable o por la
+  // protoboard, a un punto que no sea un conector. (Dentro de la batería, el balance comparte el − y el + con el cable
+  // de potencia: no cuenta como cable propio.)
+  const conCable = (id, pin) => cableados.has(id + '.' + pin) || circ.componentes.some((c) => c.id === id && c.en && c.en[pin]);
+  const necesitaConector = (id, pines) => {
+    const llegan = pines.filter((pin) => conCable(id, pin) && enPlaca.has(nodo(id + '.' + pin)));
+    return llegan.some((pin) => !conConector.has(nodo(id + '.' + pin)));
+  };
+  // Ya enchufada a un conector de la shield (un servo en SERVO_1): todo lo que llega a la placa llega por ahí.
+  const enConector = (id, pines) => {
+    const llegan = pines.filter((pin) => conCable(id, pin) && enPlaca.has(nodo(id + '.' + pin)));
+    return llegan.length > 0 && llegan.every((pin) => conConector.has(nodo(id + '.' + pin)));
+  };
+
+  // Las piezas: primero las del circuito, después la shield y al final los conectores de afuera. `pads`: pad → a qué va.
+  const lista = [];
+  for (const c of delCircuito) {
+    const def = PIEZAS_KICAD[c.tipo];
+    if (SE_CUBRE.has(c.tipo) && enConector(c.id, Object.keys(def.pads))) continue; // ya va en SERVO_1 o SERVO_2
+    lista.push({ ...def, id: c.id, valor: def.valor(c.props || {}), pads: Object.entries(def.pads).map(([pin, pad]) => [pad, nodo(c.id + '.' + pin)]) });
+  }
+  for (const d of deShield) {
+    lista.push({ ...d, pads: Object.entries(d.pads).map(([pad, destino]) => [pad, clave(destino), destino.startsWith('pieza:') ? RED_SHIELD[destino.slice(6)] : null]) });
+  }
+  for (const c of circ.componentes) {
+    for (const g of FUERA_KICAD[c.tipo] || []) {
+      if (!necesitaConector(c.id, Object.keys(g.pines))) continue;
+      lista.push({ ...g, id: c.id + (g.sufijo || ''), valor: g.valor(c.props || {}), pads: Object.entries(g.pines).map(([pin, pad]) => [pad, nodo(c.id + '.' + pin)]) });
+    }
+  }
+  const cuenta = { J: CONECTORES_SHIELD.length }; // J1 a J4 son los conectores del Uno
+  for (const p of lista) {
+    cuenta[p.ref] = (cuenta[p.ref] || 0) + 1;
+    p.ref = p.ref + cuenta[p.ref];
   }
 
-  const nodo = calcularNodos(circuito);
-  const redes = new Map(); // raíz → { pads: Map("ref pad" → {ref, pad, pinUno}), uno: Set(nombres de red del Uno) }
-  const anotar = (refPin, ref, pad, pinUno) => {
-    const raiz = nodo(refPin);
-    if (!redes.has(raiz)) redes.set(raiz, { pads: new Map(), uno: new Set() });
-    const red = redes.get(raiz);
+  const redes = new Map(); // clave → { pads: Map("ref pad" → {ref, pad, pinUno}), uno: Set, shield: Set, propia }
+  const anotar = (k, ref, pad, pinUno, deLaShield) => {
+    if (!redes.has(k)) redes.set(k, { pads: new Map(), uno: new Set(), shield: new Set(), propia: k.startsWith('#') ? k.slice(1) : null });
+    const red = redes.get(k);
     red.pads.set(ref + ' ' + pad, { ref, pad, pinUno });
     if (pinUno) red.uno.add(RED_UNO[pinUno] || pinUno);
+    if (deLaShield) red.shield.add(deLaShield);
   };
-  const cableados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
-  for (const [pin, { ref, pad }] of Object.entries(PIN_SHIELD)) if (cableados.has('placa.' + pin)) anotar('placa.' + pin, ref, pad, pin);
-  for (const p of piezas) for (const [pin, pad] of Object.entries(PIEZAS_KICAD[p.tipo].pads)) anotar(p.id + '.' + pin, p.ref, pad, null);
+  for (const pin of pinesUno) anotar(nodo('placa.' + pin), PIN_SHIELD[pin].ref, PIN_SHIELD[pin].pad, pin, null);
+  for (const p of lista) for (const [pad, k, deLaShield] of p.pads) anotar(k, p.ref, String(pad), null, deLaShield);
 
+  // El nombre de cada red: el del Uno (GND, +5V, D11…), el de la shield (VMOT, M1_A…) o el propio (IN_M1A).
   const numerico = (a, b) => a.localeCompare(b, 'en', { numeric: true });
-  const lista = [...redes.values()]
+  const listaRedes = [...redes.values()]
     .filter((r) => r.pads.size >= 2)
     .map((r) => {
       const pads = [...r.pads.values()].sort((a, b) => numerico(a.ref, b.ref) || numerico(a.pad, b.pad));
       const delUno = PRIORIDAD_RED.find((n) => r.uno.has(n)) || [...r.uno].sort(numerico)[0];
-      return { nombre: delUno || `Net-(${pads[0].ref}-Pad${pads[0].pad})`, pads };
+      return { nombre: delUno || [...r.shield].sort(numerico)[0] || r.propia || `Net-(${pads[0].ref}-Pad${pads[0].pad})`, pads };
     })
     .sort((a, b) => numerico(a.nombre, b.nombre));
 
@@ -142,12 +279,9 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
   L.push('(export', '\t(version "E")', '\t(design', `\t\t(source ${q(nombre)})`, `\t\t(date ${q(fecha)})`, `\t\t(tool ${q(herramienta)})`, '\t)');
   L.push('\t(components');
   for (const j of CONECTORES_SHIELD) comp(j.ref, j.valor, j.huella, 'Connector_Generic', j.parte, 'placa', j.uuid);
-  for (const p of piezas) {
-    const def = PIEZAS_KICAD[p.tipo];
-    comp(p.ref, def.valor(p.props || {}), def.huella, def.lib, def.parte, p.id, uuidDe(nombre + '/' + p.id));
-  }
+  for (const p of lista) comp(p.ref, p.valor, p.huella, p.lib, p.parte, p.id, uuidDe(nombre + '/' + p.id));
   L.push('\t)', '\t(nets');
-  lista.forEach((red, i) => {
+  listaRedes.forEach((red, i) => {
     L.push('\t\t(net', `\t\t\t(code ${q(i + 1)})`, `\t\t\t(name ${q(red.nombre)})`, '\t\t\t(class "Default")');
     for (const n of red.pads) {
       const funcion = n.pinUno ? ` (pinfunction ${q(n.pinUno)})` : '';

@@ -8,7 +8,9 @@ Si KiCad no está instalado, avisa y se salta (no falla).
 2. Los conectores J1 a J4 son los de la plantilla «Arduino Uno Shield» (referencia, huella y UUID), y cada pin
    del Uno cae en el pin del conector que la plantilla le da (se compara con la netlist de la propia plantilla).
 3. Con cada .net se arma la placa sobre la plantilla, como «Importar netlist»: los conectores se reconocen por su
-   referencia, las piezas nuevas van dentro del contorno del Uno y cada nodo encuentra su pad.
+   referencia, las piezas nuevas se acomodan dentro del contorno del Uno (cada una en el primer lugar libre, girada
+   si hace falta, como lo haría el aprendiz) y cada nodo encuentra su pad. El carro (t3_carro.net) trae la shield
+   L293D desarmada: 15 piezas nuevas que caben sobre el Uno.
 4. El DRC de KiCad ve las conexiones por trazar y ningún solape de huellas (el problema de la huella del Uno).
 """
 import glob
@@ -77,6 +79,9 @@ def pines_del_simbolo(lib, parte):
     i = texto.find(f'(symbol "{parte}"')
     j = texto.find('\n\t(symbol "', i + 10)
     bloque = texto[i:j if j > 0 else len(texto)]
+    base = re.search(r'\(extends "([^"]+)"\)', bloque)
+    if base:  # el L293D «hereda» sus patas del L293
+        return pines_del_simbolo(lib, base.group(1))
     return {n: nombre for nombre, n in re.findall(r'\(pin \w+ \w+.*?\(name "([^"]*)".*?\(number "([^"]*)"', bloque, re.S)}
 
 
@@ -158,16 +163,41 @@ for archivo in sorted(SALIDA.glob('t*.net')):
         placa.Add(fp)
         huellas[ref] = fp
         nuevas.append(fp)
-    # Las piezas nuevas, en filas dentro del contorno del Uno (entre los conectores de arriba y los de abajo)
-    x, y, alto_fila = contorno.GetLeft() + pcbnew.FromMM(6), contorno.GetTop() + pcbnew.FromMM(9), 0
-    for fp in nuevas:
-        caja = fp.GetCourtyard(pcbnew.F_CrtYd).BBox() if fp.GetCourtyard(pcbnew.F_CrtYd).OutlineCount() else fp.GetBoundingBox()
-        if x + caja.GetWidth() > contorno.GetRight() - pcbnew.FromMM(6):
-            x, y, alto_fila = contorno.GetLeft() + pcbnew.FromMM(6), y + alto_fila + pcbnew.FromMM(2), 0
-        fp.Move(pcbnew.VECTOR2I(x - caja.GetLeft(), y - caja.GetTop()))
-        x += caja.GetWidth() + pcbnew.FromMM(2)
-        alto_fila = max(alto_fila, caja.GetHeight())
-    dentro = all(contorno.Contains(fp.GetBoundingBox()) for fp in nuevas)
+    # Las piezas nuevas, como las acomodaría el aprendiz: cada una (de la más grande a la más chica) en el primer
+    # lugar libre dentro del contorno del Uno, sin tocar los conectores de la plantilla; si no cabe así, girada 90°.
+    def caja_de(fp):
+        # El patio de la huella y también sus textos (la referencia no debe pisar la serigrafía de otra pieza)
+        caja = fp.GetBoundingBox()
+        cy = fp.GetCourtyard(pcbnew.F_CrtYd)
+        if cy.OutlineCount():
+            caja.Merge(cy.BBox())
+        return caja
+
+    margen, borde, paso = pcbnew.FromMM(0.5), pcbnew.FromMM(1), pcbnew.FromMM(0.5)
+    ocupado = [caja_de(fp) for fp in placa.GetFootprints() if fp not in nuevas]
+    sin_lugar = []
+    for fp in sorted(nuevas, key=lambda f: -caja_de(f).GetWidth() * caja_de(f).GetHeight()):
+        puesto = False
+        for giro in (0, 90):
+            fp.SetOrientationDegrees(giro)
+            caja = caja_de(fp)
+            w, h = caja.GetWidth(), caja.GetHeight()
+            y = contorno.GetTop() + borde
+            while not puesto and y + h <= contorno.GetBottom() - borde:
+                x = contorno.GetLeft() + borde
+                while x + w <= contorno.GetRight() - borde:
+                    if not any(x < o.GetRight() + margen and o.GetLeft() - margen < x + w and y < o.GetBottom() + margen and o.GetTop() - margen < y + h for o in ocupado):
+                        fp.Move(pcbnew.VECTOR2I(x - caja.GetLeft(), y - caja.GetTop()))
+                        ocupado.append(caja_de(fp))
+                        puesto = True
+                        break
+                    x += paso
+                y += paso
+            if puesto:
+                break
+        if not puesto:
+            sin_lugar.append(fp.GetReference())
+    dentro = not sin_lugar and all(contorno.Contains(fp.GetBoundingBox()) for fp in nuevas)
     for fp in huellas.values():  # «Actualizar PCB»: las redes salen de la netlist
         for p in fp.Pads():
             p.SetNetCode(0)
@@ -184,7 +214,7 @@ for archivo in sorted(SALIDA.glob('t*.net')):
                 p.SetNet(info)
             pads_por_red[valor(red, 'name')] = pads_por_red.get(valor(red, 'name'), 0) + len(pads)
     revisar(not perdidos, f'{archivo.name}: {len(nuevas)} piezas nuevas y {len(pads_por_red)} redes; cada nodo encontró su pad' + (f' (no: {perdidos})' if perdidos else ''))
-    revisar(dentro, f'{archivo.name}: las piezas caben dentro del contorno del Uno')
+    revisar(dentro, f'{archivo.name}: las piezas caben dentro del contorno del Uno' + (f' (sin lugar: {sin_lugar})' if sin_lugar else ''))
     pcb = SALIDA / (archivo.stem + '_shield.kicad_pcb')
     pcbnew.SaveBoard(str(pcb), placa)
     informe = SALIDA / (archivo.stem + '_drc.json')

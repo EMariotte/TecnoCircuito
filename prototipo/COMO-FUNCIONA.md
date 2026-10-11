@@ -1201,3 +1201,56 @@ Resultado en Node: de **0,22×** a **1,29×** el chip real con ese programa. El 
 **Solo se ve al simular:** el probador no usa el Arduino, pero el simulador calcula su pantalla en el Worker, junto con la batería.
 
 **Pruebas:** `probar_potencia.js`, sección 8 (15: la secuencia, «12.6», nominal, desbalanceada con alarma en 3,5 V, descargada, alarma apagada, cables cruzados, sin −, una sola celda y el balance por los cables de potencia) y `probar_probador.py` (Chromium, 10: los 9 pines, los 3 del balance, la pantalla leída segmento a segmento, la tabla, el pitido y el apagado al detener).
+
+## 53. La shield L293D desarmada en la netlist de KiCad
+
+> Hecho el 11 de octubre de 2026, con la decisión de Efraín: **desarmada, con todos los componentes adicionales** (los 4 condensadores y el LED de energía con su resistencia). Código: [src/kicad.js](src/kicad.js) (`SHIELD_KICAD`, `FUERA_KICAD`).
+
+**Para qué:** con el carro armado en el simulador, «Llevar a KiCad» entrega la shield de motores en sus piezas reales, y el aprendiz diseña su propia placa sobre la plantilla «Arduino Uno Shield». Funciona con el mismo programa del kit, porque usa los mismos pines y las mismas salidas del 74HC595 que AFMotor_R4.
+
+```
+   Uno (J1–J4)                U3 74HC595                        U1 L293D (M1 y M2)        J5 bornera
+   D8  ─────────────────────► 14 SER                            1  EN1,2 ◄──── D11
+   D4  ─────────────────────► 11 SRCLK        Q2 (2) ─ IN_M1A ─► 2  1A    3  1Y ─ M1_A ──► 1
+   D12 ─────────────────────► 12 RCLK         Q3 (3) ─ IN_M1B ─► 7  2A    6  2Y ─ M1_B ──► 2
+   D7  ─────────────────────► 13 ~OE                                                  GND ► 3
+   +5V ─────────────────────► 10 ~SRCLR, 16   Q1 (1) ─ IN_M2A ─► 10 3A   11  3Y ─ M2_A ──► 4
+                                              Q4 (4) ─ IN_M2B ─► 15 4A   14  4Y ─ M2_B ──► 5
+                                                                 9  EN3,4 ◄─── D3
+                                              Q5, Q7, Q0, Q6 ──► U2 (M3 y M4), EN ◄── D6 y D5 ──► J6
+   J7 EXT_PWR + ── VMOT ──► pata 8 de U1 y U2 · C4 100 µF · R1 1k → D1 (LED) · JP1 (PWR) ──► VIN
+   C1, C2, C3 100 nF entre +5V y GND, uno junto a cada integrado · J8 SERVO_1 = D10 · J9 SERVO_2 = D9
+```
+
+**De dónde sale cada conexión:**
+
+| Qué | De dónde |
+|---|---|
+| Pines del Uno (D8, D4, D12, D7; PWM 11, 3, 6, 5) y qué Q del 74HC595 da el sentido de cada motor | AFMotor_R4 (BSD-3). Es `CONEXIONES_SHIELD` en `src/piezas/shield_l293d.js`: **la misma tabla para el simulador y para KiCad** |
+| Qué pata es qué en el L293D y en el 74HC595 | Hojas de datos (y los símbolos de KiCad, que coinciden: QA es Q0 en la pata 15) |
+| Qué canal lleva cada motor, los condensadores, el LED, el puente PWR | Diseño propio. No se miró el esquema de Adafruit («compartir igual») |
+
+No lleva diodos: el L293D los trae por dentro (es la «D» del nombre).
+
+**Las piezas de afuera** (motor, batería, probador) no van en la placa: una netlist de placa no puede llevar piezas sin huella. Cada una llega por un conector:
+
+- si sus cables van a un conector de la shield (bornera de un motor, EXT_PWR, SERVO_1/2), ese es su conector y no se agrega otro;
+- si llegan a la placa por otro lado (un motor directo al 5V, la batería al VIN), aparece una bornera de 2 (o el JST del balance, o la regleta de 9 del probador);
+- si no tocan la placa (el balance con el probador), no aparecen;
+- un servo enchufado a SERVO_1 no repite su conector de 3 pines.
+
+**El puente PWR** es una pieza (JP1): en la netlist sus dos lados son redes distintas, `VMOT` y `VIN`, aunque en el circuito esté puesto.
+
+**Los nombres de las redes** se leen en KiCad: los del Uno (`D11`, `+5V`, `GND`, `VIN`), los de la shield (`VMOT`, `M1_A` … `M4_B`) y los propios (`IN_M1A` … `IN_M4B`, `LED_PWR`). Los pines del Uno que la shield usa por dentro entran aunque no tengan cable, porque en la placa real llegan por los conectores apilables.
+
+**Pruebas:**
+
+- `probar_kicad.js`:
+  - el carro: las 19 piezas con sus valores;
+  - cada motor contra la tabla de AFMotor_R4, escrita aparte en la prueba (si alguien cambia la tabla de la shield, la prueba lo nota);
+  - el 74HC595, VMOT, VIN, los servos y GND;
+  - los casos de las piezas de afuera.
+- `probar_kicad_pcb.py` (KiCad 10.0.3):
+  - las 15 piezas nuevas se arman sobre la plantilla, cada pad encuentra su red y caben dentro del contorno del Uno, giradas si hace falta;
+  - el DRC ve 63 conexiones por trazar y ningún solape;
+  - el símbolo L293D de KiCad hereda sus patas del L293, y la prueba lo sigue.

@@ -21,14 +21,15 @@ import { crearMotor } from './piezas/motor_tt.js';
 import { LIPO, voltiosLipo, celdasLipo } from './piezas/bateria_lipo.js';
 import { PROBADOR } from './piezas/probador_lipo.js';
 import { PinState } from './chip.js';
+import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
 
 export const SHIELD = {
-  pinDatos: 'D8',
-  pinReloj: 'D4',
-  pinCierre: 'D12',
-  pinHabilita: 'D7',
-  pwm: { 1: 'D11', 2: 'D3', 3: 'D6', 4: 'D5' },
-  bits: { 1: { A: 2, B: 3 }, 2: { A: 1, B: 4 }, 3: { A: 5, B: 7 }, 4: { A: 0, B: 6 } },
+  pinDatos: CONEXIONES_SHIELD.datos,
+  pinReloj: CONEXIONES_SHIELD.reloj,
+  pinCierre: CONEXIONES_SHIELD.cierre,
+  pinHabilita: CONEXIONES_SHIELD.habilita,
+  pwm: CONEXIONES_SHIELD.pwm,
+  bits: CONEXIONES_SHIELD.bits,
   caidaV: 1.4, // caída del puente H con poca corriente
   caidaPorA: 1.0, // y lo que sube por cada amperio
   maximoCanalA: 0.6, // corriente continua por canal del L293D

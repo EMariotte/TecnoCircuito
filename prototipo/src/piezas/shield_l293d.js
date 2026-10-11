@@ -49,6 +49,20 @@ export const ROTULOS_SHIELD = {
   S1_SIG: 'SERVO_1 · señal (pin 10)', S1_POS: 'SERVO_1 · + (5V)', S1_GND: 'SERVO_1 · − (GND)',
   S2_SIG: 'SERVO_2 · señal (pin 9)', S2_POS: 'SERVO_2 · + (5V)', S2_GND: 'SERVO_2 · − (GND)',
 };
+// Cómo usa la shield los pines del Uno, como lo hace AFMotor_R4 (la librería del kit, BSD-3). Es la fuente única: la usan
+// el simulador (src/potencia.js) y la netlist de KiCad con la shield desarmada (src/kicad.js).
+//   74HC595: datos, reloj, cierre (latch) y habilitación (OE, activa en BAJO).
+//   pwm: el pin de velocidad de cada motor (va a la habilitación de su canal del L293D).
+//   bits: qué salida Q del 74HC595 da el sentido A y B de cada motor.
+export const CONEXIONES_SHIELD = {
+  datos: 'D8',
+  reloj: 'D4',
+  cierre: 'D12',
+  habilita: 'D7',
+  pwm: { 1: 'D11', 2: 'D3', 3: 'D6', 4: 'D5' },
+  bits: { 1: { A: 2, B: 3 }, 2: { A: 1, B: 4 }, 3: { A: 5, B: 7 }, 4: { A: 0, B: 6 } },
+};
+
 // Lo que la shield une por dentro con el Uno (para las conexiones del circuito).
 export const PUENTES_SHIELD = [
   ['S1_SIG', 'placa.D10'], ['S2_SIG', 'placa.D9'],

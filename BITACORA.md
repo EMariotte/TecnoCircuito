@@ -726,3 +726,21 @@ Sesión de solo software. Es el primer pendiente que salió de las validaciones 
 
 - `probar_pwm.py`: el desvanecido se muestrea 4 s en vez de 2,5 s. Con toda la suite corriendo, la ventana corta a veces no alcanzaba el pico (falló una vez con 61 %; sola, 3 de 3 con 78 %).
 - `npm run probar`: 19 grupos, 508 comprobaciones. TecnoBloques: `test:simulador` 33 de 33 y `npm test` sin fallas.
+
+## 2026-10-11 — Netlist de KiCad con la shield L293D desarmada
+
+**Decisión de Efraín:** desarmada y con todos los componentes adicionales (4 condensadores y el LED de energía con su resistencia).
+
+- **`src/kicad.js`:**
+  - `SHIELD_KICAD`: U1 y U2 L293D, U3 74HC595 (DIP-16), borneras J5 y J6 (MaiXu MX126 de 5 mm), J7 EXT_PWR, J8 y J9 SERVO_1/2, JP1 PWR, C1 a C3 de 100 nF, C4 de 100 µF y R1 1k con D1;
+  - `FUERA_KICAD`: el conector de cada pieza de afuera (motor, batería, balance, probador), solo si llega a la placa por otro lado que no sea un conector de la shield.
+- **Fuente única:** los pines y las salidas del 74HC595 de AFMotor_R4 pasaron a `CONEXIONES_SHIELD` (`src/piezas/shield_l293d.js`), que usan el simulador y KiCad.
+- **El puente PWR** es la pieza JP1 (VMOT y VIN como redes distintas). Los pines del Uno que la shield toca por dentro (D9, D10, VIN, GND…) entran aunque no tengan cable.
+- **Arreglos en el camino:**
+  - el balance de la batería no saca conector solo por compartir el − y el + con el cable de potencia;
+  - un servo sin cables sigue en la netlist.
+- **Pruebas:**
+  - `probar_kicad.js`, con el carro y cada motor contra la tabla de AFMotor_R4 escrita aparte;
+  - `probar_kicad_pcb.py`, que sigue el `extends` del símbolo L293D y acomoda las piezas en el primer lugar libre (girándolas si hace falta).
+  - Con KiCad 10.0.3: 15 piezas nuevas sobre el Uno, 63 conexiones por trazar y ningún solape.
+- **Por hacer con Efraín:** abrir el carro en KiCad (plantilla «Arduino Uno Shield» → Importar netlist) y acomodar las piezas. Opcional en el laboratorio: continuidad en la shield del kit, para comparar su cableado con el dibujo.

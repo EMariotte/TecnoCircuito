@@ -96,6 +96,19 @@ Los valores del motor TT y de la caída del L293D son de hojas de datos. Con el 
 
 Las medidas van a `validacion/` y se vuelven pruebas.
 
+## Revisar la shield del kit con continuidad
+
+Para comparar la shield L293D Rev4 del kit con la que dibuja el simulador y con la netlist de KiCad (COMO-FUNCIONA, sección 53). **Con la shield suelta, sin el Uno ni la batería**, y el multímetro en continuidad (pita cuando hay unión).
+
+1. **Identifica los integrados:** dos L293D y un 74HC595, cada uno con su muesca (la pata 1 está a la izquierda de la muesca, y se cuenta en U: 1 a 8 de un lado y 9 a 16 del otro).
+2. **Pines del Uno al 74HC595** (en los pines apilables de la shield): D8 → pata 14, D4 → 11, D12 → 12, D7 → 13, y 5V → patas 10 y 16. Anota si algo no pita o pita en otra pata.
+3. **PWM a los L293D:** D11, D3, D6 y D5 a las patas 1 o 9 (habilitación) de cada L293D. Anota a cuál y a qué L293D va cada uno.
+4. **74HC595 a los L293D:** desde cada salida (patas 15 y 1 a 7) busca a qué pata de qué L293D llega (2, 7, 10 o 15).
+5. **Bornes a los L293D:** M1 a M4 (A y B) a las patas 3, 6, 11 o 14 de cada L293D. EXT_PWR + a la pata 8 de los dos L293D, y todos los GND entre sí.
+6. **Servos:** SERVO_1 (S) al pin 10 y SERVO_2 (S) al pin 9.
+
+Las patas de los integrados pueden no coincidir con nuestra tabla (qué canal lleva cada motor lo decide cada fabricante), y está bien: lo que debe coincidir con AFMotor_R4 es **qué pin del Uno y qué salida del 74HC595 maneja cada motor**. Anota todo en una tabla (pin del Uno o salida → pata del integrado) y las medidas van a `validacion/`.
+
 ## Validar el probador de celdas con el real
 
 Con «Validar: probador de celdas LiPo» (la LiPo del kit por el cable de balance al probador):
@@ -112,6 +125,8 @@ Con «Validar: probador de celdas LiPo» (la LiPo del kit por el cable de balanc
 4. KiCad reconoce J1 a J4 y agrega las piezas, con líneas finas entre las patas que van unidas. Ubícalas dentro del contorno y traza las pistas.
 
 La placa que se diseña es un **shield**: se monta encima del Uno con los conectores. Cómo funciona: [COMO-FUNCIONA.md](COMO-FUNCIONA.md), sección 43.
+
+**Con la shield L293D** («Carro con la shield L293D (T3)»), la netlist la trae **desarmada**: U1 y U2 (L293D), U3 (74HC595), las borneras de los motores y de EXT_PWR, los pines de SERVO_1 y SERVO_2, el puente PWR, cuatro condensadores (100 nF junto a cada integrado y 100 µF en el voltaje de los motores) y el LED de energía con su resistencia. Así se diseña una shield de motores propia, que funciona con el mismo programa del kit (AFMotor_R4). El motor, la batería y el probador no van en la placa: llegan a las borneras (si un motor va directo a un pin, aparece una bornera para él). Ver [COMO-FUNCIONA.md](COMO-FUNCIONA.md), sección 53.
 
 ## Cómo está hecho
 
