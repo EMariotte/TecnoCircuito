@@ -890,3 +890,15 @@ Antes de cambiar nada, el diagnóstico `docs/revision-2026-10-11.cjs` reprodujo 
 - **Qué no lleva:** el monitor serial, el paso del mouse y los movimientos intermedios.
 - **Queda para 2027:** la asignación de la condición (el campo `condicion` queda reservado) y cómo se registra el trabajo en parejas o equipos dentro del diseño del estudio.
 - **Implementación** (CLAUDE.md, «Próxima sesión»): el esquema `contrato/evento.schema.json` con su prueba, después TecnoCircuito, después TecnoBloques, y Codex verifica.
+
+## 2026-10-11 — Codex: cierre verificado de R6
+
+**Pedido de Efraín:** validar R6 para cerrar la corrección. Autor: Codex (revisor). Implementación comprobada `7424f8a`; HEAD `968bdfa`. El registro de eventos aprobado en el segundo commit es un encargo posterior y no se valida en esta entrega.
+
+- **R6 cerrado en software y documentación.** La referencia es la medida; se informan 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. La ficha del LED, README, CLAUDE.md y COMO-FUNCIONA coinciden; los otros colores siguen por validar, SG90 distingue <10 mA medidos de 6 mA típicos y ADC conserva «estimación».
+- Exactitud contrastada con la [ficha oficial UNI-T](https://meters.uni-trend.com/product/ut33plus-series/): voltios DC ±(0,5 % de lectura + 2 dígitos). Escala adoptada 20 V, resolución 0,01 V; no se confirmó el selector físico en esta revisión. U es el margen publicado usado por la regla acordada, sin una nueva calibración.
+- Recálculo independiente: resistencia de 215 Ω, 2,61 V medidos y 2,740718203 V simulados; error 5,008360254 %. Diferencia 0,130718203 V frente a 0,1305 V de límite estricto; U = 0,03305 V, límite con U = 0,16355 V. No se cambian datos, modelos ni tolerancias. La corriente V/R propaga U de V con R fija, como documentó Claude.
+- Pruebas afectadas: motor **28 OK**, contrato **76 OK**, biblioteca en Chromium **27 OK** y build reproducible. [Verificador de cierre](docs/verificar-cierre-r6-2026-10-11.cjs): **16 OK**, incluidos casos que deben fallar aun con margen. Recorrido adicional del LED rojo → azul: **3 OK**. Total de esta ejecución **150 comprobaciones aprobadas**.
+- [Informe de cierre](docs/CIERRE-R6-CODEX-2026-10-11.md); AGENTS.md y CLAUDE.md actualizados. Los informes anteriores se conservan como historia. **R1–R8 quedan verificados** en el alcance de la revisión original.
+- Sigue recomendada la repetición física de la medida de 215 Ω que no cierra por 0,13 V; también los tiempos físicos ±1 %, ADC con el programa corregido y las prácticas T3 pendientes. El cierre documental no certifica esas prácticas.
+- Entrega sin cambios funcionales, nuevas medidas, commit, push ni etiqueta.

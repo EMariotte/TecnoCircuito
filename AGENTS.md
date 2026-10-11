@@ -13,7 +13,8 @@ TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la T
 - [LEEME.md](prototipo/LEEME.md): uso y prácticas de laboratorio.
 - [validacion/](validacion/): mediciones registradas por Efraín; distingue dato medido, ajuste y supuesto.
 - [Revisión inicial de Codex](docs/REVISION-CODEX-2026-10-11.md): resultados, limitaciones y hallazgos abiertos R1–R8. Es un informe fechado, no una lista automáticamente resuelta por cambios posteriores.
-- [Verificación de las correcciones](docs/VERIFICACION-CODEX-R1-R8-2026-10-11.md): R1–R5, R7 y R8 verificados; R6 corregido en sus casos originales, con cierre documental pendiente por el nuevo criterio de porcentaje. Consulta este seguimiento junto al informe inicial.
+- [Primer seguimiento de las correcciones](docs/VERIFICACION-CODEX-R1-R8-2026-10-11.md): evidencia histórica de R1–R5, R7 y R8 verificados y del pendiente que entonces tenía R6. Su estado posterior está en el cierre enlazado a continuación.
+- [Cierre posterior de R6](docs/CIERRE-R6-CODEX-2026-10-11.md): verificado por Codex tras las correcciones `7424f8a`; **R1–R8 cerrados** en el alcance de la revisión original. Se distinguen 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. Los pendientes físicos siguen en los registros y CLAUDE.md.
 
 No mantengas una segunda copia extensa del estado en este archivo. Actualízalo cuando cambien las reglas de trabajo; el progreso va en la bitácora y el estado actual en CLAUDE.md.
 
@@ -67,6 +68,7 @@ npm.cmd --prefix prototipo run probar:contrato
 npm.cmd --prefix prototipo run probar:fixtures
 node docs/revision-2026-10-11.cjs
 node docs/verificar-correcciones-2026-10-11.cjs
+node docs/verificar-cierre-r6-2026-10-11.cjs
 ```
 
 La suite completa construye el paquete y ejecuta Node, 12 recorridos de Chromium/Playwright y KiCad. Necesita Python con Playwright y Chromium instalados; KiCad debe ejecutar su prueba, no quedar omitido. El diagnóstico de revisión necesita los `.cjs` generados por la suite y describe seis casos de R1–R6.
@@ -88,7 +90,7 @@ npm.cmd --prefix ../TecnoBloques test
 ## Validación, privacidad y entrega
 
 - Una suite aprobada demuestra comportamiento del software, no valida hardware. Nada llega al aula sin la prueba física correspondiente.
-- Criterios existentes: ±5 % en voltaje, ±10 % en corriente, ±1 % en tiempos y serial idéntico. Explicita la referencia del porcentaje y la resolución del instrumento; un parámetro ajustado o típico no es una medición directa.
+- Criterios existentes: ±5 % en voltaje, ±10 % en corriente, ±1 % en tiempos y serial idéntico. El error relativo usa la **medida como denominador**; informa por separado cumplimiento estricto y cumplimiento con U bajo la regla acordada (`diferencia ≤ tolerancia × |medida| + U`). Para el UT33B+ en la escala adoptada de 20 V, U = 0,5 % de lectura + 2 × 0,01 V. Explicita resolución, escala y límites de la evidencia; un parámetro ajustado o típico no es una medición directa.
 - La evidencia del LED rojo no valida todos los colores; el reposo de SG90 medido como menos de 10 mA no acredita 6 mA exactos. Shield, motor, LiPo, probador y MG90S mantienen pendientes físicos según el informe.
 - No pases contenido de `investigacion/`, datos de aprendices, registros ni tablas de alias a archivos públicos. Las imágenes de terceros son referencias locales excluidas de Git.
 - Código propio Apache-2.0; avr8js y Wokwi MIT, con sus avisos. No copies código GPL ni material incompatible; conserva SPDX y NOTICE.
