@@ -198,8 +198,69 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 - `falla` lleva en `datos.tipo` qué pasó: `led_quemado`, `resistencia_caliente`, `corriente_pin`, `corriente_chip` (entre todos, los pines pasan de 200 mA por las patas VCC o por las GND del chip; `componente` es `placa.VCC` o `placa.GND`), `cortocircuito`, `sin_solucion`, `servo_alimentacion` (un servo alimentado desde un pin), `reinicio_usb` (la placa se reinició por un golpe de corriente) o `fusible_usb` (el fusible del USB se abrió y la placa se apagó). Con la shield L293D, el motor TT y la batería (10 oct): `bateria_baja` (descargada; se avisa al empezar), `bateria_celdas` (bajó de 3,0 V por celda), `bateria_invertida`, `bateria_corto`, `bateria_en_5v`, `motores_sin_energia` (los motores reciben la orden y no hay batería en EXT_PWR), `motor_en_pin` y `l293d_corriente` (más de 0,6 A por canal). Con el balance y el probador (10 oct): `bateria_desbalanceada` (se avisa al empezar) y `probador_alarma` (una celda bajó del umbral del probador). Cada falla se avisa una vez por corrida.
 - `reinicio_placa` (origen `simulador`): `{ motivo: 'boton' }` al pulsar Reiniciar, o `{ motivo: 'energia_usb', nuevos, total }` cuando la placa se reinicia o se apaga por la energía del USB (una vez por foto, con cuántos hubo).
 - `boton_pulsado` (origen `circuito`) sale al soltar un botón presionado con el mouse durante la simulación: `{ id, ms }`, con cuánto tiempo estuvo presionado. Muestra cómo prueba el aprendiz su montaje.
-- TecnoBloques agrega `alias`, `sesion`, `version_tb` y `version_tc`. Suma sus propios eventos con `origen: 'editor'` (cambios de bloques, compilaciones, errores) y escribe una línea JSON por evento en `%APPDATA%\TecnoBloques\registros\<alias>-<fecha>.jsonl`.
+- TecnoBloques completa cada evento, suma los suyos con `origen: 'editor'` y los escribe en un archivo por equipo: ver 6.1. (Hasta el 11 oct decía `alias`; desde la decisión de ese día, el registro identifica al equipo, nunca al aprendiz.)
 - **Agregar un tipo de evento nuevo no rompe el contrato.** Cambiar o quitar uno sí.
+
+### 6.1 El registro de eventos (aprobado el 11 oct 2026; se implementa en la próxima sesión)
+
+> Decisiones de Efraín del 11 de octubre de 2026. Hasta que se implemente, rige lo de arriba. Al implementarlo, esta sección pasa a describir lo que hay, nace `contrato/evento.schema.json` y se anota en las dos bitácoras.
+
+**Para qué.** El registro permite reconstruir el trabajo de cada equipo: qué armó, qué falla vio, qué cambió y si la falla desapareció en la corrida siguiente. También permite saber con qué modo y con qué no idealidades trabajó.
+
+**Quién se registra: el equipo, nunca el aprendiz.**
+
+- Cada línea lleva `equipo`: un código sin nombres ni datos de los aprendices. Un aprendiz que trabaja solo es un equipo de uno.
+- La tabla que une cada código con sus integrantes no está en el software ni en este repositorio.
+- El código lo escribe el equipo al abrir la app, con una confirmación («¿Son el equipo *código*?»), así un PC compartido entre grupos no mezcla registros. TecnoBloques solo revisa que no esté vacío: su formato no es parte del contrato.
+
+**Cuándo se registra.**
+
+- **Apagado por defecto.** Lo enciende el instructor en cada PC, desde una opción de configuración que el aprendiz no ve.
+- Con el registro encendido, la app lo dice en pantalla, con un aviso discreto («Esta sesión se registra»).
+- **Exportar registros** (solo para el instructor) copia los `.jsonl` a una carpeta o a una USB.
+- Archivo: `%APPDATA%\TecnoBloques\registros\<equipo>-<fecha>.jsonl`, una línea JSON por evento.
+
+**El sobre de cada evento:**
+
+```json
+{"v":1,"t":1760212345678,"origen":"simulador","tipo":"falla","corrida":3,"ms_sim":1520,
+ "datos":{"tipo":"led_quemado","componente":"led1","corriente_mA":41.2},
+ "equipo":"…","sesion":"5f2c…","version_tb":"0.2.6","version_tc":"0.1.0"}
+```
+
+| Campo | Lo pone | Qué es |
+|---|---|---|
+| `v` | quien emite | versión del esquema de eventos (empieza en 1) |
+| `t` | quien emite | hora real, en ms desde 1970 |
+| `origen`, `tipo`, `datos` | quien emite | como arriba; `origen` suma `editor` |
+| `corrida` | TecnoCircuito | número de la simulación dentro de la sesión (1, 2, 3…), en los eventos del simulador |
+| `ms_sim` | TecnoCircuito | tiempo simulado de esa corrida, en los eventos del simulador |
+| `equipo`, `sesion`, `version_tb`, `version_tc` | TecnoBloques | el código del equipo, un identificador al azar por cada vez que se abre la app, y las dos versiones |
+
+**Eventos del simulador que cambian o se agregan** (los demás siguen como arriba, con sus campos escritos en el esquema):
+
+| Tipo | `datos` |
+|---|---|
+| `simulacion_iniciada` | `placa`, `modo`, `activas` (las no idealidades encendidas) y **`circuito` completo** (sección 4): cada corrida se puede analizar sola, sin reconstruirla desde los cambios |
+| `simulacion_pausada` | nuevo, sin datos |
+| `simulacion_detenida` | `ms_sim` y **`fallas`**: `[{ tipo, componente }]` de esa corrida. Si una falla aparece en una corrida y no en la siguiente, se corrigió |
+
+**Eventos del editor** (`origen: 'editor'`, los emite TecnoBloques):
+
+| Tipo | `datos` |
+|---|---|
+| `sesion_iniciada` | `placa`, `nivel` y `condicion` (reservado: el modo asignado, si lo hay) |
+| `proyecto_abierto` / `ejemplo_cargado` | `nombre` del proyecto o `id` del ejemplo |
+| `bloques_cambiados` | resumen: cuántos bloques y cuántos de cada tipo. No el XML entero |
+| `codigo_compilado` | `ok`, `error` (el tipo de error, si lo hay), `bytes` y **`codigo`**: el C++ completo **sin comentarios** |
+| `programa_subido` | `ok` y `placa`: el programa fue a la placa real |
+| `sesion_terminada` | `ms` de la sesión |
+
+**El código sin comentarios.** Se quitan los `//` y los `/* */`, respetando los textos entre comillas y los caracteres escapados (un `"http://…"` no se corta). Los textos entre comillas se conservan porque son parte del programa. Al exportar los datos para el análisis se revisan aparte.
+
+**Lo que no se registra:** el texto del monitor serial (mucho volumen y texto libre que el análisis no necesita), el paso del mouse y los movimientos intermedios al arrastrar (se registra la posición final).
+
+**Reglas:** agregar un tipo o un campo no rompe nada y el análisis ignora lo que no conoce. Cambiar o quitar uno sube `v`. El paquete sigue sin guardar nada.
 
 ## 7. Modo y no idealidades
 
@@ -258,3 +319,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 7 oct 2026 | Primera conexión con TecnoBloques: `alSerial` entrega texto UTF-8; se proponen `sim.destruir()` y `sim.medidas()`. `tbEscritorio.compilarHex` ya existe en TecnoBloques (sección 5). |
 | 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). El 8 oct entran la pieza `servo` (`GND`, `VCC`, `SIG`; `modelo` sg90 o mg90s), la no idealidad `limiteUSB`, las fallas `servo_alimentacion`, `reinicio_usb` y `fusible_usb`, y el evento `reinicio_placa` empieza a emitirse. El 10 oct entran `sim.mediciones()` y `TecnoCircuito.filasDeMediciones(m)` (la tabla de mediciones en español, la misma en la página de prueba y en TecnoBloques). El 10 oct entran las piezas `shield_l293d`, `motor_tt` y `bateria_lipo`, la no idealidad `caidaL293D` empieza a funcionar, las fallas de la batería y de los motores, y `mediciones()` gana `shield`, `motores`, `baterias` y `porVin`. El 10 oct entran el cable de balance de `bateria_lipo` (`BAL0`, `BAL1`, `BAL2`), la carga `desbalanceada`, la pieza `probador_lipo`, las fallas `bateria_desbalanceada` y `probador_alarma`, y `mediciones()` gana `probadores` (y `celdas` en cada batería). |
 | 1 (borrador) | 11 oct 2026 | Revisión de Codex: entra la falla `corriente_chip` (R4: `limitePin` ya prometía el total del chip y no se revisaba); el `.hex` se revisa línea por línea (R5). Sin cambios en la API ni en el formato del circuito. |
+| 1 (borrador) | 11 oct 2026 | Sección 6.1: el registro de eventos queda aprobado, para implementar en la próxima sesión. Identifica al **equipo** (código sin datos de los aprendices); apagado por defecto y encendido por el instructor; sobre con `v`, `corrida`, `ms_sim`, `equipo` y `sesion`; el circuito completo en `simulacion_iniciada`, las fallas de la corrida en `simulacion_detenida` y `simulacion_pausada` nuevo; eventos del editor definidos aquí; el C++ sin comentarios; sin el monitor serial. Hasta que se implemente, rige la sección 6. |

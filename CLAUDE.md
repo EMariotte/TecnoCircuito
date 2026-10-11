@@ -126,9 +126,14 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 
    Cuando llegue el informe, se decide con Efraín qué cambiar.
 4. **Revisión de Codex verificada** (11 oct): R1–R5, R7 y R8 cerrados. Para R6, Claude pasó `probar_motor.js` a la referencia de la medida, con la incertidumbre del UT33B+, y alineó la ficha del LED, el README y este archivo. **Falta que Codex verifique ese cierre.** Informe de seguimiento enlazado arriba.
-5. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
+5. ◐ **Registro de eventos: aprobado el 11 oct, se implementa en la próxima sesión** (CONTRATO, sección 6.1; plazo de la etapa 0: 30 oct). Decisiones de Efraín: el registro identifica al **equipo** con un código sin datos de los aprendices (la tabla código–integrantes queda fuera del software); **apagado por defecto**, lo enciende el instructor por PC, con aviso en pantalla; el equipo escribe su código al abrir, con confirmación; el circuito completo en cada `simulacion_iniciada`; las fallas de la corrida en `simulacion_detenida`; los eventos del editor definidos en el contrato; el C++ **sin comentarios** (los textos entre comillas se conservan y se revisan al exportar); el monitor serial no se registra; «Exportar registros» para el instructor. Orden de trabajo:
+   1. `contrato/evento.schema.json` y su prueba en `probar:contrato`.
+   2. TecnoCircuito: `v`, `corrida`, `ms_sim`, el circuito, las fallas por corrida y `simulacion_pausada`; las pruebas de Chromium validan cada evento contra el esquema.
+   3. TecnoBloques: configuración del instructor, código del equipo, sobre, eventos del editor, quitar comentarios del C++ (con pruebas de comillas y escapes), IPC `tb:registrar` al `.jsonl`, «Exportar registros» y una prueba que valide el archivo.
+   4. Codex verifica. En 2027 se definen la asignación de la condición (`condicion` queda reservado) y el registro por parejas o equipos en el diseño del estudio.
+6. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
 
-**Pendientes conocidos:** el esquema de los eventos del contrato (falta desde la etapa 0; lo necesita el estudio); el circuito no siente la caída del 5V (solo los servos ven el voltaje real); el esquemático `.kicad_sch` con etiquetas; el diagrama de flujo del programa (en TecnoBloques); el símbolo de marca en la imagen SVG (`MARCA_SVG` en `src/lienzo.js`).
+**Pendientes conocidos:** el circuito no siente la caída del 5V (solo los servos ven el voltaje real); el esquemático `.kicad_sch` con etiquetas; el diagrama de flujo del programa (en TecnoBloques); el símbolo de marca en la imagen SVG (`MARCA_SVG` en `src/lienzo.js`).
 
 ## Riesgos técnicos
 

@@ -873,3 +873,20 @@ Antes de cambiar nada, el diagnóstico `docs/revision-2026-10-11.cjs` reprodujo 
   - Codex verifica este cierre.
   - La medida del caso con 215 Ω sigue sin cerrar por 0,13 V (contactos o momento de la medida): repetirla midiendo en las patas de la resistencia daría evidencia mejor que la incertidumbre.
   - No hay medida física del ±1 % en tiempos.
+
+## 2026-10-11 — El registro de eventos queda aprobado (contrato, sección 6.1)
+
+**Decisiones de Efraín**, sobre una propuesta de Claude. Se documentan hoy y se implementan en la próxima sesión, antes del cierre de la etapa 0 (30 oct).
+
+- **Por qué ahora:** el paquete ya emitía eventos, pero el contrato no definía sus campos. TecnoBloques los guardaba solo en memoria (2000 como máximo) y se perdían al cerrar la app. Un registro mal hecho no se puede repetir, y la versión del estudio se congela en enero.
+- **Quién se registra:** el **equipo**, con un código sin datos de los aprendices; un aprendiz solo es un equipo de uno. La tabla código–integrantes no está en el software. Reemplaza al `alias` que nombraba la sección 6.
+- **Cuándo:** apagado por defecto. Lo enciende el instructor en cada PC, y la app avisa en pantalla. El equipo escribe su código al abrir, con confirmación. «Exportar registros» es solo para el instructor.
+- **Qué lleva:**
+  - el sobre: `v`, `t`, `origen`, `tipo` y `datos`; `corrida` y `ms_sim` en los eventos del simulador; `equipo`, `sesion`, `version_tb` y `version_tc`;
+  - el **circuito completo** en cada `simulacion_iniciada`, para que cada corrida se analice sola;
+  - las **fallas de la corrida** en `simulacion_detenida`, para ver qué se corrigió;
+  - `simulacion_pausada`, nuevo;
+  - los eventos del editor definidos en el contrato, entre ellos `codigo_compilado` con el C++ **sin comentarios** (los textos entre comillas se conservan y se revisan al exportar).
+- **Qué no lleva:** el monitor serial, el paso del mouse y los movimientos intermedios.
+- **Queda para 2027:** la asignación de la condición (el campo `condicion` queda reservado) y cómo se registra el trabajo en parejas o equipos dentro del diseño del estudio.
+- **Implementación** (CLAUDE.md, «Próxima sesión»): el esquema `contrato/evento.schema.json` con su prueba, después TecnoCircuito, después TecnoBloques, y Codex verifica.
