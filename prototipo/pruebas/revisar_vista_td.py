@@ -5,6 +5,8 @@
 Especificación: docs/ENTREGA-VISTAS-TECNODISENADOR.md. Solo librería estándar; no cambia ningún archivo.
 Uso:   python -I revisar_vista_td.py <pieza>-tc.json [otro-tc.json …]
 Sale con 0 si todo cumple. Los nombres de los contactos salen del esquema del contrato (fuente única).
+Con varias piezas de una misma familia (Nano + expansiones, Uno + shield) revisa además que compartan
+el marco y que sus id no se crucen.
 """
 import json
 import re
@@ -14,19 +16,27 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
 NS = '{http://www.w3.org/2000/svg}'
+XLINK_HREF = '{http://www.w3.org/1999/xlink}href'
 ESQUEMA = Path(__file__).resolve().parents[2] / 'contrato' / 'circuito.schema.json'
 LIMITE_BYTES = 50 * 1024
 TOL_MM = 0.01
 PERMITIDOS = {'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text', 'tspan',
               'defs', 'linearGradient', 'radialGradient', 'stop', 'clipPath', 'use'}
 ATRIBUTOS_PROHIBIDOS = {'class', 'style'}
+# Atributos de posición y tamaño: números en unidades del viewBox (mm), sin «mm», «px» ni «%».
+GEOMETRIA = {'x', 'y', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'x1', 'y1', 'x2', 'y2'}
+NUMERO = re.compile(r'^\s*-?(\d+(\.\d*)?|\.\d+)\s*$')
+MUCHOS_DECIMALES = re.compile(r'(?<![\d.])\d*\.\d{3,}')
 COLOR = re.compile(r'^#[0-9a-fA-F]{6}$')
+FORMAS_LED = {'circle', 'rect', 'ellipse', 'path'}
 # Alias sin contacto propio (contrato, sección 4): no se dibujan.
 ALIAS_NANO = {'SDA', 'SCL', 'MISO', 'MOSI', 'SCK', 'SS'}
 # Lo que cada pieza debe traer además de sus contactos (sección 6 de la especificación).
 LEDS = {'nano': {'PWR', 'L', 'RX', 'TX'}, 'uno': {'PWR', 'L', 'RX', 'TX'}, 'shield_l293d': {'PWR'}}
 PARTES = {'shield_l293d': {'puente-pwr'}}
-FAMILIA_NANO = {'nano', 'shield_nano_io'}
+# Familias que comparten marco (sección 6). La shield, mientras no exista el Uno Tecno, usa el marco del Uno de wokwi.
+FAMILIAS = [{'nano', 'shield_nano_io'}, {'uno', 'shield_l293d'}]
+MARCO_PROVISIONAL = {'shield_l293d': (72.58, 53.34)}
 # Todas las placas del simulador tienen sus headers en paso exacto de 2,54 mm (decisión de Efraín, 12 oct).
 # Cada lista es un header, de izquierda (USB) a derecha: pines vecinos a 2,54 mm y a la misma altura.
 FILAS_NANO = [['D12', 'D11', 'D10', 'D9', 'D8', 'D7', 'D6', 'D5', 'D4', 'D3', 'D2', 'GND2', 'RESET2', 'D0', 'D1'],
@@ -61,26 +71,48 @@ def nombres_esperados(pieza):
         return set(defs['pines-placa-uno']['enum'])
     if pieza == 'shield_nano_io':
         return {p for p in defs['pines-shield_nano_io']['enum'] if not p.startswith('SPI_')}
-    clave = 'pines-' + pieza
+    clave = 'pines-' + str(pieza)
     return set(defs[clave]['enum']) if clave in defs else None
 
 
+def prefijo_esperado(pieza, variante):
+    """Prefijo propio de cada pieza: el Nano y la expansión viven en el mismo documento y no pueden compartir id."""
+    fijos = {'nano': 'td-nano-', 'uno': 'td-uno-', 'shield_l293d': 'td-l293d-'}
+    if pieza == 'shield_nano_io':
+        return f'td-exp-{variante}-'
+    return fijos.get(pieza, 'td-' + str(pieza).replace('_', '-') + '-')
+
+
 def numero(texto):
-    return float(re.sub(r'[a-z%]+$', '', texto.strip()))
+    """Número sin unidades; None si no lo es (un «mm» dentro del dibujo cambiaría la escala)."""
+    if texto is None or not NUMERO.match(texto):
+        return None
+    return float(texto)
 
 
 def centro(el):
     local = el.tag.replace(NS, '')
     if local == 'circle':
-        return numero(el.get('cx', '0')), numero(el.get('cy', '0'))
+        cx, cy = numero(el.get('cx', '0')), numero(el.get('cy', '0'))
+        return (cx, cy) if None not in (cx, cy) else None
     if local == 'rect':
-        return numero(el.get('x', '0')) + numero(el.get('width')) / 2, numero(el.get('y', '0')) + numero(el.get('height')) / 2
+        x, y, w, h = (numero(el.get(a, '0' if a in 'xy' else None)) for a in ('x', 'y', 'width', 'height'))
+        return (x + w / 2, y + h / 2) if None not in (x, y, w, h) else None
     return None
+
+
+def menciona(textos, nombre):
+    patron = re.compile(r'(?<![A-Za-z0-9_])' + re.escape(nombre) + r'(?![A-Za-z0-9_])')
+    return any(patron.search(t) for t in textos)
 
 
 def revisar_entrega(ruta_json):
     print(f'\n== {ruta_json}')
-    datos = json.loads(Path(ruta_json).read_text(encoding='utf-8'))
+    try:
+        datos = json.loads(Path(ruta_json).read_text(encoding='utf-8'))
+    except (OSError, ValueError) as e:
+        revisar(False, f'{ruta_json}: el JSON se puede leer ({e})')
+        return None
     pieza, variante = datos.get('pieza'), datos.get('variante')
     nombre = f'{pieza}{"/" + variante if variante else ""}'
     revisar(datos.get('formato') == 1 and datos.get('unidad') == 'mm', f'{nombre}: formato 1 y unidades en mm')
@@ -94,54 +126,80 @@ def revisar_entrega(ruta_json):
         return None
     crudo = ruta_svg.read_bytes()
     revisar(len(crudo) <= LIMITE_BYTES, f'{nombre}: pesa {len(crudo) / 1024:.1f} KB (máximo 50 KB)')
-    texto = crudo.decode('utf-8')
-    revisar('data:' not in texto and 'http://' not in texto.replace('http://www.w3.org/', '') and 'https://' not in texto,
-            f'{nombre}: sin datos incrustados ni enlaces externos')
-    decimales = re.findall(r'\d\.\d{3,}', re.sub(r'xmlns(:\w+)?="[^"]*"', '', texto))
-    revisar(not decimales, f'{nombre}: números con máximo 2 decimales' + (f' (p. ej. {decimales[0]})' if decimales else ''))
-    raiz = ET.fromstring(crudo)
+    try:
+        raiz = ET.fromstring(crudo)
+    except ET.ParseError as e:
+        revisar(False, f'{nombre}: el SVG es XML válido ({e})')
+        return None
     revisar(raiz.tag == NS + 'svg', f'{nombre}: la raíz es un <svg> con el espacio de nombres SVG')
-
-    # Marco: viewBox 0 0 ancho alto, igual al JSON.
-    marco = datos.get('marco') or {}
-    vb = [numero(v) for v in (raiz.get('viewBox') or '').replace(',', ' ').split()]
-    revisar(len(vb) == 4 and vb[0] == 0 and vb[1] == 0 and abs(vb[2] - marco.get('ancho', -1)) <= TOL_MM
-            and abs(vb[3] - marco.get('alto', -1)) <= TOL_MM,
-            f'{nombre}: viewBox «0 0 ancho alto» igual al marco del JSON ({raiz.get("viewBox")})')
-
-    # Elementos y atributos permitidos.
-    raros, atributos, eventos = set(), set(), set()
     padres = {hijo: padre for padre in raiz.iter() for hijo in padre}
+
+    # Marco: viewBox «0 0 ancho alto» igual al JSON, y width/height de la raíz en mm.
+    marco = datos.get('marco') or {}
+    ancho, alto = marco.get('ancho'), marco.get('alto')
+    vb = [numero(v) for v in (raiz.get('viewBox') or '').replace(',', ' ').split()]
+    marco_ok = len(vb) == 4 and None not in vb and isinstance(ancho, (int, float)) and isinstance(alto, (int, float)) \
+        and vb[0] == 0 and vb[1] == 0 and abs(vb[2] - ancho) <= TOL_MM and abs(vb[3] - alto) <= TOL_MM
+    revisar(marco_ok, f'{nombre}: viewBox «0 0 ancho alto» igual al marco del JSON ({raiz.get("viewBox")})')
+    en_mm = lambda v: v is not None and v.strip().endswith('mm') and numero(v.strip()[:-2]) is not None
+    revisar(en_mm(raiz.get('width')) and en_mm(raiz.get('height')) and marco_ok
+            and abs(numero(raiz.get('width').strip()[:-2]) - ancho) <= TOL_MM and abs(numero(raiz.get('height').strip()[:-2]) - alto) <= TOL_MM,
+            f'{nombre}: width y height de la raíz en mm, iguales al marco')
+    if pieza in MARCO_PROVISIONAL and marco_ok:
+        fijo = MARCO_PROVISIONAL[pieza]
+        revisar(abs(ancho - fijo[0]) <= TOL_MM and abs(alto - fijo[1]) <= TOL_MM,
+                f'{nombre}: marco fijo {fijo[0]} × {fijo[1]} mm del Uno actual (sección 6.3)')
+
+    # Elementos y atributos permitidos; valores sin datos incrustados, enlaces externos, unidades ni 3 decimales.
+    raros, prohibidos, externos, con_unidades, decimales = set(), set(), set(), set(), set()
     for el in raiz.iter():
         local = el.tag.replace(NS, '')
         if local not in PERMITIDOS:
             raros.add(local)
-        for a in el.attrib:
-            if a in ATRIBUTOS_PROHIBIDOS:
-                atributos.add(a)
-            if a.startswith('on'):
-                eventos.add(a)
+        for a, v in el.attrib.items():
+            if a in ATRIBUTOS_PROHIBIDOS or a.startswith('on') or (a.startswith('{') and a != XLINK_HREF):
+                prohibidos.add(a.split('}')[-1] if a.startswith('{') else a)
+            if 'data:' in v or re.search(r'https?://', v):
+                externos.add(f'{local}@{a.split("}")[-1]}')
+            if a in ('href', XLINK_HREF) and not v.startswith('#'):
+                externos.add(f'{local}@href')
+            if el is not raiz and a in GEOMETRIA and numero(v) is None:
+                con_unidades.add(f'{local}@{a}="{v}"')
+            decimales.update(MUCHOS_DECIMALES.findall(v))
     revisar(not raros, f'{nombre}: solo elementos permitidos' + (f'; sobran: {", ".join(sorted(raros))}' if raros else ''))
-    revisar(not atributos and not eventos, f'{nombre}: sin class, style ni eventos' + (f' ({", ".join(sorted(atributos | eventos))})' if atributos or eventos else ''))
+    revisar(not prohibidos, f'{nombre}: sin class, style, eventos ni atributos de otros programas' + (f' ({", ".join(sorted(prohibidos))})' if prohibidos else ''))
+    revisar(not externos, f'{nombre}: sin datos incrustados ni enlaces externos' + (f' ({", ".join(sorted(externos))})' if externos else ''))
+    revisar(not con_unidades, f'{nombre}: posiciones y tamaños sin unidades (mm del viewBox)' + (f'; revisar {sorted(con_unidades)[:4]}' if con_unidades else ''))
+    revisar(not decimales, f'{nombre}: números con máximo 2 decimales' + (f' (p. ej. {sorted(decimales)[0]})' if decimales else ''))
 
-    # id con prefijo, únicos, y referencias que existen.
+    # id con el prefijo de la pieza, únicos, y referencias que existen.
     prefijo = datos.get('prefijo') or ''
+    debe = prefijo_esperado(pieza, variante)
     ids = [el.get('id') for el in raiz.iter() if el.get('id')]
-    revisar(prefijo.startswith('td-') and all(i.startswith(prefijo) for i in ids) and len(ids) == len(set(ids)),
-            f'{nombre}: {len(ids)} id únicos que empiezan con el prefijo «{prefijo}» (debe empezar con «td-»)')
-    refs = set(re.findall(r'url\(#([^)]+)\)', texto)) | set(re.findall(r'href="#([^"]+)"', texto))
+    revisar(prefijo == debe and all(i.startswith(debe) for i in ids) and len(ids) == len(set(ids)),
+            f'{nombre}: {len(ids)} id únicos con el prefijo de la pieza «{debe}»' + (f' (el JSON dice «{prefijo}»)' if prefijo != debe else ''))
+    refs = set()
+    for el in raiz.iter():
+        for a, v in el.attrib.items():
+            refs.update(re.findall(r'url\(\s*[\'"]?#([^\'")\s]+)', v))
+            if a in ('href', XLINK_HREF) and v.startswith('#'):
+                refs.add(v[1:])
     revisar(refs <= set(ids), f'{nombre}: cada url(#…) y href="#…" apunta a un id del archivo' + (f'; faltan: {sorted(refs - set(ids))}' if refs - set(ids) else ''))
-    textos = [el for el in raiz.iter() if el.tag == NS + 'text']
+
     def fuente(el):  # font-family se hereda del grupo más cercano que la declare
         while el is not None and not el.get('font-family'):
             el = padres.get(el)
         return el.get('font-family') if el is not None else ''
-    revisar(all('Arial' in fuente(el) for el in textos),
-            f'{nombre}: {len(textos)} textos con font-family Arial')
+    textos = [el for el in raiz.iter() if el.tag == NS + 'text']
+    revisar(all('Arial' in fuente(el) for el in textos), f'{nombre}: {len(textos)} textos con font-family Arial')
+
+    def ancestros(el):
+        while el in padres:
+            el = padres[el]
+            yield el
 
     # Contactos: exactamente los nombres del contrato, centrados en la coordenada del JSON.
-    contactos = {}
-    repetidos = set()
+    contactos, repetidos = {}, set()
     for el in raiz.iter():
         n = el.get('data-contacto')
         if n is None:
@@ -150,52 +208,67 @@ def revisar_entrega(ruta_json):
             repetidos.add(n)
         contactos[n] = el
     pines = datos.get('pines') or {}
+    pines_ok = {n: p for n, p in pines.items()
+                if isinstance(p, dict) and isinstance(p.get('x'), (int, float)) and isinstance(p.get('y'), (int, float))}
+    revisar(len(pines_ok) == len(pines), f'{nombre}: cada pin del JSON tiene «x» e «y» numéricos'
+            + (f'; revisar {sorted(set(pines) - set(pines_ok))[:6]}' if len(pines_ok) != len(pines) else ''))
     presentes = set(contactos)
     faltan, sobran = esperados - presentes, presentes - esperados
-    diferencias = datos.get('diferencias') or []
+    diferencias = [str(d) for d in (datos.get('diferencias') or [])]
     revisar(not sobran and not repetidos, f'{nombre}: ningún data-contacto inventado ni repetido' + (f' ({sorted(sobran | repetidos)})' if sobran or repetidos else ''))
-    revisar(not faltan or bool(diferencias), f'{nombre}: {len(presentes & esperados)} de {len(esperados)} contactos del contrato' + (f'; faltan {sorted(faltan)} sin explicar en «diferencias»' if faltan else ''))
+    sin_explicar = sorted(n for n in faltan if not menciona(diferencias, n))
+    revisar(not sin_explicar, f'{nombre}: {len(presentes & esperados)} de {len(esperados)} contactos del contrato'
+            + (f'; faltan {sin_explicar} sin nombrarlos en «diferencias»' if sin_explicar else ''))
+    if faltan and not sin_explicar:
+        print(f'      AVISO: faltan {sorted(faltan)}, informados en «diferencias»: TecnoCircuito decide con Efraín.')
     revisar(set(pines) == presentes, f'{nombre}: el JSON trae los mismos nombres que el SVG')
     mal = []
     for n, el in contactos.items():
-        c = centro(el)
-        cadena = [el]
-        while cadena[-1] in padres:
-            cadena.append(padres[cadena[-1]])
-        p = pines.get(n) or {}
-        if c is None or any(x.get('transform') for x in cadena) or 'x' not in p \
+        c, p = centro(el), pines_ok.get(n)
+        cadena = [el, *ancestros(el)]
+        if c is None or p is None or any(x.get('transform') for x in cadena) or any(x.tag == NS + 'defs' for x in cadena) \
                 or abs(c[0] - p['x']) > TOL_MM or abs(c[1] - p['y']) > TOL_MM:
             mal.append(n)
-    revisar(not mal, f'{nombre}: cada contacto es un circle/rect sin transform, centrado en su coordenada (±0,01 mm)' + (f'; revisar {sorted(mal)[:8]}' if mal else ''))
+    revisar(not mal, f'{nombre}: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)'
+            + (f'; revisar {sorted(mal)[:8]}' if mal else ''))
 
-    if pieza in HEADERS and not faltan:
-        headers = HEADERS[pieza]
-        paso = [(f[i], f[i + 1], pines[f[i + 1]]['x'] - pines[f[i]]['x']) for f in headers for i in range(len(f) - 1)]
-        malos = [f'{a}→{b} {d:.2f}' for a, b, d in paso if abs(d - 2.54) > 0.05]
-        horizontal = all(abs(pines[f[0]]['y'] - pines[n]['y']) <= 0.05 for f in headers for n in f)
-        revisar(not malos and horizontal, f'{pieza}: headers horizontales con paso exacto de 2,54 mm (±0,05)'
+    # Paso de 2,54 mm de las placas, con los pines que sí están (los que faltan ya se informaron arriba).
+    if pieza in HEADERS:
+        headers = [[n for n in f if n in pines_ok] for f in HEADERS[pieza]]
+        completos = {n for f in HEADERS[pieza] for n in f} <= set(pines_ok)
+        pares = [(a, b) for f in HEADERS[pieza] for a, b in zip(f, f[1:]) if a in pines_ok and b in pines_ok]
+        malos = [f'{a}→{b} {pines_ok[b]["x"] - pines_ok[a]["x"]:.2f}' for a, b in pares if abs(pines_ok[b]['x'] - pines_ok[a]['x'] - 2.54) > 0.05]
+        horizontal = all(abs(pines_ok[f[0]]['y'] - pines_ok[n]['y']) <= 0.05 for f in headers if f for n in f)
+        revisar(not malos and horizontal, f'{pieza}: headers horizontales con paso exacto de 2,54 mm (±0,05), {len(pares)} pares'
                 + (f'; fuera de paso: {", ".join(malos[:6])}' if malos else ''))
         if pieza == 'nano':
-            alto = [abs(pines[FILAS_NANO[1][i]]['y'] - pines[FILAS_NANO[0][i]]['y']) for i in range(15)]
-            revisar(all(abs(d - 15.24) <= 0.05 for d in alto) and pines['D12']['y'] < pines['D13']['y'],
-                    'nano: filas a 15,24 mm, USB a la izquierda y D12…D1 arriba')
-        if pieza == 'uno':
-            arriba, abajo = headers[0] + headers[1], headers[2] + headers[3]
-            revisar(abs(pines['SCL']['y'] - pines['D0']['y']) <= 0.05 and abs(pines['IOREF']['y'] - pines['A5']['y']) <= 0.05
-                    and pines['SCL']['y'] < pines['IOREF']['y'] and pines['D8']['x'] < pines['D7']['x'],
+            alto_filas = [abs(pines_ok[b]['y'] - pines_ok[a]['y']) for a, b in zip(*FILAS_NANO) if a in pines_ok and b in pines_ok]
+            orientado = not completos or pines_ok['D12']['y'] < pines_ok['D13']['y'] and pines_ok['D12']['x'] < pines_ok['D1']['x']
+            revisar(all(abs(d - 15.24) <= 0.05 for d in alto_filas) and orientado, 'nano: filas a 15,24 mm, USB a la izquierda y D12…D1 arriba')
+        if pieza == 'uno' and completos:
+            revisar(abs(pines_ok['SCL']['y'] - pines_ok['D0']['y']) <= 0.05 and abs(pines_ok['IOREF']['y'] - pines_ok['A5']['y']) <= 0.05
+                    and pines_ok['SCL']['y'] < pines_ok['IOREF']['y'] and pines_ok['D8']['x'] < pines_ok['D7']['x'],
                     'uno: headers digitales arriba, alimentación y analógicas abajo, USB a la izquierda')
 
-    # LED y partes.
-    leds_svg = {el.get('data-led'): el for el in raiz.iter() if el.get('data-led')}
+    # LED y partes: sin repetidos, en el JSON, con la forma pedida.
+    leds_svg, partes_svg, dobles = {}, {}, set()
+    for el in raiz.iter():
+        for clave, destino in (('data-led', leds_svg), ('data-parte', partes_svg)):
+            n = el.get(clave)
+            if n is not None:
+                if n in destino:
+                    dobles.add(f'{clave}="{n}"')
+                destino[n] = el
+    revisar(not dobles, f'{nombre}: cada data-led y data-parte aparece una sola vez' + (f' ({sorted(dobles)})' if dobles else ''))
     leds_json = datos.get('leds') or {}
     revisar(LEDS.get(pieza, set()) <= set(leds_svg), f'{nombre}: tiene los LED {sorted(LEDS.get(pieza, set())) or "(ninguno obligatorio)"}')
-    revisar(set(leds_svg) == set(leds_json) and all(COLOR.match(str(v.get('apagado', ''))) and COLOR.match(str(v.get('encendido', '')))
+    revisar(set(leds_svg) == set(leds_json) and all(isinstance(v, dict) and COLOR.match(str(v.get('apagado', ''))) and COLOR.match(str(v.get('encendido', '')))
                                                     for v in leds_json.values()),
             f'{nombre}: cada data-led está en el JSON con color apagado y encendido #rrggbb')
-    revisar(all(el.tag != NS + 'g' and (el.get('fill') or '').lower() == str(leds_json.get(n, {}).get('apagado', '')).lower()
+    revisar(all(el.tag.replace(NS, '') in FORMAS_LED and not any(x.tag == NS + 'defs' for x in ancestros(el))
+                and (el.get('fill') or '').lower() == str((leds_json.get(n) or {}).get('apagado', '')).lower()
                 for n, el in leds_svg.items()),
-            f'{nombre}: cada LED es una sola forma pintada con su color apagado')
-    partes_svg = {el.get('data-parte'): el for el in raiz.iter() if el.get('data-parte')}
+            f'{nombre}: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado')
     partes_json = datos.get('partes') or {}
     revisar(PARTES.get(pieza, set()) <= set(partes_svg) and set(partes_svg) == set(partes_json)
             and all(el.tag == NS + 'g' and not el.get('transform') for el in partes_svg.values()),
@@ -208,7 +281,7 @@ def revisar_entrega(ruta_json):
             f'{nombre}: licencia publicable y sin material «compartir igual»')
     if diferencias:
         print('      diferencias informadas: ' + ' | '.join(diferencias))
-    return pieza, (vb[2], vb[3]) if len(vb) == 4 else None
+    return {'pieza': pieza, 'nombre': nombre, 'marco': (vb[2], vb[3]) if marco_ok else None, 'ids': set(ids)}
 
 
 def principal(rutas):
@@ -216,9 +289,14 @@ def principal(rutas):
         print(__doc__)
         return 2
     resultados = [r for r in (revisar_entrega(p) for p in rutas) if r]
-    familia = {marco for pieza, marco in resultados if pieza in FAMILIA_NANO}
-    if sum(1 for pieza, _ in resultados if pieza in FAMILIA_NANO) > 1:
-        revisar(len(familia) == 1, 'familia Nano: el Nano y las expansiones comparten el mismo marco')
+    for familia in FAMILIAS:
+        juntas = [r for r in resultados if r['pieza'] in familia]
+        if len(juntas) < 2:
+            continue
+        print()
+        revisar(len({r['marco'] for r in juntas}) == 1, f'familia {"/".join(sorted(familia))}: comparten el mismo marco')
+        cruces = {i for a in juntas for b in juntas if a is not b for i in a['ids'] & b['ids']}
+        revisar(not cruces, f'familia {"/".join(sorted(familia))}: ningún id se repite entre piezas' + (f' ({sorted(cruces)[:6]})' if cruces else ''))
     print(f'\n{comprobaciones} comprobaciones; ' + (f'{len(fallas)} FALLAS' if fallas else 'la entrega cumple la especificación.'))
     return 1 if fallas else 0
 

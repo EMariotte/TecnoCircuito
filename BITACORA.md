@@ -990,3 +990,32 @@ Efraín aprobó las dos sugerencias que quedaban de la revisión del Nano y auto
 - **Especificación de entrega** (`docs/ENTREGA-VISTAS-TECNODISENADOR.md`): nueva **6.0**, una regla para todas las placas (paso exacto dentro de cada header; las separaciones entre headers se miden y se informan). Nueva **6.5**, la ficha del Uno R3 Tecno: Uno del kit con fotos propias; USB y jack a la izquierda; marco = placa + lo que sobresalen el USB y el jack, compartido con la shield; 31 contactos con los nombres actuales (`GND1` del header digital, `GND2`/`GND3` de alimentación, `SDA`/`SCL` con agujero propio; el pin sin rótulo y el ICSP sin contacto); LED `PWR`/`L`/`TX`/`RX`. La 6.3 pasa a provisional: con el Uno Tecno, la shield tiene una sola salida (la de la App), y se recomienda dibujar primero el Uno. La sección 9 suma la migración del Uno (`PLACAS.uno` deja `wokwi-arduino-uno`; los headers de la shield salen del JSON del Uno).
 - **Revisor:** comprueba el paso en cualquier placa (Nano y Uno) y reconoce `uno` (`pines-placa-uno`). Entregas sintéticas: Nano, roja y azul cumplen (74 comprobaciones); el Uno de wokwi falla solo en el paso.
 - `CLAUDE.md`: decisión nueva en la tabla y encargo planeado (primero el Uno, después la shield). TecnoDiseñador: pendiente y bitácora con el encargo.
+
+## 2026-10-12 — Claude: revisión independiente del trabajo del día y correcciones
+
+**Pedido de Efraín:** validar con un segundo agente si quedaron errores. Lo revisó un agente aparte, que solo revisó y no cambió nada.
+
+- **Sin errores en el simulador.**
+  - Comparó el núcleo de antes y de después de `1f5b3ac`: el Uno da los mismos resultados en ideal y en realista (parpadeo, potenciómetro con PWM, entrada flotante, 5V–GND, cuatro servos, carro con shield y LiPo).
+  - Confirmó las cifras: Nano 114, interfaz Nano 84, TecnoBloques 52, 1016 → 3 resoluciones por segundo.
+  - Confirmó que el bundle del commit es idéntico byte a byte al construido desde el código.
+  - Encontró coherentes el contrato, la sección 60 y las tablas de la especificación.
+- **Corregido en `revisar_vista_td.py`:**
+  - Prefijo exacto por pieza (`td-nano-`, `td-exp-roja-`/`-azul-`, `td-uno-`, `td-l293d-`) y ningún `id` repetido entre piezas de una familia (antes Nano y expansión podían compartir `td-gPcb`).
+  - Un contacto que falta tiene que estar nombrado en `diferencias` (antes bastaba cualquier frase); el paso de 2,54 mm se revisa con los pines presentes.
+  - Sin errores de Python ante datos incompletos.
+  - Decimales sin cero inicial (`.125`).
+  - Unidades dentro del dibujo (`cx="11.22mm"`).
+  - `url('#…')` con comillas, atributos de otros programas (`inkscape:…`), contactos en `<defs>`, `data-led`/`data-parte` repetidos y forma del LED.
+  - `width`/`height` de la raíz en mm y marco fijo de la shield.
+  - Ya no da falso positivo por un texto que diga «data:».
+  - Probado con las 13 entregas sintéticas del revisor y las propias: cada una da la falla esperada o pasa, según el caso.
+- **Especificación:**
+  - Prefijos exactos.
+  - Saltos del Uno de wokwi sin redondear (2,65 y 2,38 mm).
+  - El Uno Tecno queda **anclado**: marco fijo de 72,58 × 53,34 mm, con la placa en (4; 0). Así, los circuitos guardados se corren menos de 0,3 mm.
+  - Regla de los contactos que faltan.
+  - **Decisión de licencia pendiente para el Uno:** el del kit es original (CC BY-SA). Recomendación: dibujar un clon si lo hay; si no, el original sin pistas.
+- **TecnoBloques:** si lo guardado es solo la expansión por defecto del Nano (sin cables ni otras piezas), `abrirLienzo()` la reemplaza en vez de conservarla. Antes, un proyecto nuevo que pasaba por Nano y volvía a Uno repetía el aviso cada vez que se abría. `test:simulador` **52 OK**.
+- **Riesgos sin cambios, de bajo impacto:** con «Desconectada», 5V y 3V3 siguen siendo fuentes de 0 V; JACK/VIN podrían quedar en 0 V si una batería llegara a 0 V a mitad de la corrida (harían falta unos 148 A).
+- La fecha de fotos del Uno queda agendada en el laboratorio (punto 9). Sin commit.

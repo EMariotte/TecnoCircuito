@@ -56,7 +56,7 @@ En `componentes/<modelo>/entrega/tecnocircuito/`, generado por el mismo script q
 - `<metadata>`, `<title>` y `<desc>`: TecnoCircuito pone los suyos.
 - Animaciones (`animate`, `animateTransform`, `set`) y enlaces externos (`href` a `http…`).
 
-**`id`:** todos empiezan con el prefijo de la pieza (`td-nano-`, `td-exp-roja-`, `td-l293d-`…), son únicos y cada `url(#…)` apunta a uno que existe. Motivo: en el lienzo, el Nano y la expansión viven en el mismo documento. Si los dos tienen un `gPcb`, la expansión roja se puede pintar con el azul del Nano.
+**`id`:** todos empiezan con el prefijo **exacto** de la pieza, son únicos y cada `url(#…)` apunta a uno que existe. Prefijos: `td-nano-`, `td-exp-roja-`, `td-exp-azul-`, `td-uno-`, `td-l293d-`; para otra pieza, `td-` + su tipo con guiones (`td-bateria-lipo-`). Motivo: en el lienzo, el Nano y la expansión viven en el mismo documento. Si los dos tienen un `gPcb`, la expansión roja se puede pintar con el azul del Nano.
 
 **Texto:** `<text>` con `font-family="Arial, Helvetica, sans-serif"`, **no** letras convertidas en trazados (pesan el doble). Un rótulo menor de 1 mm de alto no se lee en pantalla: se puede omitir o simplificar.
 
@@ -117,7 +117,7 @@ Ejemplo (Nano, valores ilustrativos):
 | `pieza`, `variante` | Los de la sección 6; `variante` es `null` si la pieza no tiene. |
 | `archivo` | El SVG que describe, en la misma carpeta. |
 | `marco` | Igual al `viewBox` del SVG, en mm. |
-| `prefijo` | El de los `id` del SVG. |
+| `prefijo` | El de los `id` del SVG: el exacto de la sección 3. |
 | `pines` | **Todos** los nombres de la sección 6 → `{x, y}` en mm, en el sistema del SVG, con 2 decimales. Ni uno más ni uno menos. |
 | `leds` | Cada `data-led` del SVG con su color apagado y encendido (`#rrggbb`). El encendido lo propone TecnoDiseñador a partir de la foto o del color típico del LED. |
 | `partes` | Cada `data-parte`: `{ "descripcion": "…" }` y, si gira, `"pivote": {x, y}` y `"angulo_dibujado"` en grados. |
@@ -132,7 +132,7 @@ Ejemplo (Nano, valores ilustrativos):
 
 **Decisión de Efraín (12 oct):** toda placa del simulador (Uno, Nano y, cuando llegue, la 2560) es una **Pieza Tecno** con sus headers en **paso exacto de 2,54 mm**: pines vecinos de un mismo header a 2,54 mm (±0,05) y a la misma altura. La separación entre headers distintos es la que se mide en la placa real (en el Uno, por ejemplo, los headers digitales no están a un múltiplo de 2,54 mm entre sí): se mide y se informa en `medidas`, no se fuerza. El revisor de la sección 8 comprueba la regla en el Nano y en el Uno.
 
-**Por qué:** las shields y expansiones se apilan sobre la placa, los cables caen en sus pines y la protoboard usa la misma rejilla de 2,54 mm. Si el dibujo de la placa no respeta el paso, ninguna pieza medida de verdad le encaja. Es lo que pasa hoy con el Uno de `@wokwi/elements`: pasado por el revisor, tiene cuatro saltos fuera de paso (SCL→SDA 2,64 mm, SDA→AREF 2,39, D9→D8 2,64, 3V3→5V 2,64) y el resto en 2,51 mm. Por eso existe el Uno Tecno de la sección 6.5.
+**Por qué:** las shields y expansiones se apilan sobre la placa, los cables caen en sus pines y la protoboard usa la misma rejilla de 2,54 mm. Si el dibujo de la placa no respeta el paso, ninguna pieza medida de verdad le encaja. Es lo que pasa hoy con el Uno de `@wokwi/elements`: pasado por el revisor, tiene cuatro saltos fuera de paso (SCL→SDA, D9→D8 y 3V3→5V de 2,65 mm, y SDA→AREF de 2,38) y el resto en 2,51 mm. Son los valores sin redondear: con las coordenadas redondeadas a 0,01 mm, el revisor da 2,64 y 2,39. Por eso existe el Uno Tecno de la sección 6.5.
 
 ### 6.1 Nano clásico (`pieza: "nano"`, sirve también para `nano_old`)
 
@@ -230,8 +230,14 @@ El Uno tiene su propia ficha en la sección 6.5.
 Hoy el Uno lo dibuja `@wokwi/elements` y no cumple la regla 6.0. **Decisión de Efraín (12 oct): el Uno pasa a ser Pieza Tecno**, medido desde la placa del kit con el proceso de TecnoDiseñador, para que todas las placas del simulador tengan paso exacto. Por compatibilidad, los nombres son **los mismos que hoy**, así que ningún circuito guardado cambia.
 
 - **Pieza:** el Uno R3 del kit, el que se usa en el aula (el que TecnoBloques probó el 7 oct, detectado como «Arduino UNO»). Solo fotos propias; el diseño y las fotos oficiales de Arduino son «compartir igual» y no se usan. Logos y marcas se quitan; qué nombre queda impreso («UNO», «R3»…) se le pregunta a Efraín, como se hizo con «MEGA» → «2560».
+- **Decisión de licencia, pendiente de Efraín antes de empezar:** ese Uno es un **Arduino original** (VID 2341, según la bitácora de TecnoBloques), no un clon como la 2560. Dibujarlo fielmente, aunque sea desde fotos propias, puede ser una obra derivada de su diseño de referencia CC BY-SA. Opciones:
+  1. Dibujar un **Uno clon** del ambiente, si lo hay, como se hizo con la 2560.
+  2. Dibujar el original **sin pistas ni detalles del trazado**: solo contorno, conectores, componentes principales y serigrafía de los pines.
+  3. Consultar antes de publicar.
+
+  Recomendación: la opción 1 si hay un clon; si no, la 2.
 - **Orientación:** vista desde arriba, **USB y jack a la izquierda**, headers digitales arriba y headers de alimentación y analógicos abajo (como el lienzo actual).
-- **Marco:** la placa (nominal 68,58 × 53,34 mm) **más lo que sobresalen el USB y el jack** por la izquierda; hoy son 4 mm, y la medición lo fija. Origen arriba a la izquierda del marco. **La shield L293D usa este mismo marco**, igual que el Nano y la expansión comparten el suyo.
+- **Marco: fijo, 72,58 × 53,34 mm, igual que hoy.** La esquina superior izquierda de la placa va en **(4,00; 0,00)**, como en el dibujo actual, para que el Uno no se mueva respecto de las piezas, la protoboard y los dobleces de los cables guardados. Si el USB o el jack sobresalen más de 4 mm, se dibujan recortados en el borde del marco y se anota en `diferencias`. **La shield L293D usa este mismo marco**, igual que el Nano y la expansión comparten el suyo.
 - **Contactos: 31**, de izquierda a derecha. Los nombres vienen del contrato y coinciden con la traducción actual del lienzo:
 
 | Header | Pines, de izquierda a derecha | Nombres |
@@ -255,7 +261,7 @@ Puede pasar que falte o sobre un contacto, que la serigrafía diga otra cosa o q
 2. En el JSON se ponen **solo** los nombres de la sección 6 que existen en la pieza. Cada diferencia va en `diferencias`, en una frase («la azul no tiene `A7_V`: el canal A7 solo tiene S y G»).
 3. **Nunca** se inventa un nombre nuevo ni se reutiliza uno para otra cosa. TecnoCircuito decide con Efraín si cambia el contrato.
 
-El revisor de la sección 8 marca como falla un nombre que falte. Con la diferencia anotada, TecnoCircuito la revisa y decide; la entrega no se rechaza por eso.
+El revisor de la sección 8 marca como falla un nombre que falte **si no aparece escrito en `diferencias`**. Si está nombrado ahí, lo muestra como aviso, y TecnoCircuito lo revisa y decide; la entrega no se rechaza por eso. El paso de 2,54 mm se sigue revisando con los pines que sí están.
 
 ## 8. Cómo se comprueba antes de entregar
 
@@ -265,7 +271,7 @@ El revisor está en TecnoCircuito. Solo usa la librería estándar de Python y n
 python -I ../TecnoCircuito/prototipo/pruebas/revisar_vista_td.py componentes/<modelo>/entrega/tecnocircuito/<pieza>-tc.json [otro-tc.json …]
 ```
 
-Revisa: que el SVG cumpla la sección 3; el paso exacto de 2,54 mm en las placas (Nano y Uno, sección 6.0); los `id` y sus referencias; que los nombres de `data-contacto` sean exactamente los de la sección 6 y que cada centro coincida con el JSON (±0,01 mm); los LED y las partes que pide cada pieza; los colores; el tamaño; los campos del JSON y la licencia. Con varios JSON de la familia Nano, comprueba además que compartan el marco. Sale con 0 si todo está bien. Cada falla dice qué arreglar.
+Revisa: que el SVG cumpla la sección 3; el paso exacto de 2,54 mm en las placas (Nano y Uno, sección 6.0); los `id` y sus referencias; que los nombres de `data-contacto` sean exactamente los de la sección 6 y que cada centro coincida con el JSON (±0,01 mm); los LED y las partes que pide cada pieza; los colores; el tamaño; los campos del JSON y la licencia. Con varias piezas de una familia (Nano + expansiones; Uno + shield), comprueba además que compartan el marco y que ningún `id` se repita entre ellas. También rechaza unidades dentro del dibujo (`cx="11.22mm"`), atributos de otros programas (`inkscape:…`) y contactos dentro de `<defs>`. Sale con 0 si todo está bien. Cada falla dice qué arreglar.
 
 Además, TecnoCircuito revisa a ojo la vista en el lienzo, sobre la pieza real y con los cables puestos.
 
@@ -279,4 +285,4 @@ Además, TecnoCircuito revisa a ojo la vista en el lienzo, sobre la pieza real y
 6. Pruebas: contactos alineados con los puntos de cableado, LED, sin imágenes ni metadatos, tamaño. Recorrido en Chromium y en TecnoBloques.
 7. Los circuitos guardados se conservan, porque los cables se refieren a los contactos por nombre. Si la geometría cambia mucho, los dobleces de los cables pueden quedar corridos.
 8. En la ficha, el dibujo pasa de «Dibujo basado en referencias» a «Dibujo medido por TecnoDiseñador (registro …)». La validación eléctrica sigue pendiente hasta el laboratorio.
-9. Con el Uno (6.5): `PLACAS.uno` deja la etiqueta `wokwi-arduino-uno` y usa la Pieza Tecno con su `mostrar` para los LED. Las coordenadas `FILAS_UNO` de la shield salen del JSON del Uno. Los dobleces guardados (`puntos`) de los cables pueden correrse una fracción de milímetro: es aceptable.
+9. Con el Uno (6.5): `PLACAS.uno` deja la etiqueta `wokwi-arduino-uno` y usa la Pieza Tecno con su `mostrar` para los LED. Las coordenadas `FILAS_UNO` de la shield salen del JSON del Uno. Como el marco y la esquina de la placa no cambian, los pines solo se corren lo que se equivocaba el dibujo de wokwi (menos de 0,3 mm).
