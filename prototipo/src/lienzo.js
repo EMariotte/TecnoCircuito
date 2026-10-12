@@ -11,6 +11,7 @@ import { netlistKiCad } from './kicad.js';
 import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 import { esNano, perfilPlaca } from './placas.js';
+import { ALIASES_EXPANSION_SPI } from './piezas/shield_nano_io.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Marca de la imagen SVG exportada (abajo a la derecha). La imagen sigue siendo de quien la hace (NOTICE).
@@ -413,6 +414,7 @@ export function crearLienzo(elemento, opciones = {}) {
     const v = vistas.get(id);
     if (!v) return null;
     if (v.pines.has(pin)) return v.pines.get(pin);
+    if (v.def === TIPOS.shield_nano_io && ALIASES_EXPANSION_SPI[pin]) return pinDe('placa.' + ALIASES_EXPANSION_SPI[pin]);
     const fisico = id === 'placa' && esNano(placa)
       ? (perfilPlaca(placa).puentes.find(grupo => grupo.includes(pin)) || [pin])[0] : pin;
     return v.pines.get(fisico);

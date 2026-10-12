@@ -185,8 +185,9 @@ export const EXPANSION_NANO_KICAD = [
     clave: 'I2C', valor: 'I2C SDA SCL 5V GND (referencia por validar)', nota: NOTA_NANO_IO, externo: true,
     pads: { 1: 'pieza:I2C_SDA', 2: 'pieza:I2C_SCL', 3: 'pieza:I2C_V', 4: 'pieza:I2C_G' } },
   { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x06', huella: 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical',
-    clave: 'SPI', valor: 'SPI MISO MOSI SCK SS 5V GND (referencia por validar)', nota: NOTA_NANO_IO, externo: true,
-    pads: { 1: 'pieza:SPI_MISO', 2: 'pieza:SPI_MOSI', 3: 'pieza:SPI_SCK', 4: 'pieza:SPI_SS', 5: 'pieza:SPI_V', 6: 'pieza:SPI_G' } },
+    clave: 'SPI', valor: 'SPI MISO MOSI SCK SS 5V GND (referencia por validar)',
+    nota: NOTA_NANO_IO + '; SPI es un conector añadido al diseño, no el bloque de seis salidas de alimentación de la expansión', externo: true,
+    pads: { 1: 'placa:D12', 2: 'placa:D11', 3: 'placa:D13', 4: 'placa:D10', 5: 'placa:5V', 6: 'placa:GND1' } },
 ];
 const RED_NANO_IO = { JACK_POS: 'JACK_VIN', OUT_3V3: 'REG_3V3' };
 

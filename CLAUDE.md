@@ -9,6 +9,8 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 
 ## Qué es
 
+**Corrección posterior de Efraín (11 oct):** I2C junto a UART; el bloque de seis contactos es alimentación duplicada GND/3V3/5V. Vista corregida con 82 contactos físicos, compatibilidad de los aliases SPI antiguos y header SPI de KiCad explícitamente añadido al diseño de referencia. Pruebas de las partes afectadas: Nano **105**, interfaz **81**, contrato **100**, KiCad Node **94** (35 Uno +59 Nano), KiCad real Nano **80**, motor **28** y núcleo/potencia Uno **107**. La suite completa de 945 citada arriba corresponde a la entrega anterior. Efraín autorizó commit y push de esta corrección y continuar la próxima sesión; sin nuevas mediciones físicas ni etiqueta.
+
 **Trabajo conjunto con Codex:** R1–R8 verificados y cerrados, con el [cierre posterior de R6](docs/CIERRE-R6-CODEX-2026-10-11.md): 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. Se conservan informes históricos y pendientes físicos. Después Efraín asignó a **Codex desarrollo, pruebas y revisión de Nano + expansión roja/azul**; reglas en [AGENTS.md](AGENTS.md). El software admite Nano/Nano antiguo, A6/A7, conjunto SVG, Worker, alimentación de referencia y exportación selectiva a KiCad. [Arquitectura, supuestos y protocolo físico](docs/IMPLEMENTACION-NANO-2026-10-11.md); evidencia final en BITACORA.md. **Ambas tarjetas pendientes de validación física y sin publicar.**
 
 **Simulador de circuitos con microcontrolador** para TecnoBloques, el editor de bloques en español para Arduino de la **TecnoAcademia Tolima (SENA, Ibagué)**. El aprendiz arma el circuito en una protoboard dibujada, TecnoBloques compila su programa y TecnoCircuito lo ejecuta sobre ese circuito.

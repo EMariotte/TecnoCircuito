@@ -14,9 +14,15 @@ const DIGITALES = Array.from({ length: 14 }, (_, i) => `D${13 - i}`);
 const ANALOGICOS = Array.from({ length: 8 }, (_, i) => `A${i}`);
 const CANALES = [...DIGITALES, ...ANALOGICOS];
 const EXTRAS = ['I2C_SDA', 'I2C_SCL', 'I2C_V', 'I2C_G',
-  'SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G',
-  'UART_TX', 'UART_RX', 'UART_V', 'UART_G', 'OUT_5V', 'OUT_3V3', 'GND_OUT', 'JACK_POS', 'JACK_GND'];
+  'UART_TX', 'UART_RX', 'UART_V', 'UART_G', 'OUT_5V', 'OUT_5V_2', 'OUT_3V3', 'OUT_3V3_2', 'GND_OUT', 'GND_OUT_2', 'JACK_POS', 'JACK_GND'];
 export const PINES_EXPANSION = [...CANALES.flatMap((pin) => ['S', 'V', 'G'].map((fila) => `${pin}_${fila}`)), ...EXTRAS];
+
+// Compatibilidad con el primer diseño de referencia: esos nombres eran SPI,
+// pero el bloque físico de seis contactos es alimentación (confirmado por Efraín).
+// Un cable antiguo conserva su red y termina sobre el pin real del módulo Nano.
+export const ALIASES_EXPANSION_SPI = Object.freeze({
+  SPI_MISO: 'D12', SPI_MOSI: 'D11', SPI_SCK: 'D13', SPI_SS: 'D10', SPI_V: '5V', SPI_G: 'GND1',
+});
 
 // Fuente única para señales y rieles compartidos con el módulo.
 // JACK_POS y OUT_3V3 son nodos privados de la expansión: su regulación se modela aparte.
@@ -28,6 +34,7 @@ export const PUENTES_EXPANSION = [
   ['SPI_V', 'placa.5V'], ['SPI_G', 'placa.GND1'],
   ['UART_TX', 'placa.D1'], ['UART_RX', 'placa.D0'], ['UART_V', 'placa.5V'], ['UART_G', 'placa.GND1'],
   ['OUT_5V', 'placa.5V'], ['GND_OUT', 'placa.GND1'], ['JACK_GND', 'placa.GND1'],
+  ['OUT_5V_2', 'placa.5V'], ['GND_OUT_2', 'placa.GND1'], ['OUT_3V3_2', 'OUT_3V3'],
 ];
 
 export const ROTULOS_EXPANSION = Object.fromEntries([
@@ -46,8 +53,11 @@ export const ROTULOS_EXPANSION = Object.fromEntries([
   ['UART_TX', 'UART · TX: datos desde el Nano (D1)'], ['UART_RX', 'UART · RX: datos hacia el Nano (D0)'],
   ['UART_V', 'UART · alimentación de 5V (+)'], ['UART_G', 'UART · tierra (−)'],
   ['OUT_5V', '5V · salida de alimentación de la expansión (+)'],
+  ['OUT_5V_2', '5V · segundo contacto de la misma salida (+)'],
   ['OUT_3V3', '3,3V · salida regulada de la expansión (+), separada del 3V3 del Nano'],
+  ['OUT_3V3_2', '3,3V · segundo contacto de la misma salida regulada (+)'],
   ['GND_OUT', 'GND · tierra de las salidas (−)'],
+  ['GND_OUT_2', 'GND · segundo contacto de tierra de las salidas (−)'],
   ['JACK_POS', 'Jack + · entrada de la expansión (modelo: positivo en el centro; comprobar en el kit)'],
   ['JACK_GND', 'Jack GND · tierra de la entrada (modelo: contacto exterior; comprobar en el kit)'],
 ]);
@@ -71,14 +81,15 @@ export function pinesExpansion(props = {}) {
     const x = (azul ? 53.4 : 55.8) + i * PASO + (i >= 4 ? gap : 0);
     for (const [fila, y] of [['S', 160.6], ['V', 170.2], ['G', 179.8]]) pines[`${pin}_${fila}`] = { x, y };
   });
-  const i2cX = azul ? 13.8 : 12.8;
-  ['I2C_SDA', 'I2C_SCL', 'I2C_V', 'I2C_G'].forEach((pin, i) => { pines[pin] = { x: i2cX, y: 25 + i * PASO }; });
-  const uartX = azul ? 207.2 : 205.6;
-  ['UART_TX', 'UART_RX', 'UART_V', 'UART_G'].forEach((pin, i) => { pines[pin] = { x: uartX, y: 77.6 + i * PASO }; });
-  ['SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G'].forEach((pin, i) => {
+  // Nano4: I2C y UART están juntos en el extremo opuesto al USB del módulo.
+  // Se mueven los contactos, no sus nombres ni los nodos de los cables guardados.
+  const i2cX = azul ? 201.4 : 200.6;
+  const uartX = i2cX + 10.8;
+  ['I2C_SDA', 'I2C_SCL', 'I2C_V', 'I2C_G'].forEach((pin, i) => { pines[pin] = { x: i2cX, y: 79.2 + i * PASO }; });
+  ['UART_TX', 'UART_RX', 'UART_V', 'UART_G'].forEach((pin, i) => { pines[pin] = { x: uartX, y: 79.2 + i * PASO }; });
+  ['GND_OUT', 'OUT_3V3', 'OUT_5V', 'GND_OUT_2', 'OUT_3V3_2', 'OUT_5V_2'].forEach((pin, i) => {
     pines[pin] = { x: (azul ? 149.6 : 148) + i % 3 * PASO, y: 166 + Math.floor(i / 3) * PASO };
   });
-  ['OUT_5V', 'OUT_3V3', 'GND_OUT'].forEach((pin, i) => { pines[pin] = { x: uartX, y: 160 + i * PASO }; });
   pines.JACK_POS = { x: 12.4, y: 170 };
   pines.JACK_GND = { x: 27.6, y: 170 };
   return pines;
@@ -146,20 +157,17 @@ export function dibujarExpansion(props = {}) {
     ANALOGICOS.map((pin) => texto(pines[`${pin}_S`].x, 152.8, pin, { tam: 4.8, peso: 'bold' })).join('') +
     ['G', 'V', 'S'].map((fila) => texto(37.6, pines[`D13_${fila}`].y + 1.8, fila, { tam: 5.3, peso: 'bold' })).join('') +
     ['S', 'V', 'G'].map((fila) => texto(44, pines[`A0_${fila}`].y + 1.8, fila, { tam: 5.3, peso: 'bold' })).join('') +
-    texto(13, 17, 'I2C', { tam: 5, peso: 'bold' }) +
+    texto(pines.I2C_SDA.x, 64.5, 'I2C', { tam: 3.9, peso: 'bold' }) +
     [['I2C_SDA', 'SDA'], ['I2C_SCL', 'SCL'], ['I2C_V', '5V'], ['I2C_G', 'GND']].map(([pin, rotulo]) =>
-      texto(pines[pin].x + 5.3, pines[pin].y + 1.7, rotulo, { tam: 4.2, ancla: 'start' })).join('') +
-    texto(pines.UART_TX.x - 0.8, 61.9, 'UART', { tam: 4.7, peso: 'bold' }) +
+      texto(pines[pin].x, pines[pin].y - 2.5, rotulo, { tam: 2.3, color: '#17212b', peso: 'bold' })).join('') +
+    texto(pines.UART_TX.x, 64.5, 'UART', { tam: 3.9, peso: 'bold' }) +
     [['UART_TX', 'TX'], ['UART_RX', 'RX'], ['UART_V', '5V'], ['UART_G', 'GND']].map(([pin, rotulo]) =>
-      texto(pines[pin].x - 5.7, pines[pin].y + 1.7, rotulo, { tam: 4.2, ancla: 'end' })).join('') +
-    [['SPI_MISO', 'MISO'], ['SPI_MOSI', 'MOSI'], ['SPI_SCK', 'SCK']].map(([pin, rotulo]) =>
+      texto(pines[pin].x, pines[pin].y - 2.5, rotulo, { tam: 2.3, color: '#17212b', peso: 'bold' })).join('') +
+    [['GND_OUT', 'GND'], ['OUT_3V3', '3,3V'], ['OUT_5V', '5V']].map(([pin, rotulo]) =>
       texto(pines[pin].x, 159.5, rotulo, { tam: 3.4 })).join('') +
-    [['SPI_SS', 'SS'], ['SPI_V', '5V'], ['SPI_G', 'GND']].map(([pin, rotulo]) =>
+    [['GND_OUT_2', 'GND'], ['OUT_3V3_2', '3,3V'], ['OUT_5V_2', '5V']].map(([pin, rotulo]) =>
       texto(pines[pin].x, 184.5, rotulo, { tam: 3.8 })).join('') +
-    texto(pines.SPI_MOSI.x, 195.2, 'SPI', { tam: 5.2, peso: 'bold' }) +
-    [['OUT_5V', '5V'], ['OUT_3V3', '3,3V'], ['GND_OUT', 'GND']].map(([pin, rotulo]) =>
-      texto(pines[pin].x - 6.1, pines[pin].y + 1.8, rotulo, { tam: 4.2, ancla: 'end' })).join('') +
-    texto(pines.OUT_5V.x - 4, 151.8, 'SALIDAS', { tam: 4.2 }) +
+    texto(pines.OUT_3V3.x, 195.2, 'ALIMENTACIÓN', { tam: 4.5, peso: 'bold' }) +
     texto(12.4, 183, '+', { tam: 6 }) + texto(27.6, 183, 'GND', { tam: 4.2 }) +
     texto(20.4, 139.1, 'JACK', { tam: 4.8 }) +
     texto(84, 191, 'REGULACIÓN 5V / 3,3V', { tam: 4.6 }) +

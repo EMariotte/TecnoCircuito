@@ -39,11 +39,13 @@ El panel de la derecha también muestra el circuito en el formato 1 del contrato
 
 ## Nano con expansión E/S
 
-Elige «Arduino Nano» o «Nano (bootloader antiguo)» para empezar con la expansión montada. En su ficha puedes seleccionar roja/azul, USB/jack/desconectada y el voltaje del jack. Cambiar el color conserva los cables. Los grupos tienen S (señal), V (5V) y G (tierra); A6/A7 solo sirven para `analogRead()`. Los conectores I2C y SPI sacan las señales del Nano; todavía no simulan dispositivos de esos buses.
+Elige «Arduino Nano» o «Nano (bootloader antiguo)» para empezar con la expansión montada. En su ficha puedes seleccionar roja/azul, USB/jack/desconectada y el voltaje del jack. Cambiar el color conserva los cables. Los grupos tienen S (señal), V (5V) y G (tierra); A6/A7 solo sirven para `analogRead()`. I2C está junto a UART al final del módulo. El bloque de seis contactos es alimentación: dos GND, dos 3,3V y dos 5V. SPI se conecta en D12/MISO, D11/MOSI, D13/SCK y D10/SS del Nano; todavía no se simulan dispositivos de esos buses.
 
 «Nano + expansión: A6/A7» arma dos potenciómetros y selecciona el programa `nano_adc67`. En ideal, las posiciones iniciales 25 % y 75 % imprimen aproximadamente `256,768`. Gira una perilla: debe cambiar su lectura sin cambiar la otra. Guarda/reabre el circuito y exporta SVG o KiCad. El Nano antiguo ejecuta el mismo programa; el cargador solo cambia al subirlo a la placa física.
 
-La alimentación es un **modelo de referencia pendiente de medición**. Los V de los conectores GVS llevan 5V; `OUT_3V3` es otra salida, distinta de `3V3` del módulo. El jack se conecta a su regulador externo y no directamente a VIN. La netlist de KiCad conserva estas redes, exporta el Nano como módulo y añade regulación/filtro, jack e I2C/SPI de referencia. Confirma el montaje, los componentes y el aislamiento entre USB/jack antes de fabricar: [protocolo físico](../docs/IMPLEMENTACION-NANO-2026-10-11.md).
+La alimentación es un **modelo de referencia pendiente de medición**. Los V de los conectores GVS llevan 5V; `OUT_3V3` es otra salida, distinta de `3V3` del módulo. Cada par del bloque de alimentación comparte su red; el segundo contacto lleva el sufijo `_2`. El jack se conecta a su regulador externo y no directamente a VIN. La netlist de KiCad conserva estas redes, exporta el Nano como módulo y añade regulación/filtro, jack, I2C y un conector SPI para el diseño de referencia. Confirma el montaje, los componentes y el aislamiento entre USB/jack antes de fabricar: [protocolo físico](../docs/IMPLEMENTACION-NANO-2026-10-11.md).
+
+Los proyectos del primer dibujo con referencias `exp1.SPI_*` siguen abriendo: los cables llegan al pin correspondiente del Nano y conservan su red. No se convierten en cables de alimentación.
 
 ## Reconstruirlo y probarlo
 

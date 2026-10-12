@@ -143,7 +143,7 @@ with sync_playwright() as p:
 
     def cambiar(prop, opcion):
         pg.locator(f'main .tc-ficha select[data-prop="{prop}"]').select_option(str(opcion))
-        pg.wait_for_function(f'''() => {RAIZ}.querySelectorAll('.tc-pin[data-ref^="exp1."]').length === 85''')
+        pg.wait_for_function(f'''() => {RAIZ}.querySelectorAll('.tc-pin[data-ref^="exp1."]').length === 82''')
 
     def puntos():
         return pg.evaluate(f'''() => Object.fromEntries([...{RAIZ}.querySelectorAll('.tc-pin')]
@@ -181,14 +181,21 @@ with sync_playwright() as p:
         revisar(len(circuito['componentes']) == 3 and len(circuito['cables']) == 6, 'el ejemplo monta expansión, dos potenciómetros y seis cables')
         refs = puntos()
         revisar(len([r for r in refs if r.startswith('placa.')]) == 30, 'el Nano muestra treinta terminales físicos')
-        revisar(len([r for r in refs if r.startswith('exp1.')]) == 85, 'la expansión muestra ochenta y cinco terminales')
+        revisar(len([r for r in refs if r.startswith('exp1.')]) == 82, 'la expansión muestra ochenta y dos terminales')
+        revisar(refs['exp1.I2C_SDA'][0] > refs['placa.D1'][0]
+                and abs(refs['exp1.I2C_SDA'][1] - refs['exp1.UART_TX'][1]) < 0.01
+                and 9.6 < refs['exp1.UART_TX'][0] - refs['exp1.I2C_SDA'][0] < 12,
+                'I2C está junto a UART, al final del Nano y fuera del cuerpo del módulo')
+        revisar(all('exp1.' + p in refs for p in ['OUT_5V', 'OUT_5V_2', 'OUT_3V3', 'OUT_3V3_2', 'GND_OUT', 'GND_OUT_2'])
+                and not any('exp1.' + p in refs for p in ['SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G']),
+                'el bloque de seis contactos es alimentación duplicada y no dibuja un falso puerto SPI')
         revisar({'placa.A6', 'placa.A7', 'placa.RESET2', 'placa.GND2'} <= refs.keys()
                 and not any(r in refs for r in ['placa.D20', 'placa.D21', 'placa.IOREF']), 'A6/A7 tienen contactos analógicos propios, sin GPIO adicionales ni IOREF del Uno')
         g = geometria()
         revisar(g['nanoSVG'] and g['mismoMarco'] and abs(g['ancho'] - 219.21) < 0.02 and abs(g['alto'] - 204.09) < 0.02,
                 'Nano y expansión comparten el marco SVG nominal 58 × 54 mm')
         revisar(g['ventana'] and not g['marcas'], 'la expansión deja una ventana para el Nano y usa dibujos propios, sin imágenes incrustadas')
-        revisar(g['contactos'] == 85 and g['alineados'], 'los 85 puntos de cableado coinciden con los contactos dibujados')
+        revisar(g['contactos'] == 82 and g['alineados'], 'los 82 puntos de cableado coinciden con los contactos dibujados')
         revisar(g['leds'] == ['L', 'PWR', 'RX', 'TX'], 'el Nano tiene sus cuatro LED actualizables')
         pwr_apagado = pg.locator('.tc-comp[data-id="placa"] [data-led="PWR"]').get_attribute('fill')
         tx_apagado = pg.locator('.tc-comp[data-id="placa"] [data-led="TX"]').get_attribute('fill')
@@ -232,6 +239,33 @@ with sync_playwright() as p:
         for caso, rechazo in zip(['expansión duplicada', 'expansión Nano sobre Uno', 'expansión encajada por «en» en protoboard'], rechazos):
             revisar(bool(rechazo), f'la API rechaza {caso}: {rechazo}')
 
+        # Los proyectos anteriores con SPI_* mantienen sus redes y un extremo visible
+        # sobre el pin real del Nano; no se reinterpretan como contactos de alimentación.
+        legado = pg.evaluate('''async () => {
+          const pares = [['SPI_MISO','D12'],['SPI_MOSI','D11'],['SPI_SCK','D13'],['SPI_SS','D10'],['SPI_V','5V'],['SPI_G','GND1']];
+          const c = lienzo.circuito();
+          c.cables.push(...pares.map(([alias]) => ({de:'exp1.'+alias,a:'pot6.SIG'})));
+          const antes = JSON.stringify(c.cables);
+          const host = document.createElement('div');
+          host.style.cssText='position:fixed;left:0;top:0;width:800px;height:600px'; document.body.append(host);
+          let aux;
+          try {
+            aux = TecnoCircuito.crearLienzo(host,{placa:'nano',circuito:c});
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            const root = host.querySelector('.tecnocircuito').shadowRoot;
+            const lineas = [...root.querySelectorAll('.tc-cables .tc-cable-linea')];
+            const alineadas = pares.every(([,pin],i) => {
+              const p = root.querySelector('.tc-pin[data-ref="placa.'+pin+'"]');
+              const inicio = /^M([-\\d.]+) ([-\\d.]+)/.exec(lineas[i+6]?.getAttribute('d') || '');
+              return inicio && Math.abs(Number(inicio[1])-parseFloat(p.style.left)) < .02 && Math.abs(Number(inicio[2])-parseFloat(p.style.top)) < .02;
+            });
+            return {cables:lineas.length,alineadas,conservadas:JSON.stringify(aux.circuito().cables)===antes,
+              fantasmas:root.querySelectorAll('.tc-pin[data-ref^="exp1.SPI_"]').length};
+          } finally { aux?.destruir(); host.remove(); }
+        }''')
+        revisar(legado['cables'] == 12 and legado['alineadas'], 'los seis aliases SPI antiguos dibujan sus cables sobre los pines reales del Nano')
+        revisar(legado['conservadas'] and legado['fantasmas'] == 0, 'la reapertura conserva referencias SPI antiguas sin crear contactos físicos ni cambiar redes')
+
         pg.locator('#modo').select_option('ideal')
         revisar(pg.evaluate('sim._medidas().hilo') == 'worker', 'el único programa del Nano corre en el Worker')
         pg.locator('#iniciar').click()
@@ -243,6 +277,10 @@ with sync_playwright() as p:
         revisar(abs(m['voltajes']['placa.A6'] - 1.25) < 0.01 and abs(m['voltajes']['placa.A7'] - 3.75) < 0.01,
                 'la medición y el ADC ven los mismos nodos A6/A7 a través de la expansión')
         revisar(not any(p in m['entradas'] for p in ['A6', 'A7']), 'el Worker conserva A6/A7 fuera de las entradas digitales')
+        revisar(m['voltajes']['exp1.OUT_5V_2'] == m['voltajes']['exp1.OUT_5V']
+                and m['voltajes']['exp1.OUT_3V3_2'] == m['voltajes']['exp1.OUT_3V3']
+                and m['voltajes']['exp1.GND_OUT_2'] == m['voltajes']['exp1.GND_OUT'],
+                'los dos contactos de cada salida comparten el voltaje de su red de alimentación')
 
         # Cambiar la tarjeta redibuja los contactos y las puntas, preservando redes y CPU.
         seleccionar_expansion()
@@ -309,7 +347,7 @@ with sync_playwright() as p:
         }''', svg)
         revisar(not analisis['error'], 'la imagen exportada es XML SVG válido')
         revisar(not analisis['repetidos'] and not analisis['rotas'], 'el SVG tiene identificadores únicos y referencias completas')
-        revisar(analisis['leds'] == 4 and analisis['contactos'] == 85, 'el SVG conserva el Nano inferior y todos los contactos de la expansión')
+        revisar(analisis['leds'] == 4 and analisis['contactos'] == 82, 'el SVG conserva el Nano inferior y todos los contactos de la expansión')
         revisar(svg.count('stroke-width="4.8"') == 6, 'el SVG incluye los seis cables del circuito')
         imagen = nav.new_page(viewport={'width': 1000, 'height': 760})
         datos_svg = base64.b64encode(svg.encode('utf-8')).decode('ascii')

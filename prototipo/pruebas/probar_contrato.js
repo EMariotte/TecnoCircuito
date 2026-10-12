@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { revisarCircuito, ESQUEMA, PINES, PINES_PLACA, HUECO } = require('./contrato.js');
-const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex } = require('./codigo.cjs');
+const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex, ALIASES_EXPANSION_SPI } = require('./codigo.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -30,7 +30,8 @@ for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
   const variantes = def.dibujo.marco ? (def.campos || []).flatMap((c) => c.opciones.map(([v]) => ({ ...def.props, [c.prop]: v }))) : [def.props];
   for (const props of variantes) {
     const pines = Object.keys((def.dibujo.marco ? def.dibujo.marco(props) : def.dibujo).pines);
-    revisar(mismo(pines, PINES[tipo]), `${tipo} (pieza Tecno${def.dibujo.marco ? ', ' + JSON.stringify(props) : ''}): los pines de su dibujo (${pines.join(', ')}) son los del esquema`);
+    const nombres = tipo === 'shield_nano_io' ? [...pines, ...Object.keys(ALIASES_EXPANSION_SPI)] : pines;
+    revisar(mismo(nombres, PINES[tipo]), `${tipo} (pieza Tecno${def.dibujo.marco ? ', ' + JSON.stringify(props) : ''}): los contactos físicos y aliases documentados coinciden con el esquema`);
   }
 }
 // La biblioteca de piezas: cada tipo del catálogo (y la protoboard) está en una sola categoría y tiene su ficha completa.

@@ -26,6 +26,8 @@ Efraín pidió un conjunto visual Nano clásico + expansión E/S, con variantes 
 
 La implementación de software y sus supuestos están en [IMPLEMENTACION-NANO-2026-10-11.md](docs/IMPLEMENTACION-NANO-2026-10-11.md); el estado y pruebas finales, en CLAUDE.md y BITACORA.md. Mantén separados apariencia, único ATmega328P y alimentación de expansión. No declares físicamente validada ninguna variante sin continuidad, identificación y mediciones de la tarjeta real. KiCad exporta un diseño de referencia explícito, no una reconstrucción acreditada de las fotos.
 
+**Corrección posterior de Efraín:** I2C está junto a UART, al final del Nano; el bloque de seis contactos es dos GND, dos 3V3 y dos 5V, **no SPI**. La vista tiene 82 contactos físicos. Los seis nombres `SPI_*` del primer modelo son aliases heredados para conservar redes/cables anteriores sobre los pines del Nano. El header SPI exportado a KiCad es un conector adicional del diseño de referencia, sin corresponder al bloque de alimentación real. La identificación verbal no es una medición de continuidad.
+
 ## Rol de revisor
 
 1. Comprueba primero `git status --short` y la revisión de código. Respeta cualquier trabajo existente.

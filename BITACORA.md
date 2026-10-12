@@ -921,3 +921,20 @@ Antes de cambiar nada, el diagnóstico `docs/revision-2026-10-11.cjs` reprodujo 
 Efraín abrió TecnoBloques con `npm run app:simulador`, confirmó que aparece el Nano y luego informó: «el programa corre y de manera independiente mide los dos potenciómetros en A6 y A7». Se registra como validación manual del recorrido de software, complementaria a las 945 comprobaciones automáticas y las pruebas del hermano. No se registraron mediciones físicas nuevas: alimentación, geometría y ambas tarjetas comerciales siguen por validar.
 
 Tras esa comprobación autorizó **commit y push** de los cambios de Nano en ambos proyectos. Se actualiza el estado de CLAUDE.md y el registro de implementación; se conserva como historia la entrega anterior sin commit. Se entregan fuentes, pruebas, contrato, documentación y bundle de desarrollo. La etiqueta, el instalador y `dist/tecnocircuito.js` de la raíz mantienen su flujo separado.
+
+## 2026-10-11 — Codex: Contrato 1: I2C junto a UART y seis salidas de alimentación
+
+**Corrección de Efraín**, después de probar Nano en la app y de los commits `0f13119`/`dc018aa`: I2C está junto a UART, al final del módulo; confirmó que el bloque de seis contactos es **dos GND, dos 3V3 y dos 5V**. Nano4 también muestra esas etiquetas. La identificación como SPI del primer SVG era una suposición del diseño de referencia y se corrige; no se atribuye a una medida de continuidad.
+
+- Vista roja/azul: I2C y UART juntos en el extremo opuesto al USB. El bloque de seis contactos muestra alimentación; se eliminan el falso rótulo SPI y los tres contactos sueltos que lo duplicaban. La vista queda con **82 contactos físicos**.
+- Modelo: `OUT_5V_2`, `OUT_3V3_2`, `GND_OUT_2` comparten sus redes primarias. Los dos 3V3 externos siguen separados del 3V3 del módulo. Se comprueban carga, caída y consumo al usar cualquiera de cada par, en ambas variantes.
+- Compatibilidad: el esquema conserva `SPI_MISO/MOSI/SCK/SS/V/G` como seis aliases heredados. Los cables antiguos conservan referencias y redes y se dibujan sobre los pines reales del Nano, sin contactos imaginarios ni reasignación a tensiones. No cambian formato/contrato 1.
+- KiCad conserva el conector SPI solicitado como **conector añadido al diseño de referencia**, conectado directamente a los pines del módulo; una nota explícita impide confundirlo con el bloque de alimentación comercial. Exportación y pads conservados.
+- Pruebas dirigidas: Nano **105 OK**, recorrido Chromium **81 OK**, contrato **100 OK**, exportación Node **94 OK** (35 Uno +59 Nano), PCB Nano con KiCad real **80 OK**, MNA **28 OK** y núcleo/potencia Uno **107 OK**; cero fallas. Total **595 comprobaciones** en esta corrección. Se inspeccionaron SVG/capturas de ambas variantes. La suite completa de 945 corresponde a la entrega anterior y no se vuelve a contar como ejecutada aquí.
+- Se reconstruye TecnoBloques con la copia local para mostrar la corrección. Contrato4.2/esquema, ficha, README, LEEME, COMO-FUNCIONA59, registro de implementación, AGENTS y memorias/bitácoras de ambos proyectos actualizados. Sin commit, push o etiqueta de esta corrección; hardware y continuidad pendientes.
+
+### 2026-10-11 — Codex: autorización de entrega y cierre de sesión
+
+Efraín autorizó el commit y push de la corrección de Nano + expansión en ambos repositorios: I2C junto a UART y seis contactos de alimentación duplicada GND/3V3/5V. Evidencia de esta corrección: 595 comprobaciones aprobadas, cero fallas; las suites completas e integración Electron citadas arriba corresponden a la entrega anterior. Se conserva la compatibilidad de los cables SPI antiguos y el conector SPI añadido al diseño de referencia KiCad.
+
+Punto de continuidad para la próxima sesión: retomar los ajustes de Nano + expansión según la prioridad de Efraín. Continúan pendientes la continuidad, identificación de componentes y mediciones de las tarjetas reales. Esta entrega no incluye etiqueta ni instalador.

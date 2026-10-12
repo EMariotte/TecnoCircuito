@@ -265,4 +265,20 @@ for (const fuente of ['placa.3V3', 'exp.OUT_3V3']) {
   verificar(f.energia.amperios > 0.075 && f.energia.voltios < 4.99, `${fuente}: consumo del motor también cuenta en la alimentación común`);
   if (fuente === 'placa.3V3') verificar(n.fallas().some(x => x.tipo === 'nano_3v3_sobrecarga' && x.componente === 'placa.3V3'), 'módulo Nano: aviso de 50mA separado del límite supuesto de la expansión');
 }
+for (const variante of ['roja', 'azul']) for (const [primero, segundo] of [
+  ['OUT_5V', 'OUT_5V_2'], ['OUT_3V3', 'OUT_3V3_2'], ['GND_OUT', 'GND_OUT_2'],
+]) {
+  const c = circuito('nano', variante);
+  c.componentes.push(pieza('r', 'resistencia', { ohmios: 220 }));
+  c.cables.push(cable('r.1', primero === 'GND_OUT' ? 'exp.OUT_5V' : 'exp.' + segundo),
+    cable('r.2', primero === 'GND_OUT' ? 'exp.' + segundo : 'exp.GND_OUT'));
+  const f = correr(nucleo(c, 'parpadeo13', { limiteUSB: true }), 50).foto;
+  verificar(casi(f.voltajes['exp.' + primero], f.voltajes['exp.' + segundo]) && f.medicion.resistencias[0].i > 0.009,
+    `${variante}: segundo contacto de ${primero} alimenta la carga y comparte la red correcta`);
+  const d = JSON.parse(JSON.stringify(c));
+  d.cables = d.cables.map(k => ({ de: k.de.replace('exp.' + segundo, 'exp.' + primero), a: k.a.replace('exp.' + segundo, 'exp.' + primero) }));
+  const directo = correr(nucleo(d, 'parpadeo13', { limiteUSB: true }), 50).foto;
+  verificar(casi(f.energia.voltios, directo.energia.voltios) && casi(f.energia.amperios, directo.energia.amperios),
+    `${variante}: elegir uno u otro contacto de ${primero} conserva caída y consumo`);
+}
 console.log(`\nNano: ${comprobaciones} comprobaciones aprobadas; hardware pendiente.`);

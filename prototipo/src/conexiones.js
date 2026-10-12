@@ -37,7 +37,7 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
   }
   for (const c of circuito.componentes) {
     if (c.tipo === 'shield_nano_io' && esNano(circuito.placa)) {
-      for (const [pin, otro] of PUENTES_EXPANSION) unir(c.id + '.' + pin, otro);
+      for (const [pin, otro] of PUENTES_EXPANSION) unir(c.id + '.' + pin, otro.startsWith('placa.') ? otro : c.id + '.' + otro);
     } else if (c.tipo === 'shield_l293d') {
       // La shield va enchufada al Uno: sus conectores de servo y sus GND son pines de la placa.
       for (const [pin, otro] of PUENTES_SHIELD) unir(c.id + '.' + pin, otro);

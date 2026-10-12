@@ -1426,7 +1426,7 @@ La placa se define por sus capacidades, no por el dibujo del Uno. [placas.js](sr
 
 ```mermaid
 flowchart TB
-  MOD[Nano clásico: un módulo de 30 pines] <--> EXP[Expansión roja o azul: GVS, I2C, SPI, UART]
+  MOD[Nano clásico: un módulo de 30 pines; SPI en sus GPIO] <--> EXP[Expansión roja o azul: GVS, I2C, UART y alimentación]
   EXP --> MNA[Red MNA con aliases y alimentación]
   MNA --> ADC[ADC A0 a A7]
   ADC --> AVR[Un ATmega328P en Worker]
@@ -1435,8 +1435,16 @@ flowchart TB
   MNA --> KICAD[Netlist: Nano módulo, regulación/filtro, jack, I2C/SPI]
 ```
 
-La expansión tiene nombres estables para sus 85 terminales. `conexiones.js` une señal/V/G al nodo correspondiente. La variante cambia el SVG y las coordenadas, mientras las referencias de los cables siguen iguales. Los aliases del Nano apuntan a los pines físicos ya existentes, así la interfaz no dibuja contactos imaginarios.
+La expansión tiene nombres estables para sus **82 contactos físicos** y conserva seis aliases SPI del primer modelo. `conexiones.js` une señal/V/G y las salidas duplicadas al nodo correspondiente. La variante cambia el SVG y las coordenadas, mientras las referencias de los cables siguen iguales. Los aliases del Nano y los SPI heredados apuntan a pines físicos del módulo, así la interfaz no dibuja contactos imaginarios.
 
 La alimentación del Nano está en [alimentacion_nano.js](src/alimentacion_nano.js), separada de las mediciones del Uno. El jack entra a un regulador externo de referencia de 5V; este también alimenta el regulador externo de 3,3V. `JACK_POS` y `OUT_3V3` siguen separados de VIN y 3V3 del módulo. Las caídas llegan a MNA, GPIO y referencia ADC. Las cargas de entrada se contabilizan antes del regulador; las de salida participan en su caída. Los motores TT reconocen 5V y ambas salidas 3,3V, además de las fuentes existentes.
 
 Las pruebas tienen tres niveles: núcleo Node con HEX real; Chromium para interacción/Worker/guardado/SVG; KiCad para símbolos, 30 pads, redes, guardado/reapertura y DRC de huellas. TecnoBloques añade compilación Arduino CLI con los dos FQBN y reapertura del proyecto. Eso comprueba software; continuidad, geometría, protección y capacidad térmica requieren hardware. [Detalle de supuestos, componentes exportados y protocolo del laboratorio](../docs/IMPLEMENTACION-NANO-2026-10-11.md).
+
+## 59. I2C junto a UART y seis contactos de alimentación (11 oct 2026, Codex)
+
+Efraín corrigió la ubicación de I2C y confirmó el significado del bloque de seis contactos de Nano4: **dos GND, dos 3V3 y dos 5V**. El primer SVG lo había identificado como SPI en el diseño de referencia; se corrige esa identificación. I2C y UART quedan juntos en el extremo opuesto al USB.
+
+Mover un contacto cambia sus coordenadas; el cable lo sigue porque conserva su referencia. Los tres contactos secundarios (`OUT_5V_2`, `OUT_3V3_2`, `GND_OUT_2`) se unen a la misma red del contacto primario. Cargas en uno u otro dan igual caída y consumo; ambos 3V3 externos siguen separados del 3V3 del módulo.
+
+Para abrir los proyectos anteriores, `SPI_MISO/MOSI/SCK/SS/V/G` conservan sus redes y se dibujan sobre los pines reales del Nano. No se cambian en silencio por salidas de tensión. KiCad conserva el header SPI solicitado como **conector adicional del diseño de referencia**, con una nota explícita. La identificación verbal no reemplaza las mediciones de continuidad y voltaje del laboratorio.

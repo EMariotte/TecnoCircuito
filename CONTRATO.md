@@ -81,7 +81,7 @@ sim.destruir();  // detiene, libera el Worker y suelta el lienzo; después el ob
 - Las claves son las de `PLACAS` en `src/nucleo.js` de TecnoBloques: `uno`, `nano`, `nano_old` y `mega`.
 - `nano` y `nano_old` se simulan igual. Solo cambia el cargador en la placa real.
 - Desde el 11 oct 2026, se dibujan y simulan `uno`, `nano` y `nano_old`. `mega` conserva su clave en el formato de proyecto, pero aún no se dibuja ni simula. Consulta `TecnoCircuito.PLACAS`; no presupongas su orden.
-- Nano clásico: un ATmega328P a 16 MHz, ocho entradas ADC; A6/A7 son exclusivamente analógicas. Los conectores I2C/SPI son conexiones eléctricas y etiquetas de red; no se añaden dispositivos ni emulación completa de esos protocolos.
+- Nano clásico: un ATmega328P a 16 MHz, ocho entradas ADC; A6/A7 son exclusivamente analógicas. El conector I2C y los pines SPI son conexiones eléctricas y etiquetas de red; no se añaden dispositivos ni emulación completa de esos protocolos.
 - Si TecnoBloques usa una placa que no está en `TecnoCircuito.PLACAS`, desactiva «Simular» y lo explica.
 - **Para agregar una placa (por ejemplo el Uno R4):** primero el perfil en TecnoBloques, después la placa aquí, y se sube la versión menor.
 
@@ -187,9 +187,9 @@ Al crear un Nano con `circuito: null`, el lienzo inserta `exp1`, roja, USB, jack
 |---|---|
 | `<pin>_S`, `<pin>_V`, `<pin>_G` | Señal del Nano, 5V, GND; A6/A7 continúan solo ADC |
 | `I2C_SDA`, `I2C_SCL`, `I2C_V`, `I2C_G` | A4, A5, 5V, GND |
-| `SPI_MISO`, `SPI_MOSI`, `SPI_SCK`, `SPI_SS`, `SPI_V`, `SPI_G` | D12, D11, D13, D10, 5V, GND |
+| `SPI_MISO`, `SPI_MOSI`, `SPI_SCK`, `SPI_SS`, `SPI_V`, `SPI_G` (aliases heredados) | D12, D11, D13, D10, 5V, GND del Nano; sus cables se dibujan sobre los pines del módulo, sin contactos adicionales en la expansión |
 | `UART_TX`, `UART_RX`, `UART_V`, `UART_G` | D1, D0, 5V, GND |
-| `OUT_5V`, `OUT_3V3`, `GND_OUT` | 5V común, regulador externo de 3,3V, GND |
+| `OUT_5V`/`OUT_5V_2`, `OUT_3V3`/`OUT_3V3_2`, `GND_OUT`/`GND_OUT_2` | Bloque de seis contactos: dos por salida. 5V común, regulador externo de 3,3V y GND |
 | `JACK_POS`, `JACK_GND` | Entrada privada del regulador externo, GND |
 
 `JACK_POS` no se une automáticamente al `VIN` del módulo; `OUT_3V3` tampoco al `3V3` del Nano. Así no se ponen reguladores en paralelo. La selección USB/jack/desconectada es una propiedad del **modelo**, no un interruptor identificado en las fotos. Una LiPo cableada al jack tiene prioridad sobre `voltajeJack`; un corto o polaridad invertida no se convierte en una fuente positiva.
@@ -201,6 +201,8 @@ El Nano usa alimentación de referencia propia; no hereda la resistencia, el fus
 La netlist permite iniciar el diseño; no certifica el circuito de ninguna tarjeta comercial ni entrega una PCB terminada. Confirmar jack/polaridad, regulación, disipación, aislamiento USB/jack y montaje real antes de fabricar. [Implementación y protocolo físico](docs/IMPLEMENTACION-NANO-2026-10-11.md).
 
 El Nano añade los diagnósticos `nano_referencia` (supuestos pendientes de medir), `nano_alimentacion` (entrada fuera del intervalo de referencia), `nano_3v3_sobrecarga` (módulo original 50mA o expansión de referencia 100mA) y `nano_bajo_voltaje` (umbral de reinicio de referencia). `reinicio_placa` usa `motivo: 'energia_nano'` y `fuente` para sus cambios de alimentación; Uno conserva `energia_usb`. Mientras el Nano está sin energía, `sim.mediciones()` devuelve `null`; la vista apaga PWR y conserva la respuesta del reloj/modelos.
+
+**Corrección confirmada por Efraín (11 oct):** I2C se sitúa junto a UART, al final del Nano. El bloque de seis contactos de la expansión es alimentación, no SPI. La vista ofrece **82 contactos físicos** y el esquema conserva los seis aliases `SPI_*` del primer diseño para abrir proyectos sin cambiar sus redes. SPI se accede en los pines del Nano; el header SPI exportado a KiCad es un conector **añadido al diseño de referencia**, no ese bloque de alimentación. No se cambian formato ni contrato.
 
 ## 5. Programa (.hex)
 
@@ -354,3 +356,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 11 oct 2026 | Revisión de Codex: entra la falla `corriente_chip` (R4: `limitePin` ya prometía el total del chip y no se revisaba); el `.hex` se revisa línea por línea (R5). Sin cambios en la API ni en el formato del circuito. |
 | 1 (borrador) | 11 oct 2026 | Sección 6.1: el registro de eventos queda aprobado, para implementar en la próxima sesión. Identifica al **equipo** (código sin datos de los aprendices); apagado por defecto y encendido por el instructor; sobre con `v`, `corrida`, `ms_sim`, `equipo` y `sesion`; el circuito completo en `simulacion_iniciada`, las fallas de la corrida en `simulacion_detenida` y `simulacion_pausada` nuevo; eventos del editor definidos aquí; el C++ sin comentarios; sin el monitor serial. Hasta que se implemente, rige la sección 6. |
 | 1 (borrador) | 11 oct 2026 | Contrato 1: Nano + expansión E/S. Soporte efectivo `nano`/`nano_old`, A6/A7 solo ADC, expansión roja/azul de 85 terminales, alimentación de referencia separada del Uno, guardado y exportación selectiva de módulo/regulación/jack/I2C/SPI. Mega sigue pendiente. Sección 4.2 y esquema ampliados sin subir formato ni contrato. |
+| 1 (borrador) | 11 oct 2026 | Corrección posterior de Efraín: I2C junto a UART; el bloque de seis contactos es dos GND, dos 3V3 y dos 5V. Vista con 82 contactos físicos, tres IDs nuevos de salida duplicada y seis aliases SPI heredados, dibujados sobre el Nano. El SPI de KiCad queda explícito como conector añadido al diseño; no se reinterpreta ningún cable antiguo. |
