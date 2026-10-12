@@ -148,6 +148,20 @@ Una **pieza Tecno** es una pieza hecha para TecnoCircuito con esta receta: dibuj
 - **El nombre:** cualquiera puede hacer piezas compatibles. Para llamarlas «Piezas Tecno» oficiales del SENA, tienen que entrar a este repositorio (sección 6 de la licencia: no da permiso para usar el nombre ni las marcas).
 - **Las imágenes que exporta el aprendiz son suyas.** El SVG de su circuito lleva copia de los dibujos, pero el `NOTICE` lo aclara: se usa y se publica libremente, sin la licencia ni el aviso.
 
+## Cuando el dibujo sale de TecnoDiseñador (pieza solo vista)
+
+`..\TecnoDiseñador` es un proyecto hermano que dibuja componentes en SVG a partir de fotos propias, con su propio proceso de medición y verificación de licencia (su `PROCESO.md`). Puede ahorrar el paso 4 de esta receta (el dibujo), pero **no entrega una Pieza Tecno terminada, solo la vista**. Modelo eléctrico, modelo lógico, ficha, pruebas y validación con la placa real se hacen siempre aquí, en TecnoCircuito — eso no se traslada ni se acorta.
+
+Para aceptar un resultado de TecnoDiseñador como vista de una pieza nueva:
+
+1. **Licencia confirmada en su registro:** el `registro-verificacion.md` del componente, en TecnoDiseñador, tiene que decir explícitamente que no usó ningún archivo, foto oficial ni medida de una fuente «compartir igual» (CC BY-SA, GPL, CERN-OHL-S). Sin esa confirmación, no se acepta.
+2. **SVG limpio:** solo atributos (`fill`, `stroke`, `font-size`…) y elementos nativos de SVG (incluidos gradientes), sin `<style>` ni clases CSS, sin bitmaps ni `<image>`/`data:` incrustados — lo mismo que exige el paso 4 de esta receta.
+3. **Sin metadatos ajenos:** se quita cualquier bloque `<metadata>` (por ejemplo, un manifiesto C2PA) y cualquier `<title>` o inscripción con marca comercial, antes de copiarlo a `src/piezas/`.
+4. **Reescalado a la rejilla de TecnoCircuito:** TecnoDiseñador mide y dibuja en milímetros; aquí los pines tienen que quedar en la rejilla de 0,1" = 9,6 px (paso 3 de esta receta). El reescalado se hace al traer el dibujo, nunca editando a mano el SVG de TecnoDiseñador.
+5. **Encabezado SPDX propio:** el archivo que lo envuelve en `src/piezas/` lleva el mismo encabezado que cualquier Pieza Tecno (`// SPDX-License-Identifier: Apache-2.0`), con el nombre de la pieza.
+6. **Trazabilidad:** se enlaza el `registro-verificacion.md` de origen en TecnoDiseñador, para no perder de dónde salieron las medidas.
+7. **Estado explícito «solo vista»:** hasta que la pieza tenga modelo eléctrico, modelo lógico, ficha y pruebas, se marca como pendiente en su ficha — nunca se presenta como una Pieza Tecno completa solo por tener un buen dibujo.
+
 ## Lista rápida
 
 ```

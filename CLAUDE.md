@@ -20,6 +20,7 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 - **Instrumento de un proyecto de investigación SENNOVA** (estudio en 2027). Ver «Investigación».
 - Usuarios: **aprendices, muchos menores de edad**. Textos en español, cortos y sin jerga.
 - **Proyecto hermano:** TecnoBloques (`..\TecnoBloques`, https://github.com/EMariotte/TecnoBloques). **El contrato entre los dos está en [`CONTRATO.md`](CONTRATO.md)** (contrato 1) y es la fuente única.
+- **Apoyo de dibujo:** TecnoDiseñador (`..\TecnoDiseñador`) produce SVG de referencia desde fotos propias, verificados contra material «compartir igual». Se acepta **solo como vista** (dibujo cosmético); el resto de la Tecnoparte se hace siempre en TecnoCircuito. Requisitos de aceptación en `prototipo/RECETA-COMPONENTE-NUEVO.md`.
 
 ## Cómo trabajar con Efraín
 
@@ -47,6 +48,7 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 | **Repositorio propio y etiqueta fija** | TecnoBloques depende de una etiqueta; **versión congelada** mientras se use en el estudio de 2027. |
 | **Las tareas mandan** | En 2026 solo se construye lo que piden T1, T2 y T3. |
 | **Registro de eventos desde la etapa 0** | El paquete solo emite los eventos; TecnoBloques los guarda. |
+| **Dibujos de TecnoDiseñador, solo como vista** | Se aceptan solo si su registro confirma que no usan material «compartir igual»; el SVG se limpia de metadatos ajenos y se reescala a la rejilla de 0,1". Terminar la Tecnoparte (modelo, ficha, pruebas, validación) sigue siendo trabajo de TecnoCircuito. |
 
 ## Alcance de 2026
 
