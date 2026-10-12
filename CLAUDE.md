@@ -22,7 +22,7 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 - **Instrumento de un proyecto de investigación SENNOVA** (estudio en 2027). Ver «Investigación».
 - Usuarios: **aprendices, muchos menores de edad**. Textos en español, cortos y sin jerga.
 - **Proyecto hermano:** TecnoBloques (`..\TecnoBloques`, https://github.com/EMariotte/TecnoBloques). **El contrato entre los dos está en [`CONTRATO.md`](CONTRATO.md)** (contrato 1) y es la fuente única.
-- **Apoyo de dibujo:** TecnoDiseñador (`..\TecnoDiseñador`) produce SVG de referencia desde fotos propias, verificados contra material «compartir igual». Se acepta **solo como vista** (dibujo cosmético); el resto de la Tecnoparte se hace siempre en TecnoCircuito. Requisitos de aceptación en `prototipo/RECETA-COMPONENTE-NUEVO.md`.
+- **Apoyo de dibujo:** TecnoDiseñador (`..\TecnoDiseñador`) produce SVG de referencia desde fotos propias, verificados contra material «compartir igual». Se acepta **solo como vista** (dibujo cosmético); el resto de la Tecnoparte se hace siempre en TecnoCircuito. **Qué entrega y con qué datos:** [docs/ENTREGA-VISTAS-TECNODISENADOR.md](docs/ENTREGA-VISTAS-TECNODISENADOR.md) (`-tc.svg` + `-tc.json`, fichas de Nano, expansión y shield, revisor `pruebas/revisar_vista_td.py`); aceptación en `prototipo/RECETA-COMPONENTE-NUEVO.md`.
 
 ## Cómo trabajar con Efraín
 
@@ -42,7 +42,8 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 | Solucionador eléctrico **propio** | MNA en JavaScript con Newton-Raphson para LED. Licencia Apache 2.0. |
 | **Nada de código GPL** | Falstad, SimulIDE, Fritzing y PICSimLab solo como ideas. El esquema de la shield de Adafruit es «compartir igual»: no se mira. |
 | **avr8js** (MIT, 0.21.1) | Ejecuta el `.hex` del ATmega328P. A la Mega le faltan los temporizadores 3, 4 y 5. |
-| **@wokwi/elements** (MIT, 1.9.2) | Dibujos del Uno, LED, resistencia, botón y potenciómetro. |
+| **@wokwi/elements** (MIT, 1.9.2) | Dibujos del LED, resistencia, botón y potenciómetro; el del Uno es provisional (fila siguiente). |
+| **Placas con paso exacto de 2,54 mm** | Toda placa del simulador es Pieza Tecno con sus headers en paso exacto. El Uno de wokwi no cumple (saltos de 2,39 a 2,64 mm): se rehace con TecnoDiseñador desde el Uno del kit y después se regenera la shield L293D. Decisión de Efraín, 12 oct; ficha en [la especificación de entrega](docs/ENTREGA-VISTAS-TECNODISENADOR.md), secciones 6.0 y 6.5. |
 | **Piezas Tecno originales** | Dibujos propios hechos desde la pieza real (servo, shield, motor TT, LiPo, probador), Apache 2.0 con encabezado SPDX. Receta: `prototipo/RECETA-COMPONENTE-NUEVO.md`. Las imágenes que exporta TecnoCircuito son libres (`NOTICE`). |
 | Pieza = **vista + modelo eléctrico + modelo lógico + ficha** | La ficha va en `src/biblioteca.js`; el contrato revisa que no falte. |
 | **Motor separado de la interfaz** | El núcleo se prueba con Node, sin navegador. |
@@ -139,6 +140,8 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
    3. TecnoBloques: configuración del instructor, código del equipo, sobre, eventos del editor, quitar comentarios del C++ (con pruebas de comillas y escapes), IPC `tb:registrar` al `.jsonl`, «Exportar registros» y una prueba que valide el archivo.
    4. Codex verifica. En 2027 se definen la asignación de la condición (`condicion` queda reservado) y el registro por parejas o equipos en el diseño del estudio.
 6. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
+
+**Encargo planeado a TecnoDiseñador:** primero el **Uno R3 Tecno** (fotos propias del Uno del kit; ficha 6.5), después la shield L293D sobre él, con una sola salida. **Al migrar un dibujo de TecnoDiseñador** (especificación, sección 9): Nano encima de la expansión (sin ventana), `data-led`/`data-parte` en la shield y alinear `GND1`/`RESET` de KiCad con el lienzo (pads 29/28).
 
 **Pendientes conocidos:** el circuito del Uno no siente toda la caída del 5V (solo los servos ven el voltaje real); Nano sí entrega su alimentación de referencia a MNA/GPIO/ADC. Faltan validación física de Nano/expansión, esquemático `.kicad_sch` con etiquetas, diagrama de flujo del programa (TecnoBloques) y símbolo de marca en SVG (`MARCA_SVG` en `src/lienzo.js`).
 

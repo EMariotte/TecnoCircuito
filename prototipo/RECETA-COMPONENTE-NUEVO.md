@@ -152,6 +152,8 @@ Una **pieza Tecno** es una pieza hecha para TecnoCircuito con esta receta: dibuj
 
 `..\TecnoDiseñador` es un proyecto hermano que dibuja componentes en SVG a partir de fotos propias, con su propio proceso de medición y verificación de licencia (su `PROCESO.md`). Puede ahorrar el paso 4 de esta receta (el dibujo), pero **no entrega una Pieza Tecno terminada, solo la vista**. Modelo eléctrico, modelo lógico, ficha, pruebas y validación con la placa real se hacen siempre aquí, en TecnoCircuito — eso no se traslada ni se acorta.
 
+**Qué entrega exactamente y con qué datos** (archivos `-tc.svg` y `-tc.json`, reglas del SVG, `data-contacto`/`data-led`/`data-parte`, ficha de cada pieza y el revisor `pruebas/revisar_vista_td.py`): [docs/ENTREGA-VISTAS-TECNODISENADOR.md](../docs/ENTREGA-VISTAS-TECNODISENADOR.md). Es la especificación que sigue TecnoDiseñador; lo que sigue aquí es lo que TecnoCircuito revisa al aceptarlo.
+
 Para aceptar un resultado de TecnoDiseñador como vista de una pieza nueva:
 
 1. **Licencia confirmada en su registro:** el `registro-verificacion.md` del componente, en TecnoDiseñador, tiene que decir explícitamente que no usó ningún archivo, foto oficial ni medida de una fuente «compartir igual» (CC BY-SA, GPL, CERN-OHL-S). Sin esa confirmación, no se acepta.
