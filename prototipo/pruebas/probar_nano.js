@@ -232,7 +232,19 @@ for (const placa of ['nano', 'nano_old']) {
   n.ponerCircuito(encendido);
   const vuelta = correr(n, 80);
   verificar(primero.texto.includes('Pin 13') && durante.texto === '' && vuelta.texto.includes('Pin 13'), 'quitar y reconectar la fuente reinicia el HEX y conserva el tiempo simulado');
-  verificar(vuelta.foto.msSimulados >= 240 && vuelta.foto.energia.reinicios === 1, 'un ciclo de alimentación registra un reinicio sin retroceder el reloj');
+  verificar(vuelta.foto.msSimulados >= 240 && vuelta.foto.energia.reinicios === 0,
+    'desconectar y reconectar a mano no cuenta como reinicio por energía (es un cambio del circuito) ni retrocede el reloj');
+  verificar(!n.fallas().some((x) => x.tipo === 'nano_referencia'), 'el modelo de referencia no se avisa como falla en cada corrida');
+}
+// Una caída por lo que pide el circuito sí es un reinicio de la placa, con su aviso.
+{
+  const c = circuito('nano', 'roja', { alimentacion: 'jack', voltajeJack: 4 });
+  c.componentes.push(pieza('r', 'resistencia', { ohmios: 6 }));
+  c.cables.push(cable('exp.OUT_5V', 'r.1'), cable('r.2', 'exp.GND_OUT'));
+  const n = nucleo(c, 'parpadeo13', { limiteUSB: true });
+  const f = correr(n, 100).foto;
+  verificar(f.energia.apagada && f.energia.reinicios === 1 && n.fallas().some((x) => x.tipo === 'nano_bajo_voltaje'),
+    `carga de 6 Ω con jack de 4 V: el 5V baja de 2,7 V, la placa se reinicia una vez y lo avisa (${f.energia.voltios.toFixed(2)} V)`);
 }
 
 {
@@ -280,5 +292,57 @@ for (const variante of ['roja', 'azul']) for (const [primero, segundo] of [
   const directo = correr(nucleo(d, 'parpadeo13', { limiteUSB: true }), 50).foto;
   verificar(casi(f.energia.voltios, directo.energia.voltios) && casi(f.energia.amperios, directo.energia.amperios),
     `${variante}: elegir uno u otro contacto de ${primero} conserva caída y consumo`);
+}
+// Revisión de Claude (12 oct): VIN y el jack sin entrada no son una fuente de 0 V. Antes, un LED del 5V al VIN
+// se prendía al 92 %: el VIN funcionaba como un corto a GND escondido.
+{
+  const ledHacia = (c, desde, hasta) => {
+    c.componentes.push(pieza('r', 'resistencia', { ohmios: 220 }), pieza('led', 'led', { color: 'rojo' }));
+    c.cables.push(cable(desde, 'r.1'), cable('r.2', 'led.anodo'), cable('led.catodo', hasta));
+    return c;
+  };
+  for (const [nombre, c] of [
+    ['Nano suelto: 5V→LED→VIN', ledHacia(circuito('nano'), 'placa.5V', 'placa.VIN')],
+    ['expansión: OUT_5V→LED→VIN', ledHacia(circuito('nano', 'roja'), 'exp.OUT_5V', 'placa.VIN')],
+    ['expansión: OUT_5V→LED→jack sin fuente', ledHacia(circuito('nano', 'azul'), 'exp.OUT_5V', 'exp.JACK_POS')],
+  ]) {
+    const n = nucleo(c, 'fijo13');
+    const f = correr(n, 50).foto;
+    verificar((f.leds.led || 0) < 0.01 && !n.fallas().some((x) => x.tipo === 'cortocircuito'), `${nombre}: sin entrada no hay camino a GND; el LED queda apagado`);
+  }
+  const unido = circuito('nano');
+  unido.cables.push(cable('placa.5V', 'placa.VIN'));
+  const nu = nucleo(unido, 'fijo13');
+  correr(nu, 20);
+  verificar(!nu.fallas().some((x) => x.tipo === 'cortocircuito'), 'unir 5V con VIN por USB no es un cortocircuito');
+}
+
+// Los mensajes de corto nombran lo que ve el aprendiz, no el identificador interno de la pieza.
+{
+  const jack = circuito('nano', 'roja', { alimentacion: 'jack', voltajeJack: 9 });
+  jack.cables.push(cable('exp.JACK_POS', 'exp.JACK_GND'));
+  const nj = nucleo(jack, 'fijo13');
+  correr(nj, 20);
+  const fj = nj.fallas();
+  verificar(fj.length === 1 && /entrada del jack está unida directo a GND/.test(fj[0].mensaje) && !/exp\./.test(fj[0].mensaje),
+    'corto del jack: un solo aviso claro, sin el falso «el jack recibe 0 V»');
+  const salida = circuito('nano', 'roja');
+  salida.cables.push(cable('exp.OUT_3V3', 'exp.GND_OUT'));
+  const ns = nucleo(salida, 'fijo13');
+  correr(ns, 20);
+  const corto = ns.fallas().find((x) => x.tipo === 'cortocircuito');
+  verificar(corto && corto.componente === 'exp.OUT_3V3' && /^La salida 3,3V de la expansión está unida directo a GND/.test(corto.mensaje),
+    `corto de la salida 3,3V con nombre legible: «${corto && corto.mensaje}»`);
+}
+
+// Rendimiento: con PWM el 5V oscila unos mV; el circuito guardado no se vuelve a resolver por eso (sección 50).
+{
+  const c = circuito('nano', 'roja');
+  c.componentes.push(pieza('r', 'resistencia', { ohmios: 220 }), pieza('led', 'led', { color: 'rojo' }));
+  c.cables.push(cable('exp.D9_S', 'r.1'), cable('r.2', 'led.anodo'), cable('led.catodo', 'exp.D9_G'));
+  const n = nucleo(c, 'pwm9', { limiteUSB: true });
+  const f = correr(n, 1000).foto;
+  verificar(f.evaluaciones < 20 && f.energia.voltios < 5 && f.energia.voltios > 4.98,
+    `PWM en realista: ${f.evaluaciones} resoluciones del circuito en 1 s (antes 1016), 5V = ${f.energia.voltios.toFixed(4)} V`);
 }
 console.log(`\nNano: ${comprobaciones} comprobaciones aprobadas; hardware pendiente.`);

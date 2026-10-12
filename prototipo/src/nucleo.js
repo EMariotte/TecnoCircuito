@@ -48,6 +48,10 @@ const PASEO_AL_AIRE_V = 0.15; // cuánto deambula, por lectura, una entrada anal
 // de un servo (50 Hz) o la red que capta la mano (60 Hz). Una señal quieta se muestra exacta, sin esperar.
 const PROMEDIO_VISTA_MS = 100;
 const QUIETA_MS = 50; // sin cambios de pin en este tiempo, la señal se considera quieta
+// Nano: el circuito guardado se vuelve a resolver solo si una alimentación se movió más que un paso del ADC
+// (5 V / 1024) desde la última vez que se puso en la red. Con PWM el 5V oscila unos mV cada milisegundo; comparar
+// con el milisegundo anterior borraba las soluciones guardadas sin parar (sección 50) y hacía el Nano un 25-40 % más lento.
+const TOLERANCIA_NANO_V = 0.005;
 
 export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(Math.random() * 2 ** 32) }) {
   let perfil = perfilPlaca(circuito.placa);
@@ -114,6 +118,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let fuenteActualNano = null;
   let energiaNano = null;
   let corteNano = false;
+  let aplicadaNano = null; // alimentación que tiene la red ahora (puede diferir de energiaNano en < TOLERANCIA_NANO_V)
   const estadosSinEnergia = Object.fromEntries(PINES_EN_ORDEN.map((p) => [p, PinState.Input]));
 
   const ms = () => ((base + chip.ciclos) / FRECUENCIA) * 1000;
@@ -172,13 +177,15 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (nano) {
       fuenteActualNano = fuenteNano(circuitoActual, calcularNodos(circuitoActual));
       energiaNano = resolverAlimentacionNano(fuenteActualNano, { realista: !!activas.limiteUSB });
+      aplicadaNano = energiaNano;
       v5 = energiaNano.v5;
       apagada = energiaNano.apagada;
       chip.ponerVoltajeReferencia(v5);
     }
+    // El jack solo es fuente cuando le entra voltaje: sin entrada queda sin fuente (no es un corto a GND).
     const fuentesExtra = nano && fuenteActualNano.expansion ? [
-      { ref: fuenteActualNano.expansion + '.OUT_3V3', voltios: energiaNano.v33Expansion },
-      { ref: fuenteActualNano.expansion + '.JACK_POS', voltios: energiaNano.entradaV },
+      { ref: fuenteActualNano.expansion + '.OUT_3V3', voltios: energiaNano.v33Expansion, nombre: 'la salida 3,3V de la expansión' },
+      ...(energiaNano.entradaV > 0 ? [{ ref: fuenteActualNano.expansion + '.JACK_POS', voltios: energiaNano.entradaV, nombre: 'la entrada del jack' }] : []),
     ] : [];
     red = armarRed(circuitoActual, { quemados, presionados,
       ...(nano ? { alimentacion: voltajesFuenteNano(), fuentesExtra } : {}) });
@@ -202,11 +209,14 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       } : {}) };
   }
 
+  // Solo avisa lo que el aprendiz puede arreglar. Que el modelo es de referencia lo dicen la ficha y la tabla de
+  // mediciones: como falla salía en cada corrida y se mezclaba con las fallas reales del registro de eventos.
   function avisarFuenteNano() {
     const componente = fuenteActualNano.expansion || 'placa';
-    avisar({ tipo: 'nano_referencia', componente,
-      mensaje: 'La alimentación del Nano y la expansión usa un modelo de referencia. Sus valores y conexiones están pendientes de comprobar en la placa real.' });
-    if (fuenteActualNano.alimentacion === 'jack' && fuenteActualNano.voltiosJack < NANO_REFERENCIA.minimoJackV) {
+    if (fuenteActualNano.corto) {
+      avisar({ tipo: 'cortocircuito', componente: fuenteActualNano.entradaRef,
+        mensaje: 'La entrada del jack está unida directo a GND: es un cortocircuito. Quita ese cable.' });
+    } else if (fuenteActualNano.alimentacion === 'jack' && fuenteActualNano.voltiosJack < NANO_REFERENCIA.minimoJackV) {
       avisar({ tipo: 'nano_alimentacion', componente, voltios: fuenteActualNano.voltiosJack,
         mensaje: `El jack recibe ${fuenteActualNano.voltiosJack.toFixed(1).replace('.', ',')} V: la referencia recomienda 7 a 12 V. Con menos voltaje bajan las salidas y el Nano puede quedar en reinicio.` });
     }
@@ -345,13 +355,14 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       else g33Expansion += s.logico.corriente(1);
     }
     const siguiente = resolverAlimentacionNano(fuenteActualNano, { realista: !!activas.limiteUSB, g5, g33, g33Expansion, fijo5: motores5V });
-    const cambio = ['v5', 'v33', 'v33Expansion', 'vin', 'entradaV'].some((p) => Math.abs(siguiente[p] - energiaNano[p]) > 1e-6);
+    const cambio = ['v5', 'v33', 'v33Expansion', 'vin', 'entradaV'].some((p) => Math.abs(siguiente[p] - aplicadaNano[p]) > TOLERANCIA_NANO_V);
     energiaNano = siguiente;
     v5 = siguiente.v5;
     apagada = siguiente.apagada;
     porVin = fuenteActualNano.alimentacion === 'jack';
     if (!antesApagada && apagada) corteNano = true;
     if (cambio || antesApagada !== apagada) {
+      aplicadaNano = siguiente;
       red.ponerAlimentacion(voltajesFuenteNano());
       chip.ponerVoltajeReferencia(v5);
       soluciones.clear(); planes.clear(); ultimaM = null;
@@ -376,9 +387,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     usbMs++;
   }
 
-  function atenderCorteNano() {
+  // `porCarga`: la alimentación cayó por lo que pide el circuito (cuenta como reinicio de la placa, como en el Uno).
+  // Si el aprendiz quitó la fuente (Desconectada, sin batería), el programa también vuelve a empezar, pero no es un
+  // reinicio por energía: ese cambio ya lo registra el lienzo como un cambio del circuito.
+  function atenderCorteNano({ porCarga = true } = {}) {
     corteNano = false;
-    reinicios++;
+    if (porCarga) reinicios++;
     if (v5 > 0) avisar({ tipo: 'nano_bajo_voltaje', componente: 'placa', voltios: v5,
       mensaje: 'La alimentación del Nano bajó del umbral de reinicio de referencia (2,7 V). El programa espera mientras vuelve la energía. Revisa la fuente y reduce la carga.' });
     base += chip.ciclos;
@@ -797,6 +811,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (nano) {
       fuenteActualNano = fuenteNano(circuitoActual, calcularNodos(circuitoActual));
       energiaNano = resolverAlimentacionNano(fuenteActualNano, { realista: !!activas.limiteUSB });
+      aplicadaNano = energiaNano;
       v5 = energiaNano.v5;
       apagada = energiaNano.apagada;
       if (red) red.ponerAlimentacion(voltajesFuenteNano());
@@ -825,7 +840,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       rehacerRed();
       // Quitar la fuente devuelve el AVR a reset. Al reconectar comienza el
       // programa, con el reloj global y las piezas físicas conservados.
-      if (nano && !estabaApagada && apagada) atenderCorteNano();
+      if (nano && !estabaApagada && apagada) atenderCorteNano({ porCarga: false });
       actualizarEntradas();
     },
     // «La mano»: lo que tiene el mouse encima (refs de pines o de los extremos de un cable), o nada.

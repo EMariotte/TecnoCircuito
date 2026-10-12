@@ -37,7 +37,8 @@ export function crearLienzo(elemento, opciones = {}) {
   const soloLectura = !!opciones.soloLectura;
   const alEvento = typeof opciones.alEvento === 'function' ? opciones.alEvento : null;
   const oyentes = [];
-  const datos = normalizar(opciones.circuito, placa);
+  const quitadosAlAbrir = [];
+  const datos = normalizar(opciones.circuito, placa, quitadosAlAbrir);
 
   // El lienzo vive en un shadow DOM para que el CSS de TecnoBloques no lo afecte.
   const host = document.createElement('div');
@@ -1544,11 +1545,11 @@ export function crearLienzo(elemento, opciones = {}) {
                 : 'Clic en un pin para empezar un cable · Arrastra las piezas para moverlas · Rueda del mouse: zoom';
   }
 
-  function avisar(texto) {
+  function avisar(texto, duracionMs = 2500) {
     actualizarAyuda();
     ayuda.textContent = texto;
     ayuda.classList.add('tc-aviso');
-    tAviso = setTimeout(actualizarAyuda, 2500);
+    tAviso = setTimeout(actualizarAyuda, duracionMs);
   }
 
   // ---- Eventos y cambios
@@ -1659,12 +1660,15 @@ export function crearLienzo(elemento, opciones = {}) {
     marcarOcupados();
     dibujarCables();
     encuadrado = encuadrar();
+    if (quitadosAlAbrir.length) avisar(`Se quitó lo que no va en ${PLACAS[placa].nombre}: ${quitadosAlAbrir.join(' y ')}.`, 10000);
   });
   return api;
 }
 
 // Copia el circuito y completa lo que falte. Los campos desconocidos se conservan tal cual.
-function normalizar(circuito, placa) {
+// Al cambiar de placa, lo que no va en la nueva (una shield de otra placa, un cable a un pin que no tiene) se
+// quita en vez de impedir que el lienzo abra: el aprendiz no tendría cómo arreglarlo. `quitados` dice qué salió.
+function normalizar(circuito, placa, quitados = []) {
   const c = circuito && typeof circuito === 'object' ? copia(circuito) : {};
   c.formato = c.formato || 1;
   c.placa = placa; // manda la placa que elige TecnoBloques
@@ -1674,26 +1678,42 @@ function normalizar(circuito, placa) {
   );
   // Un circuito nuevo Nano comienza con su expansión. Los proyectos existentes conservan su montaje.
   if (!circuito && esNano(placa)) c.componentes.push({ id: 'exp1', tipo: 'shield_nano_io', x: 0, y: 0, rot: 0, props: {} });
-  if (c.componentes.filter(k => k.tipo === 'shield_nano_io').length > 1) throw new Error('El Nano admite una sola expansión E/S.');
+  // Una pieza montada va sobre una placa concreta y hay una sola de cada tipo (la primera se queda).
+  const montadas = new Set();
+  const fuera = new Set();
+  c.componentes = c.componentes.filter((k) => {
+    const def = TIPOS[k.tipo];
+    const sobra = def?.montada && ((def.placas && !def.placas.includes(placa)) || montadas.has(k.tipo));
+    if (def?.montada) montadas.add(k.tipo);
+    if (sobra) {
+      fuera.add(k.id);
+      quitados.push(def.nombre);
+    }
+    return !sobra;
+  });
   for (const k of c.componentes) {
     k.x = Number(k.x) || 0;
     k.y = Number(k.y) || 0;
     k.rot = Number(k.rot) || 0;
     const base = TIPOS[k.tipo] ? TIPOS[k.tipo].props : {};
-    if (TIPOS[k.tipo]?.placas && !TIPOS[k.tipo].placas.includes(placa)) throw new Error(`${TIPOS[k.tipo].nombre} no se monta en ${PLACAS[placa].nombre}.`);
     k.props = { ...base, ...(k.props && typeof k.props === 'object' ? k.props : {}) };
     if (TIPOS[k.tipo]?.montada) {
-      if ('en' in k) throw new Error(`${TIPOS[k.tipo].nombre} va montada sobre la placa; no se encaja en la protoboard.`);
+      delete k.en; // va montada sobre la placa: no se encaja en la protoboard
       k.x = 0; k.y = 0; k.rot = 0;
     }
   }
   c.cables = (Array.isArray(c.cables) ? c.cables : []).filter((k) => k && typeof k.de === 'string' && typeof k.a === 'string');
-  if (esNano(placa)) {
-    const pines = perfilPlaca(placa).pines;
-    for (const cable of c.cables) for (const ref of [cable.de, cable.a]) {
-      if (ref.startsWith('placa.') && !pines.includes(ref.slice(6))) throw new Error(`${PLACAS[placa].nombre} no tiene el pin «${ref.slice(6)}». Revisa el cable antes de cambiar de placa.`);
-    }
-  }
+  // Cables que llegan a una pieza quitada o a un pin que esta placa no tiene (GND3 del Uno, A6 del Nano…).
+  const pinesPlaca = perfilPlaca(placa).pines;
+  const sinDestino = (ref) => {
+    const i = ref.indexOf('.');
+    const id = i > 0 ? ref.slice(0, i) : ref;
+    return fuera.has(id) || (id === 'placa' && !pinesPlaca.includes(ref.slice(i + 1)));
+  };
+  const cables = c.cables.length;
+  c.cables = c.cables.filter((k) => !sinDestino(k.de) && !sinDestino(k.a));
+  const menos = cables - c.cables.length;
+  if (menos) quitados.push(menos === 1 ? '1 cable' : `${menos} cables`);
   for (const k of c.cables) {
     const valido = Array.isArray(k.puntos) && k.puntos.every((p) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite));
     if ('puntos' in k && !valido) delete k.puntos;

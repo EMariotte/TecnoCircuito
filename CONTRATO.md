@@ -39,6 +39,9 @@ const lienzo = TecnoCircuito.crearLienzo(elemento, {
 lienzo.circuito();          // devuelve el circuito actual (para guardarlo en el proyecto)
 lienzo.alCambiar(fn);       // fn(circuito) cada vez que el aprendiz cambia algo
 // Para cambiar la placa: guardar circuito(), destruir el lienzo y crear otro con la placa elegida.
+// Si el circuito trae lo que la placa no tiene (una pieza montada de otra placa, un cable a GND3 en el Nano),
+// el lienzo lo quita al abrir y lo avisa en su barra; circuito() devuelve el adaptado. Para no perderlo, quien
+// llama conserva el original hasta que el aprendiz edite (así lo hace TecnoBloques). COMO-FUNCIONA, sección 60.
 lienzo.ponerTema('oscuro');
 lienzo.exportarSVG();       // el circuito como texto SVG, tal como se ve (documentación, evidencias en TecnoRuta),
                             // con la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» abajo a la derecha
@@ -200,7 +203,7 @@ El Nano usa alimentación de referencia propia; no hereda la resistencia, el fus
 
 La netlist permite iniciar el diseño; no certifica el circuito de ninguna tarjeta comercial ni entrega una PCB terminada. Confirmar jack/polaridad, regulación, disipación, aislamiento USB/jack y montaje real antes de fabricar. [Implementación y protocolo físico](docs/IMPLEMENTACION-NANO-2026-10-11.md).
 
-El Nano añade los diagnósticos `nano_referencia` (supuestos pendientes de medir), `nano_alimentacion` (entrada fuera del intervalo de referencia), `nano_3v3_sobrecarga` (módulo original 50mA o expansión de referencia 100mA) y `nano_bajo_voltaje` (umbral de reinicio de referencia). `reinicio_placa` usa `motivo: 'energia_nano'` y `fuente` para sus cambios de alimentación; Uno conserva `energia_usb`. Mientras el Nano está sin energía, `sim.mediciones()` devuelve `null`; la vista apaga PWR y conserva la respuesta del reloj/modelos.
+El Nano añade los diagnósticos `nano_alimentacion` (entrada fuera del intervalo de referencia), `nano_3v3_sobrecarga` (módulo original 50mA o expansión de referencia 100mA) y `nano_bajo_voltaje` (umbral de reinicio de referencia). Que su alimentación es un modelo de referencia lo dicen la ficha y la tabla de mediciones, no una falla (desde el 12 oct ya no se emite `nano_referencia`: salía en cada corrida). `reinicio_placa` usa `motivo: 'energia_nano'` y `fuente` cuando la alimentación cae por lo que pide el circuito; quitar la fuente a mano (Desconectada, sin batería) reinicia el programa sin emitirlo, porque ya es un cambio del circuito. Uno conserva `energia_usb`. Mientras el Nano está sin energía, `sim.mediciones()` devuelve `null`; la vista apaga PWR y conserva la respuesta del reloj/modelos.
 
 **Corrección confirmada por Efraín (11 oct):** I2C se sitúa junto a UART, al final del Nano. El bloque de seis contactos de la expansión es alimentación, no SPI. La vista ofrece **82 contactos físicos** y el esquema conserva los seis aliases `SPI_*` del primer diseño para abrir proyectos sin cambiar sus redes. SPI se accede en los pines del Nano; el header SPI exportado a KiCad es un conector **añadido al diseño de referencia**, no ese bloque de alimentación. No se cambian formato ni contrato.
 

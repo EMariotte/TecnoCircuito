@@ -47,9 +47,14 @@ export function fuenteNano(circuito, raiz) {
   }
   // También una fuente descrita por voltajeJack queda anulada por un corto del
   // jack: la propiedad no puede suministrar energía atravesando el mismo nodo.
-  if (raiz(entradaRef) === raiz('placa.GND1')) voltios = 0;
+  // `corto`: la fuente de la propiedad quedó en corto (el de una batería lo avisa potencia.js como bateria_corto).
+  let corto = false;
+  if (raiz(entradaRef) === raiz('placa.GND1')) {
+    corto = !bateria && alimentacion === 'jack' && voltios > 0;
+    voltios = 0;
+  }
   if (!expansion && bateria) alimentacion = 'jack';
-  return { alimentacion, voltiosJack: voltios, bateria, expansion: expansion ? expansion.id : null, entradaRef };
+  return { alimentacion, voltiosJack: voltios, bateria, corto, expansion: expansion ? expansion.id : null, entradaRef };
 }
 
 // g5/g33: conductancia de cargas pasivas y servos en cada salida; fijo5: motores

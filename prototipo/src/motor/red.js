@@ -87,20 +87,24 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
     }
   }
 
-  // 5 V y 3,3 V de la placa: fuentes de voltaje ideales.
+  // 5 V y 3,3 V de la placa: fuentes de voltaje ideales. El VIN del Nano solo es fuente cuando le entra voltaje
+  // (batería o jack); sin entrada queda sin fuente, como en la placa: una fuente de 0 V sería un corto a GND escondido.
   const nodosFuente = new Map();
-  const fuentesAArmar = [['5V', 5, 'placa.5V'], ['3V3', 3.3, 'placa.3V3'], ...(nano ? [['VIN', 0, 'placa.VIN']] : []),
-    ...fuentesExtra.map(({ ref, voltios = 0 }) => [ref, voltios, ref])];
-  for (const [pin, predeterminado, ref] of fuentesAArmar) {
+  const fuentesAArmar = [['5V', 5, 'placa.5V'], ['3V3', 3.3, 'placa.3V3'], ...(nano && alimentacion.VIN > 0 ? [['VIN', 0, 'placa.VIN']] : []),
+    ...fuentesExtra.map(({ ref, voltios = 0, nombre }) => [ref, voltios, ref, nombre])];
+  for (const [pin, predeterminado, ref, nombre] of fuentesAArmar) {
     if (!conectado(pin) && !nano && ref.startsWith('placa.')) continue;
     const voltios = alimentacion[pin] ?? predeterminado;
     const k = nodo(ref);
     const choque = k === -1 ? 'GND' : nodosFuente.get(k);
     if (choque) {
-      fallasFijas.push({ tipo: 'cortocircuito', componente: ref, mensaje: `El pin ${pin} está unido directo a ${choque}: es un cortocircuito.` });
+      // Las salidas de la expansión se nombran como las ve el aprendiz, no por su identificador interno.
+      const mensaje = nombre ? `${nombre[0].toUpperCase() + nombre.slice(1)} está unida directo a ${choque}: es un cortocircuito. Quita ese cable.`
+        : `El pin ${pin} está unido directo a ${choque}: es un cortocircuito.`;
+      fallasFijas.push({ tipo: 'cortocircuito', componente: ref, mensaje });
       continue;
     }
-    nodosFuente.set(k, pin);
+    nodosFuente.set(k, nombre || pin);
     const f = fuenteVoltaje(k, voltios);
     f.pin = pin;
     f.ref = ref;
@@ -154,8 +158,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   // Grupos (por conducción) que tienen algo que fija su voltaje: GND, 5V, 3,3V, un pin de salida o una pull-up.
   function gruposManejados(estados) {
     const manejados = new Set([conduce('placa.GND1')]);
-    for (const p of ['5V', '3V3', ...(nano ? ['VIN'] : [])]) if (conectado(p) || nano) manejados.add(conduce('placa.' + p));
-    for (const f of fuentesExtra) manejados.add(conduce(f.ref));
+    for (const f of fuentes) manejados.add(conduce(f.ref));
     for (const pin of digitales) {
       const e = estados[pin];
       if (e === PinState.High || e === PinState.Low || e === PinState.InputPullUp) manejados.add(conduce('placa.' + pin));

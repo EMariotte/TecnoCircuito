@@ -14,7 +14,7 @@ const pinesModuloNano = Object.freeze([...digitales, 'A6', 'A7', 'GND1', 'GND2',
 export const PLACA_UNO = Object.freeze({
   nombre: 'Arduino Uno R3', pinesDigitales: digitales, analogicos: analogicosUno,
   puentes: puentesUno, gnd: Object.freeze(['GND1', 'GND2', 'GND3']),
-  pines: Object.freeze([...digitales, 'GND1', 'GND2', 'GND3', '5V', '3V3', 'VIN', 'RESET', 'AREF', 'SDA', 'SCL']),
+  pines: Object.freeze([...digitales, 'GND1', 'GND2', 'GND3', '5V', '3V3', 'VIN', 'RESET', 'AREF', 'IOREF', 'SDA', 'SCL']),
 });
 export const PLACA_NANO = Object.freeze({
   nombre: 'Arduino Nano clásico', pinesDigitales: digitales, analogicos: analogicosNano,

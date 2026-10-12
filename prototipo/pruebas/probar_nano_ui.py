@@ -220,8 +220,9 @@ with sync_playwright() as p:
                 'el controlador conserva una sola expansión aunque reciba otro clic')
         pg.keyboard.press('Escape')
 
-        # La API también rechaza importaciones que la interfaz no permite construir.
-        rechazos = pg.evaluate('''() => {
+        # Lo que la interfaz no permite construir se corrige al abrir (TecnoBloques usa la misma llamada al cambiar
+        # de placa: rechazarlo dejaba al aprendiz sin lienzo). Revisión de Claude, 12 oct.
+        corregidos = pg.evaluate('''() => {
           const base = lienzo.circuito();
           const duplicada = structuredClone(base);
           duplicada.componentes.push({...duplicada.componentes[0], id:'exp2'});
@@ -231,13 +232,18 @@ with sync_playwright() as p:
           encajada.componentes[0].en = {A6_S:'protoboard.a1'};
           return [duplicada, incompatible, encajada].map(c => {
             let prueba = null;
-            try { prueba = TecnoCircuito.crearLienzo(document.createElement('div'), {placa:c.placa, circuito:c}); return null; }
+            try { prueba = TecnoCircuito.crearLienzo(document.createElement('div'), {placa:c.placa, circuito:c}); return prueba.circuito(); }
             catch (e) { return e.message; }
             finally { if (prueba) prueba.destruir(); }
           });
         }''')
-        for caso, rechazo in zip(['expansión duplicada', 'expansión Nano sobre Uno', 'expansión encajada por «en» en protoboard'], rechazos):
-            revisar(bool(rechazo), f'la API rechaza {caso}: {rechazo}')
+        dup, inc, enc = corregidos
+        revisar(isinstance(dup, dict) and sum(c['tipo'] == 'shield_nano_io' for c in dup['componentes']) == 1
+                and len(dup['cables']) == len(pg.evaluate('lienzo.circuito().cables')), 'una expansión duplicada se quita y se conserva la primera con sus cables')
+        revisar(isinstance(inc, dict) and not any(c['tipo'] == 'shield_nano_io' for c in inc['componentes'])
+                and not any(r.startswith('exp1.') or r in ('placa.A6', 'placa.A7') for k in inc['cables'] for r in (k['de'], k['a'])),
+                'sobre el Uno se quita la expansión Nano y los cables a ella o a A6/A7')
+        revisar(isinstance(enc, dict) and 'en' not in enc['componentes'][0], 'la expansión va montada: se ignora un «en» de protoboard')
 
         # Los proyectos anteriores con SPI_* mantienen sus redes y un extremo visible
         # sobre el pin real del Nano; no se reinterpretan como contactos de alimentación.
@@ -318,7 +324,7 @@ with sync_playwright() as p:
         cambiar('voltajeJack', 12)
         pg.wait_for_function('() => sim.mediciones()?.usb?.fuente === "jack" && sim.mediciones().voltajes["exp1.JACK_POS"] === 12')
         m = pg.evaluate('sim.mediciones()')
-        revisar(m['voltajes']['placa.VIN'] == 0 and m['voltajes']['placa.5V'] == 5 and m['voltajes']['exp1.OUT_3V3'] == 3.3,
+        revisar(m['voltajes'].get('placa.VIN') is None and m['voltajes']['placa.5V'] == 5 and m['voltajes']['exp1.OUT_3V3'] == 3.3,
                 'jack de 12 V conserva VIN separado y da las salidas ideales 5V/3,3V del modelo')
         esperar_lectura(819, 768, 'cambiar la fuente y el voltaje no pierde los cursores')
         cambiar('alimentacion', 'apagada')
@@ -328,7 +334,8 @@ with sync_playwright() as p:
         cambiar('alimentacion', 'usb')
         pg.wait_for_function('() => sim.mediciones()?.usb?.fuente === "usb" && sim.mediciones().voltajes["placa.5V"] === 5')
         esperar_lectura(819, 768, 'al volver al USB, el ADC vuelve a responder')
-        revisar('energia_nano' in pg.locator('#eventos').inner_text(), 'el reinicio por fuente del Nano se registra con su motivo propio')
+        revisar('energia_nano' not in pg.locator('#eventos').inner_text() and 'nano_referencia' not in pg.locator('#eventos').inner_text(),
+                'desconectar a mano no se registra como reinicio por energía, y el modelo de referencia no aparece como falla')
         pg.locator('main').screenshot(path=str(SALIDA / 'nano_2_azul_adc.png'))
 
         # Imagen y netlist desde los botones que usa el aprendiz.
@@ -412,6 +419,38 @@ with sync_playwright() as p:
         incompatible.evaluate('(b) => b.dispatchEvent(new MouseEvent("click", {bubbles:true}))')
         revisar(not any(c['tipo'] == 'shield_nano_io' for c in pg.evaluate('lienzo.circuito().componentes')),
                 'el controlador no agrega una expansión incompatible al Uno')
+
+        # Como TecnoBloques: al cambiar de placa se reabre el lienzo con el circuito guardado. Lo que no va en la
+        # placa nueva se quita y se avisa; antes el lienzo no abría y el aprendiz no tenía cómo arreglarlo.
+        cambios = pg.evaluate(r'''async () => {
+          const abrir = async (placa, circuito) => {
+            const d = document.createElement('div'); document.body.append(d);
+            try {
+              const l = TecnoCircuito.crearLienzo(d, { placa, circuito });
+              await new Promise(r => setTimeout(r, 300));
+              const ayuda = d.querySelector('.tecnocircuito').shadowRoot.querySelector('.tc-ayuda').textContent;
+              const c = l.circuito(); l.destruir(); d.remove();
+              return { ok: true, c, ayuda };
+            } catch (e) { d.remove(); return { ok: false, error: e.message }; }
+          };
+          const nano = await abrir('nano', null);
+          const uno = await abrir('uno', nano.c);
+          const conShield = { formato: 1, placa: 'uno', protoboard: null,
+            componentes: [{ id: 'shield1', tipo: 'shield_l293d', x: 0, y: 0, rot: 0, props: {} }, { id: 'r1', tipo: 'resistencia', x: 0, y: 0, rot: 0, props: {} }],
+            cables: [{ de: 'shield1.M1A', a: 'r1.1' }, { de: 'placa.GND3', a: 'r1.2' }, { de: 'placa.IOREF', a: 'r1.1' }] };
+          const aNano = await abrir('nano', conShield);
+          const deUno = await abrir('uno', conShield);
+          return { nano, uno, aNano, deUno };
+        }''')
+        revisar(cambios['uno']['ok'] and not cambios['uno']['c']['componentes']
+                and 'Expansión E/S del Nano' in cambios['uno']['ayuda'],
+                f'Nano → Uno abre el lienzo, quita la expansión y lo avisa: «{cambios["uno"].get("ayuda")}»')
+        a_nano = cambios['aNano']
+        revisar(a_nano['ok'] and [c['tipo'] for c in a_nano['c']['componentes']] == ['resistencia'] and not a_nano['c']['cables']
+                and 'Shield L293D y 3 cables' in a_nano['ayuda'],
+                f'Uno con shield → Nano quita la shield, sus cables y los pines GND3/IOREF: «{a_nano.get("ayuda")}»')
+        revisar(cambios['deUno']['ok'] and len(cambios['deUno']['c']['cables']) == 3 and 'quitó' not in cambios['deUno']['ayuda'],
+                'el mismo circuito en el Uno se abre completo, con IOREF, sin quitar nada')
 
     except Exception as e:
         revisar(False, f'el recorrido no pudo completarse: {type(e).__name__}: {e}')

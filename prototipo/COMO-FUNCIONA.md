@@ -1448,3 +1448,48 @@ Efraín corrigió la ubicación de I2C y confirmó el significado del bloque de 
 Mover un contacto cambia sus coordenadas; el cable lo sigue porque conserva su referencia. Los tres contactos secundarios (`OUT_5V_2`, `OUT_3V3_2`, `GND_OUT_2`) se unen a la misma red del contacto primario. Cargas en uno u otro dan igual caída y consumo; ambos 3V3 externos siguen separados del 3V3 del módulo.
 
 Para abrir los proyectos anteriores, `SPI_MISO/MOSI/SCK/SS/V/G` conservan sus redes y se dibujan sobre los pines reales del Nano. No se cambian en silencio por salidas de tensión. KiCad conserva el header SPI solicitado como **conector adicional del diseño de referencia**, con una nota explícita. La identificación verbal no reemplaza las mediciones de continuidad y voltaje del laboratorio.
+
+## 60. Revisión del Nano: VIN sin fuente, cambio de placa y la caché del 5V (12 oct 2026, Claude)
+
+Efraín pidió revisar la implementación del Nano de Codex. Las pruebas pasaban; los tres problemas estaban en casos que no cubrían.
+
+**1. Cambiar de placa ya no deja al aprendiz sin lienzo.** TecnoBloques reabre el lienzo con el circuito guardado al cambiar de placa. Desde la sección 58, `normalizar` lanzaba un error si el circuito traía algo que la placa no tiene, y el lienzo no abría. Lo más común: un proyecto nuevo pasa a Nano (trae su expansión) y vuelve a Uno → «No se pudo abrir el circuito». Ahora el lienzo **adapta** el circuito y lo dice en su barra de ayuda:
+
+```mermaid
+flowchart LR
+  G[Circuito guardado] --> N[normalizar con la placa elegida]
+  N -->|pieza montada de otra placa, expansión repetida| Q[se quita]
+  N -->|cable a una pieza quitada o a un pin que la placa no tiene| Q
+  N --> L[El lienzo abre]
+  Q --> A[«Se quitó lo que no va en Arduino Uno: Expansión E/S del Nano.»]
+  L --> T{¿TecnoBloques ve menos piezas o cables?}
+  T -->|sí| C[Conserva el original hasta que el aprendiz edite: volver a la otra placa lo recupera]
+  T -->|no| S[Guarda el circuito del lienzo]
+```
+
+Un `en` de protoboard en una pieza montada se ignora (antes era un error). `IOREF` se agregó al perfil del Uno: el esquema lo admite y el filtro no debe quitar esos cables.
+
+**2. VIN y el jack sin entrada no son una fuente de 0 V.** El VIN del Nano y `JACK_POS` eran fuentes ideales de 0 V cuando no les entraba voltaje: un corto a GND escondido. Un LED con 220 Ω del 5V al VIN se prendía al 92 %. Ahora esas fuentes solo existen cuando hay entrada (batería o jack); sin ella el nodo queda sin fuente, como en la placa. Unir 5V con VIN por USB tampoco es ya un «cortocircuito». El corto del jack con la fuente de la propiedad lo avisa `alimentacion_nano.js` (`corto`), con un solo mensaje claro en vez del falso «el jack recibe 0 V». Los cortos de las salidas de la expansión se nombran como los ve el aprendiz («La salida 3,3V de la expansión está unida directo a GND»), no por su identificador interno.
+
+**3. La caché del circuito vuelve a funcionar en modo realista.** Cada milisegundo, `avanzarNano` resuelve la alimentación con la carga del momento. Con PWM, el 5V oscila unos mV (el LED prende y apaga), y el código borraba todas las soluciones guardadas (sección 50) cuando el 5V cambiaba más de 1 µV respecto **al milisegundo anterior**:
+
+```
+antes:  |5V(ahora) − 5V(ms anterior)| > 0,000001 V  → borrar caché     → 1016 resoluciones en 1 s
+ahora:  |5V(ahora) − 5V(puesto en la red)| > 0,005 V → borrar caché     →    3 resoluciones en 1 s
+```
+
+Se compara contra lo último **aplicado** a la red, con tolerancia de un paso del ADC (5 V / 1024). Así la red nunca se aleja más de 5 mV del modelo, muy por debajo del criterio de ±5 %, y el error no se acumula. La tabla de mediciones y los servos siguen usando el voltaje exacto de cada milisegundo. Tiempo real para 3 s simulados, Nano realista: pwm9 1143 → 879 ms, desvanecer9 1514 → 1247 ms (el Uno: 818 y 1220 ms). En modo ideal no cambia nada.
+
+Pruebas: `probar_nano.js` (VIN y jack sin fuente, 5V–VIN sin falso corto, mensajes legibles, resoluciones con PWM), `probar_nano_ui.py` (adaptar al cambiar de placa en los dos sentidos) y `test/simulador.js` de TecnoBloques (el original se recupera al volver).
+
+**Después de la revisión, decidido por Efraín (12 oct):**
+
+- **`nano_referencia` ya no es una falla.** Salía en cada simulación del Nano: aviso emergente en TecnoBloques y, con el registro de eventos, una «falla» en todas las corridas, mezclada con las del aprendiz. Que la alimentación es un modelo de referencia lo dicen la ficha de la expansión y la fila «Nano · alimentación» de la tabla de mediciones.
+- **Quitar la fuente a mano no es un reinicio por energía.** Las dos maneras de quedarse sin energía se separan:
+
+```
+caída por carga (avanzarNano, cada ms):  5V < 2,7 V  →  programa de nuevo + reinicios++ + reinicio_placa (energia_nano)
+cambio del circuito (ponerCircuito):     Desconectada, sin batería, jack a 0 V  →  programa de nuevo, sin contar
+```
+
+El segundo caso ya queda en el registro como `componente_cambiado` del lienzo. Pruebas nuevas: el ciclo a mano deja `reinicios` en 0; una carga de 6 Ω con el jack a 4 V (realista) baja el 5V a 2,68 V, reinicia una vez y avisa `nano_bajo_voltaje`.
