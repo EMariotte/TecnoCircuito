@@ -85,6 +85,7 @@
     <button type="button" id="ejemploSeis">Seis servos en el USB (T3)</button>
     <button type="button" id="ejemploCarro">Carro con la shield L293D (T3)</button>
     <button type="button" id="ejemploProbador">Probador de celdas (T3)</button>
+    <button type="button" id="ejemploNano">Nano + expansión: A6 y A7</button>
     <button type="button" id="limpiar">Empezar de nuevo</button>
     <button type="button" id="copiar">Copiar el circuito</button>
     <button type="button" id="imagen">Guardar imagen (SVG)</button>
@@ -92,9 +93,13 @@
   </div>
   <section class="sim">
     <h2>Simulación <small>· chip y circuito eléctrico</small></h2>
+    <label class="campo">Placa
+      <select id="placa"><option value="uno">Arduino Uno</option><option value="nano">Nano + expansión E/S</option><option value="nano_old">Nano (bootloader antiguo) + expansión E/S</option></select>
+    </label>
     <label class="campo">Programa
       <select id="programa">
-        <option value="parpadeo13">Parpadeo en el pin 13 (cada 0,5 s)</option>
+        <option value="nano_adc67">Nano: leer A6 y A7 (0 a 1023)</option>
+        <option value="parpadeo13" selected>Parpadeo en el pin 13 (cada 0,5 s)</option>
         <option value="parpadeo8">Parpadeo en el pin 8 (cada 0,2 s)</option>
         <option value="fijo13">Pin 13 siempre en ALTO (para medir)</option>
         <option value="pwm9">PWM fijo en el pin 9 (25 %)</option>
@@ -276,6 +281,19 @@
     protoboard: null,
   };
   const $ = (id) => document.getElementById(id);
+  const EJEMPLO_NANO = {
+    formato: 1, placa: 'nano', protoboard: null,
+    componentes: [
+      { id: 'exp1', tipo: 'shield_nano_io', x: 0, y: 0, rot: 0, props: { variante: 'roja', alimentacion: 'usb', voltajeJack: 9 } },
+      { id: 'pot6', tipo: 'potenciometro', x: 310, y: 20, props: { ohmios: 10000, posicion: 0.25 } },
+      { id: 'pot7', tipo: 'potenciometro', x: 310, y: 180, props: { ohmios: 10000, posicion: 0.75 } },
+    ],
+    cables: ['6', '7'].flatMap(n => [
+      { de: 'exp1.A' + n + '_S', a: 'pot' + n + '.SIG', color: 'verde' },
+      { de: 'exp1.A' + n + '_V', a: 'pot' + n + '.VCC', color: 'rojo' },
+      { de: 'exp1.A' + n + '_G', a: 'pot' + n + '.GND', color: 'negro' },
+    ]),
+  };
   let lienzo = null;
 
   // localStorage puede fallar (ventana privada, datos bloqueados): la página funciona igual.
@@ -301,7 +319,9 @@
   function abrir(circuito) {
     if (sim) sim._destruir();
     if (lienzo) lienzo.destruir();
-    lienzo = TecnoCircuito.crearLienzo($('lienzo'), { placa: 'uno', circuito, alEvento: anotar });
+    const placaActual = circuito?.placa || $('placa').value || 'uno';
+    $('placa').value = placaActual;
+    lienzo = TecnoCircuito.crearLienzo($('lienzo'), { placa: placaActual, circuito, alEvento: anotar });
     lienzo.alCambiar((c) => { mostrar(c); guardar(c); });
     window.lienzo = lienzo; // para probarlo desde la consola
     const c = lienzo.circuito();
@@ -315,8 +335,9 @@
   const NOMBRES = { corriendo: 'Corriendo', pausado: 'En pausa', detenido: 'Detenida', reiniciado: 'Reiniciada' };
   function crearSim() {
     if (sim) sim._destruir();
+    try { localStorage.setItem(CLAVE + '-programa', $('programa').value); } catch { /* preferencias opcionales */ }
     sim = TecnoCircuito.crearSimulador({
-      lienzo, placa: 'uno', hex: PROGRAMAS[$('programa').value], modo: $('modo').value, alEvento: anotar,
+      lienzo, placa: lienzo.circuito().placa, hex: PROGRAMAS[$('programa').value], modo: $('modo').value, alEvento: anotar,
     });
     $('fallas').textContent = '';
     sim.alFalla((f) => {
@@ -354,6 +375,8 @@
   }
   setInterval(() => sim && pintarEstado(), 250);
   $('programa').onchange = crearSim;
+  $('placa').onchange = () => { if ($('placa').value !== 'uno') $('programa').value = 'nano_adc67'; else $('programa').value = 'parpadeo13'; abrir(null); };
+  $('ejemploNano').onclick = () => { $('programa').value = 'nano_adc67'; abrir(EJEMPLO_NANO); };
   $('modo').onchange = crearSim;
   $('iniciar').onclick = () => {
     if (sim._medidas().estado === 'detenido') {
@@ -380,7 +403,7 @@
   $('ejemploT1').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_T1); };
   $('ejemploPB').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_PB); };
   $('ejemploT2').onclick = () => { $('programa').value = 'potenciometro'; abrir(EJEMPLO_T2); };
-  $('limpiar').onclick = () => { $('eventos').textContent = ''; abrir(INICIAL); };
+  $('limpiar').onclick = () => { $('eventos').textContent = ''; abrir($('placa').value === 'uno' ? INICIAL : null); };
   $('copiar').onclick = async (e) => {
     const boton = e.currentTarget;
     try {
@@ -402,7 +425,12 @@
   $('imagen').onclick = () => descargar(lienzo.exportarSVG(), 'image/svg+xml', 'circuito.svg');
   // La netlist para KiCad: en el editor de placas, Archivo → Importar → Netlist.
   $('netlist').onclick = () => descargar(lienzo.exportarNetlist({ nombre: 'Circuito de prueba' }), 'text/plain', 'circuito.net');
-  abrir(leer() || INICIAL);
+  const guardado = leer();
+  let programaGuardado = null;
+  try { programaGuardado = localStorage.getItem(CLAVE + '-programa'); } catch { /* preferencias opcionales */ }
+  if (programaGuardado && PROGRAMAS[programaGuardado]) $('programa').value = programaGuardado;
+  else if (guardado && ['nano', 'nano_old'].includes(guardado.placa)) $('programa').value = 'nano_adc67';
+  abrir(guardado || INICIAL);
 })();
 </script>
 </body>

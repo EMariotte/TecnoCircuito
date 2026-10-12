@@ -3,6 +3,7 @@
 // Esta parte vive en la página: manda órdenes al Worker, recibe «fotos» de lo que pasa y las dibuja en el lienzo
 // una vez por cuadro de pantalla. Si el navegador no deja crear el Worker, el mismo código corre en la página.
 import { leerHex } from './hex.js';
+import { PLACAS } from './catalogo.js';
 
 const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB', 'caidaL293D'];
 // El código del Worker, ya armado: lo pone construir.js. Va como texto para que todo quepa en un solo archivo.
@@ -10,10 +11,11 @@ const CODIGO_TRABAJADOR = typeof __CODIGO_TRABAJADOR__ === 'string' ? __CODIGO_T
 
 export function crearSimulador(opciones = {}) {
   const { lienzo, hex } = opciones;
-  const placa = opciones.placa || 'uno';
-  if (placa !== 'uno') throw new Error(`Este prototipo solo simula la placa «uno».`);
+  const placa = opciones.placa || lienzo?.circuito?.()?.placa || 'uno';
+  if (!PLACAS[placa]) throw new Error(`Este prototipo no simula la placa «${placa}».`);
   if (!lienzo || typeof lienzo._mostrar !== 'function') throw new Error('crearSimulador necesita un lienzo de TecnoCircuito.');
   if (typeof hex !== 'string') throw new Error('crearSimulador necesita el programa en formato Intel HEX.');
+  if (lienzo.circuito().placa !== placa) throw new Error('El programa y el circuito deben usar la misma placa.');
   leerHex(hex); // se revisa aquí, de una vez: si el .hex está dañado, el error sale al crear el simulador
   const modo = opciones.modo === 'ideal' ? 'ideal' : 'realista';
   // El modo enciende o apaga todas las no idealidades; noIdealidades ajusta una por una encima del modo.
@@ -50,7 +52,11 @@ export function crearSimulador(opciones = {}) {
     }
     // Reinicios por la energía del USB (no idealidad «limiteUSB»): uno por foto, con cuántos hubo desde la anterior.
     const reinicios = m.energia ? m.energia.reinicios : 0;
-    if (reinicios > reiniciosVistos) emitir('reinicio_placa', { motivo: 'energia_usb', nuevos: reinicios - reiniciosVistos, total: reinicios });
+    if (reinicios > reiniciosVistos) emitir('reinicio_placa', {
+      motivo: m.energia.referencia ? 'energia_nano' : 'energia_usb',
+      ...(m.energia.referencia ? { fuente: m.energia.fuente } : {}),
+      nuevos: reinicios - reiniciosVistos, total: reinicios,
+    });
     reiniciosVistos = reinicios;
     if (m.serial) oyentes.serial.forEach((fn) => avisar(fn, m.serial));
     vista = m;

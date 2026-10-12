@@ -37,13 +37,22 @@ Haz doble clic en `dist/prototipo.html`. Funciona sin internet.
 
 El panel de la derecha también muestra el circuito en el formato 1 del contrato y los eventos que TecnoBloques guardaría. El navegador recuerda el circuito entre visitas.
 
+## Nano con expansión E/S
+
+Elige «Arduino Nano» o «Nano (bootloader antiguo)» para empezar con la expansión montada. En su ficha puedes seleccionar roja/azul, USB/jack/desconectada y el voltaje del jack. Cambiar el color conserva los cables. Los grupos tienen S (señal), V (5V) y G (tierra); A6/A7 solo sirven para `analogRead()`. Los conectores I2C y SPI sacan las señales del Nano; todavía no simulan dispositivos de esos buses.
+
+«Nano + expansión: A6/A7» arma dos potenciómetros y selecciona el programa `nano_adc67`. En ideal, las posiciones iniciales 25 % y 75 % imprimen aproximadamente `256,768`. Gira una perilla: debe cambiar su lectura sin cambiar la otra. Guarda/reabre el circuito y exporta SVG o KiCad. El Nano antiguo ejecuta el mismo programa; el cargador solo cambia al subirlo a la placa física.
+
+La alimentación es un **modelo de referencia pendiente de medición**. Los V de los conectores GVS llevan 5V; `OUT_3V3` es otra salida, distinta de `3V3` del módulo. El jack se conecta a su regulador externo y no directamente a VIN. La netlist de KiCad conserva estas redes, exporta el Nano como módulo y añade regulación/filtro, jack e I2C/SPI de referencia. Confirma el montaje, los componentes y el aislamiento entre USB/jack antes de fabricar: [protocolo físico](../docs/IMPLEMENTACION-NANO-2026-10-11.md).
+
 ## Reconstruirlo y probarlo
 
 ```
 npm install
 npm run compilar      # solo si cambian los .ino de programas/ (necesita arduino-cli)
 npm run construir
-npm run probar        # arma, prueba con Node (motor, núcleo, potencia, KiCad, contrato y fixtures), la PCB con KiCad y doce recorridos en Chromium
+npm run probar        # Node (incluye Nano), PCB Uno/Nano con KiCad y trece recorridos en Chromium
+npm run probar:nano   # Nano/Nano antiguo, A6/A7, aliases y alimentación, sin navegador
 npm run probar:nucleo # solo el núcleo (PWM, potenciómetro, botón, entradas al aire, ruido del ADC), sin navegador
 npm run probar:motor  # solo el motor eléctrico, sin navegador, con la tabla para el multímetro
 npm run probar:kicad  # solo la netlist de KiCad, sin navegador
@@ -51,6 +60,8 @@ npm run probar:contrato  # el esquema del circuito (contrato/circuito.schema.jso
 npm run fixtures     # trae los proyectos de prueba de TecnoBloques (necesita ../TecnoBloques)
 npm run probar:fixtures  # esos proyectos: formato, circuito y su .hex corriendo en el chip
 python -I pruebas/probar_kicad_pcb.py   # la netlist con las huellas reales de KiCad (se salta si no está instalado)
+python -I pruebas/probar_kicad_nano_pcb.py # módulo/reguladores/jack/conectores con KiCad real
+python -I pruebas/probar_nano_ui.py dist/prototipo.html pruebas/capturas # conjunto, Worker, guardado, SVG y netlist
 npm run medir         # velocidad del chip con Node, sin navegador
 ```
 

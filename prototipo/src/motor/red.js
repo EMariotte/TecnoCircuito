@@ -4,6 +4,7 @@ import { calcularNodos } from '../conexiones.js';
 import { huecos } from '../protoboard.js';
 import { resistencia, fuenteConResistencia, fuenteVoltaje, diodo, resolver, VT } from './mna.js';
 import { PinState } from 'avr8js';
+import { perfilPlaca, esNano } from '../placas.js';
 
 // ---- Modelos. Valores de partida tomados de hojas de datos; se ajustan con el multímetro (validación).
 
@@ -11,7 +12,6 @@ import { PinState } from 'avr8js';
 // maxmA: máximo absoluto por pin. chipMaxmA: máximo absoluto por las patas VCC y por las GND del chip (hoja de datos,
 // «DC Current VCC and GND Pins»): lo que entregan todos los pines en ALTO sale por VCC; lo que reciben en BAJO, por GND.
 export const PIN = { voltios: 5, rAlto: 25, rBajo: 22, rPullUp: 35000, maxmA: 40, chipMaxmA: 200 };
-const PINES_UNO = [...Array.from({ length: 14 }, (_, i) => 'D' + i), 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
 
 // LED de 5 mm: voltaje directo a 20 mA según el color, factor de idealidad n y resistencia interna.
 export const LED = {
@@ -39,7 +39,12 @@ const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro
 
 // Arma la red una vez por cableado (y por botones presionados). Cambiar los pines (ponerPines) no la rehace:
 // solo cambia las fuentes. Un botón presionado une sus patas 1 y 2: es parte del cableado de ese momento.
-export function armarRed(circuito, { quemados = new Set(), presionados = new Set() } = {}) {
+export function armarRed(circuito, { quemados = new Set(), presionados = new Set(), alimentacion = {}, fuentesExtra = [] } = {}) {
+  const perfil = perfilPlaca(circuito.placa);
+  const nano = esNano(circuito.placa);
+  const digitales = perfil.pinesDigitales;
+  const analogicosSolos = perfil.analogicos.map((refs) => refs[0]).filter((p) => !digitales.includes(p));
+  let voltiosGPIO = alimentacion['5V'] ?? PIN.voltios;
   const raiz = calcularNodos(circuito, { presionados });
   const conduce = calcularNodos(circuito, { presionados, conduccion: true }); // para saber qué entradas flotan
   const tierra = raiz('placa.GND1');
@@ -63,7 +68,13 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   const raicesUsadas = new Set([...usados].map(raiz));
   const conectado = (pin) => raicesUsadas.has(raiz('placa.' + pin));
   // Pines de la placa que se miden (su voltaje lo leen las entradas y la tabla), lleguen o no por un cable directo.
-  const refsPlaca = [...PINES_UNO, '5V', '3V3'].filter(conectado).map((pin) => 'placa.' + pin);
+  const refsPlaca = [...digitales, ...analogicosSolos, '5V', '3V3', ...(nano ? ['VIN', 'GND1', 'GND2'] : [])]
+    .filter((p) => conectado(p) || nano && ['5V', '3V3', 'VIN', 'GND1', 'GND2'].includes(p)).map((pin) => 'placa.' + pin);
+  // ADC6/7 reciben voltaje de la red, sin elemento fuente y sin pull-up.
+  for (const p of analogicosSolos) if (conectado(p)) nodo('placa.' + p);
+  const refsExpansion = nano ? circuito.componentes.filter((c) => c.tipo === 'shield_nano_io')
+    .flatMap((c) => ['OUT_5V', 'OUT_3V3', 'GND_OUT', 'JACK_POS', 'JACK_GND'].map((p) => c.id + '.' + p)) : [];
+  for (const ref of refsExpansion) nodo(ref);
   // Huecos de la protoboard cuya tira toca algo (un cable o una pata encajada): el rótulo de cualquiera de ellos
   // muestra el voltaje de la tira, como la punta de un multímetro.
   const huecosConAlgo = [];
@@ -78,23 +89,28 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
 
   // 5 V y 3,3 V de la placa: fuentes de voltaje ideales.
   const nodosFuente = new Map();
-  for (const [pin, voltios] of [['5V', 5], ['3V3', 3.3]]) {
-    if (!conectado(pin)) continue;
-    const k = nodo('placa.' + pin);
+  const fuentesAArmar = [['5V', 5, 'placa.5V'], ['3V3', 3.3, 'placa.3V3'], ...(nano ? [['VIN', 0, 'placa.VIN']] : []),
+    ...fuentesExtra.map(({ ref, voltios = 0 }) => [ref, voltios, ref])];
+  for (const [pin, predeterminado, ref] of fuentesAArmar) {
+    if (!conectado(pin) && !nano && ref.startsWith('placa.')) continue;
+    const voltios = alimentacion[pin] ?? predeterminado;
+    const k = nodo(ref);
     const choque = k === -1 ? 'GND' : nodosFuente.get(k);
     if (choque) {
-      fallasFijas.push({ tipo: 'cortocircuito', componente: 'placa.' + pin, mensaje: `El pin ${pin} está unido directo a ${choque}: es un cortocircuito.` });
+      fallasFijas.push({ tipo: 'cortocircuito', componente: ref, mensaje: `El pin ${pin} está unido directo a ${choque}: es un cortocircuito.` });
       continue;
     }
     nodosFuente.set(k, pin);
     const f = fuenteVoltaje(k, voltios);
+    f.pin = pin;
+    f.ref = ref;
     fuentes.push(f);
     elementos.push(f);
   }
 
   // Pines del chip que tienen algo conectado: una fuente con resistencia que cambia según el estado del pin.
   const pines = {};
-  for (const pin of PINES_UNO) {
+  for (const pin of digitales) {
     if (!conectado(pin)) continue; // A4 y A5 cuentan también por SDA y SCL: son el mismo nodo
     pines[pin] = fuenteConResistencia(nodo('placa.' + pin));
     elementos.push(pines[pin]);
@@ -138,14 +154,16 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   // Grupos (por conducción) que tienen algo que fija su voltaje: GND, 5V, 3,3V, un pin de salida o una pull-up.
   function gruposManejados(estados) {
     const manejados = new Set([conduce('placa.GND1')]);
-    for (const p of ['5V', '3V3']) if (conectado(p)) manejados.add(conduce('placa.' + p));
-    for (const pin of PINES_UNO) {
+    for (const p of ['5V', '3V3', ...(nano ? ['VIN'] : [])]) if (conectado(p) || nano) manejados.add(conduce('placa.' + p));
+    for (const f of fuentesExtra) manejados.add(conduce(f.ref));
+    for (const pin of digitales) {
       const e = estados[pin];
       if (e === PinState.High || e === PinState.Low || e === PinState.InputPullUp) manejados.add(conduce('placa.' + pin));
     }
     return manejados;
   }
-  const todasLasRefs = new Set([...usados, ...refsPlaca, ...huecosConAlgo]);
+  const todasLasRefs = new Set([...usados, ...refsPlaca, ...refsExpansion, ...huecosConAlgo]);
+  for (const f of fuentesExtra) todasLasRefs.add(f.ref);
   for (const c of circuito.componentes) for (const p of PATAS[c.tipo] || []) todasLasRefs.add(c.id + '.' + p);
 
   return {
@@ -155,7 +173,8 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
     flotantes(estados) {
       const manejados = gruposManejados(estados);
       const r = new Set();
-      for (const pin of PINES_UNO) if (estados[pin] === PinState.Input && !manejados.has(conduce('placa.' + pin))) r.add(pin);
+      for (const pin of digitales) if (estados[pin] === PinState.Input && !manejados.has(conduce('placa.' + pin))) r.add(pin);
+      for (const pin of analogicosSolos) if (!manejados.has(conduce('placa.' + pin))) r.add(pin);
       return r;
     },
     // Puntas (cables y patas de las piezas) que quedan al aire: un multímetro no mediría un voltaje fijo ahí.
@@ -165,13 +184,19 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
       for (const ref of todasLasRefs) if (!manejados.has(conduce(ref))) r.add(ref);
       return r;
     },
+    // Cambia las salidas de alimentación sin reconstruir el cableado. El núcleo
+    // invalida las soluciones guardadas cada vez que cambia alguno de estos V.
+    ponerAlimentacion(voltajes) {
+      voltiosGPIO = voltajes['5V'] ?? voltiosGPIO;
+      for (const f of fuentes) if (voltajes[f.pin] !== undefined) f.v = voltajes[f.pin];
+    },
     // Pone cada pin como lo dejó el programa.
     ponerPines(estados) {
       for (const [pin, f] of Object.entries(pines)) {
         const e = estados[pin];
-        if (e === PinState.High) Object.assign(f, { v: PIN.voltios, g: 1 / PIN.rAlto });
+        if (e === PinState.High) Object.assign(f, { v: voltiosGPIO, g: 1 / PIN.rAlto });
         else if (e === PinState.Low) Object.assign(f, { v: 0, g: 1 / PIN.rBajo });
-        else if (e === PinState.InputPullUp) Object.assign(f, { v: PIN.voltios, g: 1 / PIN.rPullUp });
+        else if (e === PinState.InputPullUp) Object.assign(f, { v: voltiosGPIO, g: 1 / PIN.rPullUp });
         else Object.assign(f, { v: 0, g: 0 }); // entrada: no entrega ni recibe corriente
       }
     },
@@ -186,6 +211,8 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
       for (const ref of usados) voltajes[ref] = V(ref);
       for (const ref of refsPlaca) voltajes[ref] = V(ref);
       for (const ref of huecosConAlgo) voltajes[ref] = V(ref);
+      for (const f of fuentesExtra) voltajes[f.ref] = V(f.ref);
+      for (const ref of refsExpansion) voltajes[ref] = V(ref);
       for (const c of circuito.componentes) {
         for (const p of PATAS[c.tipo] || []) {
           voltajes[c.id + '.' + p] = V(c.id + '.' + p);
@@ -207,7 +234,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
         pines: Object.entries(pines)
           .filter(([, f]) => f.g > 0)
           .map(([pin, f]) => ({ pin, v: V('placa.' + pin), i: f.corriente(r.x) })),
-        fuentes: fuentes.map((f) => ({ pin: f.v === 5 ? '5V' : '3V3', i: f.corriente(r.x) })),
+        fuentes: fuentes.map((f) => ({ pin: f.pin, i: f.corriente(r.x) })),
         // Potenciómetro: voltaje en la pata del medio (respecto a su GND) y corriente de punta a punta.
         potenciometros: potenciometros.map((x) => ({
           id: x.id,

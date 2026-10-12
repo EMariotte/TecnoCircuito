@@ -444,7 +444,7 @@
 .tc-ficha[hidden],
 .tc-ficha-cuerpo[hidden],
 .tc-bib-cat[hidden],
-.tc-pieza[hidden],
+.tc .tc-pieza[hidden],
 .tc-bib-vacio[hidden] {
   display: none;
 }

@@ -24,7 +24,7 @@
 ```js
 TecnoCircuito.VERSION    // '1.0.0'  versión del paquete (semver)
 TecnoCircuito.CONTRATO   // 1        sube solo cuando se rompe la compatibilidad
-TecnoCircuito.PLACAS     // ['uno', 'nano', 'nano_old', 'mega']  placas que sabe simular
+TecnoCircuito.PLACAS     // ['uno', 'nano', 'nano_old']  placas que sabe dibujar y simular hoy; comprobar por clave
 TecnoCircuito.filasDeMediciones(m)  // la tabla en español a partir de sim.mediciones():
                          //   [{ pieza: 'Pin 9', voltaje: '0,37 V', corriente: '0,00 mA', detalle: 'señal de servo: …' }, …]
 
@@ -38,13 +38,14 @@ const lienzo = TecnoCircuito.crearLienzo(elemento, {
 });
 lienzo.circuito();          // devuelve el circuito actual (para guardarlo en el proyecto)
 lienzo.alCambiar(fn);       // fn(circuito) cada vez que el aprendiz cambia algo
-lienzo.ponerPlaca('mega');
+// Para cambiar la placa: guardar circuito(), destruir el lienzo y crear otro con la placa elegida.
 lienzo.ponerTema('oscuro');
 lienzo.exportarSVG();       // el circuito como texto SVG, tal como se ve (documentación, evidencias en TecnoRuta),
                             // con la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» abajo a la derecha
 lienzo.exportarNetlist({ nombre });  // el circuito como netlist de KiCad (.net, «export» versión E): piezas con su huella
                             // y redes. El Uno va como los 4 conectores (J1–J4) de la plantilla «Arduino Uno Shield»
                             // de KiCad; en su editor de placas, Archivo → Importar → Netlist
+                            // Nano: módulo de 30 pads; expansión: referencia de regulación, jack e I2C/SPI (sección 4.2)
 lienzo.destruir();
 
 // Simulador: necesita el .hex. Usa el mismo lienzo para mostrar lo que pasa.
@@ -79,6 +80,8 @@ sim.destruir();  // detiene, libera el Worker y suelta el lienzo; después el ob
 
 - Las claves son las de `PLACAS` en `src/nucleo.js` de TecnoBloques: `uno`, `nano`, `nano_old` y `mega`.
 - `nano` y `nano_old` se simulan igual. Solo cambia el cargador en la placa real.
+- Desde el 11 oct 2026, se dibujan y simulan `uno`, `nano` y `nano_old`. `mega` conserva su clave en el formato de proyecto, pero aún no se dibuja ni simula. Consulta `TecnoCircuito.PLACAS`; no presupongas su orden.
+- Nano clásico: un ATmega328P a 16 MHz, ocho entradas ADC; A6/A7 son exclusivamente analógicas. Los conectores I2C/SPI son conexiones eléctricas y etiquetas de red; no se añaden dispositivos ni emulación completa de esos protocolos.
 - Si TecnoBloques usa una placa que no está en `TecnoCircuito.PLACAS`, desactiva «Simular» y lo explica.
 - **Para agregar una placa (por ejemplo el Uno R4):** primero el perfil en TecnoBloques, después la placa aquí, y se sube la versión menor.
 
@@ -108,6 +111,7 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
 - **Componentes:** `x` y `y` son la esquina superior izquierda del dibujo sin girar. `rot` vale 0, 90, 180 o 270 y gira el dibujo alrededor de su centro, en el sentido del reloj.
 - Los extremos de un cable son `"<id>.<pin>"`. La placa siempre se llama `placa`.
 - **Cada pin físico tiene nombre propio,** porque un cable llega a un agujero concreto. En el Uno: `D0`–`D13`, `A0`–`A5`, `GND1`, `GND2`, `GND3`, `5V`, `3V3`, `VIN`, `AREF`, `IOREF`, `RESET`, `SDA` y `SCL`. Los tres GND son el mismo nodo eléctrico, igual que `SDA` con `A4` y `SCL` con `A5`, pero son pines distintos.
+- **Nano:** 30 pines físicos: `D0`–`D13`, `A0`–`A7`, `GND1`, `GND2`, `RESET`, `RESET2`, `5V`, `3V3`, `VIN`, `AREF`. Los aliases `SDA`, `SCL`, `MISO`, `MOSI`, `SCK`, `SS` llegan respectivamente a A4, A5, D12, D11, D13, D10, sin agujeros adicionales. No hay `GND3`, `IOREF`, `D20` ni `D21`.
 - **`puntos`** (opcional) son los dobleces del cable, en orden desde `de` hasta `a`: una lista de pares `[x, y]` en las mismas coordenadas. Sin `puntos`, el cable va recto.
 - **El esquema manda:** [`contrato/circuito.schema.json`](contrato/circuito.schema.json) (JSON Schema 2020-12) define los nombres de pines de cada pieza, los colores y los huecos de la protoboard. Lo que un esquema no puede revisar (que cada cable llegue a una pieza que existe y a un pin que esa pieza tiene) lo revisa `prototipo/pruebas/contrato.js`. Es tolerante con lo nuevo: un tipo de pieza o un campo que no conoce no lo invalida. Resumen de las piezas:
 
@@ -119,6 +123,7 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
   | `pulsador` | `1i`, `1d`, `2i`, `2d` | `color` |
   | `servo` | `GND` (marrón), `VCC` (rojo), `SIG` (naranja, la señal) | `modelo`: `sg90` o `mg90s` (cambia el dibujo, el consumo y la velocidad) |
   | `shield_l293d` | `M1A`, `M1B`, `M2A`, `M2B`, `M3A`, `M3B`, `M4A`, `M4B`, `GND_IZQ`, `GND_DER`, `EXT_POS`, `EXT_GND`, `S1_SIG`, `S1_POS`, `S1_GND`, `S2_SIG`, `S2_POS`, `S2_GND` | `puentePWR`: `true` (la batería también alimenta el VIN) o `false`. Va montada sobre el Uno: `x` e `y` son 0, sin `en`, y hay una sola |
+  | `shield_nano_io` | Para D0–D13 y A0–A7: `<pin>_S`, `<pin>_V`, `<pin>_G`; conectores adicionales y alimentación en 4.2 | `variante`: `roja` o `azul`; `alimentacion`: `usb`, `jack`, `apagada`; `voltajeJack`: 0, 5, 7, 9 o 12. Solo Nano/Nano antiguo; máximo una, `x=y=rot=0`, sin `en` |
   | `motor_tt` | `A` (rojo), `B` (negro) | `vista`: `eje` o `rueda`; `lado`: `izquierdo` o `derecho` (refleja el dibujo y el sentido de avance) |
   | `bateria_lipo` | `POS` (rojo, +), `NEG` (negro, −); balance: `BAL0` (el −), `BAL1` (entre las celdas), `BAL2` (el +) | `carga`: `llena` (4,2 + 4,2 V), `nominal` (3,7 + 3,7), `descargada` (3,2 + 3,2) o `desbalanceada` (3,95 + 3,45) |
   | `probador_lipo` | `NEG` (el − del balance), `C1` a `C8` (el + de cada celda) | `umbral`: pita si una celda baja de este voltaje (2,7 a 3,8 V; 0 = apagada; de fábrica 3,3) |
@@ -168,6 +173,34 @@ El circuito viaja dentro del proyecto `.tbq.json` de TecnoBloques. Es un solo ar
 - **Desde la 0.2.5, TecnoBloques conserva los campos que no conoce,** así que nunca borra `circuito` aunque sea una versión anterior al simulador.
 - `circuito.placa` y la `placa` del proyecto deben coincidir. Si no coinciden, manda la del proyecto, que es la que se compila.
 - `creadoCon` dice qué versión de TecnoBloques guardó el archivo. Sirve para reproducir un caso.
+
+### 4.2 Nano + expansión E/S (modelo de referencia)
+
+Al crear un Nano con `circuito: null`, el lienzo inserta `exp1`, roja, USB, jack de referencia de 9 V. Abrir un circuito existente conserva sus piezas, incluso si es un Nano sin expansión. Cambiar roja/azul conserva IDs y cables. La expansión y el Nano comparten el origen; siguen siendo un módulo y una pieza de expansión, con **un solo chip**.
+
+```json
+{"id":"exp1","tipo":"shield_nano_io","x":0,"y":0,"rot":0,
+ "props":{"variante":"roja","alimentacion":"usb","voltajeJack":9}}
+```
+
+| Pines de expansión | Nodo eléctrico |
+|---|---|
+| `<pin>_S`, `<pin>_V`, `<pin>_G` | Señal del Nano, 5V, GND; A6/A7 continúan solo ADC |
+| `I2C_SDA`, `I2C_SCL`, `I2C_V`, `I2C_G` | A4, A5, 5V, GND |
+| `SPI_MISO`, `SPI_MOSI`, `SPI_SCK`, `SPI_SS`, `SPI_V`, `SPI_G` | D12, D11, D13, D10, 5V, GND |
+| `UART_TX`, `UART_RX`, `UART_V`, `UART_G` | D1, D0, 5V, GND |
+| `OUT_5V`, `OUT_3V3`, `GND_OUT` | 5V común, regulador externo de 3,3V, GND |
+| `JACK_POS`, `JACK_GND` | Entrada privada del regulador externo, GND |
+
+`JACK_POS` no se une automáticamente al `VIN` del módulo; `OUT_3V3` tampoco al `3V3` del Nano. Así no se ponen reguladores en paralelo. La selección USB/jack/desconectada es una propiedad del **modelo**, no un interruptor identificado en las fotos. Una LiPo cableada al jack tiene prioridad sobre `voltajeJack`; un corto o polaridad invertida no se convierte en una fuente positiva.
+
+El Nano usa alimentación de referencia propia; no hereda la resistencia, el fusible ni las mediciones del Uno. `limiteUSB` activa sus caídas y umbral de reinicio de referencia. `mediciones().usb` conserva su nombre por compatibilidad y añade `referencia`, `fuente`, `voltios3V3`, `voltios3V3Expansion` y `voltiosJack`; `fusible` es `null`. Las filas explican que falta validación física.
+
+**KiCad:** `exportarNetlist()` representa el Nano con `Module:Arduino_Nano` (30 pads) y conserva dentro de él ATmega, USB y reguladores internos. Si hay expansión, agrega una **referencia de diseño**: LD1117 de 5V y 3,3V, tres condensadores de 10µF/25V, dos de 100nF, jack PJ-102AH, I2C de cuatro pines y SPI de seis. Los headers GVS y UART de la expansión no se exportan como piezas adicionales; sus redes y el resto del circuito se conservan. Los componentes de expansión llevan la propiedad `TecnoCircuito_validacion` con una nota que identifica los pendientes físicos.
+
+La netlist permite iniciar el diseño; no certifica el circuito de ninguna tarjeta comercial ni entrega una PCB terminada. Confirmar jack/polaridad, regulación, disipación, aislamiento USB/jack y montaje real antes de fabricar. [Implementación y protocolo físico](docs/IMPLEMENTACION-NANO-2026-10-11.md).
+
+El Nano añade los diagnósticos `nano_referencia` (supuestos pendientes de medir), `nano_alimentacion` (entrada fuera del intervalo de referencia), `nano_3v3_sobrecarga` (módulo original 50mA o expansión de referencia 100mA) y `nano_bajo_voltaje` (umbral de reinicio de referencia). `reinicio_placa` usa `motivo: 'energia_nano'` y `fuente` para sus cambios de alimentación; Uno conserva `energia_usb`. Mientras el Nano está sin energía, `sim.mediciones()` devuelve `null`; la vista apaga PWR y conserva la respuesta del reloj/modelos.
 
 ## 5. Programa (.hex)
 
@@ -320,3 +353,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 7 oct 2026 | `sim.medidas()`, `sim.destruir()` y `lienzo.exportarSVG()` entran a la API. Tabla de piezas y pines (con `pulsador`), 10 colores de cable en el orden del código, evento `boton_pulsado`, `entradaFlotante` digital y analógica. Sección 4.0: la protoboard (`tipo`, `x`, `y`, nombres de los huecos) y el campo `en` de cada pieza. La imagen de `exportarSVG()` lleva la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» en una franja inferior. El 8 oct entra `lienzo.exportarNetlist({ nombre })`: la netlist de KiCad (sin la protoboard ni los cables, que quedan dentro de las redes). El 8 oct entra el esquema `contrato/circuito.schema.json`: escribe las reglas que ya había, sin cambiar el formato. En la netlist, el Uno pasa a ser los conectores J1–J4 de la plantilla «Arduino Uno Shield» de KiCad (la API no cambia). El 8 oct entran la pieza `servo` (`GND`, `VCC`, `SIG`; `modelo` sg90 o mg90s), la no idealidad `limiteUSB`, las fallas `servo_alimentacion`, `reinicio_usb` y `fusible_usb`, y el evento `reinicio_placa` empieza a emitirse. El 10 oct entran `sim.mediciones()` y `TecnoCircuito.filasDeMediciones(m)` (la tabla de mediciones en español, la misma en la página de prueba y en TecnoBloques). El 10 oct entran las piezas `shield_l293d`, `motor_tt` y `bateria_lipo`, la no idealidad `caidaL293D` empieza a funcionar, las fallas de la batería y de los motores, y `mediciones()` gana `shield`, `motores`, `baterias` y `porVin`. El 10 oct entran el cable de balance de `bateria_lipo` (`BAL0`, `BAL1`, `BAL2`), la carga `desbalanceada`, la pieza `probador_lipo`, las fallas `bateria_desbalanceada` y `probador_alarma`, y `mediciones()` gana `probadores` (y `celdas` en cada batería). |
 | 1 (borrador) | 11 oct 2026 | Revisión de Codex: entra la falla `corriente_chip` (R4: `limitePin` ya prometía el total del chip y no se revisaba); el `.hex` se revisa línea por línea (R5). Sin cambios en la API ni en el formato del circuito. |
 | 1 (borrador) | 11 oct 2026 | Sección 6.1: el registro de eventos queda aprobado, para implementar en la próxima sesión. Identifica al **equipo** (código sin datos de los aprendices); apagado por defecto y encendido por el instructor; sobre con `v`, `corrida`, `ms_sim`, `equipo` y `sesion`; el circuito completo en `simulacion_iniciada`, las fallas de la corrida en `simulacion_detenida` y `simulacion_pausada` nuevo; eventos del editor definidos aquí; el C++ sin comentarios; sin el monitor serial. Hasta que se implemente, rige la sección 6. |
+| 1 (borrador) | 11 oct 2026 | Contrato 1: Nano + expansión E/S. Soporte efectivo `nano`/`nano_old`, A6/A7 solo ADC, expansión roja/azul de 85 terminales, alimentación de referencia separada del Uno, guardado y exportación selectiva de módulo/regulación/jack/I2C/SPI. Mega sigue pendiente. Sección 4.2 y esquema ampliados sin subir formato ni contrato. |

@@ -33,7 +33,7 @@ with sync_playwright() as p:
     pg.screenshot(path=str(SALIDA / '1_inicio.png'))
 
     api = pg.evaluate('({ v: TecnoCircuito.VERSION, c: TecnoCircuito.CONTRATO, p: TecnoCircuito.PLACAS })')
-    revisar(api == {'v': VERSION_DEV, 'c': 1, 'p': ['uno']}, f'API del contrato: {api}')
+    revisar(api == {'v': VERSION_DEV, 'c': 1, 'p': ['uno', 'nano', 'nano_old']}, f'API del contrato: {api}')
     pines = pg.locator('.tc-pin').count()
     revisar(pines == 31 + 2 + 2, f'pines dibujados: {pines} (31 de la placa + 2 + 2)')
     desfases = pg.evaluate('''() => [...document.querySelector("main .tecnocircuito").shadowRoot.querySelectorAll(".tc-comp")]

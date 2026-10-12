@@ -60,8 +60,14 @@ export function filasDeMediciones(m) {
     ...(m.probadores || []).map((p) =>
       fila(`${p.id} (probador)`, p.encendido ? voltios(p.total) : '', '',
         !p.encendido ? 'apagado: conéctalo al cable de balance' : `${p.celdas.length}S · ${p.celdas.map((v, i) => `${i + 1}: ${num(v, 2)} V`).join(' · ')}${p.alarma ? ' · ¡pita!' : ''}`)),
-    ...(servos.length ? [fila('5V de la placa (USB)', '', miliamperios(m.consumo5V), 'el USB da hasta 500 mA')] : []),
-    ...(usb && (servos.length || usb.reinicios || usb.pico > 0.2)
+    ...(servos.length && !usb?.referencia ? [fila('5V de la placa (USB)', '', miliamperios(m.consumo5V), 'el USB da hasta 500 mA')] : []),
+    ...(usb?.referencia ? [
+      fila('Nano · alimentación', voltios(usb.voltios), miliamperios(usb.amperios), `${usb.fuente === 'jack' ? 'jack de la expansión' : usb.fuente === 'apagada' ? 'desconectada' : 'USB'} · modelo de referencia por validar${usb.apagada ? ' · placa apagada' : ''}`),
+      fila('Nano · 3,3V del módulo', voltios(usb.voltios3V3), '', 'salida del módulo'),
+      ...(usb.expansion ? [fila('Expansión · 3,3V', voltios(usb.voltios3V3Expansion), '', 'regulación externa · red separada del módulo')] : []),
+      ...(usb.fuente === 'jack' ? [fila(usb.expansion ? 'Expansión · jack' : 'Nano · VIN', voltios(usb.voltiosJack), '', 'entrada del regulador de referencia')] : []),
+    ] : []),
+    ...(usb && !usb.referencia && (servos.length || usb.reinicios || usb.pico > 0.2)
       ? [fila('USB (placa y circuito)', voltios(usb.voltios), miliamperios(usb.amperios),
           `pico ${miliamperios(usb.pico)} · fusible ${Math.round(usb.fusible * 100)} %${usb.reinicios ? ` · ${usb.reinicios} reinicios` : ''}`)]
       : []),

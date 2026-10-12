@@ -10,6 +10,7 @@ import { PLACAS, TIPOS, COLORES_CABLE, CODIGO_COLORES, NOMBRE_COLOR, colorPorDef
 import { netlistKiCad } from './kicad.js';
 import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
+import { esNano, perfilPlaca } from './placas.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Marca de la imagen SVG exportada (abajo a la derecha). La imagen sigue siendo de quien la hace (NOTICE).
@@ -30,7 +31,7 @@ const colorHex = (nombre) =>
 
 export function crearLienzo(elemento, opciones = {}) {
   if (!(elemento instanceof HTMLElement)) throw new Error('crearLienzo necesita un elemento de la página.');
-  const placa = opciones.placa || 'uno';
+  const placa = opciones.placa || opciones.circuito?.placa || 'uno';
   if (!PLACAS[placa]) throw new Error(`Este prototipo no dibuja la placa «${placa}».`);
   const soloLectura = !!opciones.soloLectura;
   const alEvento = typeof opciones.alEvento === 'function' ? opciones.alEvento : null;
@@ -243,7 +244,8 @@ export function crearLienzo(elemento, opciones = {}) {
       if (!def.montada) continue;
       const m = menu.querySelector(`[data-tipo="${tipo}"]`);
       const hay = datos.componentes.some((k) => k.tipo === tipo);
-      if (m) Object.assign(m, { disabled: hay, title: hay ? `Ya hay una ${def.nombre}` : '' });
+      const incompatible = def.placas && !def.placas.includes(placa);
+      if (m) Object.assign(m, { disabled: hay || incompatible, title: incompatible ? `${def.nombre} se monta en ${def.placas.map(p => PLACAS[p].nombre).join(' o ')}` : hay ? `Ya hay una ${def.nombre}` : '' });
     }
   }
 
@@ -337,7 +339,8 @@ export function crearLienzo(elemento, opciones = {}) {
   // Prende o apaga en el dibujo lo que indica el simulador. Solo toca el dibujo, nunca `datos`.
   function aplicarSim(v) {
     if (v.id === 'placa') {
-      for (const led of ['ledPower', 'led13', 'ledTX', 'ledRX']) v.el[led] = !!vistaSim.placa[led];
+      if (v.def.mostrar) v.def.mostrar(v.el, vistaSim.simulando ? vistaSim.placa : null);
+      else for (const led of ['ledPower', 'led13', 'ledTX', 'ledRX']) v.el[led] = !!vistaSim.placa[led];
     } else if (v.def === TIPOS.led) {
       const brillo = Number(vistaSim.leds[v.id]) || 0; // 0 a 1, según la corriente
       v.el.value = brillo > 0.005;
@@ -400,7 +403,7 @@ export function crearLienzo(elemento, opciones = {}) {
     const v = vistas.get(id);
     if (!v || !v.lista) return null;
     const c = lugar(id);
-    const p = v.pines.get(pin);
+    const p = pinDe(ref);
     if (p) return girarPunto(v, c, p);
     return v.def ? null : { x: c.x + v.w / 2, y: c.y + v.h / 2 }; // pieza desconocida: al centro
   }
@@ -408,7 +411,11 @@ export function crearLienzo(elemento, opciones = {}) {
   function pinDe(ref) {
     const [id, pin] = partirRef(ref);
     const v = vistas.get(id);
-    return v && v.pines.get(pin);
+    if (!v) return null;
+    if (v.pines.has(pin)) return v.pines.get(pin);
+    const fisico = id === 'placa' && esNano(placa)
+      ? (perfilPlaca(placa).puentes.find(grupo => grupo.includes(pin)) || [pin])[0] : pin;
+    return v.pines.get(fisico);
   }
 
   // ---- Cables
@@ -790,7 +797,7 @@ export function crearLienzo(elemento, opciones = {}) {
   }
 
   function filtrarBiblioteca() {
-    const quedan = new Set(buscarPiezas(buscador.value).map((x) => x.tipo));
+    const quedan = new Set(buscarPiezas(buscador.value).filter(x => !TIPOS[x.tipo]?.placas || TIPOS[x.tipo].placas.includes(placa)).map((x) => x.tipo));
     for (const b of bibLista.querySelectorAll('.tc-pieza')) b.hidden = !quedan.has(b.dataset.pieza);
     for (const g of bibLista.querySelectorAll('.tc-bib-cat')) g.hidden = !g.querySelector('.tc-pieza:not([hidden])');
     bibVacio.hidden = quedan.size > 0;
@@ -853,6 +860,8 @@ export function crearLienzo(elemento, opciones = {}) {
   function agregarComponente(tipo, punto = null) {
     const def = TIPOS[tipo];
     if (!def) return;
+    if (def.placas && !def.placas.includes(placa)) return;
+    if (def.montada && datos.componentes.some(c => c.tipo === tipo)) return;
     let n = 1;
     while (componente(def.prefijo + n)) n++;
     const id = def.prefijo + n;
@@ -1521,7 +1530,7 @@ export function crearLienzo(elemento, opciones = {}) {
           : sel && sel.tipo === 'cable'
             ? 'Color: muestras de arriba o teclas 0 a 9 (código de colores) · Doble clic en el cable para doblarlo · Supr: borrar'
             : sel && montada(componente(sel.id))
-              ? 'Va montada sobre el Uno: no se mueve · Clic en un borne para empezar un cable · Supr: quitarla'
+              ? `Va montada sobre ${PLACAS[placa].nombre}: no se mueve · Clic en un borne para empezar un cable · Supr: quitarla`
             : sel && sel.id === 'protoboard'
               ? 'Arrástrala para moverla: las piezas encajadas se mueven con ella · Pasa por un hueco para ver su tira · Supr: borrar'
               : sel && datos.protoboard
@@ -1661,14 +1670,28 @@ function normalizar(circuito, placa) {
   c.componentes = (Array.isArray(c.componentes) ? c.componentes : []).filter(
     (k) => k && typeof k.id === 'string' && k.id && k.id !== 'placa' && !k.id.includes('.') && !ids.has(k.id) && ids.add(k.id),
   );
+  // Un circuito nuevo Nano comienza con su expansión. Los proyectos existentes conservan su montaje.
+  if (!circuito && esNano(placa)) c.componentes.push({ id: 'exp1', tipo: 'shield_nano_io', x: 0, y: 0, rot: 0, props: {} });
+  if (c.componentes.filter(k => k.tipo === 'shield_nano_io').length > 1) throw new Error('El Nano admite una sola expansión E/S.');
   for (const k of c.componentes) {
     k.x = Number(k.x) || 0;
     k.y = Number(k.y) || 0;
     k.rot = Number(k.rot) || 0;
     const base = TIPOS[k.tipo] ? TIPOS[k.tipo].props : {};
+    if (TIPOS[k.tipo]?.placas && !TIPOS[k.tipo].placas.includes(placa)) throw new Error(`${TIPOS[k.tipo].nombre} no se monta en ${PLACAS[placa].nombre}.`);
     k.props = { ...base, ...(k.props && typeof k.props === 'object' ? k.props : {}) };
+    if (TIPOS[k.tipo]?.montada) {
+      if ('en' in k) throw new Error(`${TIPOS[k.tipo].nombre} va montada sobre la placa; no se encaja en la protoboard.`);
+      k.x = 0; k.y = 0; k.rot = 0;
+    }
   }
   c.cables = (Array.isArray(c.cables) ? c.cables : []).filter((k) => k && typeof k.de === 'string' && typeof k.a === 'string');
+  if (esNano(placa)) {
+    const pines = perfilPlaca(placa).pines;
+    for (const cable of c.cables) for (const ref of [cable.de, cable.a]) {
+      if (ref.startsWith('placa.') && !pines.includes(ref.slice(6))) throw new Error(`${PLACAS[placa].nombre} no tiene el pin «${ref.slice(6)}». Revisa el cable antes de cambiar de placa.`);
+    }
+  }
   for (const k of c.cables) {
     const valido = Array.isArray(k.puntos) && k.puntos.every((p) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite));
     if ('puntos' in k && !valido) delete k.puntos;

@@ -54,6 +54,7 @@ export function crearPotencia({ activas, avisar }) {
   let ciclo = {}; // ciclo útil de cada pin, suavizado (ver PWM_MS)
   let vs = 0; // voltaje de los motores (VS de los L293D)
   let vin = 0; // voltaje en el VIN del Uno (de la batería)
+  let fuentesMotorAux = [];
   let vsSuma = 0;
   let vsMs = 0;
 
@@ -65,7 +66,8 @@ export function crearPotencia({ activas, avisar }) {
   reiniciarPWM();
 
   // Qué hay en el circuito y cómo está conectado. `raiz` da el nodo de cada pin (conexiones.calcularNodos).
-  function armar(circuito, raiz) {
+  function armar(circuito, raiz, { fuentesMotor = {}, entradas = [] } = {}) {
+    fuentesMotorAux = Object.entries(fuentesMotor);
     const mismo = (a, b) => raiz(a) === raiz(b);
     const GND = 'placa.GND1';
     const c = circuito.componentes.find((k) => k.tipo === 'shield_l293d');
@@ -93,7 +95,8 @@ export function crearPotencia({ activas, avisar }) {
           mensaje: `Las celdas de la batería ${k.id} están desbalanceadas: ${b.celdas.map((v) => coma(v, 2) + ' V').join(' y ')}. La más baja se descarga primero y se puede dañar. Cárgala con un cargador de balance (por el cable blanco).`,
         });
       }
-      const conectada = (ref) => (shield && mismo(ref, shield.id + '.EXT_POS')) || mismo(ref, 'placa.VIN') || mismo(ref, 'placa.5V');
+      const conectada = (ref) => (shield && mismo(ref, shield.id + '.EXT_POS')) || mismo(ref, 'placa.VIN') || mismo(ref, 'placa.5V')
+        || entradas.some((r) => mismo(ref, r));
       if (mismo(POS, NEG)) {
         avisar({ tipo: 'bateria_corto', componente: k.id, mensaje: `Los dos cables de la batería ${k.id} están unidos: es un cortocircuito. Una LiPo en corto se calienta y puede incendiarse. Quita ese cable.` });
       } else if (mismo(POS, GND) && conectada(NEG)) {
@@ -132,6 +135,7 @@ export function crearPotencia({ activas, avisar }) {
       }
       if (mismo(ref, GND)) return { tipo: 'gnd' };
       if (mismo(ref, 'placa.5V')) return { tipo: '5v' };
+      for (const [fuente, pin] of fuentesMotorAux) if (mismo(ref, pin)) return { tipo: 'aux', fuente };
       for (const [id, b] of baterias) if (b.valida && mismo(ref, id + '.POS')) return { tipo: 'bateria', id };
       const pin = PINES.find((p) => mismo(ref, 'placa.' + p));
       if (pin) return { tipo: 'pin', pin };
@@ -189,7 +193,7 @@ export function crearPotencia({ activas, avisar }) {
 
   // Cada milisegundo simulado. `v5`: el 5V de la placa; `logica`: el 74HC595 tiene energía.
   // Devuelve lo que los motores le piden al 5V (motor conectado directo al 5V) y si el Uno se alimenta por el VIN.
-  function cadaMs(ciclos, { v5, logica }) {
+  function cadaMs(ciclos, { v5, logica, cargasBateria = {}, consumoPorVinA = PLACA_POR_VIN_A, habilitarVin = true, voltajesMotor = {} }) {
     const dur = ciclos - inicioMs;
     for (const [pin, p] of Object.entries(pwm)) {
       if (p.alto) {
@@ -212,7 +216,7 @@ export function crearPotencia({ activas, avisar }) {
       if (b.motores) vs = Math.max(vs, b.v);
       if (b.vin) vin = Math.max(vin, b.v);
     }
-    const porVin = vin >= VIN_MINIMO_V;
+    const porVin = habilitarVin && vin >= VIN_MINIMO_V;
     const encendida = logica || porVin;
     const iBateria = new Map();
     const sumarBateria = (id, a) => iBateria.set(id, (iBateria.get(id) || 0) + a);
@@ -220,6 +224,7 @@ export function crearPotencia({ activas, avisar }) {
       for (const [id, b] of baterias) if (b.motores) return sumarBateria(id, a);
     };
     let i5V = 0;
+    const iFuentes = {};
     // Voltaje de cada borne: { v, d (fracción del tiempo que está manejado), shield } o null (al aire).
     const nivel = (x) => {
       if (!x) return null;
@@ -230,6 +235,7 @@ export function crearPotencia({ activas, avisar }) {
       }
       if (x.tipo === 'gnd') return { v: 0, d: 1 };
       if (x.tipo === '5v') return { v: v5, d: 1, del5V: true };
+      if (x.tipo === 'aux') return { v: voltajesMotor[x.fuente] || 0, d: 1, fuenteAux: x.fuente };
       if (x.tipo === 'bateria') return { v: (baterias.get(x.id) || { v: 0 }).v, d: 1, bateria: x.id };
       return null; // un pin del chip: ya se avisó; no mueve el motor
     };
@@ -258,6 +264,7 @@ export function crearPotencia({ activas, avisar }) {
         const iFuente = Math.max(0, iMotor * Math.sign(dif || 1)) * d;
         if (alto.shield) deLosMotores(iFuente);
         else if (alto.del5V) i5V += iFuente;
+        else if (alto.fuenteAux) iFuentes[alto.fuenteAux] = (iFuentes[alto.fuenteAux] || 0) + iFuente;
         else if (alto.bateria) sumarBateria(alto.bateria, iFuente);
       }
       const e = m.logico.estado();
@@ -286,7 +293,8 @@ export function crearPotencia({ activas, avisar }) {
     // La batería: su voltaje baja con la corriente que entrega (resistencia interna).
     for (const [id, b] of baterias) {
       if (!b.valida) continue;
-      const amperios = (iBateria.get(id) || 0) + (b.vin && porVin ? PLACA_POR_VIN_A : 0);
+      b.cargaExterna = Object.prototype.hasOwnProperty.call(cargasBateria, id);
+      const amperios = (iBateria.get(id) || 0) + (b.vin && porVin ? consumoPorVinA : 0) + Math.max(0, cargasBateria[id] || 0);
       b.v = Math.max(0, b.voc - LIPO.ohmios * amperios);
       b.iAntes = amperios;
       b.sumaI += amperios;
@@ -302,7 +310,7 @@ export function crearPotencia({ activas, avisar }) {
     }
     vsSuma += vs;
     vsMs++;
-    return { i5V, porVin };
+    return { i5V, porVin, iFuentes };
   }
 
   // Voltaje de cada celda ahora: cada una pierde su parte de la caída por la resistencia interna.
@@ -351,7 +359,7 @@ export function crearPotencia({ activas, avisar }) {
       Object.assign(m, { sumaI: 0, sumaV: 0, ms: 0 });
     }
     for (const [id, b] of baterias) {
-      const r = { voltios: b.valida ? b.v : b.voc, celdas: celdasCargadas(b), i: b.ms ? b.sumaI / b.ms : 0, carga: b.carga, conectada: b.motores || b.vin };
+      const r = { voltios: b.valida ? b.v : b.voc, celdas: celdasCargadas(b), i: b.ms ? b.sumaI / b.ms : 0, carga: b.carga, conectada: b.motores || b.vin || !!b.cargaExterna };
       piezas[id] = r;
       lista.baterias.push({ id, ...r });
       Object.assign(b, { sumaI: 0, ms: 0 });
@@ -377,6 +385,8 @@ export function crearPotencia({ activas, avisar }) {
     reiniciarChip,
     cadaMs,
     foto,
+    // Lectura instantánea sin cerrar la ventana de mediciones de la batería.
+    voltajeBateria: (id) => baterias.get(id)?.v ?? null,
     get hay() {
       return !!shield || motores.size > 0 || baterias.size > 0 || probadores.size > 0;
     },

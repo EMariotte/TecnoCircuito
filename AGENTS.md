@@ -1,10 +1,10 @@
 # AGENTS.md — TecnoCircuito
 
-Instrucciones para Codex y los agentes que lean este archivo. Acuerdo inicial con Efraín: **Codex revisa; Claude implementa**. Efraín puede cambiar esa asignación. Responde en español, tutéalo y comunica resultados con evidencia.
+Instrucciones para Codex y los agentes que lean este archivo. **Asignación actual de Efraín: Codex implementa, prueba y revisa Nano + expansión E/S** (autorizado después del cierre de R6). El reparto anterior Codex revisor / Claude implementador se conserva en la historia. Responde en español, tutéalo y comunica resultados con evidencia.
 
 ## Contexto y fuentes
 
-TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la TecnoAcademia Tolima (SENA). En 2026 el alcance es T1 (LED/botón), T2 (potenciómetro/PWM) y T3 (servo, shield L293D, motor TT, LiPo y probador). La API pública simula **Arduino Uno R3**; aceptar una placa en un esquema o una fixture no significa soportarla en la interfaz.
+TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la TecnoAcademia Tolima (SENA). En 2026 el alcance es T1 (LED/botón), T2 (potenciómetro/PWM) y T3 (servo, shield L293D, motor TT, LiPo y probador). La API pública admite **Uno R3, Nano clásico y Nano antiguo**; aceptar otra placa en un esquema o fixture no significa soportarla en la interfaz. Nano + expansión conserva validación física pendiente.
 
 - [CLAUDE.md](CLAUDE.md): estado del proyecto, decisiones y siguientes prácticas. Lee su estado al empezar; consulta el resto según la tarea.
 - [CONTRATO.md](CONTRATO.md) y [esquema](contrato/circuito.schema.json): fuente única del intercambio con TecnoBloques.
@@ -18,13 +18,13 @@ TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la T
 
 No mantengas una segunda copia extensa del estado en este archivo. Actualízalo cuando cambien las reglas de trabajo; el progreso va en la bitácora y el estado actual en CLAUDE.md.
 
-## Encargo futuro: Nano con expansión E/S
+## Encargo actual: Nano con expansión E/S
 
 Efraín pidió un conjunto visual Nano clásico + expansión E/S, con variantes **roja y azul**. Referencias locales: `prototipo/Imagenes_módulos/Nano1.avif` a `Nano8.avif` (incluye `nano2`, `nano3` y `Nano5.png`). Codex leyó las ocho: Nano4 es la comparación más detallada; Nano5 es un icono, no una fotografía de la placa. Las fotos anuncian funciones similares pero muestran diferencias de conectores y disposición: confirma cada mapa eléctrico, reguladores y alimentación. Las medidas anunciadas de la roja son 58 × 54 mm; comprobar en hardware antes de fijar geometría. Dibuja SVG originales, sin incorporar estas imágenes comerciales al repositorio público.
 
 **Exportación a KiCad decidida por Efraín:** del conjunto deben salir la huella del **Nano como módulo montable**, los componentes adicionales de la expansión que regulan/filtran las salidas **5V y 3,3V**, la **entrada del jack** y los conectores adicionales de comunicación **I2C y SPI**, con sus redes. Representa el Nano por su huella y pines de módulo, conservando dentro de él su electrónica. La exportación del conjunto se limita a esos elementos; el resto del circuito conserva su exportación normal. KiCad 10.0.3 instalado trae `Module:Arduino_Nano`; verifica pads, orientación y montaje frente a la pieza real. La selección de reguladores, condensadores, protecciones, puentes, jack y su polaridad depende de la evidencia de cada variante.
 
-Este encargo está **registrado, sin implementar**. Mantén separados la apariencia del conjunto, el único ATmega328P y la alimentación de la expansión. Integra `nano` y `nano_old`, A6/A7 solo analógicos, esquema, biblioteca, Worker, guardado, SVG y KiCad; comprueba equivalencia de conectores y placa, ambas variantes y hardware antes de declararlo validado.
+La implementación de software y sus supuestos están en [IMPLEMENTACION-NANO-2026-10-11.md](docs/IMPLEMENTACION-NANO-2026-10-11.md); el estado y pruebas finales, en CLAUDE.md y BITACORA.md. Mantén separados apariencia, único ATmega328P y alimentación de expansión. No declares físicamente validada ninguna variante sin continuidad, identificación y mediciones de la tarjeta real. KiCad exporta un diseño de referencia explícito, no una reconstrucción acreditada de las fotos.
 
 ## Rol de revisor
 
@@ -37,11 +37,11 @@ Este encargo está **registrado, sin implementar**. Mantén separados la aparien
 
 ## Trabajo conjunto con Claude
 
-- Efraín decide prioridades. Claude implementa la corrección o propuesta; Codex revisa de forma independiente y comunica si está verificada o qué falta.
+- Efraín decide prioridades. Para Nano + expansión, Codex asume desarrollo, pruebas y revisión; Claude puede consultar la documentación compartida. Para encargos posteriores, aplica la asignación expresa de Efraín.
 - El traspaso de cada tarea incluye: objetivo o ID del hallazgo, revisión de Git, archivos cambiados, comandos y resultados, limitaciones y siguiente responsable.
 - Registra cada hito con fecha y autor en BITACORA.md. Conserva el informe original; el cierre posterior cita su ID y la evidencia nueva.
 - Antes de editar, comprueba que el archivo no haya cambiado durante la revisión. Evita que los dos agentes modifiquen simultáneamente el mismo archivo; para tareas simultáneas que lo requieran, acuerda ramas o worktrees separados.
-- Compartir archivos no envía automáticamente mensajes ni ejecuta al otro agente. No lances subagentes ni atribuyas a Claude acciones que no hayas observado.
+- Compartir archivos no envía automáticamente mensajes ni ejecuta al otro agente. En el encargo actual Codex puede distribuir subtareas independientes entre agentes con archivos asignados y revisión de integración. No atribuyas a Claude acciones que no hayas observado.
 - Si cambia el contrato, actualiza su documentación y deja constancia en ambas bitácoras y en «Proyecto hermano» de TecnoBloques, según el alcance autorizado.
 
 ## Arquitectura que hay que preservar
@@ -63,6 +63,7 @@ npm.cmd run construir
 npm.cmd run probar
 npm.cmd --prefix prototipo run probar:motor
 npm.cmd --prefix prototipo run probar:nucleo
+npm.cmd --prefix prototipo run probar:nano
 npm.cmd --prefix prototipo run probar:kicad
 npm.cmd --prefix prototipo run probar:contrato
 npm.cmd --prefix prototipo run probar:fixtures
@@ -71,7 +72,7 @@ node docs/verificar-correcciones-2026-10-11.cjs
 node docs/verificar-cierre-r6-2026-10-11.cjs
 ```
 
-La suite completa construye el paquete y ejecuta Node, 12 recorridos de Chromium/Playwright y KiCad. Necesita Python con Playwright y Chromium instalados; KiCad debe ejecutar su prueba, no quedar omitido. El diagnóstico de revisión necesita los `.cjs` generados por la suite y describe seis casos de R1–R6.
+La suite completa construye el paquete y ejecuta Node, 13 recorridos de Chromium/Playwright y KiCad para Uno/Nano. Necesita Python con Playwright y Chromium instalados; KiCad debe ejecutar su prueba, no quedar omitido. El diagnóstico de revisión necesita los `.cjs` generados por la suite y describe seis casos de R1–R6.
 
 El diagnóstico inicial conserva notas históricas del defecto: para comprobar el código corregido usa `verificar-correcciones-2026-10-11.cjs` (aserciones y observación del criterio nuevo). `python -I docs/verificar-r8-2026-10-11.py` verifica los dos scripts originales del hermano con ejecución normal y errores JS/archivo inyectados en memoria; necesita su HTML construido, deja logs temporales y no cambia sus fuentes.
 

@@ -125,6 +125,33 @@ for (const [nombre, circuito] of Object.entries(ejemplos)) {
   revisar(!p.length, `${nombre} de la página de prueba` + (p.length ? ': ' + p.join(' | ') : ''));
 }
 
+// Nano: la variante cambia la vista, no los nombres del cableado ni los canales del ADC.
+const bloqueNano = pagina.slice(pagina.indexOf('const EJEMPLO_NANO = {'), pagina.indexOf('let lienzo'));
+const nano = new Function(bloqueNano + '\nreturn EJEMPLO_NANO;')();
+for (const placa of ['nano', 'nano_old']) for (const variante of ['roja', 'azul']) {
+  const c = JSON.parse(JSON.stringify(nano));
+  c.placa = placa; c.componentes[0].props.variante = variante;
+  const p = revisarCircuito(c);
+  revisar(!p.length, `${placa} + expansión ${variante}: el ejemplo A6/A7 cumple el contrato${p.length ? ': ' + p.join(' | ') : ''}`);
+}
+const casosNano = [
+  ['dos expansiones montadas', c => c.componentes.push({ ...c.componentes[0], id: 'exp2' })],
+  ['expansión del Nano sobre Uno', c => { c.placa = 'uno'; }],
+  ['shield L293D del Uno sobre Nano', c => c.componentes.push({ id: 'sh1', tipo: 'shield_l293d', x: 0, y: 0 })],
+  ['expansión encajada en protoboard', c => { c.protoboard = { tipo: 'media', x: 300, y: 0 }; c.componentes[0].en = { OUT_5V: 'protoboard.a1' }; }],
+  ['tercer GND del Uno en Nano', c => c.cables.push({ de: 'placa.GND3', a: 'exp1.GND_OUT' })],
+  ['GPIO D20 inexistente en Nano', c => c.cables.push({ de: 'placa.D20', a: 'exp1.A6_S' })],
+];
+for (const [nombre, cambiar] of casosNano) {
+  const c = JSON.parse(JSON.stringify(nano)); cambiar(c);
+  revisar(revisarCircuito(c).length > 0, `se rechaza ${nombre}`);
+}
+{
+  const c = JSON.parse(JSON.stringify(nano));
+  c.cables.push({ de: 'placa.SDA', a: 'exp1.I2C_SDA' }, { de: 'placa.SCK', a: 'exp1.SPI_SCK' });
+  revisar(!revisarCircuito(c).length, 'aliases de I2C y SPI del Nano aceptados como conexiones de los pines físicos');
+}
+
 // 3. Lo que está mal se rechaza, y lo nuevo se acepta
 console.log('— Lo que está mal se rechaza con su motivo');
 const base = () => JSON.parse(JSON.stringify(ejemplos.EJEMPLO_PB));

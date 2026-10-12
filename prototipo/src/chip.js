@@ -1,4 +1,4 @@
-// El chip del Uno (ATmega328P) con avr8js: ejecuta el .hex real instrucción por instrucción
+// El chip de Uno y Nano clásico (ATmega328P) con avr8js: ejecuta el .hex real instrucción por instrucción
 // y avisa cuando cambia un pin o cuando el programa manda un byte por el monitor serial.
 import {
   CPU,
@@ -44,7 +44,7 @@ export function crearChip(hex) {
   // Los temporizadores hacen funcionar millis(), delay() y el PWM, igual que en la placa real.
   [timer0Config, timer1Config, timer2Config].forEach((config) => new AVRTimer(cpu, config));
   const usart = new AVRUSART(cpu, usart0Config, FRECUENCIA);
-  // analogRead(): el ADC lee el voltaje que el circuito deja en A0–A5 (lo pone ponerAnalogico).
+  // ADC de ocho canales: Nano expone también ADC6/ADC7, que no pertenecen a PORTC.
   const adc = new AVRADC(cpu, adcConfig);
   const puertos = PINES_UNO.map(([config, nombres]) => [new AVRIOPort(cpu, config), nombres]);
   const dondeEsta = {}; // pin → [puerto, bit], para poner el nivel de una entrada
@@ -129,8 +129,10 @@ export function crearChip(hex) {
     alCambiarPines: (fn) => alPines.push(fn),
     alByteSerial: (fn) => alByte.push(fn),
     enviarSerial: (texto) => colaEntrada.push(...new TextEncoder().encode(texto)),
-    // Voltaje (0 a 5 V) que verá analogRead() en el canal 0–5 (A0–A5).
+    // Voltaje que verá analogRead() en los canales ADC0–ADC7. A6/A7 no tienen GPIO.
     ponerAnalogico: (canal, voltios) => (adc.channelValues[canal] = Math.max(0, Math.min(5, voltios))),
+    // En Nano la referencia DEFAULT del ADC sigue la alimentación real AVCC.
+    ponerVoltajeReferencia: (voltios) => (adc.avcc = Math.max(0.001, Number(voltios) || 0)),
     // fn(canal, voltiosDelCircuito) → voltios que lee esta conversión.
     ponerLectorAnalogico: (fn) => (lectorAnalogico = fn),
     // Nivel que verá digitalRead() en un pin de entrada (true = ALTO).

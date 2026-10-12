@@ -19,10 +19,25 @@ export const CATEGORIAS = [
   { nombre: 'Básicas', piezas: ['protoboard', 'resistencia', 'led'] },
   { nombre: 'Entradas', piezas: ['pulsador', 'potenciometro'] },
   { nombre: 'Actuadores', piezas: ['servo', 'motor_tt'] },
-  { nombre: 'Potencia y energía', piezas: ['shield_l293d', 'bateria_lipo', 'probador_lipo'] },
+  { nombre: 'Potencia y energía', piezas: ['shield_l293d', 'shield_nano_io', 'bateria_lipo', 'probador_lipo'] },
 ];
 
 export const FICHAS = {
+  shield_nano_io: {
+    nombre: 'Expansión E/S del Nano',
+    descripcion: 'El Nano va montado en esta tarjeta. Cada grupo reúne señal, 5V y tierra para conectar sensores o servos. El jack alimenta la regulación de la expansión; A6 y A7 solo leen señales analógicas.',
+    palabras: ['nano', 'expansion', 'shield', 'sensores', 'servo', 'roja', 'azul', 'i2c', 'spi', 'jack'],
+    pines: 'S: señal del pin indicado; V: 5V; G: tierra. I2C: SDA/A4 y SCL/A5. SPI: MISO/D12, MOSI/D11, SCK/D13 y SS/D10. OUT_3V3 es la salida de la expansión, separada de la del módulo Nano',
+    datos: (p) => [
+      ['Tarjeta', p.variante === 'azul' ? 'Azul' : 'Roja'],
+      ['Placa', 'Nano clásico ATmega328P · 16 MHz'],
+      ['Entradas analógicas', 'A0 a A7; A6 y A7 solo analógicas'],
+      ['Alimentación', p.alimentacion === 'jack' ? `Jack: ${Number(p.voltajeJack ?? 9)} V (o la batería conectada)` : p.alimentacion === 'apagada' ? 'Desconectada' : 'USB del Nano'],
+      ['Regulación', 'Modelo de referencia 5V y 3,3V; salida externa 3,3V separada del módulo'],
+      ['KiCad', 'Módulo Nano + regulación/filtrado de referencia, jack, I2C y SPI'],
+    ],
+    validacion: () => porValidar('Dibujo basado en las referencias roja y azul. Circuito de alimentación de referencia: falta confirmar reguladores, puentes, polaridad, capacidad y medidas de cada tarjeta real. Los conectores I2C/SPI son conexiones; los dispositivos de esos buses se incorporan por separado.'),
+  },
   protoboard: {
     nombre: 'Protoboard',
     descripcion: 'Placa de pruebas: une las patas de las piezas sin soldar. Cada columna de 5 huecos está unida por dentro, y los rieles + y − llevan la energía a lo largo.',

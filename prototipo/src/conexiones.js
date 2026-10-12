@@ -1,17 +1,13 @@
 import { tiras } from './protoboard.js';
 import { PUENTES_SHIELD } from './piezas/shield_l293d.js';
+import { PUENTES_EXPANSION } from './piezas/shield_nano_io.js';
+import { perfilPlaca, esNano } from './placas.js';
 
 // Agrupa en nodos eléctricos los pines unidos por cables, como seguir un cable con el dedo.
 // En el prototipo 1 aquí también estaba la «regla de conexiones» que decidía si un LED prendía;
 // desde el prototipo 2 eso lo calcula el solucionador eléctrico (motor/), y la resistencia ya no es un paso.
 
 // Pines de la placa unidos por dentro: son el mismo nodo eléctrico.
-const PUENTES_UNO = [
-  ['GND1', 'GND2', 'GND3'],
-  ['A4', 'SDA'],
-  ['A5', 'SCL'],
-];
-
 // Devuelve una función que da el nodo (un representante del grupo) de cada pin "<id>.<pin>".
 //   presionados: ids de los botones presionados ahora (al presionar se une la pata 1 con la 2).
 //   conduccion:  además une las patas de resistencias y potenciómetros. No sirve para resolver el circuito:
@@ -29,7 +25,7 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
     return r;
   };
   const unir = (a, b) => padre.set(raiz(a), raiz(b));
-  for (const grupo of PUENTES_UNO) grupo.forEach((pin) => unir('placa.' + grupo[0], 'placa.' + pin));
+  for (const grupo of perfilPlaca(circuito.placa).puentes) grupo.forEach((pin) => unir('placa.' + grupo[0], 'placa.' + pin));
   for (const cable of circuito.cables) unir(cable.de, cable.a);
   // Protoboard: cada tira está unida por dentro, y cada pata encajada queda unida a su hueco.
   if (circuito.protoboard) {
@@ -40,7 +36,9 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
     }
   }
   for (const c of circuito.componentes) {
-    if (c.tipo === 'shield_l293d') {
+    if (c.tipo === 'shield_nano_io' && esNano(circuito.placa)) {
+      for (const [pin, otro] of PUENTES_EXPANSION) unir(c.id + '.' + pin, otro);
+    } else if (c.tipo === 'shield_l293d') {
       // La shield va enchufada al Uno: sus conectores de servo y sus GND son pines de la placa.
       for (const [pin, otro] of PUENTES_SHIELD) unir(c.id + '.' + pin, otro);
       // Con el puente PWR puesto, la batería de EXT_PWR también llega al Vin del Uno.

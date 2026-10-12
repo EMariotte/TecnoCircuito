@@ -1419,3 +1419,24 @@ Los valores del modelo no cambian: cambia lo que se dice de ellos. Importa porqu
 - **R8 (TecnoBloques):** `npm test` terminaba en 0 aunque imprimía errores. Ahora `test/prueba.py` y `test/prueba_todo.py` salen con 1 si hay un error de JavaScript o un archivo local que no carga. El que faltaba era `tbmedia/sprites.svg`: los estilos de Blockly lo piden por ruta, e `inject` mide el texto, lo que ya pide los fondos. Ahora los estilos se ponen con `Blockly.Css.inject` **antes** del `inject`, y sus rutas se cambian por las imágenes que van dentro del HTML (también los cursores `.cur`).
 
 **El porcentaje del criterio** (decisión de Efraín, 11 oct) se calcula **respecto de la medida**, con la incertidumbre del multímetro aparte: `|simulador − medida| / |medida|`. Una comparación cumple si `|simulador − medida| ≤ criterio · |medida| + U`, donde U es la incertidumbre del UT33B+ en voltios DC: ±(0,5 % de la lectura + 2 dígitos). Las lecturas tienen dos decimales, así que se tomaron en la escala de 20 V (1 dígito = 0,01 V). La corriente, calculada como V/R, lleva la misma incertidumbre relativa que su voltaje. `probar_motor.js` lo aplica e informa las dos cuentas: **11 de 12 dentro del criterio y 12 de 12 sumando la incertidumbre**. El caso en el límite es la resistencia con 215 Ω: 5,01 % (5,008 % con la precisión completa del modelo; el 5,02 % anotado antes salía del valor redondeado, como señaló Codex), con 2,61 ± 0,033 V. El registro del 7 oct no se reescribe.
+
+## 58. Nano + expansión E/S: un chip, dos variantes y tres capas de prueba (11 oct 2026, Codex)
+
+La placa se define por sus capacidades, no por el dibujo del Uno. [placas.js](src/placas.js) reúne pines físicos, GPIO y canales ADC. Uno conserva seis entradas analógicas; Nano tiene ocho. A6/A7 entran al ADC sin convertirse en salidas digitales. Nano y Nano antiguo ejecutan el mismo ATmega328P a 16 MHz.
+
+```mermaid
+flowchart TB
+  MOD[Nano clásico: un módulo de 30 pines] <--> EXP[Expansión roja o azul: GVS, I2C, SPI, UART]
+  EXP --> MNA[Red MNA con aliases y alimentación]
+  MNA --> ADC[ADC A0 a A7]
+  ADC --> AVR[Un ATmega328P en Worker]
+  AVR --> MNA
+  MNA --> SVG[Vista y SVG del conjunto]
+  MNA --> KICAD[Netlist: Nano módulo, regulación/filtro, jack, I2C/SPI]
+```
+
+La expansión tiene nombres estables para sus 85 terminales. `conexiones.js` une señal/V/G al nodo correspondiente. La variante cambia el SVG y las coordenadas, mientras las referencias de los cables siguen iguales. Los aliases del Nano apuntan a los pines físicos ya existentes, así la interfaz no dibuja contactos imaginarios.
+
+La alimentación del Nano está en [alimentacion_nano.js](src/alimentacion_nano.js), separada de las mediciones del Uno. El jack entra a un regulador externo de referencia de 5V; este también alimenta el regulador externo de 3,3V. `JACK_POS` y `OUT_3V3` siguen separados de VIN y 3V3 del módulo. Las caídas llegan a MNA, GPIO y referencia ADC. Las cargas de entrada se contabilizan antes del regulador; las de salida participan en su caída. Los motores TT reconocen 5V y ambas salidas 3,3V, además de las fuentes existentes.
+
+Las pruebas tienen tres niveles: núcleo Node con HEX real; Chromium para interacción/Worker/guardado/SVG; KiCad para símbolos, 30 pads, redes, guardado/reapertura y DRC de huellas. TecnoBloques añade compilación Arduino CLI con los dos FQBN y reapertura del proyecto. Eso comprueba software; continuidad, geometría, protección y capacidad térmica requieren hardware. [Detalle de supuestos, componentes exportados y protocolo del laboratorio](../docs/IMPLEMENTACION-NANO-2026-10-11.md).

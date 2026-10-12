@@ -5,11 +5,11 @@
 
 ## Estado en una línea
 
-Prototipo validado y publicado (https://github.com/EMariotte/TecnoCircuito). Tareas **T1 y T2 completas y validadas con la placa real; T3 completa en software** (servo, energía del USB, shield L293D, motor TT, LiPo 2S, probador de celdas), con el servo SG90 y el USB validados y el resto **por validar en el laboratorio**. `npm run probar` (en `prototipo/`): 19 grupos, 613 comprobaciones. Falta la primera etiqueta `v0.1.0` para que el simulador llegue al instalador de TecnoBloques.
+Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 completa en software**, con SG90 y USB validados y el resto pendiente de laboratorio. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. Suite: **23 grupos, 945 OK, cero fallas** (11 oct, Codex); TecnoBloques **51 OK** en integración, **28 OK** en graficador y pruebas generales exit 0 sin errores JS/archivo. **Efraín confirmó en la app las lecturas independientes de A6/A7 y autorizó commit/push de ambos proyectos** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
 
 ## Qué es
 
-**Trabajo conjunto con Codex:** Efraín asignó a Codex el rol de revisor independiente; reglas en [AGENTS.md](AGENTS.md). La [verificación del 11 oct](docs/VERIFICACION-CODEX-R1-R8-2026-10-11.md) comprobó las correcciones iniciales. **R1–R8 verificados y cerrados**, con el [cierre posterior de R6](docs/CIERRE-R6-CODEX-2026-10-11.md): 150 comprobaciones aprobadas en las partes afectadas y el recálculo independiente; 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. Se conservan los informes históricos y los pendientes físicos. Efraín pidió después Nano + expansión roja/azul con exportación específica a KiCad: alcance registrado en AGENTS.md, sin implementar.
+**Trabajo conjunto con Codex:** R1–R8 verificados y cerrados, con el [cierre posterior de R6](docs/CIERRE-R6-CODEX-2026-10-11.md): 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. Se conservan informes históricos y pendientes físicos. Después Efraín asignó a **Codex desarrollo, pruebas y revisión de Nano + expansión roja/azul**; reglas en [AGENTS.md](AGENTS.md). El software admite Nano/Nano antiguo, A6/A7, conjunto SVG, Worker, alimentación de referencia y exportación selectiva a KiCad. [Arquitectura, supuestos y protocolo físico](docs/IMPLEMENTACION-NANO-2026-10-11.md); evidencia final en BITACORA.md. **Ambas tarjetas pendientes de validación física y sin publicar.**
 
 **Simulador de circuitos con microcontrolador** para TecnoBloques, el editor de bloques en español para Arduino de la **TecnoAcademia Tolima (SENA, Ibagué)**. El aprendiz arma el circuito en una protoboard dibujada, TecnoBloques compila su programa y TecnoCircuito lo ejecuta sobre ese circuito.
 
@@ -69,11 +69,12 @@ prototipo/
 │   ├── simulador.js    lado de la página: órdenes al Worker y dibujo de cada foto
 │   ├── trabajador.js   Web Worker (reloj); nucleo.js: chip + circuito + PWM + entradas + energía, sin DOM
 │   ├── chip.js         avr8js (sin los getters de esbuild: sección 50; los modelos «cada ms» al cruzar cada ms: sección 54)
+│   ├── placas.js       perfiles Uno/Nano; alimentacion_nano.js: fuentes y regulación de referencia del Nano
 │   ├── motor/          MNA (mna.js) y armado de la red (red.js)
 │   ├── conexiones.js   nodos del circuito (cables, protoboard, puentes internos de shield y batería)
 │   ├── energia.js      USB del Uno (limiteUSB) · potencia.js: shield L293D, motores TT, LiPo y probador
 │   ├── mediciones.js   la tabla en español de sim.mediciones()
-│   ├── kicad.js        netlist de KiCad (shield del Uno J1–J4 y la shield L293D desarmada)
+│   ├── kicad.js        netlist: Uno J1–J4, L293D desarmada y Nano módulo + regulación/jack/I2C/SPI
 │   └── piezas/         servo, shield_l293d (y CONEXIONES_SHIELD: fuente única de AFMotor_R4), motor_tt, bateria_lipo, probador_lipo
 ├── programas/          .ino de prueba y sus .hex (npm run compilar)
 ├── pruebas/            Node (probar_*.js) y Chromium/Playwright (probar_*.py); probar_kicad_pcb.py usa KiCad
@@ -92,7 +93,7 @@ validacion/                     medidas de la placa real (se vuelven pruebas)
 
 Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritorio»).
 
-- **Placas:** `uno`, `nano`, `nano_old`, `mega`. El simulador por ahora solo simula `uno`.
+- **Placas:** TecnoBloques compila `uno`, `nano`, `nano_old`, `mega`; el simulador admite `uno`, `nano`, `nano_old`. Mega sigue pendiente. Nano nuevo guarda su expansión inicial sin necesitar una edición; su ejemplo ADC6/7 compila con cada FQBN y funciona en el Worker.
 - **Proyecto `.tbq.json`** (formato 1): incluye `circuito`; el `.hex` se compila al simular. Contrato, sección 4.1.
 - **Probar con el simulador local:** en TecnoBloques, `node build.js --simulador-local` y `npm run test:simulador`. Para abrir la app desde Claude Code: `env -u ELECTRON_RUN_AS_NODE npx electron .` (con esa variable puesta, Electron no abre ventana).
 - **Kit:** shield L293D Rev4 (74HC595 en 4, 7, 8, 12; PWM M1 = 11, M2 = 3, M3 = 6, M4 = 5; SERVO_1 = 10, SERVO_2 = 9), librería **AFMotor_R4**; monitor serial en 0 y 1; I2C en A4 y A5.
@@ -133,11 +134,12 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
    4. Codex verifica. En 2027 se definen la asignación de la condición (`condicion` queda reservado) y el registro por parejas o equipos en el diseño del estudio.
 6. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
 
-**Pendientes conocidos:** el circuito no siente la caída del 5V (solo los servos ven el voltaje real); el esquemático `.kicad_sch` con etiquetas; el diagrama de flujo del programa (en TecnoBloques); el símbolo de marca en la imagen SVG (`MARCA_SVG` en `src/lienzo.js`).
+**Pendientes conocidos:** el circuito del Uno no siente toda la caída del 5V (solo los servos ven el voltaje real); Nano sí entrega su alimentación de referencia a MNA/GPIO/ADC. Faltan validación física de Nano/expansión, esquemático `.kicad_sch` con etiquetas, diagrama de flujo del programa (TecnoBloques) y símbolo de marca en SVG (`MARCA_SVG` en `src/lienzo.js`).
 
 ## Riesgos técnicos
 
 - **Supuestos sin validar en T3:** resistencia interna de la LiPo (0,05 Ω), datos del motor TT (200 RPM y 150 mA sin carga a 6 V, 1,2 A bloqueado), caída del L293D (1,4 V + 1 V/A), cableado interno de la shield del kit y pantalla del probador. Las pruebas comparten estos supuestos: solo el laboratorio los confirma.
+- **Nano + expansión:** geometría y alimentación de referencia; sin identificar reguladores/protecciones comerciales. Confirmar continuidad, jack, aislamiento USB/jack, curvas de carga, disipación y montaje antes del aula o fabricación. La exportación de KiCad lleva notas de pendientes y no es una PCB terminada.
 - Rendimiento con programas que cambian pines sin pausa: atendido (sección 50); medir con TecnoBloques en el aula.
 - La protoboard con aprendices: falta probarla.
 - Más adelante: tiempos estrictos del DHT11 y comandos completos del HD44780.

@@ -19,11 +19,12 @@ const PINES = {
   pulsador: D['pines-pulsador'].enum,
   servo: D['pines-servo'].enum,
   shield_l293d: D['pines-shield_l293d'].enum,
+  shield_nano_io: D['pines-shield_nano_io'].enum,
   motor_tt: D['pines-motor_tt'].enum,
   bateria_lipo: D['pines-bateria_lipo'].enum,
   probador_lipo: D['pines-probador_lipo'].enum,
 };
-const PINES_PLACA = { uno: D['pines-placa-uno'].enum };
+const PINES_PLACA = { uno: D['pines-placa-uno'].enum, nano: D['pines-placa-nano'].enum, nano_old: D['pines-placa-nano'].enum };
 
 function revisarCircuito(c) {
   if (!validar(c)) {

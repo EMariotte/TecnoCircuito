@@ -7,6 +7,18 @@ import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, dibujarShield } from './pi
 import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
 import { PROBADOR, TAMANO_PROBADOR, PINES_PROBADOR, dibujarProbador, mostrarProbador } from './piezas/probador_lipo.js';
+import { TAMANO_NANO, PINES_NANO, dibujarNano, mostrarNano } from './piezas/nano.js';
+import { TAMANO_EXPANSION, pinesExpansion, dibujarExpansion, ROTULOS_EXPANSION } from './piezas/shield_nano_io.js';
+
+const rotuloNano = (pin) => {
+  if (/^A[67]$/.test(pin)) return `${pin} · solo entrada analógica (sin salida digital)`;
+  if (/^A[0-5]$/.test(pin)) return `${pin} · entrada analógica y digital`;
+  if (/^D\d+$/.test(pin)) return `Pin ${pin.slice(1)}${['D3', 'D5', 'D6', 'D9', 'D10', 'D11'].includes(pin) ? ' · PWM ~' : ''}${pin === 'D0' ? ' · RX' : pin === 'D1' ? ' · TX' : ''}`;
+  if (pin.startsWith('GND')) return 'GND · tierra (−)';
+  if (pin.startsWith('RESET')) return 'RESET · reinicia el Nano';
+  return { '5V': '5V · alimentación del Nano', '3V3': '3,3V · salida del módulo Nano', VIN: 'VIN · entrada del módulo Nano', AREF: 'AREF · referencia analógica', SDA: 'SDA · el mismo A4', SCL: 'SCL · el mismo A5', MOSI: 'MOSI · el mismo D11', MISO: 'MISO · el mismo D12', SCK: 'SCK · el mismo D13', SS: 'SS · el mismo D10' }[pin] || pin;
+};
+const definicionNano = (nombre) => ({ nombre, dibujo: { ...TAMANO_NANO, pines: PINES_NANO, svg: dibujarNano }, rotulo: rotuloNano, mostrar: mostrarNano });
 
 // En el orden del código de colores de las resistencias: la tecla 0 a 9 elige el color de ese número.
 // Las claves son las del contrato; «morado» se conserva por los circuitos ya guardados y se muestra como violeta.
@@ -64,9 +76,22 @@ export const PLACAS = {
       }[pin] || pin;
     },
   },
+  nano: definicionNano('Arduino Nano'),
+  nano_old: definicionNano('Arduino Nano (bootloader antiguo)'),
 };
 
 export const TIPOS = {
+  shield_nano_io: {
+    nombre: 'Expansión E/S del Nano', prefijo: 'exp', montada: true, placas: ['nano', 'nano_old'],
+    props: { variante: 'roja', alimentacion: 'usb', voltajeJack: 9 },
+    dibujo: { marco: (props) => ({ ...TAMANO_EXPANSION, pines: pinesExpansion(props) }), svg: dibujarExpansion },
+    rotulo: (pin) => ROTULOS_EXPANSION[pin] || pin,
+    campos: [
+      { prop: 'variante', etiqueta: 'Tarjeta', opciones: [['roja', 'Roja'], ['azul', 'Azul']] },
+      { prop: 'alimentacion', etiqueta: 'Alimentación', opciones: [['usb', 'USB del Nano'], ['jack', 'Jack de la expansión'], ['apagada', 'Desconectada']] },
+      { prop: 'voltajeJack', etiqueta: 'Fuente en el jack', opciones: [[0, '0 V'], [5, '5 V'], [7, '7 V'], [9, '9 V'], [12, '12 V']] },
+    ],
+  },
   resistencia: {
     nombre: 'Resistencia',
     etiqueta: 'wokwi-resistor',
@@ -163,6 +188,7 @@ export const TIPOS = {
     nombre: 'Shield L293D',
     prefijo: 'shield',
     montada: true,
+    placas: ['uno'],
     props: { puentePWR: true },
     dibujo: { ancho: TAMANO_SHIELD.ancho, alto: TAMANO_SHIELD.alto, pines: PINES_SHIELD, svg: (props) => dibujarShield(props.puentePWR !== false) },
     rotulo: (pin) => ROTULOS_SHIELD[pin] || pin,

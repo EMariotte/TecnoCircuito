@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Netlist de KiCad: el circuito como lista de piezas (con su huella) y de redes, para empezar una placa en KiCad.
 // No toca la página: la usan el lienzo (exportarNetlist) y las pruebas con Node.
 //
@@ -7,10 +8,12 @@
 //
 // Lo que desaparece: la protoboard, sus tiras y los cables (son solo conexiones; quedan dentro de cada red).
 // El Uno no se fabrica: en su lugar van los 4 conectores del shield que se monta encima.
+// El Nano clásico sí se monta como módulo: conserva su electrónica dentro de una huella de 30 pads.
 
 import { calcularNodos } from './conexiones.js';
 import { MODELOS_SERVO } from './piezas/servo.js';
 import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
+import { esNano } from './placas.js';
 
 // Los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad (share/kicad/template/Arduino_Uno), con sus mismas
 // referencias y sus mismos UUID: al importar, KiCad reconoce los que ya están en la placa de la plantilla, sobre el
@@ -42,6 +45,18 @@ export const CONECTORES_SHIELD = [
 const PIN_SHIELD = Object.fromEntries(CONECTORES_SHIELD.flatMap((j) => Object.entries(j.pines).map(([pin, pad]) => [pin, { ref: j.ref, pad }])));
 // Nombre de la red cuando toca un pin del Uno (los tres GND y A4/SDA, A5/SCL están unidos en la placa).
 const RED_UNO = { GND1: 'GND', GND2: 'GND', GND3: 'GND', '5V': '+5V', '3V3': '+3V3', SDA: 'A4', SCL: 'A5' };
+// MCU_Module:Arduino_Nano_v3.x y Module:Arduino_Nano de KiCad 10.0.3. La numeración recorre las dos filas de
+// 15 pads, no es la de los conectores del Uno. A6/A7 tienen pads propios, exclusivamente analógicos.
+// El USB queda junto a los pads 15/16; el pad cuadrado 1 (TX) está en el extremo opuesto. Montaje por validar.
+export const MODULO_NANO_KICAD = {
+  ref: 'U', lib: 'MCU_Module', parte: 'Arduino_Nano_v3.x', huella: 'Module:Arduino_Nano', valor: 'Arduino Nano clásico',
+  pines: {
+    D1: '1', D0: '2', RESET: '3', GND1: '4', D2: '5', D3: '6', D4: '7', D5: '8', D6: '9', D7: '10',
+    D8: '11', D9: '12', D10: '13', D11: '14', D12: '15', D13: '16', '3V3': '17', AREF: '18',
+    A0: '19', A1: '20', A2: '21', A3: '22', A4: '23', A5: '24', A6: '25', A7: '26',
+    '5V': '27', RESET2: '28', GND2: '29', VIN: '30',
+  },
+};
 // Si una red toca varios pines del Uno (un corto), manda el primero de esta lista.
 const PRIORIDAD_RED = ['GND', '+5V', '+3V3', 'VIN'];
 
@@ -141,6 +156,40 @@ export const SHIELD_KICAD = [
 // Nombre de la red de cada pin de la shield que no toca el Uno.
 const RED_SHIELD = { EXT_POS: 'VMOT', M1A: 'M1_A', M1B: 'M1_B', M2A: 'M2_A', M2B: 'M2_B', M3A: 'M3_A', M3B: 'M3_B', M4A: 'M4_A', M4B: 'M4_B' };
 
+// ---- Expansión Nano: circuito de referencia propio, pendiente de verificar contra ambas piezas reales.
+// Las fotos no identifican sus reguladores, capacidades, protecciones ni el orden de I2C/SPI. Estos valores y
+// huellas sirven para diseñar y revisar una placa; no acreditan una reconstrucción de la roja o la azul.
+// ST LD1117 (DocID2572 Rev38): SOT-223, 1=GND, 2=VOUT (también TAB), 3=VIN; salida >=10uF para estabilidad.
+// https://www.st.com/resource/en/datasheet/ld1117.pdf, figuras 2 y 4. Se eligen 10uF electrolíticos/100nF de entrada.
+// Nano.VIN queda sin unión al jack: la expansión suministra su +5V por el pad27 del módulo. Su REG_3V3 es
+// independiente del pad17 (3V3 interno del Nano). No alimentar simultáneamente por USB/jack sin revisar aislamiento.
+const NOTA_NANO_IO = 'Circuito de referencia por validar: componentes, polaridad, orden de conectores, aislamiento USB/jack y montaje de ambas variantes pendientes';
+const C_NANO = { ref: 'C', lib: 'Device', parte: 'C_Polarized', huella: 'Capacitor_THT:CP_Radial_D6.3mm_P2.50mm', valor: '10uF 25V', nota: NOTA_NANO_IO };
+const LDO_NANO = { ref: 'U', lib: 'Regulator_Linear', huella: 'Package_TO_SOT_SMD:SOT-223-3_TabPin2', nota: NOTA_NANO_IO };
+export const EXPANSION_NANO_KICAD = [
+  { ...LDO_NANO, clave: 'REG_5V', parte: 'LD1117S50TR_SOT223', valor: 'LD1117S50TR 5V (referencia por validar)',
+    pads: { 1: 'pieza:JACK_GND', 2: 'pieza:OUT_5V', 3: 'pieza:JACK_POS' } },
+  { ...LDO_NANO, clave: 'REG_3V3', parte: 'LD1117S33TR_SOT223', valor: 'LD1117S33TR 3V3 (referencia por validar)',
+    pads: { 1: 'pieza:JACK_GND', 2: 'pieza:OUT_3V3', 3: 'pieza:OUT_5V' } },
+  { ...C_NANO, clave: 'FILTRO_JACK', pads: { 1: 'pieza:JACK_POS', 2: 'pieza:JACK_GND' } },
+  { ...C_NANO, clave: 'FILTRO_5V', pads: { 1: 'pieza:OUT_5V', 2: 'pieza:JACK_GND' } },
+  { ...C_NANO, clave: 'FILTRO_3V3', pads: { 1: 'pieza:OUT_3V3', 2: 'pieza:JACK_GND' } },
+  { ...C_100NF, clave: 'DESACOPLE_JACK', nota: NOTA_NANO_IO, pads: { 1: 'pieza:JACK_POS', 2: 'pieza:JACK_GND' } },
+  { ...C_100NF, clave: 'DESACOPLE_5V', nota: NOTA_NANO_IO, pads: { 1: 'pieza:OUT_5V', 2: 'pieza:JACK_GND' } },
+  // PJ-102AH: 1=center (+), 2=sleeve (GND), 3=contacto conmutado de sleeve, deliberadamente sin red.
+  // https://www.sameskydevices.com/product/resource/pj-102ah.pdf, p2. No confundir con jack de centro negativo.
+  { ref: 'J', lib: 'Connector', parte: 'Barrel_Jack_Switch', huella: 'Connector_BarrelJack:BarrelJack_CUI_PJ-102AH_Horizontal',
+    clave: 'JACK', valor: 'PJ-102AH centro + (referencia por validar)', nota: NOTA_NANO_IO, externo: true,
+    pads: { 1: 'pieza:JACK_POS', 2: 'pieza:JACK_GND' } },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x04', huella: 'Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical',
+    clave: 'I2C', valor: 'I2C SDA SCL 5V GND (referencia por validar)', nota: NOTA_NANO_IO, externo: true,
+    pads: { 1: 'pieza:I2C_SDA', 2: 'pieza:I2C_SCL', 3: 'pieza:I2C_V', 4: 'pieza:I2C_G' } },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x06', huella: 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical',
+    clave: 'SPI', valor: 'SPI MISO MOSI SCK SS 5V GND (referencia por validar)', nota: NOTA_NANO_IO, externo: true,
+    pads: { 1: 'pieza:SPI_MISO', 2: 'pieza:SPI_MOSI', 3: 'pieza:SPI_SCK', 4: 'pieza:SPI_SS', 5: 'pieza:SPI_V', 6: 'pieza:SPI_G' } },
+];
+const RED_NANO_IO = { JACK_POS: 'JACK_VIN', OUT_3V3: 'REG_3V3' };
+
 // ---- Piezas que no van en la placa (el motor, la batería, el probador): sus cables llegan a un conector. Si ya llegan
 // a un conector de la shield (una bornera, EXT_PWR, un pin de servo), ese es su conector y no se agrega otro; si no
 // tocan la placa (el balance con el probador), no aparecen.
@@ -173,11 +222,15 @@ function uuidDe(texto) {
 }
 
 // Devuelve la netlist como texto. opciones: { nombre, fecha (ISO), herramienta }.
-//   Piezas: los 4 conectores del shield, cada componente que KiCad conoce, la shield L293D desarmada y un conector
-//   por cada pieza de afuera que llegue a la placa (la protoboard no es pieza).
+//   Piezas: los 4 conectores del Uno o el módulo Nano, cada componente que KiCad conoce, la shield L293D
+//   desarmada o la referencia de expansión Nano y conectores de piezas externas cuando hagan falta.
+//   La protoboard no es pieza y el Nano nunca se desarma en su electrónica interna.
 //   Redes: los grupos de calcularNodos() con dos pads o más, más las redes propias de la shield. Del Uno entran los
 //   pines con un cable y los que usa la shield (los demás pines de los conectores quedan sin red).
 export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date().toISOString().slice(0, 19), herramienta = 'TecnoCircuito' } = {}) {
+  const nano = esNano(circuito.placa);
+  if (nano && circuito.componentes.filter((c) => c.tipo === 'shield_nano_io').length > 1)
+    throw new Error('Solo puedes exportar una expansión E/S por Nano. Quita la expansión adicional.');
   // En la placa, el puente PWR es una pieza (JP1): sus dos lados son redes distintas aunque en el circuito esté puesto.
   const circ = {
     ...circuito,
@@ -192,11 +245,20 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     return nodo((tipo === 'placa' ? 'placa' : shield.id) + '.' + pin);
   };
   const deShield = shield ? SHIELD_KICAD.map((d) => ({ ...d, id: `${shield.id}/${d.valor}${d.nota ? ' ' + d.nota : ''}`, enShield: true })) : [];
+  const deExpansion = nano ? circ.componentes.filter((c) => c.tipo === 'shield_nano_io').flatMap((c) =>
+    EXPANSION_NANO_KICAD.map((d) => ({ ...d, id: `${c.id}/${d.clave}`, expansion: c.id }))) : [];
+  const claveExpansion = (d, destino, resolver = nodo) => {
+    const [tipo, pin] = destino.split(':');
+    return resolver((tipo === 'placa' ? 'placa' : d.expansion) + '.' + pin);
+  };
   const cableados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
   // Los pines del Uno que la shield toca por dentro (sus integrados, los servos en D9 y D10, GND, 5V, VIN) van aunque no
   // tengan cable: en la placa real llegan por los conectores apilables.
   const tocaShield = new Set(deShield.flatMap((d) => Object.values(d.pads).map(clave)));
-  const pinesUno = Object.keys(PIN_SHIELD).filter((pin) => cableados.has('placa.' + pin) || tocaShield.has(nodo('placa.' + pin)));
+  // Los 30 pads del módulo son físicos; sus GND y RESET repetidos conservan su unión interna aunque no haya cables.
+  // Incluirlos también reconoce SDA/SCL y los alias SPI sin crear pads adicionales en el Nano.
+  const pinesPlaca = nano ? Object.keys(MODULO_NANO_KICAD.pines) :
+    Object.keys(PIN_SHIELD).filter((pin) => cableados.has('placa.' + pin) || tocaShield.has(nodo('placa.' + pin)));
   const delCircuito = circ.componentes.filter((c) => PIEZAS_KICAD[c.tipo]);
   // ¿Qué pines de una pieza llegan a la placa por sus propios cables (o la protoboard)? Se mira con los nodos sin los
   // puentes internos de la batería: el balance comparte el − y el + con el cable de potencia, pero si solo va al
@@ -207,11 +269,15 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     return pin === undefined ? '#' + destino : externo((tipo === 'placa' ? 'placa' : shield.id) + '.' + pin);
   };
   const enPlacaExt = new Set([
-    ...pinesUno.map((pin) => externo('placa.' + pin)),
+    ...pinesPlaca.map((pin) => externo('placa.' + pin)),
     ...deShield.flatMap((d) => Object.values(d.pads).map(claveExterna)),
+    ...deExpansion.flatMap((d) => Object.values(d.pads).map((destino) => claveExpansion(d, destino, externo))),
     ...delCircuito.flatMap((c) => Object.keys(PIEZAS_KICAD[c.tipo].pads).map((pin) => externo(c.id + '.' + pin))),
   ]);
-  const conConectorExt = new Set(deShield.filter((d) => d.externo).flatMap((d) => Object.values(d.pads).map(claveExterna)));
+  const conConectorExt = new Set([
+    ...deShield.filter((d) => d.externo).flatMap((d) => Object.values(d.pads).map(claveExterna)),
+    ...deExpansion.filter((d) => d.externo).flatMap((d) => Object.values(d.pads).map((destino) => claveExpansion(d, destino, externo))),
+  ]);
   const llegan = (id, pines) => pines.filter((pin) => enPlacaExt.has(externo(id + '.' + pin)));
   // Necesita su propio conector si algún pin llega a la placa por un punto que no es un conector de la shield.
   const necesitaConector = (id, pines) => llegan(id, pines).some((pin) => !conConectorExt.has(externo(id + '.' + pin)));
@@ -221,8 +287,10 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     return l.length > 0 && l.every((pin) => conConectorExt.has(externo(id + '.' + pin)));
   };
 
-  // Las piezas: primero las del circuito, después la shield y al final los conectores de afuera. `pads`: pad → a qué va.
+  // Las piezas: módulo Nano si corresponde, circuito, shield/expansión y conectores externos. `pads`: pad → a qué va.
   const lista = [];
+  if (nano) lista.push({ ...MODULO_NANO_KICAD, id: 'placa',
+    pads: pinesPlaca.map((pin) => [MODULO_NANO_KICAD.pines[pin], nodo('placa.' + pin), null, pin]) });
   for (const c of delCircuito) {
     const def = PIEZAS_KICAD[c.tipo];
     if (SE_CUBRE.has(c.tipo) && enConector(c.id, Object.keys(def.pads))) continue; // ya va en SERVO_1 o SERVO_2
@@ -231,13 +299,16 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
   for (const d of deShield) {
     lista.push({ ...d, pads: Object.entries(d.pads).map(([pad, destino]) => [pad, clave(destino), destino.startsWith('pieza:') ? RED_SHIELD[destino.slice(6)] : null]) });
   }
+  for (const d of deExpansion) {
+    lista.push({ ...d, pads: Object.entries(d.pads).map(([pad, destino]) => [pad, claveExpansion(d, destino), RED_NANO_IO[destino.slice(6)] || null]) });
+  }
   for (const c of circ.componentes) {
     for (const g of FUERA_KICAD[c.tipo] || []) {
       if (!necesitaConector(c.id, Object.keys(g.pines))) continue;
       lista.push({ ...g, id: c.id + (g.sufijo || ''), valor: g.valor(c.props || {}), pads: Object.entries(g.pines).map(([pin, pad]) => [pad, nodo(c.id + '.' + pin)]) });
     }
   }
-  const cuenta = { J: CONECTORES_SHIELD.length }; // J1 a J4 son los conectores del Uno
+  const cuenta = { J: nano ? 0 : CONECTORES_SHIELD.length }; // J1 a J4 solo en Uno; el Nano es U1
   for (const p of lista) {
     cuenta[p.ref] = (cuenta[p.ref] || 0) + 1;
     p.ref = p.ref + cuenta[p.ref];
@@ -251,8 +322,9 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     if (pinUno) red.uno.add(RED_UNO[pinUno] || pinUno);
     if (deLaShield) red.shield.add(deLaShield);
   };
-  for (const pin of pinesUno) anotar(nodo('placa.' + pin), PIN_SHIELD[pin].ref, PIN_SHIELD[pin].pad, pin, null);
-  for (const p of lista) for (const [pad, k, deLaShield] of p.pads) anotar(k, p.ref, String(pad), null, deLaShield);
+  if (!nano) for (const pin of pinesPlaca) anotar(nodo('placa.' + pin), PIN_SHIELD[pin].ref, PIN_SHIELD[pin].pad, pin, null);
+  for (const p of lista) for (const [pad, k, deLaShield, pinPlaca] of p.pads)
+    anotar(k, p.ref, String(pad), pinPlaca === 'RESET2' ? 'RESET' : pinPlaca, deLaShield);
 
   // El nombre de cada red: el del Uno (GND, +5V, D11…), el de la shield (VMOT, M1_A…) o el propio (IN_M1A).
   const numerico = (a, b) => a.localeCompare(b, 'en', { numeric: true });
@@ -266,7 +338,7 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     .sort((a, b) => numerico(a.nombre, b.nombre));
 
   const L = [];
-  const comp = (ref, valor, huella, lib, parte, id, uuid) =>
+  const comp = (ref, valor, huella, lib, parte, id, uuid, nota) =>
     L.push(
       '\t\t(comp',
       `\t\t\t(ref ${q(ref)})`,
@@ -274,14 +346,15 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
       `\t\t\t(footprint ${q(huella)})`,
       `\t\t\t(libsource (lib ${q(lib)}) (part ${q(parte)}) (description ""))`,
       `\t\t\t(property (name "TecnoCircuito") (value ${q(id)}))`,
+      ...(nota ? [`\t\t\t(property (name "TecnoCircuito_validacion") (value ${q(nota)}))`] : []),
       '\t\t\t(sheetpath (names "/") (tstamps "/"))',
       `\t\t\t(tstamps ${q(uuid)})`,
       '\t\t)',
     );
   L.push('(export', '\t(version "E")', '\t(design', `\t\t(source ${q(nombre)})`, `\t\t(date ${q(fecha)})`, `\t\t(tool ${q(herramienta)})`, '\t)');
   L.push('\t(components');
-  for (const j of CONECTORES_SHIELD) comp(j.ref, j.valor, j.huella, 'Connector_Generic', j.parte, 'placa', j.uuid);
-  for (const p of lista) comp(p.ref, p.valor, p.huella, p.lib, p.parte, p.id, uuidDe(nombre + '/' + p.id));
+  if (!nano) for (const j of CONECTORES_SHIELD) comp(j.ref, j.valor, j.huella, 'Connector_Generic', j.parte, 'placa', j.uuid);
+  for (const p of lista) comp(p.ref, p.valor, p.huella, p.lib, p.parte, p.id, uuidDe(nombre + '/' + p.id), p.expansion ? p.nota : null);
   L.push('\t)', '\t(nets');
   listaRedes.forEach((red, i) => {
     L.push('\t\t(net', `\t\t\t(code ${q(i + 1)})`, `\t\t\t(name ${q(red.nombre)})`, '\t\t\t(class "Default")');

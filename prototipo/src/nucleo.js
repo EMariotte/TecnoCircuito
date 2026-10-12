@@ -13,13 +13,16 @@ import { calcularNodos } from './conexiones.js';
 import { crearServo, MODELOS_SERVO } from './piezas/servo.js';
 import { USB, crearFusible, voltajeConServos } from './energia.js';
 import { crearPotencia } from './potencia.js';
+import { perfilPlaca, esNano } from './placas.js';
+import { fuenteNano, resolverAlimentacionNano, NANO_REFERENCIA } from './alimentacion_nano.js';
 
 export { FRECUENCIA, PinState };
 export { USB, crearFusible } from './energia.js';
 export { pantallaProbador } from './piezas/probador_lipo.js'; // para probar la pantalla con Node
+export { perfilPlaca, esNano } from './placas.js';
+export { NANO_REFERENCIA, FUENTES_NANO, fuenteNano, resolverAlimentacionNano } from './alimentacion_nano.js';
 
 const DESTELLO_TX_MS = 60; // cuánto queda prendido el LED TX de la placa después de enviar
-const ANALOGICOS = [['A0'], ['A1'], ['A2'], ['A3'], ['A4', 'SDA'], ['A5', 'SCL']];
 // Entradas digitales que se leen del circuito (D0 y D1 son del monitor serial).
 const ENTRADAS = ['D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
 // Umbrales del ATmega328P a 5 V: ALTO desde 0,6·VCC y BAJO hasta 0,3·VCC. En medio la lectura no es segura:
@@ -47,6 +50,9 @@ const PROMEDIO_VISTA_MS = 100;
 const QUIETA_MS = 50; // sin cambios de pin en este tiempo, la señal se considera quieta
 
 export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(Math.random() * 2 ** 32) }) {
+  let perfil = perfilPlaca(circuito.placa);
+  let nano = esNano(circuito.placa);
+  let analogicosPlaca = perfil.analogicos;
   const azar = crearAzar(semilla); // con semilla: las pruebas se pueden repetir
   const presionados = new Set(); // botones presionados ahora
   let manoRefs = []; // pines o cables que tiene el mouse encima: «la mano» del aprendiz
@@ -105,6 +111,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   const potencia = crearPotencia({ activas, avisar: (f) => avisar(f) });
   let motores5V = 0; // lo que piden al 5V los motores conectados directo (del milisegundo anterior)
   let porVin = false; // el Uno se alimenta de la batería por el VIN (y no del USB)
+  let fuenteActualNano = null;
+  let energiaNano = null;
+  let corteNano = false;
+  const estadosSinEnergia = Object.fromEntries(PINES_EN_ORDEN.map((p) => [p, PinState.Input]));
 
   const ms = () => ((base + chip.ciclos) / FRECUENCIA) * 1000;
   // La clave de una combinación de pines es un número: el estado de cada pin (0 a 3) es una cifra en base 4, en el
@@ -113,6 +123,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
   function nuevoChip() {
     chip = crearChip(hex);
+    if (nano) chip.ponerVoltajeReferencia(v5);
     const e = chip.estados();
     claveActual = clave(e);
     estadosDe.set(claveActual, e);
@@ -155,12 +166,50 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   }
 
   function rehacerRed() {
-    red = armarRed(circuitoActual, { quemados, presionados });
+    perfil = perfilPlaca(circuitoActual.placa);
+    nano = esNano(circuitoActual.placa);
+    analogicosPlaca = perfil.analogicos;
+    if (nano) {
+      fuenteActualNano = fuenteNano(circuitoActual, calcularNodos(circuitoActual));
+      energiaNano = resolverAlimentacionNano(fuenteActualNano, { realista: !!activas.limiteUSB });
+      v5 = energiaNano.v5;
+      apagada = energiaNano.apagada;
+      chip.ponerVoltajeReferencia(v5);
+    }
+    const fuentesExtra = nano && fuenteActualNano.expansion ? [
+      { ref: fuenteActualNano.expansion + '.OUT_3V3', voltios: energiaNano.v33Expansion },
+      { ref: fuenteActualNano.expansion + '.JACK_POS', voltios: energiaNano.entradaV },
+    ] : [];
+    red = armarRed(circuitoActual, { quemados, presionados,
+      ...(nano ? { alimentacion: voltajesFuenteNano(), fuentesExtra } : {}) });
     soluciones = new Map();
     planes = new Map();
     armarServos();
-    potencia.armar(circuitoActual, calcularNodos(circuitoActual));
+    potencia.armar(circuitoActual, calcularNodos(circuitoActual), nano ? {
+      fuentesMotor: { '3V3': 'placa.3V3', ...(fuenteActualNano.expansion ? {
+        [fuenteActualNano.expansion + '.OUT_3V3']: fuenteActualNano.expansion + '.OUT_3V3',
+      } : {}) }, entradas: [fuenteActualNano.entradaRef],
+    } : {});
     calcularMano();
+    if (nano) avisarFuenteNano();
+  }
+
+  function voltajesFuenteNano() {
+    return { '5V': energiaNano.v5, '3V3': energiaNano.v33, VIN: energiaNano.vin,
+      ...(fuenteActualNano.expansion ? {
+        [fuenteActualNano.expansion + '.OUT_3V3']: energiaNano.v33Expansion,
+        [fuenteActualNano.expansion + '.JACK_POS']: energiaNano.entradaV,
+      } : {}) };
+  }
+
+  function avisarFuenteNano() {
+    const componente = fuenteActualNano.expansion || 'placa';
+    avisar({ tipo: 'nano_referencia', componente,
+      mensaje: 'La alimentación del Nano y la expansión usa un modelo de referencia. Sus valores y conexiones están pendientes de comprobar en la placa real.' });
+    if (fuenteActualNano.alimentacion === 'jack' && fuenteActualNano.voltiosJack < NANO_REFERENCIA.minimoJackV) {
+      avisar({ tipo: 'nano_alimentacion', componente, voltios: fuenteActualNano.voltiosJack,
+        mensaje: `El jack recibe ${fuenteActualNano.voltiosJack.toFixed(1).replace('.', ',')} V: la referencia recomienda 7 a 12 V. Con menos voltaje bajan las salidas y el Nano puede quedar en reinicio.` });
+    }
   }
 
   // La mano toca todo lo que está unido a lo que tiene el mouse encima: por cables, la protoboard, resistencias o
@@ -193,8 +242,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       s.senal = PINES_EN_ORDEN.find((pin) => mismo(c.id + '.SIG', 'placa.' + pin)) || null;
       const aTierra = mismo(c.id + '.GND', 'placa.GND1');
       const pinVcc = PINES_EN_ORDEN.find((pin) => mismo(c.id + '.VCC', 'placa.' + pin));
-      s.fuente = mismo(c.id + '.VCC', 'placa.5V') ? '5V' : mismo(c.id + '.VCC', 'placa.3V3') ? '3V3' : pinVcc || null;
-      s.conectado = aTierra && (s.fuente === '5V' || s.fuente === '3V3');
+      const salidaExpansion = nano && fuenteActualNano.expansion && fuenteActualNano.expansion + '.OUT_3V3';
+      s.fuente = mismo(c.id + '.VCC', 'placa.5V') ? '5V' : mismo(c.id + '.VCC', 'placa.3V3') ? '3V3'
+        : salidaExpansion && mismo(c.id + '.VCC', salidaExpansion) ? salidaExpansion : pinVcc || null;
+      s.conectado = aTierra && (s.fuente === '5V' || s.fuente === '3V3' || !!salidaExpansion && s.fuente === salidaExpansion);
       if (pinVcc && aTierra) {
         avisar({
           tipo: 'servo_alimentacion',
@@ -220,12 +271,14 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   }
 
   // Voltaje con que se alimenta un servo ahora: el 5V baja con lo que se le pide al USB; sin energía, nada.
-  const voltiosServo = (s) => (!s.conectado || apagada ? 0 : s.fuente === '5V' ? v5 : 3.3);
+  const voltiosServo = (s) => (!s.conectado || apagada && !nano ? 0 : s.fuente === '5V' ? v5
+    : nano ? s.fuente === '3V3' ? energiaNano.v33 : energiaNano.v33Expansion : 3.3);
 
   // Cada milisegundo simulado: cada servo gira hacia su ángulo y se suma la corriente que pidió. Después se
   // revisa la energía del USB: con «limiteUSB», un golpe de corriente reinicia la placa y un exceso sostenido
   // calienta el fusible hasta que se abre y la apaga.
   function avanzarServos() {
+    if (nano) return avanzarNano();
     // 0. La shield y los motores, con el 5V del milisegundo anterior. Si la batería llega al VIN con más de 6,6 V, el
     //    Uno se alimenta de ella (su regulador da 5 V) y el USB deja de entregar.
     if (potencia.hay) ({ i5V: motores5V, porVin } = potencia.cadaMs(chip.ciclos, { v5, logica: !apagada && v5 > USB.bodV }));
@@ -257,6 +310,80 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     usbSuma += amperios;
     usbPico = Math.max(usbPico, amperios);
     usbMs++;
+  }
+
+  // Nano mantiene la alimentación aparte del modelo USB medido en el Uno. Se
+  // recalculan las fuentes y la referencia ADC por tiempo simulado, también con
+  // la CPU detenida por falta de energía. El fusible del Uno no participa aquí.
+  function avanzarNano() {
+    const antesApagada = apagada;
+    const m = solucion(claveActual);
+    const corriente = (pin) => m ? (m.fuentes.find((f) => f.pin === pin) || { i: 0 }).i : 0;
+    // Una carga entre jack/VIN y GND toma corriente antes del regulador. Cuenta
+    // en su batería/fuente de entrada, sin convertirse en carga de la salida5V.
+    const iEntradaDirecta = Math.max(0, corriente(fuenteActualNano.expansion ? fuenteActualNano.entradaRef : 'VIN'));
+    let motoresAux = {};
+    if (potencia.hay) {
+      const cargasBateria = fuenteActualNano.bateria ? { [fuenteActualNano.bateria]:
+        (fuenteActualNano.alimentacion === 'jack' ? energiaNano.amperios : 0) + iEntradaDirecta } : {};
+      ({ i5V: motores5V, iFuentes: motoresAux } = potencia.cadaMs(chip.ciclos, { v5, logica: !apagada,
+        cargasBateria, consumoPorVinA: 0, habilitarVin: false,
+        voltajesMotor: { '3V3': energiaNano.v33, ...(fuenteActualNano.expansion ? {
+          [fuenteActualNano.expansion + '.OUT_3V3']: energiaNano.v33Expansion,
+        } : {}) } }));
+      const bateriaV = fuenteActualNano.bateria && potencia.voltajeBateria(fuenteActualNano.bateria);
+      if (typeof bateriaV === 'number' && fuenteActualNano.voltiosJack > 0) fuenteActualNano.voltiosJack = bateriaV;
+    }
+    for (const s of servos.values()) s.logico.avanzar(1, voltiosServo(s));
+    let g5 = v5 > 0 ? (Math.max(0, corriente('5V')) + (m ? m.pines.reduce((t, p) => t + Math.max(0, p.i), 0) : 0)) / v5 : 0;
+    let g33 = energiaNano.v33 > 0 ? (Math.max(0, corriente('3V3')) + (motoresAux['3V3'] || 0)) / energiaNano.v33 : 0;
+    let g33Expansion = energiaNano.v33Expansion > 0 && fuenteActualNano.expansion
+      ? (Math.max(0, corriente(fuenteActualNano.expansion + '.OUT_3V3')) + (motoresAux[fuenteActualNano.expansion + '.OUT_3V3'] || 0)) / energiaNano.v33Expansion : 0;
+    for (const s of servos.values()) if (s.conectado) {
+      if (s.fuente === '5V') g5 += s.logico.corriente(1);
+      else if (s.fuente === '3V3') g33 += s.logico.corriente(1);
+      else g33Expansion += s.logico.corriente(1);
+    }
+    const siguiente = resolverAlimentacionNano(fuenteActualNano, { realista: !!activas.limiteUSB, g5, g33, g33Expansion, fijo5: motores5V });
+    const cambio = ['v5', 'v33', 'v33Expansion', 'vin', 'entradaV'].some((p) => Math.abs(siguiente[p] - energiaNano[p]) > 1e-6);
+    energiaNano = siguiente;
+    v5 = siguiente.v5;
+    apagada = siguiente.apagada;
+    porVin = fuenteActualNano.alimentacion === 'jack';
+    if (!antesApagada && apagada) corteNano = true;
+    if (cambio || antesApagada !== apagada) {
+      red.ponerAlimentacion(voltajesFuenteNano());
+      chip.ponerVoltajeReferencia(v5);
+      soluciones.clear(); planes.clear(); ultimaM = null;
+      actualizarEntradas();
+    }
+    if (activas.limiteUSB && siguiente.i33Expansion > NANO_REFERENCIA.aviso3V3A) {
+      avisar({ tipo: 'nano_3v3_sobrecarga', componente: fuenteActualNano.expansion + '.OUT_3V3',
+        corriente_mA: Math.round(siguiente.i33Expansion * 1000),
+        mensaje: 'La salida 3,3 V supera 100 mA en el modelo de referencia y su voltaje baja. Reduce la carga; el límite de tu expansión real está pendiente de comprobar.' });
+    }
+    if (activas.limiteUSB && siguiente.i33 > NANO_REFERENCIA.avisoNano3V3A) {
+      avisar({ tipo: 'nano_3v3_sobrecarga', componente: 'placa.3V3', corriente_mA: Math.round(siguiente.i33 * 1000),
+        mensaje: 'La salida 3,3 V del módulo Nano supera 50 mA, el máximo publicado para el Arduino Nano oficial. Reduce la carga; comprueba el límite de tu clon. Esta salida es distinta de la expansión.' });
+    }
+    for (const s of servos.values()) {
+      const a = s.logico.corriente(voltiosServo(s));
+      s.sumaA += a; s.picoA = Math.max(s.picoA, a); s.msVentana++;
+    }
+    const amperiosFuente = siguiente.amperios + (fuenteActualNano.alimentacion === 'jack' ? iEntradaDirecta : 0);
+    usbSuma += amperiosFuente;
+    usbPico = Math.max(usbPico, amperiosFuente);
+    usbMs++;
+  }
+
+  function atenderCorteNano() {
+    corteNano = false;
+    reinicios++;
+    if (v5 > 0) avisar({ tipo: 'nano_bajo_voltaje', componente: 'placa', voltios: v5,
+      mensaje: 'La alimentación del Nano bajó del umbral de reinicio de referencia (2,7 V). El programa espera mientras vuelve la energía. Revisa la fuente y reduce la carga.' });
+    base += chip.ciclos;
+    nuevoChip();
+    actualizarEntradas();
   }
 
   // Lo que pasó con la energía en este milisegundo: la placa se reinicia (golpe de corriente) o se apaga (fusible).
@@ -309,7 +436,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       if (ciclosApagada < porMs) break; // el pedazo terminó antes de completar el milisegundo
       ciclosApagada = 0;
       avanzarServos();
-      if (!fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
+      if (!nano && !fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
     }
     if (resto > 0) chip.correr(resto);
   }
@@ -328,6 +455,9 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       apagada,
       reinicios,
     };
+    if (nano) Object.assign(r, { fuente: energiaNano.fuente, voltios3V3: energiaNano.v33,
+      voltios3V3Expansion: energiaNano.v33Expansion, voltiosJack: energiaNano.entradaV,
+      referencia: true, fusible: null, expansion: fuenteActualNano.expansion });
     usbSuma = 0;
     usbPico = 0;
     usbMs = 0;
@@ -346,7 +476,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
         senal: s.senal,
         fuente: s.fuente,
         moviendo: e.moviendo,
-        i: s.msVentana ? s.sumaA / s.msVentana : s.logico.corriente(s.voltios),
+        i: s.msVentana ? s.sumaA / s.msVentana : s.logico.corriente(voltiosServo(s)),
         pico: s.picoA,
       };
       s.sumaA = 0;
@@ -366,7 +496,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (p) return p;
     const flotan = red.flotantes(e);
     const canales = new Set();
-    ANALOGICOS.forEach((refs, canal) => {
+    analogicosPlaca.forEach((refs, canal) => {
       if (flotan.has(refs[0])) canales.add(canal);
     });
     const alAireAqui = new Set();
@@ -380,11 +510,11 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
         continue;
       }
       const v = m ? m.voltajes['placa.' + pin] : null;
-      if (typeof v === 'number') entradas.push([pin, v >= UMBRAL_ALTO ? true : v <= UMBRAL_BAJO ? false : null]);
+      if (typeof v === 'number') entradas.push([pin, v >= (nano ? 0.6 * v5 : UMBRAL_ALTO) ? true : v <= (nano ? 0.3 * v5 : UMBRAL_BAJO) ? false : null]);
       else entradas.push([pin, estado === PinState.InputPullUp]); // sin nada conectado: la pull-up interna lo deja en ALTO
     }
     // Voltaje de cada entrada analógica con esta combinación (para no volver a ponerlo si no cambió).
-    const analogicos = ANALOGICOS.map((refs) => {
+    const analogicos = analogicosPlaca.map((refs) => {
       for (const r of refs) {
         const v = m ? m.voltajes['placa.' + r] : null;
         if (typeof v === 'number') return v;
@@ -448,7 +578,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (canalesAlAire.has(canal)) {
       if (!activas.entradaFlotante) return 0;
       // Con la mano cerca, la entrada analógica también capta la red: una onda de 60 Hz de punta a punta.
-      if (tocaLaMano('placa.' + ANALOGICOS[canal][0])) return 2.5 + 2.5 * Math.sin(2 * Math.PI * RED_HZ * (ms() / 1000));
+      if (analogicosPlaca[canal] && tocaLaMano('placa.' + analogicosPlaca[canal][0])) return 2.5 + 2.5 * Math.sin(2 * Math.PI * RED_HZ * (ms() / 1000));
       const antes = paseo.has(canal) ? paseo.get(canal) : 1 + 3 * azar();
       const v = Math.max(0, Math.min(5, antes + normal() * PASEO_AL_AIRE_V));
       paseo.set(canal, v);
@@ -478,7 +608,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     for (let vuelta = 0; vuelta < 4; vuelta++) {
       const guardada = soluciones.get(k);
       if (guardada) return guardada;
-      red.ponerPines(estadosDe.get(k));
+      red.ponerPines(nano && apagada ? estadosSinEnergia : estadosDe.get(k));
       let m = null;
       try {
         m = red.resolver();
@@ -578,7 +708,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       quemados: [...quemados],
       voltajes: voltajesConAire(),
       entradas: entradasParaVer(),
-      placa: { led13: pines.D13 === PinState.High, ledTX: ms() < txHasta },
+      placa: { led13: pines.D13 === PinState.High, ledTX: ms() < txHasta, ...(nano ? { encendida: true } : {}) },
       serial: texto,
       fallas: fallasNuevas,
       medicion,
@@ -588,6 +718,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
   // La placa sin energía: todo apagado; los servos se quedan donde estaban.
   function fotoApagada() {
+    const m = nano ? solucion(claveActual) : null;
     const fallasNuevas = nuevas;
     nuevas = [];
     return {
@@ -598,7 +729,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       energia: fotoEnergia(),
       leds: {},
       quemados: [...quemados],
-      voltajes: {},
+      voltajes: m?.voltajes || {},
       entradas: {},
       placa: { led13: false, ledTX: false, encendida: false },
       serial: '',
@@ -629,7 +760,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   // analogRead() lee el voltaje promedio que el circuito deja en cada entrada analógica.
   function ponerAnalogicos(m = medicion) {
     if (!m) return;
-    ANALOGICOS.forEach((refs, canal) => {
+    analogicosPlaca.forEach((refs, canal) => {
       for (const r of refs) {
         const v = m.voltajes['placa.' + r];
         if (typeof v === 'number') return chip.ponerAnalogico(canal, v);
@@ -662,6 +793,15 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     v5 = USB.idealV;
     motores5V = 0;
     porVin = false;
+    corteNano = false;
+    if (nano) {
+      fuenteActualNano = fuenteNano(circuitoActual, calcularNodos(circuitoActual));
+      energiaNano = resolverAlimentacionNano(fuenteActualNano, { realista: !!activas.limiteUSB });
+      v5 = energiaNano.v5;
+      apagada = energiaNano.apagada;
+      if (red) red.ponerAlimentacion(voltajesFuenteNano());
+      soluciones.clear(); planes.clear(); ultimaM = null;
+    }
   }
 
   nuevoChip();
@@ -675,12 +815,17 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     avanzar(ciclos) {
       if (apagada) return seguirApagada(ciclos);
       chip.correr(ciclos);
+      if (corteNano) atenderCorteNano();
       if (corteUSB) atenderCorte();
     },
     foto,
     ponerCircuito(c) {
+      const estabaApagada = apagada;
       circuitoActual = c;
       rehacerRed();
+      // Quitar la fuente devuelve el AVR a reset. Al reconectar comienza el
+      // programa, con el reloj global y las piezas físicas conservados.
+      if (nano && !estabaApagada && apagada) atenderCorteNano();
       actualizarEntradas();
     },
     // «La mano»: lo que tiene el mouse encima (refs de pines o de los extremos de un cable), o nada.
