@@ -63,6 +63,7 @@ Cada pin es un cuadrito invisible (`.tc-pin`) con `data-ref="<id>.<pin>"`. Ahí 
 - **Las patas de una pieza** van en la capa de pines, encima de todo, porque siempre se pueden cablear.
 - **Los huecos de algo que está debajo de otras piezas,** como la protoboard, van **dentro de su propio dibujo**. Si no, tapan los clics sobre las piezas que tienen encima. Fue el primer error que salió al probarla.
 - **El rótulo dice qué es, en palabras del aprendiz:** «Protoboard: hueco b15 · unido por dentro con a15–e15».
+- **Cada pin va donde está el contacto real, en la orientación real,** con el paso de 2,54 mm entre pines de un mismo conector. Desde el 12 oct, el imán enchufa una pieza en otra por la posición de sus pines (COMO-FUNCIONA, sección 61): un conector con la orientación o el paso inventados no encaja con su pareja real, o encaja donde no debe.
 
 ### 6. El modelo eléctrico
 

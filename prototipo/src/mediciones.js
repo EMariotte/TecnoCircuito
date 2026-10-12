@@ -59,7 +59,7 @@ export function filasDeMediciones(m) {
     }),
     ...(m.probadores || []).map((p) =>
       fila(`${p.id} (probador)`, p.encendido ? voltios(p.total) : '', '',
-        !p.encendido ? 'apagado: conéctalo al cable de balance' : `${p.celdas.length}S · ${p.celdas.map((v, i) => `${i + 1}: ${num(v, 2)} V`).join(' · ')}${p.alarma ? ' · ¡pita!' : ''}`)),
+        !p.encendido ? 'apagado: el − va al negro del balance (al revés no enciende)' : `${p.celdas.length}S · ${p.celdas.map((v, i) => `${i + 1}: ${num(v, 2)} V`).join(' · ')}${p.alarma ? ' · ¡pita!' : ''}`)),
     ...(servos.length && !usb?.referencia ? [fila('5V de la placa (USB)', '', miliamperios(m.consumo5V), 'el USB da hasta 500 mA')] : []),
     ...(usb?.referencia ? [
       fila('Nano · alimentación', voltios(usb.voltios), miliamperios(usb.amperios), `${usb.fuente === 'jack' ? 'jack de la expansión' : usb.fuente === 'apagada' ? 'desconectada' : 'USB'} · modelo de referencia por validar${usb.apagada ? ' · placa apagada' : ''}`),

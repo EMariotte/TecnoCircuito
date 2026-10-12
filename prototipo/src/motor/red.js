@@ -35,7 +35,8 @@ export function modeloLed(color) {
   return { Is: LED.iRef / Math.expm1(vUnion / (LED.n * VT)), n: LED.n };
 }
 
-const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1i', '1d', '2i', '2d'], servo: ['GND', 'VCC', 'SIG'] };
+// Las patas de las piezas de @wokwi/elements (el lienzo las usa para revisar un «en» al abrir un circuito).
+export const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1i', '1d', '2i', '2d'], servo: ['GND', 'VCC', 'SIG'] };
 
 // Arma la red una vez por cableado (y por botones presionados). Cambiar los pines (ponerPines) no la rehace:
 // solo cambia las fuentes. Un botón presionado une sus patas 1 y 2: es parte del cableado de ese momento.
@@ -61,7 +62,11 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   const elementos = [];
   const fuentes = [];
   const fallasFijas = [];
+  // Lo que llega por un cable o por una pata enchufada directo en un pin (sin protoboard de por medio).
   const usados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
+  for (const c of circuito.componentes) for (const [pata, ref] of Object.entries(c.en || {})) {
+    if (!ref.startsWith('protoboard.')) usados.add(c.id + '.' + pata).add(ref);
+  }
   // Un pin de la placa está conectado si un cable llega a su nodo, aunque no lo nombre: el conector de servo de la
   // shield ES el 5V, el GND y el D9/D10 del Uno (puentes internos de conexiones.js). Se decide por nodo, no por el
   // texto del cable, para que dos montajes eléctricamente iguales den lo mismo.

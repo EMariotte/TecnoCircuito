@@ -39,7 +39,8 @@ function revisarCircuito(c) {
     piezas.set(k.id, k);
   }
   const pinValido = (ref) => {
-    const [id, pin] = ref.split('.');
+    const corte = ref.indexOf('.');
+    const [id, pin] = corte > 0 ? [ref.slice(0, corte), ref.slice(corte + 1)] : [ref, ''];
     if (id === 'placa') return !PINES_PLACA[c.placa] || PINES_PLACA[c.placa].includes(pin) || `la placa ${c.placa} no tiene el pin «${pin}»`;
     if (id === 'protoboard') return !c.protoboard ? 'hay un cable a la protoboard, pero no hay protoboard' : HUECO.test(pin) || `la protoboard no tiene el hueco «${pin}»`;
     const k = piezas.get(id);
@@ -53,15 +54,30 @@ function revisarCircuito(c) {
       if (r !== true) problemas.push(`cable ${i} (${cable.de} → ${cable.a}): ${r}`);
     }
   });
+  // «en»: cada pata va en un hueco (si hay protoboard) o enchufada en el pin de otra pieza o de la placa; un hueco o un
+  // pin recibe una sola pata, y una pieza no se enchufa en sí misma.
+  const reciben = new Map();
   for (const k of c.componentes) {
     if (!k.en) continue;
-    if (!c.protoboard) {
-      problemas.push(`la pieza «${k.id}» tiene «en», pero no hay protoboard`);
-      continue;
-    }
-    for (const [pata, hueco] of Object.entries(k.en)) {
-      const r = pinValido(hueco);
+    for (const [pata, ref] of Object.entries(k.en)) {
+      if (ref.startsWith('protoboard.') && !c.protoboard) {
+        problemas.push(`la pieza «${k.id}» tiene «en» en la protoboard, pero no hay protoboard`);
+        continue;
+      }
+      if (ref.startsWith(k.id + '.')) {
+        problemas.push(`«en» de «${k.id}», pata ${pata}: una pieza no se enchufa en sí misma`);
+        continue;
+      }
+      const r = pinValido(ref);
       if (r !== true) problemas.push(`«en» de «${k.id}», pata ${pata}: ${r}`);
+      // Una pata entra en un agujero real: los alias (SPI_* de la expansión, SDA/SCL/MISO/MOSI/SCK/SS del Nano) no.
+      const [idDestino, pinDestino] = [ref.slice(0, ref.indexOf('.')), ref.slice(ref.indexOf('.') + 1)];
+      const nano = c.placa === 'nano' || c.placa === 'nano_old';
+      if (pinDestino.startsWith('SPI_') || (idDestino === 'placa' && nano && ['SDA', 'SCL', 'MISO', 'MOSI', 'SCK', 'SS'].includes(pinDestino))) {
+        problemas.push(`«en» de «${k.id}», pata ${pata}: «${ref}» es otro nombre de un pin; se enchufa en el pin físico`);
+      }
+      if (reciben.has(ref)) problemas.push(`«${ref}» recibe dos patas: ${reciben.get(ref)} y ${k.id}.${pata}`);
+      reciben.set(ref, `${k.id}.${pata}`);
     }
   }
   return problemas;

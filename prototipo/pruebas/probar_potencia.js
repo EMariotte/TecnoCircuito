@@ -204,6 +204,52 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
   revisar(unaCelda.p.encendido && unaCelda.p.celdas.length === 1, 'con solo el − y el 1: ve una celda (1S) y se alimenta de ella');
   const porPotencia = medir(conProbador('nominal', [['NEG', 'NEG'], ['BAL1', 'C1'], ['POS', 'C2']]));
   revisar(porPotencia.p.celdas.length === 2 && Math.abs(porPotencia.p.total - 7.4) < 0.01, 'el − y el + del balance son los mismos de los cables de potencia');
+
+  // Enchufe directo (12 oct): el probador enchufado en el balance, sin cables, mide igual; al revés, marca mal.
+  const enchufado = (en) => { const c = conProbador('nominal', []); c.componentes[1].en = en; return c; };
+  const directo = medir(enchufado({ NEG: 'bateria1.BAL0', C1: 'bateria1.BAL1', C2: 'bateria1.BAL2' }));
+  revisar(directo.p.encendido && directo.p.celdas.length === 2 && Math.abs(directo.p.total - nominal.p.total) < 1e-9 && !directo.p.alarma,
+    `probador enchufado directo en el balance (sin cables): igual que con cables (${directo.p.celdas.map((v) => coma(v)).join(' y ')} V)`);
+  // El enchufe se usa de verdad: con las celdas cruzadas, la celda 1 ve toda la batería y pita (sin «en» no enciende).
+  const cruzadoDirecto = medir(enchufado({ NEG: 'bateria1.BAL0', C1: 'bateria1.BAL2', C2: 'bateria1.BAL1' }));
+  revisar(cruzadoDirecto.p.encendido && Math.abs(cruzadoDirecto.p.celdas[0] - 7.4) < 0.01 && cruzadoDirecto.p.alarma,
+    `enchufado con las celdas cruzadas: la celda 1 sale en ${coma(cruzadoDirecto.p.celdas[0])} V y pita, igual que con cables cruzados`);
+  // Al revés (el − en el + del balance), el probador no enciende y la tabla dice cómo va el −.
+  const alReves = medir(enchufado({ NEG: 'bateria1.BAL2', C1: 'bateria1.BAL1', C2: 'bateria1.BAL0' }));
+  const filaReves = alReves.m && alReves.m.probadores && alReves.m.probadores[0];
+  revisar(!alReves.p.encendido && filaReves && filaReves.encendido === false,
+    'probador enchufado al revés: no enciende, como el real');
+}
+
+// 10. Enchufe directo de patas en pines (12 oct): un servo en SERVO_2 de la shield y un LED en D13/GND del Uno.
+{
+  const programa = (n) => fs.readFileSync(path.join(__dirname, '..', 'programas', n + '.hex'), 'utf8');
+  const correr = (c, nombre, ms) => {
+    const n = crearNucleo({ hex: programa(nombre), circuito: c, activas: REALISTA, semilla: 1 });
+    let f = null;
+    const fallas = [];
+    for (let t = 0; t < ms; t += 16) { n.avanzar(CUADRO); f = n.foto(); fallas.push(...f.fallas); }
+    return { f, fallas };
+  };
+  const conServo = (union) => ({
+    formato: 1, placa: 'uno', cables: union === 'cables' ? [
+      { de: 'servo1.SIG', a: 'shield1.S2_SIG' }, { de: 'servo1.VCC', a: 'shield1.S2_POS' }, { de: 'servo1.GND', a: 'shield1.S2_GND' }] : [],
+    componentes: [
+      { id: 'shield1', tipo: 'shield_l293d', x: 0, y: 0, props: { puentePWR: true } },
+      { id: 'servo1', tipo: 'servo', x: 300, y: 0, props: { modelo: 'sg90' },
+        ...(union === 'en' ? { en: { SIG: 'shield1.S2_SIG', VCC: 'shield1.S2_POS', GND: 'shield1.S2_GND' } } : {}) },
+    ],
+  });
+  const conCables = correr(conServo('cables'), 'servo_barrido', 900).f.servos.servo1;
+  const enchufado = correr(conServo('en'), 'servo_barrido', 900).f.servos.servo1;
+  revisar(enchufado.conectado !== false && Math.abs(enchufado.angulo - conCables.angulo) < 0.01 && enchufado.angulo !== 90,
+    `servo enchufado directo en SERVO_2 se mueve igual que con cables (${enchufado.angulo.toFixed(1)}° y ${conCables.angulo.toFixed(1)}°)`);
+
+  const conLed = { formato: 1, placa: 'uno', cables: [],
+    componentes: [{ id: 'led1', tipo: 'led', x: 0, y: 0, props: { color: 'rojo' }, en: { anodo: 'placa.D13', catodo: 'placa.GND1' } }] };
+  const led = correr(conLed, 'fijo13', 200);
+  revisar(led.fallas.some((x) => x.tipo === 'led_quemado' && x.componente === 'led1'),
+    'LED enchufado directo en D13 y GND, sin resistencia: se quema, como en la placa real');
 }
 
 // 9. Revisión de código del 11 oct.

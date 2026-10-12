@@ -1019,3 +1019,50 @@ Efraín aprobó las dos sugerencias que quedaban de la revisión del Nano y auto
 - **TecnoBloques:** si lo guardado es solo la expansión por defecto del Nano (sin cables ni otras piezas), `abrirLienzo()` la reemplaza en vez de conservarla. Antes, un proyecto nuevo que pasaba por Nano y volvía a Uno repetía el aviso cada vez que se abría. `test:simulador` **52 OK**.
 - **Riesgos sin cambios, de bajo impacto:** con «Desconectada», 5V y 3V3 siguen siendo fuentes de 0 V; JACK/VIN podrían quedar en 0 V si una batería llegara a 0 V a mitad de la corrida (harían falta unos 148 A).
 - La fecha de fotos del Uno queda agendada en el laboratorio (punto 9). Sin commit.
+
+## 2026-10-12 — Claude: imán entre pines (enchufar sin cables)
+
+**Pedido y decisiones de Efraín:** que el imán funcione también entre pines, para conectar directo lo que en la mesa se enchufa (vio que el probador, con su zumbador, no se podía enchufar en la batería). Alcance: **todo lo físicamente posible**; guardar en el campo `en` ampliado; implementar ahora.
+
+- **Contrato:** `en` acepta `"<id>.<pin>"` (otra pieza o la placa), además de `"protoboard.<hueco>"`. Esquema, revisor (`pruebas/contrato.js`: destino existente, no en sí misma, un pin recibe una sola pata) y CONTRATO.md con su fila de historia. Sin etiqueta publicada, el cambio no rompe proyectos.
+- **Núcleo:** `conexiones.js` une las patas enchufadas aunque no haya protoboard. `red.js` y `kicad.js` cuentan una pata enchufada como un cable (si no, un LED directo en D13 no recibía la salida del pin y D13 no entraba a la netlist).
+- **Lienzo:**
+  - `calcularEnchufe` busca pares pata–pin (6 px), elige el corrimiento que enchufa más patas y alinea (3,5 px de tolerancia).
+  - Vista previa en verde.
+  - Lo enchufado se mueve con la pieza; al alejarla, se desenchufa.
+  - Girar o borrar la «madre» suelta lo enchufado.
+  - El imán actúa solo al soltar: no al girar ni al agregar con un clic.
+  - Los pines ocupados no reciben clics ni otra pata.
+  - Rótulo «enchufada en …».
+  - `normalizar` valida cada entrada y avisa las que se pierden.
+  - Textos de ayuda actualizados.
+- **Pruebas nuevas:** contrato +6; potencia +4 (probador directo = cables, al revés marca mal, servo en SERVO_2 = cables, LED directo se quema); KiCad +1; Chromium `probar_enchufe.py` **18 OK** con arrastre real (incluido en `npm run probar`). Capturas revisadas: el probador queda con sus pines dentro del balance y el LED en GND/13.
+- COMO-FUNCIONA, sección 61. TecnoBloques: nota en su bitácora y en «Proyecto hermano». Sin commit.
+
+## 2026-10-12 — Claude: revisión independiente del imán entre pines y correcciones
+
+Efraín pidió revisar el imán con un segundo agente antes del commit. **Sin errores en lo eléctrico ni en KiCad:** en 12 montajes, las fotos del núcleo con `en` y con cables fueron idénticas cuadro a cuadro, y en 9 la netlist también. La protoboard quedó igual que antes (29 OK en las dos versiones), el arrastre tarda 0,4 ms de mediana con 12 piezas y Nano + expansión, y los ciclos no cuelgan el lienzo. **Errores en el lienzo, corregidos:**
+
+- **Patas unidas a la distancia (medio):**
+  - Cuando una pieza se lleva otra enchufada que también iba en algo quieto.
+  - Cuando la protoboard se lleva una pieza mezclada.
+  - Al cambiar una propiedad que mueve los pines (el lado del motor, la variante de la expansión).
+
+  Corrección: `revisarEnchufes()` después de soltar, girar y rehacer un dibujo. Una pata sigue enchufada solo si sigue a menos de 3,5 px de su destino. Al girar, ahora se suelta solo lo que quedó lejos, no todo el `en`.
+- **Mezclado pin + hueco (medio):** una pata quedaba visualmente en un hueco sin conducir. Ahora los huecos libres también son destino, y el imán se ancla siempre en un pin.
+- **TecnoBloques (medio):** al cambiar de placa no contaba los enchufes, y se perdían al volver. Ahora los cuenta.
+- **Al abrir (menor):** se sueltan las patas que la pieza no tiene, las que apuntan a un pin que ya recibió otra, las que van a sí misma o a un alias. El aviso ya no culpa a la placa: «Se soltaron N conexiones directas sin destino».
+- **Contrato (menor):**
+  - El patrón de `en` es igual al de los cables, así que `placa.D13.x` se rechaza.
+  - Una pata no se enchufa en un alias (SDA del Nano, `SPI_*`).
+  - El revisor separa la referencia por el primer punto.
+- **Pruebas (menor):** la del probador «al revés» pasaba aunque el `en` se ignorara. Ahora hay dos:
+  - con las celdas cruzadas pita (prueba que el enchufe se usa);
+  - al revés no enciende.
+
+  La tabla dice «el − va al negro del balance (al revés no enciende)». COMO-FUNCIONA (sección 61) decía que el probador al revés «marcaba mal»; se corrigió ahí.
+- **Pruebas nuevas:**
+  - `probar_enchufe.py`: 18 → 25. Las siete nuevas **fallan con el código anterior** (comprobado con la copia del revisor) y pasan con el corregido.
+  - Contrato: +3.
+  - TecnoBloques `test:simulador`: 53 OK (LED en GND3: se suelta en el Nano y se recupera en el Uno).
+- **Quedan como decisiones de diseño abiertas:** sin distinción macho/hembra, y el radio de 6 px. Están en COMO-FUNCIONA, sección 61.

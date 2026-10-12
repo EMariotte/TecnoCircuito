@@ -1493,3 +1493,47 @@ cambio del circuito (ponerCircuito):     Desconectada, sin batería, jack a 0 V 
 ```
 
 El segundo caso ya queda en el registro como `componente_cambiado` del lienzo. Pruebas nuevas: el ciclo a mano deja `reinicios` en 0; una carga de 6 Ω con el jack a 4 V (realista) baja el 5V a 2,68 V, reinicia una vez y avisa `nano_bajo_voltaje`.
+
+## 61. El imán entre pines: enchufar sin cables (12 oct 2026, Claude)
+
+**Pedido de Efraín:** que el imán que encaja las piezas en la protoboard funcione también entre pines, para conectar lo que en la mesa se enchufa sin cables: el probador en el balance de la LiPo, el servo en SERVO_1/SERVO_2 de la shield, un LED en D13 y GND del Uno, una pata contra otra. Decidió el alcance: **todo lo físicamente posible**.
+
+**Cómo se guarda: el mismo campo `en`.** Ya decía qué pata va en qué hueco de la protoboard; ahora también puede decir en qué pin de otra pieza o de la placa va enchufada:
+
+```
+probador1.en = { NEG: "bat1.BAL0", C1: "bat1.BAL1", C2: "bat1.BAL2" }
+led1.en      = { anodo: "placa.D13", catodo: "placa.GND1" }
+```
+
+`conexiones.js` une cada pata con lo que diga `en`, sea un hueco o un pin. Por eso la simulación, las mediciones, el probador, los servos y KiCad funcionan sin modelos nuevos: todos parten de esos nodos. Hubo que cuidar dos lugares que decidían «conectado» mirando solo los cables: el pin de la placa en `red.js` (sin esto, el LED en D13 no recibía la salida del pin) y los pines del Uno que entran a la netlist en `kicad.js`.
+
+**Qué pasa al soltar una pieza (lienzo):**
+
+```mermaid
+flowchart TB
+  S[Se suelta la pieza] --> P{¿Todas sus patas caen en huecos libres de la protoboard?}
+  P -->|sí| E1[Encaja en la protoboard]
+  P -->|no| B[Buscar pares pata–pin a menos de 6 px; un pin libre no recibe ya otra pata]
+  B --> M{¿Hay alguno?}
+  M -->|no| L[Queda suelta, sin «en»]
+  M -->|sí| A[Elegir el corrimiento que enchufa más patas; a igualdad, el más corto]
+  A --> E2[La pieza se alinea; cada pata a menos de 3,5 px de un pin o de un hueco libre queda enchufada]
+```
+
+**La regla que lo mantiene honesto: una pata sigue enchufada solo si sigue encima de su destino.** `revisarEnchufes()` se ejecuta después de soltar cualquier arrastre, de girar y de cambiar una propiedad que rehace el dibujo (la vista o el lado del motor, la variante de la expansión). Lo que quedó a más de 3,5 px de su hueco o su pin se suelta y deja de conducir. Ejemplos que encontró la revisión independiente: un LED enchufado en la batería y en D13, que la batería se lleva; un LED con una pata en un hueco y otra en VIN, que la protoboard se lleva; un motor enchufado al que se le cambia el lado. Sin esta regla, esas patas quedaban unidas a la distancia. Al abrir un archivo, en cambio, el `en` manda aunque el dibujo no esté encima (contrato).
+
+- **Vista previa:** mientras se arrastra, los pines donde quedaría se ven en verde, igual que los huecos.
+- **En grupo:** lo enchufado en una pieza se mueve con ella (la batería se lleva al probador), como lo encajado sigue a la protoboard. Al alejar la pieza enchufada, se desenchufa.
+- **Mezclado:** una pata puede ir en un pin y otra en un hueco de la protoboard (el LED con el cátodo en VIN y el ánodo en la protoboard). El imán se ancla siempre en un pin; si todas las patas caen en huecos, es encajar en la protoboard, todo o nada, como antes.
+- **Girar o borrar** la pieza «madre» suelta lo que tenía enchufado en ella; las demás patas de esas piezas siguen donde estaban. **El imán actúa solo al soltar**: girar no enchufa por casualidad, y una pieza agregada con un clic (aparece en el centro) tampoco.
+- **No se apilan:** un pin con una pata enchufada no recibe otra, y una pata ya enchufada no recibe otra pieza. El pin ocupado no recibe clics: se cablea la pata, que está encima.
+- **Rótulo:** «LED: ánodo (+) · enchufada en D13 de Arduino Uno».
+- **Al abrir un circuito**, se suelta un `en` que no puede ser: a una pieza que no existe, a un pin de otra placa, a un alias (SDA del Nano, `SPI_*` de la expansión: se enchufa en el pin físico), desde una pata que la pieza no tiene, a sí misma, o a un pin que ya recibió otra pata. El aviso es propio: «Se soltaron 3 conexiones directas sin destino». TecnoBloques también cuenta los enchufes al decidir si conserva el montaje original al cambiar de placa.
+
+**Lo que enseña:** enchufar al revés tiene consecuencias, como en la mesa. El probador al revés no enciende (la tabla dice «el − va al negro del balance»), el servo con la señal en GND no se mueve y el LED directo en D13 sin resistencia se quema. Para el probador y el servo hay que girar la pieza (R) antes de enchufarla, porque sus pines están en otra orientación que el conector, igual que en la realidad.
+
+**El Uno de wokwi** no tiene el paso exacto (sección 60 y especificación de vistas): entre GND y D13 hay 9,5 px y no 9,6. La tolerancia de 3,5 px lo absorbe; con el Uno Tecno quedará exacto.
+
+**Decisiones de diseño que quedan abiertas** (las señaló la revisión, no son errores): el simulador no distingue pines macho de hembra (se puede unir pata con pata, como torcer dos patas en la mesa), y con 6 px de radio una pieza soltada muy cerca de la pata de otra se enchufa; la vista previa en verde avisa antes de soltar.
+
+**Pruebas:** contrato (enchufe a la placa y a otra pieza aceptados; pieza inexistente, pin inexistente, alias, un punto de más, en sí misma y dos patas en un pin, rechazados); potencia (probador enchufado = con cables; con las celdas cruzadas pita, lo que prueba que el enchufe se usa; al revés no enciende; servo en SERVO_2 = con cables; LED directo en D13/GND se quema); KiCad (LED enchufado = con cables); Chromium `probar_enchufe.py` (25) con arrastre real del mouse: vista previa, alineación, marca de ocupado, rótulo, evento, mover en grupo, desenchufar, girar, borrar, guardar y reabrir, soltar lejos, mezclado pin + hueco, la protoboard que se lleva una pieza mezclada, cambiar el lado del motor y lo que se suelta al abrir. Las siete pruebas de la revisión fallan con el código anterior y pasan con el corregido.

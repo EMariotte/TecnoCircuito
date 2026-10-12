@@ -89,9 +89,9 @@
       }
     },
     "en": {
-      "description": "Qué pata va en qué hueco: { \"<pata>\": \"protoboard.<hueco>\" }. Solo vale si hay protoboard. Es lo que manda para la conexión.",
+      "description": "Dónde va cada pata: en un hueco de la protoboard ({ \"<pata>\": \"protoboard.<hueco>\" }, solo si hay protoboard) o enchufada directo en el pin de otra pieza o de la placa ({ \"<pata>\": \"<id>.<pin>\" }, como el probador en el balance de la batería). Es lo que manda para la conexión.",
       "type": "object",
-      "additionalProperties": { "type": "string", "pattern": "^protoboard\\." }
+      "additionalProperties": { "type": "string", "pattern": "^[^.\\s]+\\.[^.\\s]+$" }
     },
     "componente": {
       "type": "object",

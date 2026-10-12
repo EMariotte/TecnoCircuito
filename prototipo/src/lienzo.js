@@ -12,6 +12,7 @@ import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 import { esNano, perfilPlaca } from './placas.js';
 import { ALIASES_EXPANSION_SPI } from './piezas/shield_nano_io.js';
+import { PATAS } from './motor/red.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Marca de la imagen SVG exportada (abajo a la derecha). La imagen sigue siendo de quien la hace (NOTICE).
@@ -20,6 +21,12 @@ const MARCA_ANCHO_MIN = 280; // px: la marca (unos 245 px en Arial 9) cabe aunqu
 const ORIGEN_SVG = 5000; // la capa de cables empieza en (-5000, -5000): así todo cable recibe clics
 const UMBRAL_CLIC = 4; // px de pantalla: si el puntero se mueve menos, es un clic y no un arrastre
 const IMAN = 8; // px de pantalla: un doblez se alinea con el punto vecino si queda así de cerca
+// Patas enchufadas directo en un pin, sin protoboard (el probador en el balance, el servo en la shield, un LED en
+// D13 y GND). Al soltar, si una pata queda a ENCHUFE_RADIO de un pin libre, la pieza se alinea con él y cada pata que
+// caiga a ENCHUFE_TOL de otro pin libre queda enchufada. En px del mundo (0,1" = 9,6 px).
+const ENCHUFE_RADIO = 6;
+const ENCHUFE_TOL = 3.5;
+const esHueco = (ref) => typeof ref === 'string' && ref.startsWith('protoboard.');
 const PASO_REJILLA = 9.6; // 0,1 pulgadas: la distancia entre pines de la placa y de la protoboard
 const ESCALA_MIN = 0.4;
 const ESCALA_MAX = 5;
@@ -38,7 +45,8 @@ export function crearLienzo(elemento, opciones = {}) {
   const alEvento = typeof opciones.alEvento === 'function' ? opciones.alEvento : null;
   const oyentes = [];
   const quitadosAlAbrir = [];
-  const datos = normalizar(opciones.circuito, placa, quitadosAlAbrir);
+  const sueltasAlAbrir = { n: 0 };
+  const datos = normalizar(opciones.circuito, placa, quitadosAlAbrir, sueltasAlAbrir);
 
   // El lienzo vive en un shadow DOM para que el CSS de TecnoBloques no lo afecte.
   const host = document.createElement('div');
@@ -265,8 +273,120 @@ export function crearLienzo(elemento, opciones = {}) {
 
   function huecosOcupados(salvo) {
     const r = new Set();
-    for (const k of datos.componentes) if (k !== salvo && k.en) for (const ref of Object.values(k.en)) r.add(ref.slice('protoboard.'.length));
+    for (const k of datos.componentes) if (k !== salvo && k.en) for (const ref of Object.values(k.en)) if (esHueco(ref)) r.add(ref.slice('protoboard.'.length));
     return r;
+  }
+
+  // Pines que ya reciben una pata enchufada, y patas que ya están enchufadas (en un hueco o en un pin): no reciben otra.
+  function pinesOcupados(salvo) {
+    const r = new Set();
+    for (const k of datos.componentes) {
+      if (k === salvo || !k.en) continue;
+      for (const [pata, ref] of Object.entries(k.en)) {
+        if (!esHueco(ref)) r.add(ref);
+        r.add(k.id + '.' + pata);
+      }
+    }
+    return r;
+  }
+
+  // Las piezas enchufadas en los pines de `id`, y las enchufadas en ellas: se mueven con `id`, como en la mesa.
+  function colgantes(id, vistos = new Set([id])) {
+    const r = [];
+    for (const k of datos.componentes) {
+      if (vistos.has(k.id) || !k.en) continue;
+      if (Object.values(k.en).some((ref) => !esHueco(ref) && partirRef(ref)[0] === id)) {
+        vistos.add(k.id);
+        r.push(k, ...colgantes(k.id, vistos));
+      }
+    }
+    return r;
+  }
+
+  // Dónde quedaría enchufada la pieza: el corrimiento que alinea una de sus patas con un pin libre cercano y, de todos
+  // los posibles, el que enchufa más patas (y, a igualdad, el más corto). Las piezas que cuelgan de ella no cuentan:
+  // se mueven con ella. Una pata que ya recibe a otra pieza no se enchufa a su vez.
+  function calcularEnchufe(c) {
+    const v = vistas.get(c.id);
+    if (!v || !v.lista || !v.pines.size || montada(c)) return null;
+    const ocupados = pinesOcupados(c);
+    const propios = new Set([c.id, ...colgantes(c.id).map((k) => k.id)]);
+    const lc = lugar(c.id);
+    const patas = [...v.pines].filter(([n]) => !ocupados.has(c.id + '.' + n)).map(([nombre, p]) => ({ nombre, ...girarPunto(v, lc, p) }));
+    const destinos = [];
+    for (const [id, w] of vistas) {
+      if (propios.has(id) || id === 'protoboard' || !w.lista || !w.def) continue;
+      const lw = lugar(id);
+      if (!lw) continue;
+      for (const [nombre, p] of w.pines) if (!ocupados.has(id + '.' + nombre)) destinos.push({ ref: id + '.' + nombre, ...girarPunto(w, lw, p) });
+    }
+    // Una pieza puede quedar con una pata en un pin y otra en un hueco de la protoboard (como en la mesa).
+    const vp = vistas.get('protoboard');
+    if (vp && vp.lista && datos.protoboard) {
+      const libres = huecosOcupados(c);
+      for (const [nombre, p] of vp.pines) if (!libres.has(nombre)) destinos.push({ ref: 'protoboard.' + nombre, hueco: true, ...girarPunto(vp, datos.protoboard, p) });
+    }
+    let mejor = null;
+    for (const pata of patas) for (const d of destinos) {
+      if (d.hueco) continue; // el imán se ancla en un pin; solo huecos es encajar en la protoboard
+      const dx = d.x - pata.x;
+      const dy = d.y - pata.y;
+      const largo = Math.hypot(dx, dy);
+      if (largo > ENCHUFE_RADIO) continue;
+      const en = {};
+      const usados = new Set();
+      for (const q of patas) {
+        let cerca = null;
+        let distancia = ENCHUFE_TOL;
+        for (const e of destinos) {
+          const dd = Math.hypot(e.x - q.x - dx, e.y - q.y - dy);
+          if (dd <= distancia && !usados.has(e.ref)) {
+            distancia = dd;
+            cerca = e;
+          }
+        }
+        if (cerca) {
+          en[q.nombre] = cerca.ref;
+          usados.add(cerca.ref);
+        }
+      }
+      const n = Object.keys(en).length;
+      if (n && (!mejor || n > mejor.n || (n === mejor.n && largo < mejor.largo))) mejor = { n, largo, dx, dy, en };
+    }
+    return mejor && { dx: mejor.dx, dy: mejor.dy, en: mejor.en };
+  }
+
+  // Una pata sigue enchufada solo si sigue sobre su hueco o su pin. Después de mover, girar o cambiar el dibujo de una
+  // pieza, lo que quedó lejos se suelta y deja de conducir: nunca queda unido a la distancia (por ejemplo, un LED
+  // enchufado en la batería y en D13, cuando la batería se lleva el LED).
+  function revisarEnchufes() {
+    for (const k of datos.componentes) {
+      if (!k.en) continue;
+      let suelta = false;
+      for (const [pata, ref] of Object.entries(k.en)) {
+        const a = posicion(k.id + '.' + pata);
+        const b = posicion(ref);
+        if (!a || !b) continue; // su dibujo aún no está listo: no se juzga
+        if (Math.hypot(a.x - b.x, a.y - b.y) > ENCHUFE_TOL) {
+          delete k.en[pata];
+          suelta = true;
+        }
+      }
+      if (!suelta) continue;
+      if (!Object.keys(k.en).length) delete k.en;
+      emitir('componente_cambiado', { id: k.id, x: k.x, y: k.y, en: k.en ? copia(k.en) : null });
+    }
+    marcarOcupados();
+  }
+
+  // Corre una pieza y todo lo que cuelga de ella.
+  function moverGrupo(c, dx, dy, grupo = colgantes(c.id)) {
+    if (!dx && !dy) return;
+    for (const k of [c, ...grupo]) {
+      k.x = redondear(k.x + dx);
+      k.y = redondear(k.y + dy);
+      ubicar(vistas.get(k.id));
+    }
   }
 
   function calcularEncaje(c) {
@@ -274,22 +394,27 @@ export function crearLienzo(elemento, opciones = {}) {
     return patas ? encajar(patas, { tipo: datos.protoboard.tipo, ocupados: huecosOcupados(c) }) : null;
   }
 
-  // Al soltar una pieza: si todas sus patas caen en huecos libres, queda encajada (justo en los huecos) y su
-  // campo «en» dice qué pata va en qué hueco. Si no, queda suelta y sin «en».
-  function encajarPieza(c) {
+  // Al soltar una pieza: si todas sus patas caen en huecos libres, queda encajada en la protoboard. Si no, y alguna pata
+  // cae sobre un pin libre de otra pieza o de la placa, queda enchufada ahí (`enchufar`). Si no, queda suelta y sin
+  // «en». El campo «en» dice qué pata va en qué hueco o en qué pin. Lo que cuelga de la pieza se mueve con ella.
+  function encajarPieza(c, { enchufar = true } = {}) {
     if (montada(c)) return false; // la shield va sobre el Uno, nunca en la protoboard
-    const r = calcularEncaje(c);
+    const grupo = colgantes(c.id);
+    const r = datos.protoboard ? calcularEncaje(c) : null;
+    const e = r || !enchufar ? null : calcularEnchufe(c);
     if (r) {
-      c.x = redondear(c.x + r.dx);
-      c.y = redondear(c.y + r.dy);
+      moverGrupo(c, r.dx, r.dy, grupo);
       c.en = Object.fromEntries(Object.entries(r.en).map(([pata, h]) => [pata, 'protoboard.' + h]));
+    } else if (e) {
+      moverGrupo(c, e.dx, e.dy, grupo);
+      c.en = e.en;
     } else {
       delete c.en;
     }
     ubicar(vistas.get(c.id));
     marcarOcupados();
     dibujarCables();
-    return !!r;
+    return !!(r || e);
   }
 
   // Mientras se arrastra una pieza sobre la protoboard, se ven en verde los huecos donde quedaría.
@@ -298,8 +423,12 @@ export function crearLienzo(elemento, opciones = {}) {
     limpiarDestino();
     const r = datos.protoboard && calcularEncaje(c);
     const v = vistas.get('protoboard');
-    if (!r || !v) return;
-    destinos = Object.values(r.en).map((h) => v.pines.get(h).div);
+    if (r && v) destinos = Object.values(r.en).map((h) => v.pines.get(h).div);
+    else {
+      // Fuera de la protoboard: los pines donde quedaría enchufada.
+      const e = calcularEnchufe(c);
+      if (e) destinos = Object.values(e.en).map((ref) => pinDe(ref)).filter(Boolean).map((p) => p.div);
+    }
     destinos.forEach((d) => d.classList.add('tc-destino'));
   }
   function limpiarDestino() {
@@ -307,12 +436,18 @@ export function crearLienzo(elemento, opciones = {}) {
     destinos = [];
   }
 
-  // Un hueco con una pata encajada no recibe clics: se cablea la pata, que está encima (y es el mismo nodo).
+  // Un hueco o un pin con una pata enchufada no recibe clics: se cablea la pata, que está encima (y es el mismo nodo).
   function marcarOcupados() {
     const v = vistas.get('protoboard');
-    if (!v) return;
-    const ocupados = huecosOcupados(null);
-    for (const [nombre, p] of v.pines) p.div.classList.toggle('tc-ocupado', ocupados.has(nombre));
+    if (v) {
+      const ocupados = huecosOcupados(null);
+      for (const [nombre, p] of v.pines) p.div.classList.toggle('tc-ocupado', ocupados.has(nombre));
+    }
+    const reciben = new Set(datos.componentes.flatMap((k) => Object.values(k.en || {}).filter((ref) => !esHueco(ref))));
+    for (const [id, w] of vistas) {
+      if (id === 'protoboard') continue;
+      for (const [nombre, p] of w.pines) p.div.classList.toggle('tc-ocupado', reciben.has(id + '.' + nombre));
+    }
   }
 
   // Al pasar por un hueco (o por una pata encajada), se ilumina toda su tira: lo que está unido por dentro.
@@ -326,7 +461,7 @@ export function crearLienzo(elemento, opciones = {}) {
     let hueco = id === 'protoboard' ? pin : null;
     if (!hueco) {
       const c = componente(id);
-      if (c && c.en && c.en[pin]) hueco = c.en[pin].slice('protoboard.'.length);
+      if (c && c.en && esHueco(c.en[pin])) hueco = c.en[pin].slice('protoboard.'.length);
     }
     if (!hueco) return;
     const tira = tiraDe(hueco);
@@ -891,8 +1026,9 @@ export function crearLienzo(elemento, opciones = {}) {
         dibujarCables();
         cambio();
       }
-      // Si aparece sobre la protoboard y sus patas caen en huecos libres, queda encajada.
-      if (datos.protoboard && componente(id) === c && encajarPieza(c)) {
+      // Si aparece sobre la protoboard y sus patas caen en huecos libres, queda encajada. Si se soltó con una pata
+      // sobre un pin libre, queda enchufada (con un clic aparece en el centro: ahí no se enchufa por casualidad).
+      if (componente(id) === c && (datos.protoboard || punto) && encajarPieza(c, { enchufar: !!punto })) {
         emitir('componente_cambiado', { id, x: c.x, y: c.y, en: copia(c.en) });
         cambio();
       }
@@ -911,6 +1047,7 @@ export function crearLienzo(elemento, opciones = {}) {
       vistas.delete(c.id);
     }
     crearVista(c.id, c.tipo, c.props).then(() => {
+      revisarEnchufes(); // sus pines pudieron moverse: lo que quedó lejos se suelta
       dibujarCables();
       if (sel && sel.id === c.id) seleccionar({ tipo: 'comp', id: c.id });
     });
@@ -922,7 +1059,10 @@ export function crearLienzo(elemento, opciones = {}) {
     if (montada(c)) return;
     c.rot = ((c.rot || 0) + 90) % 360;
     ubicar(vistas.get(c.id));
-    if (datos.protoboard) encajarPieza(c); // girada, puede encajar en otros huecos o quedar suelta
+    // Girada, puede encajar en otros huecos de la protoboard o quedar suelta. El imán entre pines actúa solo al soltar:
+    // girar no enchufa por casualidad. De lo enchufado en ella se suelta solo lo que quedó lejos.
+    encajarPieza(c, { enchufar: false });
+    revisarEnchufes();
     dibujarCables();
     emitir('componente_cambiado', { id: c.id, rot: c.rot, en: c.en ? copia(c.en) : null });
     cambio();
@@ -935,7 +1075,11 @@ export function crearLienzo(elemento, opciones = {}) {
     } else if (sel.id === 'protoboard') {
       // Sin protoboard, las piezas quedan sueltas y los cables que llegaban a sus huecos se quitan.
       datos.cables.filter((k) => k.de.startsWith('protoboard.') || k.a.startsWith('protoboard.')).forEach((k) => quitarCable(k));
-      for (const k of datos.componentes) delete k.en;
+      for (const k of datos.componentes) {
+        if (!k.en) continue;
+        for (const [pata, ref] of Object.entries(k.en)) if (esHueco(ref)) delete k.en[pata];
+        if (!Object.keys(k.en).length) delete k.en;
+      }
       datos.protoboard = null;
       const v = vistas.get('protoboard');
       if (v) {
@@ -957,7 +1101,14 @@ export function crearLienzo(elemento, opciones = {}) {
         vistas.delete(c.id);
       }
       emitir('componente_quitado', { id: c.id, tipo: c.tipo });
-      marcarOcupados(); // sus huecos quedan libres
+      // Lo que estaba enchufado en ella queda suelto en su lugar.
+      for (const k of datos.componentes) {
+        if (!k.en || !Object.values(k.en).some((ref) => partirRef(ref)[0] === c.id)) continue;
+        for (const [pata, ref] of Object.entries(k.en)) if (partirRef(ref)[0] === c.id) delete k.en[pata];
+        if (!Object.keys(k.en).length) delete k.en;
+        emitir('componente_cambiado', { id: k.id, x: k.x, y: k.y, en: k.en ? copia(k.en) : null });
+      }
+      marcarOcupados(); // sus huecos y pines quedan libres
     }
     ocultarTip();
     seleccionar(null);
@@ -1148,7 +1299,10 @@ export function crearLienzo(elemento, opciones = {}) {
       if (montada(c)) return iniciarPaneo(e); // la shield no se mueve: arrastrarla mueve la vista
       // Sobre la perilla del potenciómetro, el arrastre la gira (lo maneja el dibujo de Wokwi): no se mueve la pieza.
       if (TIPOS[c.tipo] && TIPOS[c.tipo].perilla && e.composedPath().some(esPerilla)) return;
-      gesto = { tipo: 'mover', id, dx: m.x - c.x, dy: m.y - c.y, x0: e.clientX, y0: e.clientY, movido: false };
+      const grupo = id === 'protoboard'
+        ? [...new Set(datos.componentes.filter((k) => Object.values(k.en || {}).some(esHueco)).flatMap((k) => [k, ...colgantes(k.id)]))]
+        : colgantes(id);
+      gesto = { tipo: 'mover', id, dx: m.x - c.x, dy: m.y - c.y, x0: e.clientX, y0: e.clientY, movido: false, grupo };
       return capturar(e);
     }
     seleccionar(null);
@@ -1172,19 +1326,16 @@ export function crearLienzo(elemento, opciones = {}) {
         const c = pieza(gesto.id);
         const nx = Math.round(m.x - gesto.dx);
         const ny = Math.round(m.y - gesto.dy);
-        if (gesto.id === 'protoboard') {
-          // Las piezas encajadas se mueven con la protoboard, como en la mesa.
-          for (const k of datos.componentes) {
-            if (!k.en) continue;
-            k.x = redondear(k.x + nx - c.x);
-            k.y = redondear(k.y + ny - c.y);
-            ubicar(vistas.get(k.id));
-          }
+        // Lo encajado en la protoboard, y lo enchufado en la pieza, se mueve con ella, como en la mesa.
+        for (const k of gesto.grupo || []) {
+          k.x = redondear(k.x + nx - c.x);
+          k.y = redondear(k.y + ny - c.y);
+          ubicar(vistas.get(k.id));
         }
         c.x = nx;
         c.y = ny;
         ubicar(vistas.get(gesto.id));
-        if (gesto.id !== 'protoboard' && datos.protoboard) mostrarDestino(c);
+        if (gesto.id !== 'protoboard') mostrarDestino(c);
         dibujarCables();
       } else if (gesto.movido && gesto.tipo === 'paneo') {
         camaraManual = true;
@@ -1237,9 +1388,10 @@ export function crearLienzo(elemento, opciones = {}) {
         emitir('componente_cambiado', { id: 'protoboard', x: c.x, y: c.y });
       } else {
         limpiarDestino();
-        if (datos.protoboard || c.en) encajarPieza(c);
+        encajarPieza(c);
         emitir('componente_cambiado', { id: g.id, x: c.x, y: c.y, en: c.en ? copia(c.en) : null });
       }
+      revisarEnchufes(); // lo arrastrado con ella que también iba enchufado en algo quieto, se suelta de eso
       cambio();
     } else if (g.tipo === 'asa' && g.movido) {
       cambio();
@@ -1487,10 +1639,16 @@ export function crearLienzo(elemento, opciones = {}) {
     if (id === 'protoboard') return rotuloHueco(pin);
     const c = componente(id);
     const def = c && TIPOS[c.tipo];
-    const enHueco = c && c.en && c.en[pin] ? ` · en el hueco ${c.en[pin].slice('protoboard.'.length)}` : '';
+    const destino = c && c.en && c.en[pin];
+    const enHueco = !destino ? '' : esHueco(destino) ? ` · en el hueco ${destino.slice('protoboard.'.length)}` : ` · enchufada en ${nombrePin(destino)}`;
     return def ? `${def.nombre}: ${def.rotulo(pin)}${enHueco}` : pin;
   }
 
+  // «D13 de Arduino Uno» o «bat1 · BAL1»: un pin dicho en palabras cortas.
+  function nombrePin(ref) {
+    const [id, pin] = partirRef(ref);
+    return id === 'placa' ? `${pin} de ${PLACAS[placa].nombre}` : `${id} · ${pin}`;
+  }
   function mostrarTip(pin) {
     const ref = pin ? pin.dataset.ref : null;
     if (ref === tipRef) return;
@@ -1537,9 +1695,9 @@ export function crearLienzo(elemento, opciones = {}) {
             : sel && sel.id === 'protoboard'
               ? 'Arrástrala para moverla: las piezas encajadas se mueven con ella · Pasa por un hueco para ver su tira · Supr: borrar'
               : sel && datos.protoboard
-                ? 'Arrástralo y suéltalo sobre la protoboard para encajarlo (los huecos se ven en verde) · R: girar · Supr: borrar'
+                ? 'Arrástralo para moverlo · Suéltalo sobre la protoboard o sobre un pin para conectarlo (se ve en verde) · R: girar · Supr: borrar'
                 : sel
-                  ? 'Arrástralo para moverlo · R: girar · Supr: borrar'
+                  ? 'Arrástralo para moverlo · Suéltalo sobre un pin para enchufarlo (se ve en verde) · R: girar · Supr: borrar'
               : vistaSim.simulando && datos.componentes.some((c) => c.tipo === 'pulsador')
                 ? 'Simulando · Mantén presionado un botón con el mouse para pulsarlo · Pasa por un pin para ver su voltaje'
                 : 'Clic en un pin para empezar un cable · Arrastra las piezas para moverlas · Rueda del mouse: zoom';
@@ -1660,7 +1818,11 @@ export function crearLienzo(elemento, opciones = {}) {
     marcarOcupados();
     dibujarCables();
     encuadrado = encuadrar();
-    if (quitadosAlAbrir.length) avisar(`Se quitó lo que no va en ${PLACAS[placa].nombre}: ${quitadosAlAbrir.join(' y ')}.`, 10000);
+    const aviso = [
+      quitadosAlAbrir.length ? `Se quitó lo que no va en ${PLACAS[placa].nombre}: ${quitadosAlAbrir.join(' y ')}.` : '',
+      sueltasAlAbrir.n === 1 ? 'Se soltó 1 conexión directa sin destino.' : sueltasAlAbrir.n ? `Se soltaron ${sueltasAlAbrir.n} conexiones directas sin destino.` : '',
+    ].filter(Boolean).join(' ');
+    if (aviso) avisar(aviso, 10000);
   });
   return api;
 }
@@ -1668,7 +1830,7 @@ export function crearLienzo(elemento, opciones = {}) {
 // Copia el circuito y completa lo que falte. Los campos desconocidos se conservan tal cual.
 // Al cambiar de placa, lo que no va en la nueva (una shield de otra placa, un cable a un pin que no tiene) se
 // quita en vez de impedir que el lienzo abra: el aprendiz no tendría cómo arreglarlo. `quitados` dice qué salió.
-function normalizar(circuito, placa, quitados = []) {
+function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }) {
   const c = circuito && typeof circuito === 'object' ? copia(circuito) : {};
   c.formato = c.formato || 1;
   c.placa = placa; // manda la placa que elige TecnoBloques
@@ -1724,12 +1886,50 @@ function normalizar(circuito, placa, quitados = []) {
     c.protoboard.x = Number(c.protoboard.x) || 0;
     c.protoboard.y = Number(c.protoboard.y) || 0;
   }
-  // «en» (qué pata va en qué hueco) solo vale si hay protoboard y apunta a sus huecos.
+  // «en»: cada pata va en un hueco de la protoboard (si hay protoboard) o enchufada en el pin de otra pieza o de la
+  // placa. Las entradas que apuntan a lo que no existe (una pieza quitada, un pin de otra placa) se quitan y se avisan.
+  // Una pata debe existir en su pieza, el destino debe ser un pin físico (no un alias) y cada hueco o pin recibe una
+  // sola pata: si dos lo piden, se queda la primera.
+  const fisicos = perfilPlaca(placa).pinesModulo || pinesPlaca;
+  const reciben = new Set();
   for (const k of c.componentes) {
-    const valido = c.protoboard && k.en && typeof k.en === 'object' && Object.values(k.en).every((r) => typeof r === 'string' && r.startsWith('protoboard.'));
-    if ('en' in k && !valido) delete k.en;
+    if (!('en' in k)) continue;
+    if (!k.en || typeof k.en !== 'object' || Array.isArray(k.en)) {
+      delete k.en;
+      continue;
+    }
+    for (const [pata, ref] of Object.entries(k.en)) {
+      const valida = typeof ref === 'string' && pinExiste(c, k.id + '.' + pata, fisicos) && !reciben.has(ref);
+      if (valida && ref.startsWith('protoboard.')) {
+        if (c.protoboard) reciben.add(ref);
+        else delete k.en[pata];
+      } else if (valida && pinExiste(c, ref, fisicos) && !ref.startsWith(k.id + '.')) {
+        reciben.add(ref);
+      } else {
+        delete k.en[pata];
+        sueltas.n++;
+      }
+    }
+    if (!Object.keys(k.en).length) delete k.en;
   }
   return c;
+}
+
+// ¿Existe el pin «<id>.<pin>» en el circuito? La placa, por su perfil; una pieza conocida, por su dibujo (pines de la
+// vista o de su marco según sus props); una pieza de una versión más nueva se acepta tal cual.
+function pinExiste(c, ref, pinesPlaca) {
+  const i = ref.indexOf('.');
+  if (i <= 0) return false;
+  const id = ref.slice(0, i);
+  const pin = ref.slice(i + 1);
+  if (id === 'placa') return pinesPlaca.includes(pin);
+  const k = c.componentes.find((x) => x.id === id);
+  if (!k) return false;
+  const def = TIPOS[k.tipo];
+  if (!def) return true;
+  if (!def.dibujo) return PATAS[k.tipo] ? PATAS[k.tipo].includes(pin) : true;
+  const marco = def.dibujo.marco ? def.dibujo.marco(k.props || {}) : def.dibujo;
+  return !marco.pines || pin in marco.pines;
 }
 
 const escaparRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

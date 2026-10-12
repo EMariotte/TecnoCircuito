@@ -103,6 +103,13 @@ const suelta = netlistKiCad({ formato: 1, placa: 'uno', componentes: [{ id: 'led
 revisar(/\(ref "D1"\)/.test(suelta) && Object.keys(leer(suelta).redes).length === 0, 'una pieza sin cables entra a las piezas, sin redes');
 const corto = leer(netlistKiCad({ formato: 1, placa: 'uno', componentes: [], cables: [{ de: 'placa.D13', a: 'placa.GND1' }] }, { fecha: FECHA })).redes;
 revisar(igual(corto, { GND: ['J2.4', 'J2.5'] }), 'un corto de D13 a GND queda en la red GND: ' + JSON.stringify(corto));
+// Enchufe directo (12 oct): un LED con sus patas en D13 y GND, sin cables, da las mismas redes que con cables.
+const ledDirecto = (en, cables = []) => leer(netlistKiCad({ formato: 1, placa: 'uno', cables,
+  componentes: [{ id: 'led1', tipo: 'led', props: {}, ...(en ? { en } : {}) }] }, { fecha: FECHA })).redes;
+const enchufadoKicad = ledDirecto({ anodo: 'placa.D13', catodo: 'placa.GND1' });
+const cableadoKicad = ledDirecto(null, [{ de: 'led1.anodo', a: 'placa.D13' }, { de: 'led1.catodo', a: 'placa.GND1' }]);
+revisar(igual(enchufadoKicad, cableadoKicad) && Object.keys(enchufadoKicad).length === 2,
+  'LED enchufado directo en D13 y GND: las mismas redes que con cables ' + JSON.stringify(enchufadoKicad));
 const raro = netlistKiCad({ formato: 1, placa: 'uno', componentes: [], cables: [] }, { nombre: 'Proyecto "uno" \\ prueba', fecha: FECHA });
 revisar(raro.includes('(source "Proyecto \\"uno\\" \\\\ prueba")') && balanceado(raro), 'las comillas del nombre se escapan como en KiCad');
 

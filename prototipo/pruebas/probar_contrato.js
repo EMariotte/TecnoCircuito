@@ -142,6 +142,8 @@ const casosNano = [
   ['expansión encajada en protoboard', c => { c.protoboard = { tipo: 'media', x: 300, y: 0 }; c.componentes[0].en = { OUT_5V: 'protoboard.a1' }; }],
   ['tercer GND del Uno en Nano', c => c.cables.push({ de: 'placa.GND3', a: 'exp1.GND_OUT' })],
   ['GPIO D20 inexistente en Nano', c => c.cables.push({ de: 'placa.D20', a: 'exp1.A6_S' })],
+  ['una pata enchufada en SDA, otro nombre de A4 del Nano', c => c.componentes.push({ id: 'lx', tipo: 'led', x: 0, y: 0, props: {}, en: { anodo: 'placa.SDA' } })],
+  ['una pata enchufada en SPI_MOSI, alias de la expansión', c => c.componentes.push({ id: 'lx', tipo: 'led', x: 0, y: 0, props: {}, en: { anodo: 'exp1.SPI_MOSI' } })],
 ];
 for (const [nombre, cambiar] of casosNano) {
   const c = JSON.parse(JSON.stringify(nano)); cambiar(c);
@@ -180,6 +182,14 @@ const casos = [
   ['un cable al hueco a31', (c) => { c.cables[0].a = 'protoboard.a31'; }, /no tiene el hueco «a31»/],
   ['una pata en el hueco s+7 (no existe en el riel)', (c) => { c.componentes[0].en['1'] = 'protoboard.s+7'; }, /no tiene el hueco «s\+7»/],
   ['«en» sin protoboard', (c) => { c.protoboard = null; c.cables = []; }, /no hay protoboard/],
+  // Enchufe directo (12 oct): una pata en el pin de otra pieza o de la placa, sin protoboard de por medio.
+  ['un LED enchufado directo en D13 y GND1 de la placa', (c) => { c.componentes[1].en = { anodo: 'placa.D13', catodo: 'placa.GND1' }; }, null],
+  ['una pata enchufada en el pin de otra pieza', (c) => { c.componentes[1].en = { anodo: c.componentes[0].id + '.2' }; }, null],
+  ['una pata enchufada en una pieza que no existe', (c) => { c.componentes[1].en = { anodo: 'led9.anodo' }; }, /no hay ninguna pieza «led9»/],
+  ['una pata enchufada en un pin que el Uno no tiene', (c) => { c.componentes[1].en = { anodo: 'placa.D14' }; }, /no tiene el pin «D14»/],
+  ['una pieza enchufada en sí misma', (c) => { c.componentes[1].en = { anodo: c.componentes[1].id + '.catodo' }; }, /en sí misma/],
+  ['una pata enchufada en «placa.D13.x» (un punto de más)', (c) => { c.componentes[1].en = { anodo: 'placa.D13.x' }; }, /pattern/],
+  ['dos patas en el mismo pin', (c) => { c.componentes[1].en = { anodo: 'placa.D13' }; c.componentes[0].en = { 1: 'placa.D13' }; }, /recibe dos patas/],
   ['un cable que empieza y termina en el mismo pin', (c) => c.cables.push({ de: 'placa.D4', a: 'placa.D4' }), /empieza y termina/],
 ];
 for (const [texto, cambiar, espera] of casos) {

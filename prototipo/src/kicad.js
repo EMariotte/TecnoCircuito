@@ -252,7 +252,11 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
     const [tipo, pin] = destino.split(':');
     return resolver((tipo === 'placa' ? 'placa' : d.expansion) + '.' + pin);
   };
+  // Un pin del Uno con algo enchufado directo cuenta igual que uno con cable.
   const cableados = new Set(circuito.cables.flatMap((c) => [c.de, c.a]));
+  for (const c of circuito.componentes) for (const [pata, ref] of Object.entries(c.en || {})) {
+    if (!ref.startsWith('protoboard.')) cableados.add(c.id + '.' + pata).add(ref);
+  }
   // Los pines del Uno que la shield toca por dentro (sus integrados, los servos en D9 y D10, GND, 5V, VIN) van aunque no
   // tengan cable: en la placa real llegan por los conectores apilables.
   const tocaShield = new Set(deShield.flatMap((d) => Object.values(d.pads).map(clave)));

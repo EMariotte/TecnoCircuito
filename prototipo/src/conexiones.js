@@ -27,13 +27,15 @@ export function calcularNodos(circuito, { presionados = new Set(), conduccion = 
   const unir = (a, b) => padre.set(raiz(a), raiz(b));
   for (const grupo of perfilPlaca(circuito.placa).puentes) grupo.forEach((pin) => unir('placa.' + grupo[0], 'placa.' + pin));
   for (const cable of circuito.cables) unir(cable.de, cable.a);
-  // Protoboard: cada tira está unida por dentro, y cada pata encajada queda unida a su hueco.
+  // Protoboard: cada tira está unida por dentro.
   if (circuito.protoboard) {
     for (const grupo of tiras(circuito.protoboard.tipo).values()) grupo.forEach((h) => unir('protoboard.' + grupo[0], 'protoboard.' + h));
-    for (const c of circuito.componentes) {
-      if (!c.en) continue;
-      for (const [pata, hueco] of Object.entries(c.en)) unir(c.id + '.' + pata, hueco);
-    }
+  }
+  // «en»: cada pata encajada queda unida a su hueco, o al pin de otra pieza o de la placa donde va enchufada
+  // (el probador en el balance de la batería, el servo en la shield, un LED en D13 y GND).
+  for (const c of circuito.componentes) {
+    if (!c.en) continue;
+    for (const [pata, ref] of Object.entries(c.en)) if (circuito.protoboard || !ref.startsWith('protoboard.')) unir(c.id + '.' + pata, ref);
   }
   for (const c of circuito.componentes) {
     if (c.tipo === 'shield_nano_io' && esNano(circuito.placa)) {

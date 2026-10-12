@@ -5,7 +5,7 @@
 
 ## Estado en una línea
 
-Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 completa en software**, con SG90 y USB validados y el resto pendiente de laboratorio. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. Suite: **23 grupos, 974 OK, cero fallas** (12 oct, tras la revisión del Nano de Claude); TecnoBloques **52 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
+Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 completa en software**, con SG90 y USB validados y el resto pendiente de laboratorio. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. Suite: **24 grupos, 1014 OK, cero fallas** (12 oct, con el imán entre pines y su revisión independiente); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
 
 ## Qué es
 
@@ -142,7 +142,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
    4. Codex verifica. En 2027 se definen la asignación de la condición (`condicion` queda reservado) y el registro por parejas o equipos en el diseño del estudio.
 6. ◐ **Publicación `v0.1.0` preparada, sin etiquetar** (11 oct): `npm run preparar-version` en la raíz arma `dist/tecnocircuito.js` con la versión exacta y lo revisa; probado instalando el paquete en TecnoBloques (la app lo usa como «etiqueta») y el instalador ya exige una etiqueta fija. **Etiquetar solo después del laboratorio**, siguiendo los pasos que imprime el script.
 
-**Encargo planeado a TecnoDiseñador:** primero el **Uno R3 Tecno** (fotos propias del Uno del kit; ficha 6.5), después la shield L293D sobre él, con una sola salida. **Al migrar un dibujo de TecnoDiseñador** (especificación, sección 9): Nano encima de la expansión (sin ventana), `data-led`/`data-parte` en la shield y alinear `GND1`/`RESET` de KiCad con el lienzo (pads 29/28).
+**Encargo planeado a TecnoDiseñador:** primero el **Uno R3 Tecno** (fotos propias del Uno del kit; ficha 6.5), después la shield L293D sobre él, con una sola salida. **Imán entre pines (12 oct):** las piezas se enchufan sin cables en el pin de otra pieza o de la placa (`en` ampliado; COMO-FUNCIONA, sección 61). Pendiente de probarlo con aprendices junto con la protoboard. **Al migrar un dibujo de TecnoDiseñador** (especificación, sección 9): Nano encima de la expansión (sin ventana), `data-led`/`data-parte` en la shield y alinear `GND1`/`RESET` de KiCad con el lienzo (pads 29/28).
 
 **Pendientes conocidos:** el circuito del Uno no siente toda la caída del 5V (solo los servos ven el voltaje real); Nano sí entrega su alimentación de referencia a MNA/GPIO/ADC. Faltan validación física de Nano/expansión, esquemático `.kicad_sch` con etiquetas, diagrama de flujo del programa (TecnoBloques) y símbolo de marca en SVG (`MARCA_SVG` en `src/lienzo.js`).
 
