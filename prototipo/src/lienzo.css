@@ -416,6 +416,11 @@
   pointer-events: none;
 }
 
+/* Un pin de la placa tapado por la shield (SCL, SDA, IOREF): no se ve ni se cablea mientras esté montada */
+.tc .tc-pin.tc-tapado {
+  display: none;
+}
+
 /* La tira que está unida por dentro con el hueco que se señala */
 .tc .tc-pin.tc-tira {
   background: rgba(46, 158, 68, 0.3);

@@ -129,6 +129,8 @@ function hc595() {
 const BORNERA_5 = 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-05P_1x05_P5.00mm';
 const BORNERA_2 = 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm';
 const PINES_3 = 'Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical';
+const PINES_6 = 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical';
+const seis = (fila) => Object.fromEntries([0, 1, 2, 3, 4, 5].map((i) => [i + 1, `pieza:A${i}_${fila}`]));
 const DIP16 = 'Package_DIP:DIP-16_W7.62mm';
 const C_100NF = { ref: 'C', lib: 'Device', parte: 'C', huella: 'Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm', valor: '100nF' };
 // `externo`: un conector donde se enchufa algo de afuera (motores, batería, servos).
@@ -143,6 +145,11 @@ export const SHIELD_KICAD = [
   { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x02', huella: BORNERA_2, valor: 'EXT_PWR', externo: true, pads: { 1: VMOT, 2: 'pieza:EXT_GND' } },
   { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x03', huella: PINES_3, valor: 'SERVO_1', externo: true, pads: { 1: 'pieza:S1_SIG', 2: 'pieza:S1_POS', 3: 'pieza:S1_GND' } },
   { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x03', huella: PINES_3, valor: 'SERVO_2', externo: true, pads: { 1: 'pieza:S2_SIG', 2: 'pieza:S2_POS', 3: 'pieza:S2_GND' } },
+  // Los tres headers analógicos de la shield del kit, de A0 a A5 (por confirmar con continuidad en el laboratorio). No son
+  // `externo`: comparten nodo con A0–A5, 5V y GND, y un servo cableado ahí perdería su propio conector en la netlist.
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x06', huella: PINES_6, valor: 'A0-5', pads: seis('S') },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x06', huella: PINES_6, valor: '+5', pads: seis('V') },
+  { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x06', huella: PINES_6, valor: 'Gnd', pads: seis('G') },
   // El puente PWR: puesto, la batería de EXT_PWR también alimenta el VIN del Uno.
   { ref: 'JP', lib: 'Jumper', parte: 'Jumper_2_Open', huella: 'Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical', valor: 'PWR', pads: { 1: VMOT, 2: 'placa:VIN' } },
   // Un condensador de 100 nF junto a cada integrado y uno grande en el voltaje de los motores: sin ellos, el ruido de
@@ -153,7 +160,7 @@ export const SHIELD_KICAD = [
   { ref: 'C', lib: 'Device', parte: 'C_Polarized', huella: 'Capacitor_THT:CP_Radial_D6.3mm_P2.50mm', valor: '100uF 25V', nota: 'voltaje de motores', pads: { 1: VMOT, 2: GND } },
   // LED de energía de los motores: con 1 kΩ, unos 5 mA con la LiPo y 10 mA con 12 V.
   { ref: 'R', lib: 'Device', parte: 'R', huella: 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal', valor: '1k', nota: 'LED PWR', pads: { 1: VMOT, 2: 'LED_PWR' } },
-  { ref: 'D', lib: 'Device', parte: 'LED', huella: 'LED_THT:LED_D3.0mm', valor: 'LED verde', nota: 'PWR', pads: { 1: GND, 2: 'LED_PWR' } },
+  { ref: 'D', lib: 'Device', parte: 'LED', huella: 'LED_THT:LED_D5.0mm', valor: 'LED verde 5 mm', nota: 'PWR (LED1 de la shield del kit)', pads: { 1: GND, 2: 'LED_PWR' } },
 ];
 // Nombre de la red de cada pin de la shield que no toca el Uno.
 const RED_SHIELD = { EXT_POS: 'VMOT', M1A: 'M1_A', M1B: 'M1_B', M2A: 'M2_A', M2B: 'M2_B', M3A: 'M3_A', M3B: 'M3_B', M4A: 'M4_A', M4B: 'M4_B' };

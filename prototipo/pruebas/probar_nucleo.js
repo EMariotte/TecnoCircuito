@@ -495,6 +495,24 @@ const desviacion = (xs) => {
   revisar(!correr(lento, 160).placa.ledRX, 'y se apaga después del destello');
 }
 
+// Headers analógicos de la shield L293D (14 oct): +5, Gnd y A0-5 son el 5V, el GND y A0–A5 del Uno. Un potenciómetro
+// cableado ahí lee lo mismo que cableado directo a la placa.
+{
+  const pot = (vcc, gnd, sig) => ({
+    formato: 1, placa: 'uno', protoboard: null,
+    componentes: [
+      { id: 'sh', tipo: 'shield_l293d', x: 0, y: 0, rot: 0, props: { puentePWR: true } },
+      { id: 'p1', tipo: 'potenciometro', x: 300, y: 0, rot: 0, props: { posicion: 0.3 } },
+    ],
+    cables: [{ de: 'p1.VCC', a: vcc }, { de: 'p1.GND', a: gnd }, { de: 'p1.SIG', a: sig }],
+  });
+  const leer = (c) => correr(crearNucleo({ hex: hex('potenciometro'), circuito: c, semilla: 1 }), 200).voltajes;
+  const directo = leer(pot('placa.5V', 'placa.GND2', 'placa.A3'));
+  const shield = leer(pot('sh.A3_V', 'sh.A3_G', 'sh.A3_S'));
+  revisar(directo['placa.A3'] > 1 && Math.abs(shield['placa.A3'] - directo['placa.A3']) < 1e-9,
+    `shield: el potenciómetro en +5/Gnd/A3 de la shield da ${shield['placa.A3'].toFixed(3)} V en A3, igual que directo a la placa`);
+}
+
 // 5. Cuánto tarda el chip (Node, este PC): sin PWM, con PWM y con el potenciómetro.
 //    Es informativo: depende del PC y de si está con cargador (con batería, Windows baja la velocidad).
 const velocidades = {};

@@ -3,7 +3,7 @@
 // Las piezas Tecno (dibujo propio, sin Wokwi) traen `dibujo` en vez de `etiqueta`: ver src/piezas/.
 
 import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
-import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, dibujarShield, mostrarShield } from './piezas/shield_l293d.js';
+import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, TAPA_SHIELD, dibujarShield, mostrarShield, aplicarShield } from './piezas/shield_l293d.js';
 import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
 import { PROBADOR, TAMANO_PROBADOR, PINES_PROBADOR, dibujarProbador, mostrarProbador } from './piezas/probador_lipo.js';
@@ -188,14 +188,12 @@ export const TIPOS = {
     prefijo: 'shield',
     montada: true,
     placas: ['uno'],
+    tapa: TAPA_SHIELD, // pines del Uno sin agujero encima: tapados mientras la shield está montada
     props: { puentePWR: true },
-    dibujo: { ancho: TAMANO_SHIELD.ancho, alto: TAMANO_SHIELD.alto, pines: PINES_SHIELD, svg: (props) => dibujarShield(props.puentePWR !== false) },
+    dibujo: { ancho: TAMANO_SHIELD.ancho, alto: TAMANO_SHIELD.alto, pines: PINES_SHIELD, svg: dibujarShield },
     rotulo: (pin) => ROTULOS_SHIELD[pin] || pin,
     campos: [{ prop: 'puentePWR', etiqueta: 'Puente PWR', opciones: [[true, 'puesto (la batería también alimenta el Uno)'], [false, 'quitado']] }],
-    aplicar(el, props) {
-      const nuevo = new DOMParser().parseFromString(dibujarShield(props.puentePWR !== false), 'image/svg+xml').documentElement;
-      el.replaceChildren(...[...nuevo.childNodes].map((n) => el.ownerDocument.importNode(n, true)));
-    },
+    aplicar: aplicarShield,
     mostrar: mostrarShield,
   },
   // Tarea T3. Pieza Tecno: motorreductor TT de 6 V (src/piezas/motor_tt.js), con dos vistas y su lado del robot.

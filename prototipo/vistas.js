@@ -19,6 +19,7 @@ const ENTREGAS = [
   { modulo: 'nano', json: 'componentes/nano-clon-ch340/entrega/tecnocircuito/nano-tc.json' },
   { modulo: 'shield_nano_io_roja', json: 'componentes/nano-expansion/entrega/tecnocircuito/shield_nano_io-roja-tc.json' },
   { modulo: 'shield_nano_io_azul', json: 'componentes/nano-expansion/entrega/tecnocircuito/shield_nano_io-azul-tc.json' },
+  { modulo: 'shield_l293d', json: 'componentes/l293d-shield/entrega/tecnocircuito/shield_l293d-tc.json' },
 ];
 
 const jsons = ENTREGAS.map((e) => path.join(ORIGEN, e.json));

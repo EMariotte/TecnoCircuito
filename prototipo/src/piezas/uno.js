@@ -8,25 +8,11 @@
 // piezas ni de los dobleces de los cables guardados. Los nombres de los pines son los mismos de siempre.
 
 import VISTA_UNO from './vistas/uno.js';
-import { MM, tamanoDe, pinesDe, svgDe, mostrarLeds } from './vista_td.js';
+import { tamanoDe, pinesDe, svgDe, mostrarLeds } from './vista_td.js';
 
-// Los /* @__PURE__ */ dejan que el Worker, que llega aquí por la shield L293D, se arme sin el dibujo.
+// Los /* @__PURE__ */ dejan que esbuild quite el dibujo de donde no se usa, como el Worker.
 export const TAMANO_UNO = /* @__PURE__ */ tamanoDe(VISTA_UNO);
 export const PINES_UNO = /* @__PURE__ */ pinesDe(VISTA_UNO);
-
-// Los cuatro headers, de izquierda a derecha, con el pin sin rótulo del de alimentación (no tiene contacto, pero la
-// shield L293D lleva su agujero encima). La separación entre headers es la medida; dentro de cada uno, 2,54 mm.
-function headers() {
-  const fila = (nombres) => ({ y: PINES_UNO[nombres[0]].y, xs: nombres.map((n) => PINES_UNO[n].x) });
-  const alimentacion = fila(['IOREF', 'RESET', '3V3', '5V', 'GND2', 'GND3', 'VIN']);
-  return [
-    fila(['SCL', 'SDA', 'AREF', 'GND1', 'D13', 'D12', 'D11', 'D10', 'D9', 'D8']),
-    fila(['D7', 'D6', 'D5', 'D4', 'D3', 'D2', 'D1', 'D0']),
-    { y: alimentacion.y, xs: [alimentacion.xs[0] - 2.54 * MM, ...alimentacion.xs] },
-    fila(['A0', 'A1', 'A2', 'A3', 'A4', 'A5']),
-  ];
-}
-export const HEADERS_UNO = /* @__PURE__ */ headers();
 
 export function dibujarUno() {
   return svgDe(VISTA_UNO, {

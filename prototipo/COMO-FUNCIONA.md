@@ -1613,3 +1613,62 @@ flowchart LR
 No se emiten eventos: abrir no es una edición del aprendiz.
 
 **Pruebas:** núcleo (L estable a 25 % con `rapido13`, apagado y prendido con `parpadeo13`, RX apagado sin datos, prendido al recibir y apagado después); `probar_vistas.py` (35: halo en L, RX en pantalla en el Uno y en el Nano, el LED corrido a D13/3V3 al abrir y el que no cabe, que se queda); `probar_carro.py` (el capuchón como `data-parte`); `probar_enchufe.py` (25, el LED en D13/GND sigue en el mismo lugar al recargar).
+
+## 64. La shield L293D medida: headers analógicos, servos y pines tapados (14 oct 2026, Claude)
+
+TecnoDiseñador midió la shield del kit y dejó sus hallazgos en `TecnoDiseñador/componentes/l293d-shield/entrega/tecnocircuito/HALLAZGOS-PARA-TECNOCIRCUITO.md`. Efraín decidió que **la vista medida manda** sobre el dibujo anterior, y aceptó las tres recomendaciones: los nombres de los headers analógicos, tapar los pines del Uno sin agujero encima y aceptar el recorte de 0,5 mm del borde.
+
+**Qué cambió en el funcionamiento:**
+
+| | Antes | Ahora |
+|---|---|---|
+| Contactos | 18 | **36**: entran `A0_S` … `A5_S` (señal), `A0_V` … `A5_V` (+5) y `A0_G` … `A5_G` (Gnd) |
+| Puentes eléctricos | servos, GND | además `Ax_S` → `placa.Ax`, `Ax_V` → `placa.5V`, `Ax_G` → `placa.GND1` |
+| Servos | SERVO_2 arriba, pines «S + −» | **SERVO_1 arriba, pines «− + S»** (la señal a la derecha). Siguen en los pines 10 y 9 |
+| SCL, SDA, IOREF del Uno | se cableaban a través de la shield | **tapados** mientras la shield está montada |
+| Puente PWR | se dibujaba o no | la parte `puente-pwr` se oculta con `display="none"` (`aplicarShield`) |
+| KiCad | J5–J9 | además **J10** (A0-5), **J11** (+5) y **J12** (Gnd); LED de 5 mm |
+
+```mermaid
+flowchart LR
+  subgraph shield["Shield L293D (montada)"]
+    S["A0-5: A0_S … A5_S"]
+    V["+5: A0_V … A5_V"]
+    G["Gnd: A0_G … A5_G"]
+  end
+  subgraph uno["Uno"]
+    A["A0 … A5"]
+    C5["5V"]
+    CG["GND1"]
+    T["SCL · SDA · IOREF<br/>(tapados: sin agujero en la shield)"]
+  end
+  S --> A
+  V --> C5
+  G --> CG
+```
+
+**Pines tapados.** La shield del kit es del diseño R2: sus headers apilables son 8 + 8 y 6 + 6, sin agujeros sobre SCL, SDA, IOREF ni el pin sin rótulo del Uno. En la mesa, con la shield puesta, esos pines no se pueden usar. El catálogo lo declara (`tapa: ['SCL', 'SDA', 'IOREF']`). Mientras la shield esté montada, el lienzo oculta esos puntos de conexión (`tc-tapado`) y el imán no enchufa patas ahí. Un cable que ya llegaba a SCL se conserva, porque sigue siendo el mismo nodo que A5. Al quitar la shield vuelven.
+
+**Lo que no cambió.** La red eléctrica de los motores, los servos y el puente es la misma: las mediciones de los 13 circuitos de referencia (incluidos el carro y uno nuevo con dos servos en la shield) son idénticas antes y después. La netlist de KiCad solo suma los tres headers y cambia la huella del LED a 5 mm.
+
+**Lo que se movió (solo el dibujo).** La bornera M1/M2 bajó 7,4 mm, EXT_PWR se corrió 2,6 mm y los servos entre 2,2 y 7,7 mm. Los cables guardados siguen conectados porque van por nombre. Se corrigieron los dos dobleces del ejemplo del carro, que estaban bajo EXT_PWR (página de prueba y TecnoBloques). Un servo enchufado con el imán en el orden viejo (girado 90°) sigue conectado al abrir, pero se ve corrido: en el orden nuevo va girado 270°.
+
+**Detalles medidos que conviene saber:** los headers analógicos están 1,18 mm a la izquierda de A0–A5 del Uno, porque son un conector propio de la shield. La shield se recorta 0,5 mm por la derecha y 0,35 mm por arriba del marco común del Uno (decisión de Efraín: no agrandar el marco). En la vista ya no existe `dibujarShield` con dibujo propio ni `HEADERS_UNO`: los agujeros apilables vienen dibujados por TecnoDiseñador sobre los pines del Uno medido.
+
+**Lo que corrigió la revisión independiente (`/code-review`):**
+- **LED apagado que parecía encendido:** la entrega propone `#7fe08e` (el verde de un LED difuso apagado), casi igual al encendido. Un aprendiz creería que los motores tienen batería. Apagado se usa un verde oscuro (`#2b6a3a`); encendido, el de la entrega.
+- **KiCad:** los headers analógicos no son conectores «externos» (donde se enchufan motores, batería o servos). Si lo fueran, un servo cableado a A0, 5V y GND perdería su propio conector en la netlist, porque esos nodos quedarían cubiertos por J10–J12. Hay una prueba que lo detecta.
+- **El puente:** se aplica sobre el dibujo con `aplicarShield` también al crear la pieza (el lienzo llama a `aplicar` de las piezas Tecno al crearlas), sin reemplazar texto del SVG.
+- **Aviso de pines tapados:** al abrir un circuito o al montar la shield, si un cable o una pata llegaba a SCL, SDA o IOREF, la barra lo dice: «La shield tapa SCL: lo que llega ahí sigue conectado, pero en la placa real no se podría. Pásalo a otro pin.»
+- **PCB de comprobación (`probar_kicad_pcb.py`):** con tres headers más, el acomodo automático ya no encontraba lugar para J12 con 0,5 mm extra entre patios. El patio de cada huella ya trae su distancia de seguridad, y la prueba revisa con el DRC de KiCad que no haya solapes: el margen extra pasó a 0 y la búsqueda a saltos de 0,25 mm.
+
+**Filas de los headers analógicos a 2,54 mm (decisión de Efraín, 14 oct):** la entrega las tiene a 3,03 y 3,08 mm entre sí, como la foto. Así, un conector de 3 pines (servo o sensor) no entra de pie en una columna. Efraín decidió que el paso estándar manda sobre la foto, porque los pines reales tienen juego. TecnoDiseñador las corrige y regenera, y aquí basta `npm run vistas`: los nombres no cambian.
+
+**Pendiente de laboratorio:** qué llega a cada fila de los headers analógicos, el orden real − + S de los servos, qué indica LED1 y qué hace el puente PWR, y que el GND de las borneras sea el del Uno.
+
+**Pruebas:**
+- Contrato: 36 contactos contra el esquema.
+- KiCad: J10–J12 en A0–A5 (junto a J3 del Uno), +5V y GND; un servo cableado a A0, 5V y GND conserva su conector.
+- Núcleo: un potenciómetro en +5/Gnd/A3 de la shield da 1,500 V en A3, igual que directo a la placa.
+- `probar_carro.py`: 36 pines y el capuchón oculto.
+- `probar_vistas.py` (46): 36 contactos alineados, el aviso de SCL tapado, el LED apagado oscuro, servos «− + S» con SERVO_1 arriba, A0 a A5 de izquierda a derecha, SCL/SDA/IOREF tapados con la shield y libres sin ella, el cable viejo a SCL conservado, el LED y el puente, `id` sin repetir e imagen exportada.

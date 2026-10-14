@@ -47,14 +47,14 @@ with sync_playwright() as p:
         pg.get_by_role('button', name=nombre, exact=True).click()
         pg.wait_for_timeout(300)
 
-    # 1. La shield: va sobre el Uno, en (0, 0), con los nombres de sus tres integrados y sus 18 pines
+    # 1. La shield: va sobre el Uno, en (0, 0), con los nombres de sus tres integrados y sus 36 pines
     agregar('Shield L293D')
     sh = de_tipo('shield_l293d')
     revisar(sh is not None and sh['x'] == 0 and sh['y'] == 0 and sh['props'] == {'puentePWR': True}, f'«+ Agregar → Shield L293D» la monta sobre el Uno: {sh}')
     t = texto_de(sh['id'])
     revisar(t.count('L293D') >= 2 and '74HC595' in t, 'el dibujo tiene los nombres de los tres integrados: 74HC595 y dos L293D')
     pines = pg.evaluate(f'[...{RAIZ}.querySelectorAll(".tc-pin")].map(p => p.dataset.ref).filter(r => r.startsWith("{sh["id"]}."))')
-    revisar(len(pines) == 18, f'tiene 18 pines para cablear (bornes, EXT_PWR y servos): {len(pines)}')
+    revisar(len(pines) == 36, f'tiene 36 pines para cablear (bornes, EXT_PWR, servos y headers analógicos): {len(pines)}')
     orden = pg.evaluate(f'[...{RAIZ}.querySelectorAll(".tc-comp")].map(d => d.dataset.id)')
     revisar(orden.index(sh['id']) == orden.index('placa') + 1, f'se dibuja justo encima de la placa: {orden}')
     pg.get_by_role('button', name='+ Agregar').click()
@@ -74,8 +74,9 @@ with sync_playwright() as p:
     pg.locator('main select[data-prop="puentePWR"]').select_option('false')
     pg.wait_for_timeout(200)
     revisar(de_tipo('shield_l293d')['props']['puentePWR'] is False, 'el campo «Puente PWR» guarda «quitado» (false, no el texto)')
-    capuchon = pg.evaluate(f'!!{RAIZ}.querySelector(\'[data-id="{sh["id"]}"] [data-parte="puente-pwr"]\')')
-    revisar(not capuchon, 'y el dibujo muestra los dos pines del puente sin su capuchón')
+    # El capuchón es la parte «puente-pwr» de la vista medida: quitado, se oculta (los dos pines quedan a la vista).
+    oculto = f'{RAIZ}.querySelector(\'[data-id="{sh["id"]}"] [data-parte="puente-pwr"]\').getAttribute("display") === "none"'
+    revisar(pg.evaluate(oculto), 'y el dibujo muestra los dos pines del puente sin su capuchón')
     pg.locator('main').screenshot(path=str(SALIDA / 'carro_1_shield.png'))
 
     # 2. El motor: dos vistas y dos lados; al cambiar la vista cambia el tamaño y los pines siguen ahí

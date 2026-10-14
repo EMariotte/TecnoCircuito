@@ -1126,3 +1126,23 @@ Efraín pidió revisar el imán con un segundo agente antes del commit. **Sin er
   - la shield sobresale 0,5 mm del marco.
 
 **Pendiente en TecnoCircuito:** importar la vista, ajustar servos y actividades, decidir los nombres de los headers analógicos (contrato, esquema y revisor) y validar en el laboratorio. Commit y push: a la espera del sí de Efraín.
+
+## 2026-10-14 — Claude: la shield L293D medida, sus headers analógicos y los pines que tapa
+
+**Pedido de Efraín:** leer los hallazgos de TecnoDiseñador sobre la shield, verificarlos y enumerar los cambios. Después aceptó las tres recomendaciones: nombres `A0_S`/`A0_V`/`A0_G` para los headers analógicos, tapar SCL/SDA/IOREF con la shield montada y dejar el recorte de 0,5 mm del borde.
+
+- **Verificación:** el revisor aprueba el 1st + la shield; los 18 corrimientos del documento coinciden con el código (±0,01 mm). Cuatro hallazgos propios: SCL/SDA/IOREF tapados, los headers analógicos 1,18 mm a la izquierda de A0–A5, el servo enchufado con el imán que ahora va girado 270°, y los dobleces del ejemplo del carro.
+- **Contrato:** la shield pasa de 18 a 36 contactos (`A0_S` … `A5_G`); con la shield montada, SCL, SDA e IOREF quedan tapados. Esquema, CONTRATO, especificación de entrega y las dos bitácoras; «Proyecto hermano» en TecnoBloques.
+- **TecnoDiseñador:** `generar_l293d_shield.py` pone los 18 `data-contacto` (A0 a la izquierda); solo cambian las salidas `-tc`.
+- **TecnoCircuito:** `npm run vistas` trae la shield; `shield_l293d.js` usa la vista medida (sin dibujo propio ni `HEADERS_UNO`); puentes eléctricos de los headers; `tapa` en el catálogo y `tc-tapado` en el lienzo; `aplicarShield` muestra u oculta el capuchón; KiCad con J10–J12 y LED de 5 mm; ficha actualizada; dobleces del ejemplo del carro en la página y en TecnoBloques.
+- **Revisión independiente (`/code-review`, media):** corregidos el LED apagado que parecía encendido (verde oscuro propio), los headers marcados como «externos» en KiCad (un servo en A0/5V/GND perdía su conector; prueba que lo detecta), el capuchón aplicado sobre el DOM y el aviso de pines tapados. La prueba de PCB acomoda sin margen extra entre patios (el DRC revisa los solapes) y en saltos de 0,25 mm.
+- **Línea base:** las mediciones de 13 circuitos (uno nuevo con dos servos en la shield) son idénticas; la netlist solo suma J10–J12 y la huella del LED.
+- COMO-FUNCIONA, sección 64.
+
+**Para el laboratorio:** qué llega a cada fila de los headers analógicos y su separación (3,03 mm en la foto, ¿o 2,54?), el orden − + S de los servos, LED1 y el puente PWR.
+
+**Pruebas:** suite completa **1087 OK, 0 fallas** (antes 1064); TecnoBloques `test:simulador` **53 OK**.
+
+## 2026-10-14 — Claude: decisión de Efraín, el paso estándar manda sobre la foto
+
+Las filas +5 / Gnd / A0-5 de la shield van a **2,54 mm** entre sí (la entrega las tiene a 3,03 y 3,08 mm, como la foto). El estándar manda porque los pines reales tienen juego. Queda documentado para TecnoDiseñador: en su `CLAUDE.md` (decisión «Paso estándar de los headers» y pendiente 7), en su BITACORA y en `HALLAZGOS-PARA-TECNOCIRCUITO.md`. Aquí, en la especificación de entrega (sección 6.0) y en COMO-FUNCIONA (sección 64). Cuando regenere, basta `npm run vistas` y las pruebas: los nombres de los contactos no cambian.

@@ -2,7 +2,7 @@
 
 12 de octubre de 2026 · Especificación de entrega, versión 1. Fuente única: este archivo. TecnoDiseñador la enlaza desde su `CLAUDE.md`.
 
-**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano y la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62). Falta la shield L293D; su dibujo actual ya usa `data-led="PWR"` y `data-parte="puente-pwr"` (paso 4 de la sección 9).
+**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano, la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62) y la shield L293D, con sus headers analógicos (sección 64).
 
 **Para quién:** el agente que dibuja en `..\TecnoDiseñador` y Efraín. Dice exactamente qué archivos entregar, con qué reglas y con qué datos, para que el dibujo reemplace la vista de una pieza de TecnoCircuito **sin tocar nada a mano** al migrarlo.
 
@@ -132,6 +132,8 @@ Ejemplo (Nano, valores ilustrativos):
 
 ### 6.0 Regla para todas las placas del simulador
 
+**Ampliada por Efraín (14 oct): el paso estándar manda sobre la medida de la foto**, porque los pines reales tienen juego. Vale también para las filas de un mismo bloque de headers (como +5 / Gnd / A0-5 de la shield, a 2,54 mm entre filas), y la medida va en `medidas` y `diferencias`.
+
 **Decisión de Efraín (12 oct):** toda placa del simulador (Uno, Nano y, cuando llegue, la 2560) es una **Pieza Tecno** con sus headers en **paso exacto de 2,54 mm**: pines vecinos de un mismo header a 2,54 mm (±0,05) y a la misma altura. La separación entre headers distintos es la que se mide en la placa real (en el Uno, por ejemplo, los headers digitales no están a un múltiplo de 2,54 mm entre sí): se mide y se informa en `medidas`, no se fuerza. El revisor de la sección 8 comprueba la regla en el Nano y en el Uno.
 
 **Por qué:** las shields y expansiones se apilan sobre la placa, los cables caen en sus pines y la protoboard usa la misma rejilla de 2,54 mm. Si el dibujo de la placa no respeta el paso, ninguna pieza medida de verdad le encaja. Es lo que pasa hoy con el Uno de `@wokwi/elements`: pasado por el revisor, tiene cuatro saltos fuera de paso (SCL→SDA, D9→D8 y 3V3→5V de 2,65 mm, y SDA→AREF de 2,38) y el resto en 2,51 mm. Son los valores sin redondear: con las coordenadas redondeadas a 0,01 mm, el revisor da 2,64 y 2,39. Por eso existe el Uno Tecno de la sección 6.5.
@@ -206,11 +208,12 @@ Ejemplo (Nano, valores ilustrativos):
 
 - **Dos usos, dos salidas (provisional):** en la colección de la App, TecnoDiseñador encaja la shield sobre su 2560 medido; en TecnoCircuito va sobre el Uno de wokwi. Un mismo generador puede dar las dos. La versión de la App usa las posiciones reales de los headers; la salida `-tc` los pone en las coordenadas de la tabla anterior. El resto del dibujo es idéntico.
 - **Cuando exista el Uno Tecno (sección 6.5)**, la tabla de arriba deja de valer: el marco y los headers apilables salen del `uno-tc.json`, en paso exacto. Entonces hay **una sola salida**, la misma de la App, y se regenera la shield. **Orden recomendado: primero el Uno, después la shield**, para medir la shield una sola vez.
-- **Contactos: 18.**
+- **Contactos: 36** (18 hasta el 14 oct).
   - Bornera izquierda, de arriba abajo: `M1A`, `M1B`, `GND_IZQ`, `M2A`, `M2B`.
   - Bornera derecha, de arriba abajo: `M4A`, `M4B`, `GND_DER`, `M3A`, `M3B`.
   - EXT_PWR: `EXT_POS` y `EXT_GND`.
   - Servos: `S1_SIG`, `S1_POS`, `S1_GND` (SERVO_1) y `S2_SIG`, `S2_POS`, `S2_GND` (SERVO_2).
+  - Headers analógicos (contrato del 14 oct): `A0_S` … `A5_S` (fila «A0-5»), `A0_V` … `A5_V` («+5») y `A0_G` … `A5_G` («Gnd»), con A0 a la izquierda.
 
   En las borneras, el punto es el tornillo. Si la serigrafía real ordena distinto, se nombra por la serigrafía y se anota.
 - **LED:** el de encendido, `data-led="PWR"`.

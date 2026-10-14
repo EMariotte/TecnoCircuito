@@ -57,8 +57,8 @@
     "pines-pulsador": { "description": "Las patas con el mismo número están unidas por dentro; al presionar se une la 1 con la 2.", "enum": ["1i", "1d", "2i", "2d"] },
     "pines-servo": { "description": "Los 3 cables del microservo: GND (marrón), VCC (rojo) y SIG, la señal (naranja).", "enum": ["GND", "VCC", "SIG"] },
     "pines-shield_l293d": {
-      "description": "Shield de motores L293D Rev4, montada sobre el Uno. Bornes de los motores (M1A … M4B), sus GND, la entrada de la batería (EXT_POS, EXT_GND) y los conectores de servo (S1 va al pin 10 y S2 al 9).",
-      "enum": ["M1A", "M1B", "GND_IZQ", "M2A", "M2B", "M4A", "M4B", "GND_DER", "M3A", "M3B", "EXT_POS", "EXT_GND", "S2_SIG", "S2_POS", "S2_GND", "S1_SIG", "S1_POS", "S1_GND"]
+      "description": "Shield de motores L293D Rev4, montada sobre el Uno. Bornes de los motores (M1A … M4B), sus GND, la entrada de la batería (EXT_POS, EXT_GND) los conectores de servo (S1 va al pin 10 y S2 al 9) y los tres headers analógicos (A0_S … A5_S: señal de A0 a A5; A0_V … A5_V: 5V; A0_G … A5_G: GND).",
+      "enum": ["M1A", "M1B", "GND_IZQ", "M2A", "M2B", "M4A", "M4B", "GND_DER", "M3A", "M3B", "EXT_POS", "EXT_GND", "S2_SIG", "S2_POS", "S2_GND", "S1_SIG", "S1_POS", "S1_GND", "A0_S", "A0_V", "A0_G", "A1_S", "A1_V", "A1_G", "A2_S", "A2_V", "A2_G", "A3_S", "A3_V", "A3_G", "A4_S", "A4_V", "A4_G", "A5_S", "A5_V", "A5_G"]
     },
     "pines-motor_tt": { "description": "Los 2 cables del motorreductor TT: A (rojo) y B (negro).", "enum": ["A", "B"] },
     "pines-bateria_lipo": { "description": "El cable de potencia de la LiPo 2S: POS (rojo, +) y NEG (negro, −). El de balance: BAL0 (el −), BAL1 (entre las dos celdas) y BAL2 (el +).", "enum": ["POS", "NEG", "BAL0", "BAL1", "BAL2"] },

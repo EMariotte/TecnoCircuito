@@ -125,7 +125,7 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
   | `potenciometro` | `GND`, `SIG`, `VCC` | `ohmios`, `posicion` (0 hacia GND, 1 hacia VCC) |
   | `pulsador` | `1i`, `1d`, `2i`, `2d` | `color` |
   | `servo` | `GND` (marrón), `VCC` (rojo), `SIG` (naranja, la señal) | `modelo`: `sg90` o `mg90s` (cambia el dibujo, el consumo y la velocidad) |
-  | `shield_l293d` | `M1A`, `M1B`, `M2A`, `M2B`, `M3A`, `M3B`, `M4A`, `M4B`, `GND_IZQ`, `GND_DER`, `EXT_POS`, `EXT_GND`, `S1_SIG`, `S1_POS`, `S1_GND`, `S2_SIG`, `S2_POS`, `S2_GND` | `puentePWR`: `true` (la batería también alimenta el VIN) o `false`. Va montada sobre el Uno: `x` e `y` son 0, sin `en`, y hay una sola |
+  | `shield_l293d` | `M1A`, `M1B`, `M2A`, `M2B`, `M3A`, `M3B`, `M4A`, `M4B`, `GND_IZQ`, `GND_DER`, `EXT_POS`, `EXT_GND`, `S1_SIG`, `S1_POS`, `S1_GND`, `S2_SIG`, `S2_POS`, `S2_GND`; headers analógicos `A0_S`…`A5_S`, `A0_V`…`A5_V`, `A0_G`…`A5_G` | `puentePWR`: `true` (la batería también alimenta el VIN) o `false`. Va montada sobre el Uno: `x` e `y` son 0, sin `en`, y hay una sola |
   | `shield_nano_io` | Para D0–D13 y A0–A7: `<pin>_S`, `<pin>_V`, `<pin>_G`; conectores adicionales y alimentación en 4.2 | `variante`: `roja` o `azul`; `alimentacion`: `usb`, `jack`, `apagada`; `voltajeJack`: 0, 5, 7, 9 o 12. Solo Nano/Nano antiguo; máximo una, `x=y=rot=0`, sin `en` |
   | `motor_tt` | `A` (rojo), `B` (negro) | `vista`: `eje` o `rueda`; `lado`: `izquierdo` o `derecho` (refleja el dibujo y el sentido de avance) |
   | `bateria_lipo` | `POS` (rojo, +), `NEG` (negro, −); balance: `BAL0` (el −), `BAL1` (entre las celdas), `BAL2` (el +) | `carga`: `llena` (4,2 + 4,2 V), `nominal` (3,7 + 3,7), `descargada` (3,2 + 3,2) o `desbalanceada` (3,95 + 3,45) |
@@ -133,7 +133,7 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
 
   En la shield, `S1_SIG` es el pin 10 y `S2_SIG` el 9, sus `*_POS` son el 5V y sus GND (con `EXT_GND`) son el GND del Uno.
 
-  **Pendiente, decidido por Efraín (14 oct), sin implementar:** los tres headers macho 1×6 de la shield real («+5», «Gnd» y «A0-5», sobre las columnas de A0 a A5) **deben poder cablearse**. Faltan sus nombres. La propuesta de TecnoDiseñador sigue la expansión del Nano: `A0_S`, `A0_V`, `A0_G` … `A5_G`. Mientras no se implementen, el formato no cambia. Detalle en `..\TecnoDiseñador\componentes\l293d-shield\entrega\tecnocircuito\HALLAZGOS-PARA-TECNOCIRCUITO.md`, sección 3.
+  **Headers analógicos (decididos e implementados el 14 oct):** los tres headers macho 1×6 de la shield real («+5», «Gnd» y «A0-5») se cablean con la convención de la expansión del Nano: `A0_S` … `A5_S` son A0 a A5 del Uno, `A0_V` … `A5_V` el 5V y `A0_G` … `A5_G` el GND. Lo que llega a cada fila se confirma con continuidad en el laboratorio. Con la shield montada, **SCL, SDA e IOREF del Uno quedan tapados** (la shield real no tiene agujeros sobre ellos): no se pueden cablear ni enchufar; un cable que ya llegaba ahí se conserva. Detalle en `..\TecnoDiseñador\componentes\l293d-shield\entrega\tecnocircuito\HALLAZGOS-PARA-TECNOCIRCUITO.md`.
 
   En el pulsador, las patas con el mismo número están unidas por dentro, y al presionarlo se une la 1 con la 2. Si está presionado o no, no se guarda: solo existe mientras se simula.
 - **Colores de cable:** `negro`, `marron`, `rojo`, `naranja`, `amarillo`, `verde`, `azul`, `morado` (se muestra como violeta), `gris` y `blanco`, en el orden del código de colores (0 a 9).

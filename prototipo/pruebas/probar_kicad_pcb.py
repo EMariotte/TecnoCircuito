@@ -173,7 +173,10 @@ for archivo in sorted(SALIDA.glob('t*.net')):
             caja.Merge(cy.BBox())
         return caja
 
-    margen, borde, paso = pcbnew.FromMM(0.5), pcbnew.FromMM(1), pcbnew.FromMM(0.5)
+    # Sin margen entre patios: el patio (courtyard) de cada huella ya trae su distancia de seguridad, y el DRC de KiCad
+    # revisa abajo que no se solapen. Con 0,5 mm extra y saltos de 0,5 mm, la shield del kit (con sus tres headers
+    # analógicos, 14 oct) no cabía, aunque la placa real sí los lleva; se busca en saltos de 0,25 mm.
+    margen, borde, paso = 0, pcbnew.FromMM(1), pcbnew.FromMM(0.25)
     ocupado = [caja_de(fp) for fp in placa.GetFootprints() if fp not in nuevas]
     sin_lugar = []
     for fp in sorted(nuevas, key=lambda f: -caja_de(f).GetWidth() * caja_de(f).GetHeight()):

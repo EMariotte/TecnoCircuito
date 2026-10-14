@@ -92,6 +92,38 @@ with sync_playwright() as p:
                     + (f'; fuera: {r["malos"]}' if r['malos'] else ''))
         pg.screenshot(path=str(SALIDA / f'vistas_{placa}_{variante or "sola"}.png'))
 
+    print('— La shield L293D medida sobre el Uno')
+    shield = lambda puente=True, cables=(): {'formato': 1, 'placa': 'uno', 'protoboard': None, 'cables': list(cables),
+                                             'componentes': [{'id': 'sh', 'tipo': 'shield_l293d', 'x': 0, 'y': 0, 'rot': 0, 'props': {'puentePWR': puente}}]}
+    abrir(pg, shield(cables=[cable('placa.SCL', 'placa.A0')]))
+    pg.screenshot(path=str(SALIDA / 'vistas_uno_shield.png'))
+    r = pg.evaluate(ALINEADOS, 'sh')
+    revisar(r['contactos'] == 36 == r['puntos'] and not r['malos'], f'shield: {r["contactos"]} contactos del dibujo, cada uno sobre su punto de conexión'
+            + (f'; fuera: {r["malos"]}' if r['malos'] else ''))
+    p = pg.evaluate(f'''() => Object.fromEntries([...{RAIZ}.querySelectorAll('.tc-pin[data-ref^="sh."]')]
+      .map(d => [d.dataset.ref.slice(3), [parseFloat(d.style.left), parseFloat(d.style.top)]]))''')
+    revisar(p['S1_GND'][1] < p['S2_GND'][1] and p['S1_GND'][0] < p['S1_POS'][0] < p['S1_SIG'][0] and p['S2_GND'][0] < p['S2_POS'][0] < p['S2_SIG'][0],
+            'servos como en la placa: SERVO_1 arriba y los pines «− + S» de izquierda a derecha')
+    revisar(all(p[f'A{i}_S'][0] < p[f'A{i + 1}_S'][0] for i in range(5)) and p['A0_V'][1] < p['A0_G'][1] < p['A0_S'][1],
+            'headers analógicos: A0 a A5 de izquierda a derecha y las filas +5, Gnd y A0-5 de arriba abajo')
+    tapa = pg.evaluate(f'''() => ['SCL', 'SDA', 'IOREF', 'A0', 'D13'].map(n => getComputedStyle({RAIZ}.querySelector(`.tc-pin[data-ref="placa.${{n}}"]`)).display)''')
+    lineas = pg.evaluate(f'() => {RAIZ}.querySelectorAll(".tc-cables .tc-cable-linea").length')
+    revisar(tapa[:3] == ['none'] * 3 and 'none' not in tapa[3:] and lineas == 1,
+            f'con la shield, SCL, SDA e IOREF quedan tapados ({tapa}); el cable que ya llegaba a SCL se conserva')
+    aviso = pg.evaluate(f'''() => {RAIZ}.querySelector('.tc-ayuda').textContent''')
+    revisar('La shield tapa SCL' in aviso and 'SDA' not in aviso.split(':')[0], f'y se avisa que la shield tapa SCL (solo lo que tiene algo): «{aviso}»')
+    led = pg.evaluate(f'''() => {RAIZ}.querySelector('.tc-comp[data-id="sh"] [data-led="PWR"]').getAttribute('fill')''')
+    revisar(led == '#2b6a3a', f'el LED de la shield, sin batería, se ve apagado (verde oscuro): {led}')
+    revisar(pg.evaluate(f'''() => !!{RAIZ}.querySelector('.tc-comp[data-id="sh"] [data-led="PWR"]')
+      && {RAIZ}.querySelector('.tc-comp[data-id="sh"] [data-parte="puente-pwr"]').getAttribute('display') === null'''),
+            'la shield tiene su LED PWR y, con el puente puesto, el capuchón a la vista')
+    abrir(pg, shield(puente=False))
+    revisar(pg.evaluate(f'''() => {RAIZ}.querySelector('.tc-comp[data-id="sh"] [data-parte="puente-pwr"]').getAttribute('display') === 'none' '''),
+            'con el puente quitado, el capuchón no se ve')
+    abrir(pg, circuito('uno'))
+    tapa = pg.evaluate(f'''() => ['SCL', 'SDA', 'IOREF'].map(n => getComputedStyle({RAIZ}.querySelector(`.tc-pin[data-ref="placa.${{n}}"]`)).display)''')
+    revisar('none' not in tapa, f'sin la shield, SCL, SDA e IOREF se pueden cablear ({tapa})')
+
     print('— La placa es Pieza Tecno, sin el dibujo de wokwi')
     abrir(pg, circuito('uno'))
     r = pg.evaluate(f'''() => {{ const r = {RAIZ};
@@ -187,8 +219,8 @@ with sync_playwright() as p:
             'el que ya no cabe en sus pines se queda donde estaba y sigue enchufado, sin aviso de soltar')
 
     print('— Los id del documento no se repiten (miniaturas de la biblioteca incluidas)')
-    for placa, variante in [('nano', 'roja'), ('nano', 'azul'), ('uno', None)]:
-        abrir(pg, circuito(placa, variante))
+    for placa, variante in [('nano', 'roja'), ('nano', 'azul'), ('uno', None), ('uno', 'shield')]:
+        abrir(pg, shield() if variante == 'shield' else circuito(placa, variante))
         r = pg.evaluate(f'''() => {{ const ids = [...{RAIZ}.querySelectorAll('[id]')].map(n => n.id);
           const vistos = new Set(), repetidos = new Set();
           for (const id of ids) (vistos.has(id) ? repetidos : vistos).add(id);
@@ -196,8 +228,8 @@ with sync_playwright() as p:
         revisar(not r['repetidos'], f'{placa}{"/" + variante if variante else ""}: {r["total"]} id en el lienzo, ninguno repetido {r["repetidos"] or ""}')
 
     print('— La imagen exportada conserva los dibujos')
-    for placa, variante, prefijo in [('uno', None, 'td-uno-'), ('nano', 'azul', 'td-exp-azul-')]:
-        abrir(pg, circuito(placa, variante))
+    for placa, variante, prefijo in [('uno', None, 'td-uno-'), ('nano', 'azul', 'td-exp-azul-'), ('uno', 'shield', 'td-l293d-')]:
+        abrir(pg, shield() if variante == 'shield' else circuito(placa, variante))
         svg = pg.evaluate('lz.exportarSVG()')
         try:
             raiz = ET.fromstring(svg)
@@ -207,7 +239,7 @@ with sync_playwright() as p:
             valido = False
         revisar(valido and prefijo in svg and 'data-contacto' in svg and '<image' not in svg,
                 f'{placa}: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos')
-        (SALIDA / f'vistas_exportado_{placa}.svg').write_text(svg, encoding='utf-8')
+        (SALIDA / f'vistas_exportado_{placa}{"_" + variante if variante else ""}.svg').write_text(svg, encoding='utf-8')
 
     revisar(not errores, 'sin errores en la consola' + (f': {errores[:3]}' if errores else ''))
     navegador.close()

@@ -122,13 +122,27 @@ const valores = Object.fromEntries([...textoCarro.matchAll(/\(ref "([^"]+)"\)\s*
 revisar(
   igual(valores, {
     J1: 'Power', J2: 'Digital/PWM', J3: 'Analog', J4: 'Digital/PWM', U1: 'L293D', U2: 'L293D', U3: '74HC595',
-    J5: 'M1 GND M2', J6: 'M4 GND M3', J7: 'EXT_PWR', J8: 'SERVO_1', J9: 'SERVO_2', JP1: 'PWR',
-    C1: '100nF', C2: '100nF', C3: '100nF', C4: '100uF 25V', R1: '1k', D1: 'LED verde',
+    J5: 'M1 GND M2', J6: 'M4 GND M3', J7: 'EXT_PWR', J8: 'SERVO_1', J9: 'SERVO_2', J10: 'A0-5', J11: '+5', J12: 'Gnd', JP1: 'PWR',
+    C1: '100nF', C2: '100nF', C3: '100nF', C4: '100uF 25V', R1: '1k', D1: 'LED verde 5 mm',
   }),
-  'la shield sale desarmada: U1 y U2 (L293D), U3 (74HC595), borneras J5 a J7, servos J8 y J9, puente JP1, C1 a C4 y el LED con su R',
+  'la shield sale desarmada: U1 y U2 (L293D), U3 (74HC595), borneras J5 a J7, servos J8 y J9, headers analógicos J10 a J12, puente JP1, C1 a C4 y el LED con su R',
 );
 revisar(carro.piezas.U1 === 'Package_DIP:DIP-16_W7.62mm' && carro.piezas.J5 === 'TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-05P_1x05_P5.00mm',
   'huellas: DIP-16 para los integrados y borneras de 5 mm');
+// Un servo cableado a A0, 5V y GND con la shield puesta conserva su conector (M1): los headers analógicos no son
+// conectores «externos» como SERVO_1 (revisión del 14 oct).
+{
+  const servoA0 = netlistKiCad({ formato: 1, placa: 'uno', protoboard: null,
+    componentes: [{ id: 'sh', tipo: 'shield_l293d', x: 0, y: 0, rot: 0, props: { puentePWR: true } },
+      { id: 's1', tipo: 'servo', x: 300, y: 0, rot: 0, props: { modelo: 'sg90' } }],
+    cables: [{ de: 's1.SIG', a: 'placa.A0' }, { de: 's1.VCC', a: 'placa.5V' }, { de: 's1.GND', a: 'placa.GND1' }] }, { fecha: FECHA });
+  revisar(/\(ref "M1"\)\s*\(value "[^"]*"\)\s*\(footprint "Connector_PinHeader_2\.54mm:PinHeader_1x03/.test(servoA0),
+    'un servo cableado a A0, 5V y GND, con la shield puesta, conserva su conector de 3 pines en la netlist');
+}
+// Headers analógicos de la shield (14 oct): J10 lleva A0 a A5 del Uno, J11 el +5V y J12 el GND, pata por pata.
+revisar([0, 1, 2, 3, 4, 5].every((i) => (carro.redes['A' + i] || []).includes(`J10.${i + 1}`) && (carro.redes['A' + i] || []).includes(`J3.${i + 1}`)
+  && carro.redes['+5V'].includes(`J11.${i + 1}`) && carro.redes.GND.includes(`J12.${i + 1}`)),
+  'headers analógicos de la shield: J10 en A0–A5 (junto a J3 del Uno), J11 en +5V y J12 en GND');
 // Lo que dice AFMotor_R4 (escrito aquí aparte de src/: si alguien cambia la tabla de la shield, esta prueba lo nota):
 // PWM M1 = 11, M2 = 3, M3 = 6, M4 = 5; sentido A y B de cada motor en Q2/Q3, Q1/Q4, Q5/Q7 y Q0/Q6 del 74HC595.
 const PATA_Q = { 0: 15, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7 };

@@ -130,6 +130,18 @@ export function crearLienzo(elemento, opciones = {}) {
   const pieza = (id) => (id === 'protoboard' ? datos.protoboard : componente(id));
   // Una pieza «montada» (la shield) va encima de la placa, en su mismo lugar.
   const montada = (c) => !!(c && TIPOS[c.tipo] && TIPOS[c.tipo].montada);
+  // Pines de la placa que tapa una pieza montada (la shield no tiene agujero sobre SCL, SDA ni IOREF): mientras está
+  // puesta no se cablean ni reciben patas. Un cable que ya llegaba ahí se conserva.
+  const tapados = () => new Set(datos.componentes.flatMap((k) => (TIPOS[k.tipo]?.tapa || []).map((p) => 'placa.' + p)));
+  // Si un cable o una pata ya llegaba a un pin tapado, se avisa: sigue conectado, pero en la mesa no se podría.
+  function avisoTapados() {
+    const tapa = tapados();
+    const llega = [...tapa].filter((ref) => datos.cables.some((k) => k.de === ref || k.a === ref)
+      || datos.componentes.some((k) => Object.values(k.en || {}).includes(ref)));
+    if (!llega.length) return '';
+    const pines = llega.map((ref) => ref.slice('placa.'.length)).join(', ');
+    return `La shield tapa ${pines}: lo que llega ahí sigue conectado, pero en la placa real no se podría. Pásalo a otro pin.`;
+  }
   const lugar = (id) => (id === 'placa' || montada(componente(id)) ? { x: 0, y: 0, rot: 0 } : pieza(id));
 
   // ---- Piezas
@@ -146,6 +158,7 @@ export function crearLienzo(elemento, opciones = {}) {
       const plantilla = document.createElement('template');
       plantilla.innerHTML = def.dibujo.svg(props);
       el = plantilla.content.firstElementChild;
+      if (def.aplicar) def.aplicar(el, props); // lo que cambia según sus propiedades (el puente de la shield)
     } else if (def) {
       el = document.createElement(def.etiqueta);
       if (def.aplicar) def.aplicar(el, props);
@@ -192,6 +205,7 @@ export function crearLienzo(elemento, opciones = {}) {
       vista.lista = true;
       ubicar(vista);
       aplicarSim(vista);
+      if (def && def.tapa) marcarOcupados(); // tapa pines de la placa
     });
   }
 
@@ -310,6 +324,7 @@ export function crearLienzo(elemento, opciones = {}) {
     const v = vistas.get(c.id);
     if (!v || !v.lista || !v.pines.size || montada(c)) return null;
     const ocupados = pinesOcupados(c);
+    for (const ref of tapados()) ocupados.add(ref);
     const propios = new Set([c.id, ...colgantes(c.id).map((k) => k.id)]);
     const lc = lugar(c.id);
     const patas = [...v.pines].filter(([n]) => !ocupados.has(c.id + '.' + n)).map(([nombre, p]) => ({ nombre, ...girarPunto(v, lc, p) }));
@@ -475,6 +490,9 @@ export function crearLienzo(elemento, opciones = {}) {
       if (id === 'protoboard') continue;
       for (const [nombre, p] of w.pines) p.div.classList.toggle('tc-ocupado', reciben.has(id + '.' + nombre));
     }
+    const tapa = tapados();
+    const vp = vistas.get('placa');
+    if (vp) for (const [nombre, p] of vp.pines) p.div.classList.toggle('tc-tapado', tapa.has('placa.' + nombre));
   }
 
   // Al pasar por un hueco (o por una pata encajada), se ilumina toda su tira: lo que está unido por dentro.
@@ -1047,6 +1065,7 @@ export function crearLienzo(elemento, opciones = {}) {
     datos.componentes.push(c);
     crearVista(id, tipo, c.props).then(() => {
       const v = vistas.get(id);
+      if (def.tapa && avisoTapados()) avisar(avisoTapados(), 10000);
       if (punto && v && !def.montada && componente(id) === c) {
         // Centrada donde se soltó.
         c.x = Math.round(punto.x - v.w / 2);
@@ -1849,6 +1868,7 @@ export function crearLienzo(elemento, opciones = {}) {
     const aviso = [
       quitadosAlAbrir.length ? `Se quitó lo que no va en ${PLACAS[placa].nombre}: ${quitadosAlAbrir.join(' y ')}.` : '',
       sueltasAlAbrir.n === 1 ? 'Se soltó 1 conexión directa sin destino.' : sueltasAlAbrir.n ? `Se soltaron ${sueltasAlAbrir.n} conexiones directas sin destino.` : '',
+      avisoTapados(),
     ].filter(Boolean).join(' ');
     if (aviso) avisar(aviso, 10000);
   });
