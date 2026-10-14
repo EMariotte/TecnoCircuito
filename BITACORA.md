@@ -1106,3 +1106,23 @@ Efraín pidió revisar el imán con un segundo agente antes del commit. **Sin er
 - COMO-FUNCIONA, sección 63.
 
 **Pruebas:** suite completa **1064 OK, 0 fallas** (antes 1053); TecnoBloques `test:simulador` **53 OK**. Sin cambios en el contrato: `brilloL` y `ledRX` son internos (Worker → lienzo).
+
+## 2026-10-14 — TecnoDiseñador: shield L293D entregada y aprobada (Claude, desde TecnoDiseñador, con Efraín)
+
+**Pedido de Efraín:** dejar anotado en TecnoCircuito lo que hay que tener en cuenta al implementar la shield medida. Solo se tocó documentación: `CONTRATO.md` (una nota de pendiente bajo la tabla de piezas, sin cambiar el formato) y la ficha 6.3 de `docs/ENTREGA-VISTAS-TECNODISENADOR.md`. No se tocó código, esquema ni pruebas.
+
+- **Entrega:** `..\TecnoDiseñador\componentes\l293d-shield\entrega\tecnocircuito\shield_l293d-tc.svg/.json`. `revisar_vista_td.py` aprueba la familia Uno + shield (59 comprobaciones).
+- **Decisiones de Efraín:**
+  - la vista medida **tiene prioridad** sobre el dibujo actual de `shield_l293d.js`;
+  - los headers **+5 / Gnd / A0-5 deben poder cablearse** (contrato pendiente; propuesta `A0_S`…`A5_G`);
+  - el capuchón del puente PWR va dibujado puesto;
+  - el texto es «Motor Shield L293D Rev4»;
+  - los chips de la placa física ya están en su lugar: IC3 = 74HC595.
+- **Hallazgos principales** (detalle y tabla de corrimientos en `HALLAZGOS-PARA-TECNOCIRCUITO.md`):
+  - **servos invertidos:** SER1 arriba y pines «− + S»;
+  - **bornera M1/M2 7,4 mm más abajo;**
+  - LED1 verde de 5 mm entre IC1 e IC3;
+  - headers apilables R2, sin SCL/SDA/IOREF;
+  - la shield sobresale 0,5 mm del marco.
+
+**Pendiente en TecnoCircuito:** importar la vista, ajustar servos y actividades, decidir los nombres de los headers analógicos (contrato, esquema y revisor) y validar en el laboratorio. Commit y push: a la espera del sí de Efraín.

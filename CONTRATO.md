@@ -133,6 +133,8 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
 
   En la shield, `S1_SIG` es el pin 10 y `S2_SIG` el 9, sus `*_POS` son el 5V y sus GND (con `EXT_GND`) son el GND del Uno.
 
+  **Pendiente, decidido por Efraín (14 oct), sin implementar:** los tres headers macho 1×6 de la shield real («+5», «Gnd» y «A0-5», sobre las columnas de A0 a A5) **deben poder cablearse**. Faltan sus nombres. La propuesta de TecnoDiseñador sigue la expansión del Nano: `A0_S`, `A0_V`, `A0_G` … `A5_G`. Mientras no se implementen, el formato no cambia. Detalle en `..\TecnoDiseñador\componentes\l293d-shield\entrega\tecnocircuito\HALLAZGOS-PARA-TECNOCIRCUITO.md`, sección 3.
+
   En el pulsador, las patas con el mismo número están unidas por dentro, y al presionarlo se une la 1 con la 2. Si está presionado o no, no se guarda: solo existe mientras se simula.
 - **Colores de cable:** `negro`, `marron`, `rojo`, `naranja`, `amarillo`, `verde`, `azul`, `morado` (se muestra como violeta), `gris` y `blanco`, en el orden del código de colores (0 a 9).
 - **Agregar un tipo de componente nuevo no rompe el contrato.** Una versión vieja del simulador muestra el componente como «desconocido» y no lo simula.

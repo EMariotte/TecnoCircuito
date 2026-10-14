@@ -191,6 +191,8 @@ Ejemplo (Nano, valores ilustrativos):
 
 ### 6.3 Shield L293D Rev4 (`pieza: "shield_l293d"`)
 
+> **Entregada y aprobada (14 oct):** `..\TecnoDiseñador\componentes\l293d-shield\entrega\tecnocircuito\` (`shield_l293d-tc.svg/.json`). **Decisión de Efraín: la vista medida tiene prioridad sobre el dibujo anterior de `shield_l293d.js`.** Todas las diferencias (servos invertidos, bornera M1/M2 7,4 mm más abajo, LED1, headers R2 y headers +5/Gnd/A0-5 que deben poder cablearse) están en `HALLAZGOS-PARA-TECNOCIRCUITO.md`, en esa misma carpeta. Lo que sigue es la ficha original.
+
 - **Pieza:** la shield del kit, la misma que TecnoCircuito ya modela. Fotos propias pendientes (registro de TecnoDiseñador, 12 oct). Las dos SVG de una foto de tienda que hay en `fuentes/` no sirven.
 - **Marco: fijo**, el del dibujo del Uno que usa el lienzo (`@wokwi/elements`): `viewBox="0 0 72.58 53.34"`. El `x = 0` incluye 4 mm a la izquierda para el USB del Uno, así que la placa empieza cerca de `x = 4`.
 - **Headers apilables:** sus agujeros van **en estas coordenadas** (mm), que son las del dibujo del Uno y **no** son un paso exacto de 2,54 mm. Se usan tal cual para que la shield quede sobre los pines del Uno; si la medida real difiere más de 0,3 mm, se anota en `diferencias`. Estos agujeros **no** llevan `data-contacto`: los cables siguen llegando a los pines del Uno.
