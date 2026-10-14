@@ -2,6 +2,8 @@
 
 12 de octubre de 2026 · Especificación de entrega, versión 1. Fuente única: este archivo. TecnoDiseñador la enlaza desde su `CLAUDE.md`.
 
+**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano y la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62). Falta la shield L293D.
+
 **Para quién:** el agente que dibuja en `..\TecnoDiseñador` y Efraín. Dice exactamente qué archivos entregar, con qué reglas y con qué datos, para que el dibujo reemplace la vista de una pieza de TecnoCircuito **sin tocar nada a mano** al migrarlo.
 
 **En cinco líneas:**
@@ -179,11 +181,11 @@ Ejemplo (Nano, valores ilustrativos):
 | Canales analógicos | `A0_S`, `A0_V`, `A0_G` … `A7_S`, `A7_V`, `A7_G` | 24 |
 | I2C | `I2C_SDA`, `I2C_SCL`, `I2C_V`, `I2C_G` | 4 |
 | UART | `UART_TX`, `UART_RX`, `UART_V`, `UART_G` | 4 |
-| Bloque de alimentación de seis contactos | `OUT_5V`, `OUT_5V_2`, `OUT_3V3`, `OUT_3V3_2`, `GND_OUT`, `GND_OUT_2` | 6 |
+| Bloque de alimentación de seis contactos | `OUT_3V3`, `OUT_3V3_2`, `OUT_3V3_3`, `GND_OUT`, `GND_OUT_2`, `GND_OUT_3` | 6 |
 | Jack | `JACK_POS` (centro), `JACK_GND` (exterior) | 2 |
 
-- **Cómo asignar nombres:** por la serigrafía de cada canal («D7» + fila S/V/G → `D7_S`…), y en I2C y UART por sus rótulos (SDA, SCL, TX, RX, V o 5V, G o GND). En el bloque de seis, cada par lleva el nombre simple en el contacto **más cercano al borde superior** de la placa, o **el de la izquierda** si están a la misma altura, y `_2` en el otro; la elección se anota en el registro. En el jack, el punto de `JACK_POS` y `JACK_GND` va donde se vean sus patas desde arriba o, si no se ven, sobre el cuerpo del jack, del lado del centro y del exterior. La polaridad real la confirma TecnoCircuito: no se afirma.
-- **No se dibujan:** los nombres `SPI_*` (son alias heredados sobre pines del Nano, sin contacto propio) ni ningún texto de estado: el «ALIM.: USB/JACK» que dibuja hoy TecnoCircuito es suyo y, si se mantiene, lo agrega TecnoCircuito.
+- **Cómo asignar nombres:** por la serigrafía de cada canal («D7» + fila S/V/G → `D7_S`…), y en I2C y UART por sus rótulos (SDA, SCL, TX, RX, V o 5V, G o GND). En el bloque de seis (tres 3V3 y tres GND en la placa medida; contrato del 14 oct), cada fila lleva de izquierda a derecha el nombre simple, `_2` y `_3`. En el jack, el punto de `JACK_POS` y `JACK_GND` va donde se vean sus patas desde arriba o, si no se ven, sobre el cuerpo del jack, del lado del centro y del exterior. La polaridad real la confirma TecnoCircuito: no se afirma.
+- **No se dibujan:** los nombres `SPI_*`, `OUT_5V` y `OUT_5V_2` (son alias heredados sobre pines del Nano, sin contacto propio) ni ningún texto de estado: el «ALIM.: USB/JACK» que dibuja hoy TecnoCircuito es suyo y, si se mantiene, lo agrega TecnoCircuito.
 - **LED:** si la placa real tiene un LED de encendido, va con `data-led="PWR"`.
 - **Variantes:** un SVG y un JSON por color, cada uno con sus coordenadas.
 

@@ -5,6 +5,7 @@ import { huecos } from '../protoboard.js';
 import { resistencia, fuenteConResistencia, fuenteVoltaje, diodo, resolver, VT } from './mna.js';
 import { PinState } from 'avr8js';
 import { perfilPlaca, esNano } from '../placas.js';
+import { RIELES_EXPANSION } from '../piezas/shield_nano_io.js';
 
 // ---- Modelos. Valores de partida tomados de hojas de datos; se ajustan con el multímetro (validación).
 
@@ -78,7 +79,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   // ADC6/7 reciben voltaje de la red, sin elemento fuente y sin pull-up.
   for (const p of analogicosSolos) if (conectado(p)) nodo('placa.' + p);
   const refsExpansion = nano ? circuito.componentes.filter((c) => c.tipo === 'shield_nano_io')
-    .flatMap((c) => ['OUT_5V', 'OUT_5V_2', 'OUT_3V3', 'OUT_3V3_2', 'GND_OUT', 'GND_OUT_2', 'JACK_POS', 'JACK_GND'].map((p) => c.id + '.' + p)) : [];
+    .flatMap((c) => RIELES_EXPANSION.map((p) => c.id + '.' + p)) : [];
   for (const ref of refsExpansion) nodo(ref);
   // Huecos de la protoboard cuya tira toca algo (un cable o una pata encajada): el rótulo de cualquiera de ellos
   // muestra el voltaje de la tira, como la punta de un multímetro.

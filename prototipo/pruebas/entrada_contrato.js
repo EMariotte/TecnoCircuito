@@ -4,4 +4,4 @@ export { huecos } from '../src/protoboard.js';
 export { PIEZAS_KICAD, CONECTORES_SHIELD } from '../src/kicad.js';
 export { CATEGORIAS, FICHAS } from '../src/biblioteca.js';
 export { leerHex } from '../src/hex.js';
-export { ALIASES_EXPANSION_SPI } from '../src/piezas/shield_nano_io.js';
+export { ALIASES_EXPANSION } from '../src/piezas/shield_nano_io.js';

@@ -27,7 +27,7 @@ export const FICHAS = {
     nombre: 'Expansión E/S del Nano',
     descripcion: 'El Nano va montado en esta tarjeta. Cada grupo reúne señal, 5V y tierra para conectar sensores o servos. El jack alimenta la regulación de la expansión; A6 y A7 solo leen señales analógicas.',
     palabras: ['nano', 'expansion', 'shield', 'sensores', 'servo', 'roja', 'azul', 'i2c', 'spi', 'jack'],
-    pines: 'S: señal del pin indicado; V: 5V; G: tierra. I2C: SDA/A4 y SCL/A5, junto a UART. El bloque de seis contactos ofrece dos GND, dos 3,3V y dos 5V. SPI se conecta en el Nano: D12/MISO, D11/MOSI, D13/SCK y D10/SS. OUT_3V3 es la salida de la expansión, separada de la del módulo Nano',
+    pines: 'S: señal del pin indicado; V: 5V; G: tierra. I2C: SDA/A4 y SCL/A5, junto a UART. El bloque de seis contactos tiene tres de 3,3V (arriba) y tres GND (abajo); el 5V está en cada V, en I2C y en UART. SPI se conecta en el Nano: D12/MISO, D11/MOSI, D13/SCK y D10/SS. OUT_3V3 es la salida de la expansión, separada de la del módulo Nano',
     datos: (p) => [
       ['Tarjeta', p.variante === 'azul' ? 'Azul' : 'Roja'],
       ['Placa', 'Nano clásico ATmega328P · 16 MHz'],
@@ -36,7 +36,7 @@ export const FICHAS = {
       ['Regulación', 'Modelo de referencia 5V y 3,3V; salida externa 3,3V separada del módulo'],
       ['KiCad', 'Módulo Nano + regulación/filtrado de referencia, jack, I2C y conector SPI añadido al diseño'],
     ],
-    validacion: () => porValidar('Dibujo basado en las referencias roja y azul; Efraín confirmó que el bloque de seis contactos es alimentación. Falta medir continuidad, reguladores, puentes, polaridad y capacidad de cada tarjeta. I2C y los pines SPI del Nano son conexiones; sus dispositivos se incorporan por separado.'),
+    validacion: () => porValidar('Dibujo medido por TecnoDiseñador desde la tarjeta del ambiente (registro del 13 oct); la roja y la azul tienen las mismas medidas. Falta medir continuidad, reguladores, puentes, polaridad y capacidad de cada tarjeta. I2C y los pines SPI del Nano son conexiones; sus dispositivos se incorporan por separado.'),
   },
   protoboard: {
     nombre: 'Protoboard',

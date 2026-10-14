@@ -28,6 +28,8 @@ La implementación de software y sus supuestos están en [IMPLEMENTACION-NANO-20
 
 **Corrección posterior de Efraín:** I2C está junto a UART, al final del Nano; el bloque de seis contactos es dos GND, dos 3V3 y dos 5V, **no SPI**. La vista tiene 82 contactos físicos. Los seis nombres `SPI_*` del primer modelo son aliases heredados para conservar redes/cables anteriores sobre los pines del Nano. El header SPI exportado a KiCad es un conector adicional del diseño de referencia, sin corresponder al bloque de alimentación real. La identificación verbal no es una medición de continuidad.
 
+**Vistas medidas (14 oct, Claude, autorizado por Efraín):** el Nano, la expansión roja/azul y el Uno usan los dibujos de TecnoDiseñador (`npm run vistas`; COMO-FUNCIONA, sección 62). Marco común Nano 60 × 53,5 mm, con el Nano encima de la expansión, sin ventana. La medición corrigió el bloque de seis: **tres 3V3 y tres GND, sin 5V**. Son `OUT_3V3`/`_2`/`_3` y `GND_OUT`/`_2`/`_3`; `OUT_5V`/`OUT_5V_2` quedan como aliases del 5V del Nano, igual que `SPI_*`. La roja y la azul tienen la misma geometría. En KiCad, `GND2`/`RESET2` son ahora los pads 4/3, como en el lienzo. Sigue pendiente la validación física.
+
 ## Rol de revisor
 
 1. Comprueba primero `git status --short` y la revisión de código. Respeta cualquier trabajo existente.

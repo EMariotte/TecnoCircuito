@@ -1,6 +1,5 @@
 // Lienzo del prototipo 0: la placa, las piezas y los cables, sin simulación.
 // Sigue la API de crearLienzo del contrato 1, para que integrarlo a TecnoBloques sea directo.
-import '@wokwi/elements/dist/esm/arduino-uno-element.js';
 import '@wokwi/elements/dist/esm/resistor-element.js';
 import '@wokwi/elements/dist/esm/led-element.js';
 import '@wokwi/elements/dist/esm/potentiometer-element.js';
@@ -11,7 +10,7 @@ import { netlistKiCad } from './kicad.js';
 import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 import { esNano, perfilPlaca } from './placas.js';
-import { ALIASES_EXPANSION_SPI } from './piezas/shield_nano_io.js';
+import { ALIASES_EXPANSION } from './piezas/shield_nano_io.js';
 import { PATAS } from './motor/red.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -160,8 +159,9 @@ export function crearLienzo(elemento, opciones = {}) {
     }
     div.appendChild(el);
     // Una pieza montada (la shield) va justo encima de la placa: debajo de la protoboard y de las demás piezas.
+    // La expansión del Nano (`debajo`) va justo debajo de la placa: el Nano está enchufado en sus zócalos.
     const vPlaca = vistas.get('placa');
-    if (def && def.montada && vPlaca) capaComp.insertBefore(div, vPlaca.div.nextSibling);
+    if (def && def.montada && vPlaca) capaComp.insertBefore(div, def.debajo ? vPlaca.div : vPlaca.div.nextSibling);
     else capaComp.appendChild(div);
     const vista = { id, def, div, el, w: 64, h: 40, pines: new Map(), lista: false };
     vistas.set(id, vista);
@@ -476,15 +476,15 @@ export function crearLienzo(elemento, opciones = {}) {
   // Prende o apaga en el dibujo lo que indica el simulador. Solo toca el dibujo, nunca `datos`.
   function aplicarSim(v) {
     if (v.id === 'placa') {
-      if (v.def.mostrar) v.def.mostrar(v.el, vistaSim.simulando ? vistaSim.placa : null);
-      else for (const led of ['ledPower', 'led13', 'ledTX', 'ledRX']) v.el[led] = !!vistaSim.placa[led];
+      v.def.mostrar(v.el, vistaSim.simulando ? vistaSim.placa : null);
     } else if (v.def === TIPOS.led) {
       const brillo = Number(vistaSim.leds[v.id]) || 0; // 0 a 1, según la corriente
       v.el.value = brillo > 0.005;
       v.el.brightness = brillo;
       v.div.classList.toggle('tc-quemado', vistaSim.quemados.includes(v.id));
     } else if (v.def && v.def.mostrar) {
-      const estado = vistaSim.simulando ? vistaSim.piezas[v.id] || vistaSim.servos[v.id] || null : null;
+      const propio = vistaSim.piezas[v.id] || vistaSim.servos[v.id] || (v.def.sigueAPlaca ? vistaSim.placa : null);
+      const estado = vistaSim.simulando ? propio : null;
       v.def.mostrar(v.el, estado, (componente(v.id) || {}).props);
     }
   }
@@ -550,7 +550,7 @@ export function crearLienzo(elemento, opciones = {}) {
     const v = vistas.get(id);
     if (!v) return null;
     if (v.pines.has(pin)) return v.pines.get(pin);
-    if (v.def === TIPOS.shield_nano_io && ALIASES_EXPANSION_SPI[pin]) return pinDe('placa.' + ALIASES_EXPANSION_SPI[pin]);
+    if (v.def === TIPOS.shield_nano_io && ALIASES_EXPANSION[pin]) return pinDe('placa.' + ALIASES_EXPANSION[pin]);
     const fisico = id === 'placa' && esNano(placa)
       ? (perfilPlaca(placa).puentes.find(grupo => grupo.includes(pin)) || [pin])[0] : pin;
     return v.pines.get(fisico);
@@ -921,7 +921,9 @@ export function crearLienzo(elemento, opciones = {}) {
     }
     const def = TIPOS[tipo];
     if (def.dibujo) {
-      plantilla.innerHTML = def.dibujo.svg(tipo === 'motor_tt' ? { ...def.props, vista: 'rueda' } : def.props);
+      // Con sus id renombrados: la misma pieza en el lienzo no debe tomar los degradados de la miniatura (que puede
+      // estar oculta, y entonces no pinta).
+      plantilla.innerHTML = renombrarIds(def.dibujo.svg(tipo === 'motor_tt' ? { ...def.props, vista: 'rueda' } : def.props), 'tc-mini');
       return plantilla.content.firstElementChild;
     }
     const el = document.createElement(def.etiqueta);
@@ -1624,8 +1626,7 @@ export function crearLienzo(elemento, opciones = {}) {
     // Dos LED usan los mismos identificadores (sus filtros de brillo): cada pieza lleva su prefijo.
     const prefijo = 'tc-' + v.id;
     const ids = [...new Set([...clon.querySelectorAll('[id]')].map((n) => n.id))];
-    let texto = new XMLSerializer().serializeToString(clon);
-    for (const id of ids) texto = renombrarId(texto, id, prefijo);
+    let texto = renombrarIds(new XMLSerializer().serializeToString(clon), prefijo, ids);
     texto = texto.replace(/^<svg\b/, `<svg id="${prefijo}"`);
     const css = v.el.shadowRoot ? estilosDe(v.el, prefijo, ids) : '';
     return `<g transform="${t}">${css ? `<style><![CDATA[\n${css}\n]]></style>` : ''}${texto}</g>`;
@@ -1935,14 +1936,15 @@ function pinExiste(c, ref, pinesPlaca) {
 const escaparRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const escaparXML = (s) => String(s).replace(/[<>&"]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[ch]);
 
-// Cambia un identificador del dibujo (y sus referencias url(#…) y href="#…") por uno con el prefijo de la pieza.
-function renombrarId(texto, id, prefijo) {
-  const e = escaparRegex(id);
-  const nuevo = `${prefijo}-${id}`;
+// Cambia los identificadores del dibujo (y sus referencias url(#…) y href="#…") por otros con el prefijo de la pieza.
+// Sin `ids`, toma todos los del texto. Una pasada por tipo de referencia, aunque el dibujo tenga decenas de id.
+function renombrarIds(texto, prefijo, ids = [...new Set([...texto.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]))]) {
+  if (!ids.length) return texto;
+  const alt = ids.map(escaparRegex).join('|');
   return texto
-    .replace(new RegExp(`(\\s)id="${e}"`, 'g'), (_, sep) => `${sep}id="${nuevo}"`)
-    .replace(new RegExp(`url\\(#${e}\\)`, 'g'), () => `url(#${nuevo})`)
-    .replace(new RegExp(`href="#${e}"`, 'g'), () => `href="#${nuevo}"`);
+    .replace(new RegExp(`(\\s)id="(${alt})"`, 'g'), (_, sep, id) => `${sep}id="${prefijo}-${id}"`)
+    .replace(new RegExp(`url\\(#(${alt})\\)`, 'g'), (_, id) => `url(#${prefijo}-${id})`)
+    .replace(new RegExp(`href="#(${alt})"`, 'g'), (_, id) => `href="#${prefijo}-${id}"`);
 }
 
 // Los estilos del dibujo de Wokwi viven en su shadow DOM: se copian, limitados a esa pieza (#prefijo …).

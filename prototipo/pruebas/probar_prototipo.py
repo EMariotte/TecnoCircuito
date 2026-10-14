@@ -38,7 +38,8 @@ with sync_playwright() as p:
     revisar(pines == 31 + 2 + 2, f'pines dibujados: {pines} (31 de la placa + 2 + 2)')
     desfases = pg.evaluate('''() => [...document.querySelector("main .tecnocircuito").shadowRoot.querySelectorAll(".tc-comp")]
       .map(comp => {
-        const a = comp.getBoundingClientRect(), b = comp.firstElementChild.shadowRoot.querySelector("svg").getBoundingClientRect();
+        const el = comp.firstElementChild; // un elemento de wokwi (su SVG está en su shadow DOM) o el SVG de una pieza Tecno
+        const a = comp.getBoundingClientRect(), b = (el.shadowRoot ? el.shadowRoot.querySelector("svg") : el).getBoundingClientRect();
         return [comp.dataset.id, Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y), Math.abs(b.width - a.width), Math.abs(b.height - a.height))];
       })''')
     revisar(all(d < 0.5 for _, d in desfases), f'cada dibujo ocupa justo su espacio (desfase máximo en px: {desfases})')
@@ -83,7 +84,8 @@ with sync_playwright() as p:
     cables = [(k['de'], k['a'], k['color'], k.get('puntos')) for k in c['cables']]
     print('   cables:', json.dumps(cables))
     revisar(len(cables) == 3, '3 cables creados')
-    revisar(cables[0][:2] == ('placa.D13', 'r1.1') and cables[0][3] == [[125, -20.35]], 'cable 1 con el doblez enderezado en (125, -20,35)')
+    # 124,61 px es la x de D13 en el Uno medido por TecnoDiseñador (32,97 mm); en el de wokwi era 125.
+    revisar(cables[0][:2] == ('placa.D13', 'r1.1') and cables[0][3] == [[124.61, -20.35]], 'cable 1 con el doblez enderezado en (124,61, -20,35)')
     revisar(cables[1][:2] == ('r1.2', 'led1.anodo') and cables[1][3] == [[405, -20.35]], 'cable 2 con el doblez enderezado en (405, -20,35)')
     revisar(cables[2][:3] == ('led1.catodo', 'placa.GND1', 'negro'), 'cable 3 por arrastre, negro porque va a GND')
     revisar(cables[0][2] == 'verde', 'cable de señal verde por defecto')

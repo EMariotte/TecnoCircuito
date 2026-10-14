@@ -22,12 +22,12 @@ def revisar(condicion, texto):
 # Muestrea el LED cada 20 ms durante `segundos` y devuelve los intervalos entre cambios, en ms.
 MUESTREO = f'''async (segundos) => {{
   const led = {RAIZ}.querySelector('wokwi-led');
-  const placa = {RAIZ}.querySelector('wokwi-arduino-uno');
+  const ledL = {RAIZ}.querySelector('.tc-placa [data-led="L"]');
   const cambios = []; let previo = led.value; let prendido = 0, muestras = 0, l13 = 0;
   const fin = performance.now() + segundos * 1000;
   while (performance.now() < fin) {{
     await new Promise(r => setTimeout(r, 20));
-    muestras++; if (led.value) prendido++; if (placa.led13) l13++;
+    muestras++; if (led.value) prendido++; if (ledL.hasAttribute('data-encendido')) l13++;
     if (led.value !== previo) {{ cambios.push(performance.now()); previo = led.value; }}
   }}
   return {{ intervalos: cambios.slice(1).map((t, i) => t - cambios[i]), prendido: prendido / muestras, l13: l13 / muestras }};
@@ -130,7 +130,7 @@ with sync_playwright() as p:
     pg.locator('#detener').click()
     apagados = pg.evaluate(f'''() => {{
       const r = {RAIZ};
-      return !r.querySelector('wokwi-led').value && !r.querySelector('wokwi-arduino-uno').ledPower;
+      return !r.querySelector('wokwi-led').value && !r.querySelector('.tc-placa [data-led="PWR"]').hasAttribute('data-encendido');
     }}''')
     revisar(apagados, 'al detener, todo se apaga (también el LED ON de la placa)')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos b")].map(b => b.textContent)')

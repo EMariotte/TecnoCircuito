@@ -1,17 +1,19 @@
 # CLAUDE.md — TecnoCircuito
 
 > Foto del estado actual para Claude Code. Se sobrescribe cuando algo cambia; la historia está en [`BITACORA.md`](BITACORA.md) (append-only) y las explicaciones técnicas en [`prototipo/COMO-FUNCIONA.md`](prototipo/COMO-FUNCIONA.md) (secciones numeradas).
-> Actualizado: 12 de octubre de 2026.
+> Actualizado: 14 de octubre de 2026.
 
 ## Estado en una línea
 
-Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 completa en software**, con SG90 y USB validados y el resto pendiente de laboratorio. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. Suite: **24 grupos, 1014 OK, cero fallas** (12 oct, con el imán entre pines y su revisión independiente); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
+Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 completa en software**, con SG90 y USB validados y el resto pendiente de laboratorio. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. **Vistas de TecnoDiseñador integradas (14 oct):** el Uno es Pieza Tecno y el Nano y la expansión usan dibujos medidos, sin cambiar el comportamiento (COMO-FUNCIONA, sección 62). Suite: **25 grupos, 1053 OK, cero fallas** (14 oct); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
 
 ## Qué es
 
 **Corrección posterior de Efraín (11 oct):** I2C junto a UART; el bloque de seis contactos es alimentación duplicada GND/3V3/5V. Vista corregida con 82 contactos físicos, compatibilidad de los aliases SPI antiguos y header SPI de KiCad explícitamente añadido al diseño de referencia. Pruebas de las partes afectadas: Nano **105**, interfaz **81**, contrato **100**, KiCad Node **94** (35 Uno +59 Nano), KiCad real Nano **80**, motor **28** y núcleo/potencia Uno **107**. Efraín autorizó commit y push de esta corrección; sin nuevas mediciones físicas ni etiqueta.
 
 **Revisión del Nano por Claude (12 oct, autorizada por Efraín):** cambiar de placa ya no deja al aprendiz sin lienzo (se quita lo que no va y se avisa; TecnoBloques conserva el original), VIN y el jack sin entrada ya no son un corto a GND escondido, y el modo realista del Nano corre a la par del Uno (la caché del circuito ya no se borra cada 2 ms con PWM). Además, por decisión de Efraín: el modelo de referencia ya no es una falla (`nano_referencia` eliminado) y quitar la fuente a mano no emite `reinicio_placa`. COMO-FUNCIONA, sección 60. Commit y push autorizados (12 oct).
+
+**Vistas de TecnoDiseñador (14 oct, autorizado por Efraín):** `npm run vistas` pasa el revisor y trae Uno, Nano y expansión roja/azul a `src/piezas/vistas/` (versionados). Lo eléctrico no cambió: mediciones idénticas en 12 circuitos de referencia. La medición corrigió el contrato: el bloque de seis de la expansión son **tres 3V3 y tres GND** (`OUT_3V3_3`, `GND_OUT_3`); `OUT_5V`/`OUT_5V_2` quedan como aliases del 5V del Nano. KiCad: `GND2`/`RESET2` del Nano en los pads 4/3. Paquete 430 KB (Worker 89 KB). Revisión `/code-review` hecha y corregida; queda una decisión: un `en` guardado que apunta a un pin movido del Nano sigue enchufado al abrir (lo dice el contrato). Falta la revisión de Codex de la familia Nano. **Sin commit todavía.**
 
 **Trabajo conjunto con Codex:** R1–R8 verificados y cerrados, con el [cierre posterior de R6](docs/CIERRE-R6-CODEX-2026-10-11.md): 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. Se conservan informes históricos y pendientes físicos. Después Efraín asignó a **Codex desarrollo, pruebas y revisión de Nano + expansión roja/azul**; reglas en [AGENTS.md](AGENTS.md). El software admite Nano/Nano antiguo, A6/A7, conjunto SVG, Worker, alimentación de referencia y exportación selectiva a KiCad. [Arquitectura, supuestos y protocolo físico](docs/IMPLEMENTACION-NANO-2026-10-11.md); evidencia final en BITACORA.md. **Ambas tarjetas pendientes de validación física y sin publicar.**
 
@@ -42,8 +44,8 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 | Solucionador eléctrico **propio** | MNA en JavaScript con Newton-Raphson para LED. Licencia Apache 2.0. |
 | **Nada de código GPL** | Falstad, SimulIDE, Fritzing y PICSimLab solo como ideas. El esquema de la shield de Adafruit es «compartir igual»: no se mira. |
 | **avr8js** (MIT, 0.21.1) | Ejecuta el `.hex` del ATmega328P. A la Mega le faltan los temporizadores 3, 4 y 5. |
-| **@wokwi/elements** (MIT, 1.9.2) | Dibujos del LED, resistencia, botón y potenciómetro; el del Uno es provisional (fila siguiente). |
-| **Placas con paso exacto de 2,54 mm** | Toda placa del simulador es Pieza Tecno con sus headers en paso exacto. El Uno de wokwi no cumple (saltos de 2,38 a 2,65 mm): se rehace con TecnoDiseñador desde el Uno del kit y después se regenera la shield L293D. Decisión de Efraín, 12 oct; ficha en [la especificación de entrega](docs/ENTREGA-VISTAS-TECNODISENADOR.md), secciones 6.0 y 6.5. |
+| **@wokwi/elements** (MIT, 1.9.2) | Dibujos del LED, resistencia, botón y potenciómetro. El Uno ya es Pieza Tecno (14 oct). |
+| **Placas con paso exacto de 2,54 mm** | Toda placa del simulador es Pieza Tecno con sus headers en paso exacto. El Uno de wokwi no cumplía: desde el 14 oct es el Uno medido por TecnoDiseñador y la shield L293D toma de él sus headers; falta que TecnoDiseñador mida la shield. Decisión de Efraín, 12 oct; ficha en [la especificación de entrega](docs/ENTREGA-VISTAS-TECNODISENADOR.md), secciones 6.0 y 6.5. |
 | **Piezas Tecno originales** | Dibujos propios hechos desde la pieza real (servo, shield, motor TT, LiPo, probador), Apache 2.0 con encabezado SPDX. Receta: `prototipo/RECETA-COMPONENTE-NUEVO.md`. Las imágenes que exporta TecnoCircuito son libres (`NOTICE`). |
 | Pieza = **vista + modelo eléctrico + modelo lógico + ficha** | La ficha va en `src/biblioteca.js`; el contrato revisa que no falte. |
 | **Motor separado de la interfaz** | El núcleo se prueba con Node, sin navegador. |
@@ -82,7 +84,8 @@ prototipo/
 │   ├── energia.js      USB del Uno (limiteUSB) · potencia.js: shield L293D, motores TT, LiPo y probador
 │   ├── mediciones.js   la tabla en español de sim.mediciones()
 │   ├── kicad.js        netlist: Uno J1–J4, L293D desarmada y Nano módulo + regulación/jack/I2C/SPI
-│   └── piezas/         servo, shield_l293d (y CONEXIONES_SHIELD: fuente única de AFMotor_R4), motor_tt, bateria_lipo, probador_lipo
+│   └── piezas/         uno, nano, shield_nano_io (vistas de TecnoDiseñador: vistas/ + vista_td.js), servo, shield_l293d
+│                       (y CONEXIONES_SHIELD: fuente única de AFMotor_R4), motor_tt, bateria_lipo, probador_lipo
 ├── programas/          .ino de prueba y sus .hex (npm run compilar)
 ├── pruebas/            Node (probar_*.js) y Chromium/Playwright (probar_*.py); probar_kicad_pcb.py usa KiCad
 ├── pagina.html         página de prueba con ejemplos · dist/: prototipo.html y tecnocircuito.js (npm run construir)
@@ -94,7 +97,7 @@ validacion/                     medidas de la placa real (se vuelven pruebas)
 - **Un solo archivo de salida:** `dist/tecnocircuito.js`, un IIFE con avr8js y los dibujos dentro; TecnoBloques lo concatena sin bundler y funciona sin internet. **Nada de Node en el paquete.**
 - **Rendimiento:** chip y circuito en un Web Worker; el circuito se resuelve una vez por combinación de pines y el PWM se promedia (secciones 25 a 30); lo que leen las entradas también se guarda por combinación (sección 50).
 - **Publicar una versión** (en la raíz): `npm run preparar-version`; los pasos de la etiqueta los imprime el script (contrato, sección 9; COMO-FUNCIONA, sección 56).
-- **Comandos** (en `prototipo/`): `npm run construir`, `npm run probar` (todo; con cargador: con batería fallan las pruebas de tiempo), `npm run probar:nucleo`, `npm run probar:kicad`, `npm run probar:contrato`, `npm run compilar`, `npm run fixtures`.
+- **Comandos** (en `prototipo/`): `npm run construir`, `npm run probar` (todo; con cargador: con batería fallan las pruebas de tiempo), `npm run probar:nucleo`, `npm run probar:kicad`, `npm run probar:contrato`, `npm run compilar`, `npm run fixtures`, `npm run vistas` (trae las vistas de `..\TecnoDiseñador`).
 
 ## Lo que hay que saber de TecnoBloques
 
@@ -125,7 +128,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 6. **Probador de celdas** («Validar: probador de celdas LiPo»): secuencia y duración de la pantalla, umbral de fábrica, cada celda con el multímetro.
 7. **Continuidad de la shield del kit** (suelta, sin Uno ni batería): a qué pata de cada integrado llega cada pin y borne; comparar con `SHIELD_KICAD` (sección 53).
 8. **Monitor serial con la placa real:** CSV y gráfico con `validar_adc` (solo se probaron con el simulador).
-9. **Fotos para TecnoDiseñador** (agendado el 12 oct): el **Uno R3 del kit**, según `TecnoDiseñador/plantillas/pedido-fotos.md` (desde arriba, regla a lo largo, regla a lo ancho girando 180°, cada chip de cerca), y decidir qué nombre queda impreso («UNO» es marca) y la **licencia**: el Uno del kit es original (CC BY-SA); conviene dibujar un clon si lo hay, o el original sin pistas (especificación 6.5). Después, las de la shield L293D. Ficha: especificación de entrega, sección 6.5.
+9. **Fotos para TecnoDiseñador:** ✅ Uno, Nano y expansión medidos e integrados (13–14 oct). Falta la **shield L293D**. Lo que sigue es histórico: el **Uno R3 del kit**, según `TecnoDiseñador/plantillas/pedido-fotos.md` (desde arriba, regla a lo largo, regla a lo ancho girando 180°, cada chip de cerca), y decidir qué nombre queda impreso («UNO» es marca) y la **licencia**: el Uno del kit es original (CC BY-SA); conviene dibujar un clon si lo hay, o el original sin pistas (especificación 6.5). Después, las de la shield L293D. Ficha: especificación de entrega, sección 6.5.
 
 **Software, en este orden (acordado el 11 oct):**
 1. ✅ Adelgazar este archivo.
@@ -144,7 +147,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 
 **Primero en la próxima sesión de software (pedido de Efraín, 12 oct): diferenciar pines macho y hembra en el imán entre pines.** Hoy el imán enchufa cualquier pin en cualquier otro (incluso pata con pata); la idea es que cada pin declare si es macho (pata, pin de header macho) o hembra (header hembra, conector), y que el imán solo una macho con hembra. Antes de implementarlo, verbalizar el plan y el esfuerzo (qué pines de cada pieza son de cada tipo, contrato, pruebas). **El imán se queda en 6 px por ahora** (decisión de Efraín, 12 oct).
 
-**Encargo planeado a TecnoDiseñador:** primero el **Uno R3 Tecno** (fotos propias del Uno del kit; ficha 6.5), después la shield L293D sobre él, con una sola salida. **Imán entre pines (12 oct):** las piezas se enchufan sin cables en el pin de otra pieza o de la placa (`en` ampliado; COMO-FUNCIONA, sección 61). Pendiente de probarlo con aprendices junto con la protoboard. **Al migrar un dibujo de TecnoDiseñador** (especificación, sección 9): Nano encima de la expansión (sin ventana), `data-led`/`data-parte` en la shield y alinear `GND1`/`RESET` de KiCad con el lienzo (pads 29/28).
+**Encargo a TecnoDiseñador:** ✅ Uno R3, Nano y expansión (integrados el 14 oct). Sigue la **shield L293D** sobre el Uno medido, con una sola salida. **Imán entre pines (12 oct):** las piezas se enchufan sin cables en el pin de otra pieza o de la placa (`en` ampliado; COMO-FUNCIONA, sección 61). Pendiente de probarlo con aprendices junto con la protoboard. **Al migrar la shield de TecnoDiseñador** (especificación, sección 9): `data-led`/`data-parte` en la shield (lo del Nano y KiCad ya está hecho).
 
 **Pendientes conocidos:** el circuito del Uno no siente toda la caída del 5V (solo los servos ven el voltaje real); Nano sí entrega su alimentación de referencia a MNA/GPIO/ADC. Faltan validación física de Nano/expansión, esquemático `.kicad_sch` con etiquetas, diagrama de flujo del programa (TecnoBloques) y símbolo de marca en SVG (`MARCA_SVG` en `src/lienzo.js`).
 

@@ -8,7 +8,8 @@ import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/mot
 import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
 import { PROBADOR, TAMANO_PROBADOR, PINES_PROBADOR, dibujarProbador, mostrarProbador } from './piezas/probador_lipo.js';
 import { TAMANO_NANO, PINES_NANO, dibujarNano, mostrarNano } from './piezas/nano.js';
-import { TAMANO_EXPANSION, pinesExpansion, dibujarExpansion, ROTULOS_EXPANSION } from './piezas/shield_nano_io.js';
+import { TAMANO_EXPANSION, pinesExpansion, dibujarExpansion, mostrarExpansion, ROTULOS_EXPANSION } from './piezas/shield_nano_io.js';
+import { TAMANO_UNO, PINES_UNO, dibujarUno, mostrarUno } from './piezas/uno.js';
 
 const rotuloNano = (pin) => {
   if (/^A[67]$/.test(pin)) return `${pin} · solo entrada analógica (sin salida digital)`;
@@ -50,14 +51,10 @@ const PWM_UNO = ['3', '5', '6', '9', '10', '11'];
 export const PLACAS = {
   uno: {
     nombre: 'Arduino Uno',
-    etiqueta: 'wokwi-arduino-uno',
-    // Nombre de @wokwi/elements → nombre del contrato. Cada pin físico tiene nombre propio
-    // (la placa tiene tres GND), porque un cable llega a un agujero concreto.
-    nombrePin(n) {
-      if (/^\d+$/.test(n)) return 'D' + n;
-      if (n.startsWith('GND.')) return 'GND' + n.slice(4);
-      return { '3.3V': '3V3', 'A4.2': 'SDA', 'A5.2': 'SCL' }[n] || n;
-    },
+    // Pieza Tecno (src/piezas/uno.js). Cada pin físico tiene nombre propio (la placa tiene tres GND), porque un cable
+    // llega a un agujero concreto.
+    dibujo: { ...TAMANO_UNO, pines: PINES_UNO, svg: dibujarUno },
+    mostrar: mostrarUno,
     rotulo(pin) {
       if (pin === 'D0') return 'Pin 0 · RX del monitor serial';
       if (pin === 'D1') return 'Pin 1 · TX del monitor serial';
@@ -82,9 +79,11 @@ export const PLACAS = {
 
 export const TIPOS = {
   shield_nano_io: {
-    nombre: 'Expansión E/S del Nano', prefijo: 'exp', montada: true, placas: ['nano', 'nano_old'],
+    // Va montada debajo del Nano (`debajo`), como en la mesa, y su LED de encendido sigue a la placa (`sigueAPlaca`).
+    nombre: 'Expansión E/S del Nano', prefijo: 'exp', montada: true, debajo: true, sigueAPlaca: true, placas: ['nano', 'nano_old'],
     props: { variante: 'roja', alimentacion: 'usb', voltajeJack: 9 },
     dibujo: { marco: (props) => ({ ...TAMANO_EXPANSION, pines: pinesExpansion(props) }), svg: dibujarExpansion },
+    mostrar: mostrarExpansion,
     rotulo: (pin) => ROTULOS_EXPANSION[pin] || pin,
     campos: [
       { prop: 'variante', etiqueta: 'Tarjeta', opciones: [['roja', 'Roja'], ['azul', 'Azul']] },

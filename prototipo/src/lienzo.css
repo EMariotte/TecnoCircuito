@@ -212,8 +212,15 @@
   display: flex;
 }
 
+/* La placa solo recibe el clic donde está pintada: su marco transparente (el del Nano cubre toda la expansión que
+   tiene debajo) deja pasar el clic a la pieza de abajo. */
 .tc-comp.tc-placa {
   cursor: default;
+  pointer-events: none;
+}
+
+.tc-comp.tc-placa svg * {
+  pointer-events: visiblePainted;
 }
 
 .tc-comp.tc-seleccionado {

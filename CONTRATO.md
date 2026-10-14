@@ -179,6 +179,8 @@ El circuito viaja dentro del proyecto `.tbq.json` de TecnoBloques. Es un solo ar
 
 ### 4.2 Nano + expansión E/S (modelo de referencia)
 
+**Vistas medidas (14 oct):** el Nano y las dos expansiones son dibujos de TecnoDiseñador medidos desde las placas del ambiente, con un marco común de 60 × 53,5 mm. La roja y la azul tienen los mismos contactos en el mismo lugar; cambia el color. La medición mostró que el bloque de seis contactos son **tres 3V3 y tres GND, sin 5V**: entran `OUT_3V3_3` y `GND_OUT_3`, y `OUT_5V`/`OUT_5V_2` pasan a ser aliases que terminan en el 5V del Nano, como los `SPI_*`. Ningún cable guardado cambia de red. Una pata enchufada (`en`) en `OUT_5V` se suelta al abrir, porque ese contacto ya no existe en la placa, y se avisa.
+
 Al crear un Nano con `circuito: null`, el lienzo inserta `exp1`, roja, USB, jack de referencia de 9 V. Abrir un circuito existente conserva sus piezas, incluso si es un Nano sin expansión. Cambiar roja/azul conserva IDs y cables. La expansión y el Nano comparten el origen; siguen siendo un módulo y una pieza de expansión, con **un solo chip**.
 
 ```json
@@ -192,7 +194,8 @@ Al crear un Nano con `circuito: null`, el lienzo inserta `exp1`, roja, USB, jack
 | `I2C_SDA`, `I2C_SCL`, `I2C_V`, `I2C_G` | A4, A5, 5V, GND |
 | `SPI_MISO`, `SPI_MOSI`, `SPI_SCK`, `SPI_SS`, `SPI_V`, `SPI_G` (aliases heredados) | D12, D11, D13, D10, 5V, GND del Nano; sus cables se dibujan sobre los pines del módulo, sin contactos adicionales en la expansión |
 | `UART_TX`, `UART_RX`, `UART_V`, `UART_G` | D1, D0, 5V, GND |
-| `OUT_5V`/`OUT_5V_2`, `OUT_3V3`/`OUT_3V3_2`, `GND_OUT`/`GND_OUT_2` | Bloque de seis contactos: dos por salida. 5V común, regulador externo de 3,3V y GND |
+| `OUT_3V3`/`OUT_3V3_2`/`OUT_3V3_3`, `GND_OUT`/`GND_OUT_2`/`GND_OUT_3` | Bloque de seis contactos de la placa medida: tres 3,3V del regulador externo (fila de arriba) y tres GND (abajo), de izquierda a derecha |
+| `OUT_5V`, `OUT_5V_2` (aliases heredados) | 5V del Nano; sus cables se dibujan sobre el pin 5V del módulo, sin contacto en la expansión |
 | `JACK_POS`, `JACK_GND` | Entrada privada del regulador externo, GND |
 
 `JACK_POS` no se une automáticamente al `VIN` del módulo; `OUT_3V3` tampoco al `3V3` del Nano. Así no se ponen reguladores en paralelo. La selección USB/jack/desconectada es una propiedad del **modelo**, no un interruptor identificado en las fotos. Una LiPo cableada al jack tiene prioridad sobre `voltajeJack`; un corto o polaridad invertida no se convierte en una fuente positiva.
@@ -361,3 +364,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 11 oct 2026 | Contrato 1: Nano + expansión E/S. Soporte efectivo `nano`/`nano_old`, A6/A7 solo ADC, expansión roja/azul de 85 terminales, alimentación de referencia separada del Uno, guardado y exportación selectiva de módulo/regulación/jack/I2C/SPI. Mega sigue pendiente. Sección 4.2 y esquema ampliados sin subir formato ni contrato. |
 | 1 (borrador) | 12 oct 2026 | `en` también enchufa una pata en el pin de otra pieza o de la placa (`{ "<pata>": "<id>.<pin>" }`), sin protoboard ni cables: imán entre pines, decidido por Efraín. Un hueco o pin recibe una sola pata; ninguna pieza se enchufa en sí misma. Esquema y revisor del contrato actualizados. Sin cambio de formato: todavía no hay etiqueta publicada. |
 | 1 (borrador) | 11 oct 2026 | Corrección posterior de Efraín: I2C junto a UART; el bloque de seis contactos es dos GND, dos 3V3 y dos 5V. Vista con 82 contactos físicos, tres IDs nuevos de salida duplicada y seis aliases SPI heredados, dibujados sobre el Nano. El SPI de KiCad queda explícito como conector añadido al diseño; no se reinterpreta ningún cable antiguo. |
+| 1 (borrador) | 14 oct 2026 | Vistas de TecnoDiseñador: el Uno pasa a ser Pieza Tecno (mismos 31 pines) y el Nano y la expansión usan dibujos medidos. La placa real tiene tres 3V3 y tres GND en el bloque de seis: entran `OUT_3V3_3` y `GND_OUT_3`, y `OUT_5V`/`OUT_5V_2` quedan como aliases heredados del 5V del Nano (decisión de Efraín). Esquema y revisor actualizados. No cambian el formato ni la red de ningún cable guardado. |

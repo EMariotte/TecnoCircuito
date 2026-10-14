@@ -14,18 +14,15 @@
 //   EXT_PWR: la alimentación de los motores. Con el puente PWR puesto, también alimenta el Vin del Uno.
 // El dibujo se hizo a partir de la placa del kit y de las hojas de datos, sin copiar el de nadie.
 
+import { HEADERS_UNO } from './uno.js';
+
 const MM = 9.6 / 2.54;
 export const TAMANO_SHIELD = { ancho: 72.58 * MM, alto: 53.34 * MM };
 const BORDE_X = 4 * MM; // donde empieza la placa (a la izquierda queda el conector USB del Uno)
 const PASO_BORNERA = 5 * MM; // borneras de tornillo de 5 mm
 
-// Pines del Uno (posición en el dibujo del Uno): los conectores apilables de la shield van justo encima.
-const FILAS_UNO = [
-  { y: 9, xs: [87, 97, 106, 115.5, 125, 134.5, 144, 153.5, 163, 173] },
-  { y: 9, xs: [189, 198.5, 208, 217.5, 227, 236.5, 246, 255.5] },
-  { y: 191.5, xs: [121.5, 131, 140.5, 150, 160, 169.5, 179, 188.5] },
-  { y: 191.5, xs: [208, 217.5, 227, 236.5, 246, 255.5] },
-];
+// Pines del Uno (posición en el dibujo del Uno medido por TecnoDiseñador): los conectores apilables van justo encima.
+const FILAS_UNO = HEADERS_UNO;
 
 // Puntos de conexión de la shield (bornes de tornillo y pines de los servos).
 const xIzq = BORDE_X + 4.6 * MM;

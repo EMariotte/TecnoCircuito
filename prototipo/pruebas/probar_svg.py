@@ -62,7 +62,10 @@ with sync_playwright() as p:
     revisar(not analisis['rotas'], f'todas las referencias url(#…) y href apuntan a algo: {analisis["rotas"][:5]}')
     cables = pg.evaluate('lienzo.circuito().cables.length')
     revisar(svg.count('stroke-width="4.8"') == cables, f'tiene los {cables} cables')
-    revisar('#tc-placa text' in svg, 'lleva el estilo de los textos de la placa (sin él, las letras salen gigantes)')
+    # El Uno de TecnoDiseñador no usa CSS: cada texto trae su tamaño (sin él, las letras saldrían gigantes).
+    placa = re.search(r'<svg id="tc-placa".*?</svg>', svg, re.S)
+    textos = re.findall(r'<text\b[^>]*>', placa.group(0)) if placa else []
+    revisar(textos and all('font-size=' in t for t in textos), f'los {len(textos)} textos de la placa traen su tamaño, sin depender de estilos')
     revisar(re.search(r'id="tc-pot1-rotating"[^>]*transform="rotate\(', svg) or re.search(r'transform="rotate\([^"]+\)"[^>]*id="tc-pot1-rotating"', svg),
             'la perilla del potenciómetro queda girada como atributo')
     revisar('rotate(90)' in svg, 'la resistencia girada sale girada')

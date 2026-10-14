@@ -31,6 +31,8 @@ COLOR = re.compile(r'^#[0-9a-fA-F]{6}$')
 FORMAS_LED = {'circle', 'rect', 'ellipse', 'path'}
 # Alias sin contacto propio (contrato, sección 4): no se dibujan.
 ALIAS_NANO = {'SDA', 'SCL', 'MISO', 'MOSI', 'SCK', 'SS'}
+# Expansión: SPI_* y OUT_5V/OUT_5V_2 son nombres heredados que terminan en pines del Nano (contrato, sección 4).
+ALIAS_EXPANSION = {'SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G', 'OUT_5V', 'OUT_5V_2'}
 # Lo que cada pieza debe traer además de sus contactos (sección 6 de la especificación).
 LEDS = {'nano': {'PWR', 'L', 'RX', 'TX'}, 'uno': {'PWR', 'L', 'RX', 'TX'}, 'shield_l293d': {'PWR'}}
 PARTES = {'shield_l293d': {'puente-pwr'}}
@@ -70,7 +72,7 @@ def nombres_esperados(pieza):
     if pieza == 'uno':
         return set(defs['pines-placa-uno']['enum'])
     if pieza == 'shield_nano_io':
-        return {p for p in defs['pines-shield_nano_io']['enum'] if not p.startswith('SPI_')}
+        return set(defs['pines-shield_nano_io']['enum']) - ALIAS_EXPANSION
     clave = 'pines-' + str(pieza)
     return set(defs[clave]['enum']) if clave in defs else None
 

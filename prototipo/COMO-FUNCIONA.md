@@ -1537,3 +1537,51 @@ flowchart TB
 **Decisiones de diseño que quedan abiertas** (las señaló la revisión, no son errores): el simulador no distingue pines macho de hembra (se puede unir pata con pata, como torcer dos patas en la mesa), y con 6 px de radio una pieza soltada muy cerca de la pata de otra se enchufa; la vista previa en verde avisa antes de soltar.
 
 **Pruebas:** contrato (enchufe a la placa y a otra pieza aceptados; pieza inexistente, pin inexistente, alias, un punto de más, en sí misma y dos patas en un pin, rechazados); potencia (probador enchufado = con cables; con las celdas cruzadas pita, lo que prueba que el enchufe se usa; al revés no enciende; servo en SERVO_2 = con cables; LED directo en D13/GND se quema); KiCad (LED enchufado = con cables); Chromium `probar_enchufe.py` (25) con arrastre real del mouse: vista previa, alineación, marca de ocupado, rótulo, evento, mover en grupo, desenchufar, girar, borrar, guardar y reabrir, soltar lejos, mezclado pin + hueco, la protoboard que se lleva una pieza mezclada, cambiar el lado del motor y lo que se suelta al abrir. Las siete pruebas de la revisión fallan con el código anterior y pasan con el corregido.
+
+## 62. Las vistas de TecnoDiseñador: Uno, Nano y expansión medidos (14 oct 2026, Claude)
+
+**Qué cambió:** el Uno, el Nano y la expansión roja y azul se ven ahora con los dibujos que TecnoDiseñador midió desde las placas del ambiente. El Uno dejó de ser el dibujo de `@wokwi/elements` y pasó a ser una Pieza Tecno, con sus headers en paso exacto de 2,54 mm. **Solo cambió la apariencia.** Los cables, la red eléctrica, la simulación y KiCad hablan de los contactos por nombre (`placa.D13`, `exp1.A0_S`), nunca por coordenadas, así que el motor no se enteró del cambio.
+
+```mermaid
+flowchart LR
+  TD["TecnoDiseñador<br/>uno-tc.svg/json<br/>nano-tc.svg/json<br/>shield_nano_io-roja/azul-tc"] --> I["npm run vistas<br/>(pasa el revisor;<br/>si falla, no escribe nada)"]
+  I --> V["src/piezas/vistas/*.js<br/>SVG en mm + pines + LED<br/>(generado y versionado)"]
+  V --> P["uno.js · nano.js · shield_nano_io.js<br/>mm → px, título, LED"]
+  P --> L["lienzo: dibujo, puntos de clic,<br/>LED, capas"]
+  L -. "solo nombres de contacto" .-> M["conexiones → MNA → núcleo<br/>→ mediciones · KiCad<br/>(sin cambios)"]
+```
+
+**El camino de un dibujo:**
+1. TecnoDiseñador entrega, por pieza, un SVG en milímetros con un `data-contacto` en cada agujero y un `data-led` en cada LED, y un JSON con la posición de cada contacto (especificación de entrega).
+2. `npm run vistas` (en `prototipo/`) pasa `revisar_vista_td.py` con las cuatro entregas juntas y escribe `src/piezas/vistas/<pieza>.js`: el contenido del SVG en una línea, su marco, sus pines y sus LED. Los módulos generados se versionan, así que construir el paquete o etiquetar una versión no necesita la carpeta de TecnoDiseñador. Si TecnoDiseñador mejora un dibujo, se actualiza con ese comando y las pruebas.
+3. `src/piezas/vista_td.js` pone la raíz: el tamaño en píxeles (1 mm = 9,6/2,54 px) con el `viewBox` en mm, el título y la descripción. También enciende los LED (`mostrarLeds`): cambia el `fill` al color encendido de la entrega y marca `data-encendido`, que es lo que miran las pruebas y TecnoBloques.
+
+**Las capas del Nano.** Antes, la expansión iba encima del Nano y tenía una ventana recortada para verlo. Ahora es como en la mesa: el Nano va encima, enchufado en los zócalos. La expansión lleva `debajo: true` en el catálogo y el lienzo la pone justo antes de la placa. El marco del Nano (60 × 53,5 mm, el de toda la familia) es transparente fuera de la placa y taparía los clics sobre la expansión. Por eso la placa solo recibe el clic donde está pintada (`pointer-events` en `lienzo.css`): un clic en la expansión, aunque caiga dentro del marco del Nano, elige la expansión.
+
+**El LED de la expansión** (`PWR`) sigue al de la placa (`sigueAPlaca`): se enciende cuando el Nano tiene alimentación, sea por USB o por el jack.
+
+**El bloque de seis contactos.** La medida mostró que la placa real no tiene 5V ahí: son tres 3,3V y tres GND. Efraín decidió seguir a la placa:
+
+| Antes (modelo de referencia) | Ahora (placa medida) |
+|---|---|
+| `OUT_5V`, `OUT_5V_2` | aliases heredados: siguen unidos al 5V y su cable se dibuja sobre el 5V del Nano, como los `SPI_*` |
+| `OUT_3V3`, `OUT_3V3_2` | `OUT_3V3`, `OUT_3V3_2`, `OUT_3V3_3` (fila de arriba) |
+| `GND_OUT`, `GND_OUT_2` | `GND_OUT`, `GND_OUT_2`, `GND_OUT_3` (fila de abajo) |
+
+Ningún cable guardado cambia de red. Una pata enchufada con el imán en `OUT_5V` sí se suelta al abrir, con aviso, porque ese agujero ya no existe. La roja y la azul tienen las mismas medidas (lo decidió Efraín el 13 oct): al cambiar de tarjeta cambia el color, no los puntos.
+
+**El Uno y la shield L293D.** El marco del Uno no cambió (72,58 × 53,34 mm, con la placa desde x = 4 mm). Los pines se corrieron menos de 0,5 mm (≤ 1,7 px), lo que se equivocaba el dibujo de wokwi, así que los dobleces de los cables guardados siguen en su lugar. Los headers apilables de la shield salen ahora de los pines del Uno medido (`HEADERS_UNO`). El dibujo de la shield sigue siendo el nuestro, hasta que TecnoDiseñador mida la del kit.
+
+**KiCad.** Los pads del Nano se alinearon con el lienzo: `GND2`/`RESET2` son los pads 4 y 3 (fila de D12…D1) y `GND1`/`RESET` los 29 y 28. Son la misma señal: en la netlist solo cambia el rótulo de dos pads de la red GND.
+
+**El Worker no lleva dibujos.** El Worker importa los puentes eléctricos de la shield y de la expansión, que viven en los mismos módulos que los dibujos. Una llamada como `tamanoDe(VISTA)` al cargar el módulo hacía que esbuild guardara los dibujos (unos 150 KB) dentro del Worker, que nunca dibuja. Esas llamadas van marcadas `/* @__PURE__ */`, y `construir.js` se detiene si el Worker trae un `data-contacto`. Resultado: el paquete pasó de 282 a 430 KB y el Worker se quedó en 89 KB.
+
+**La miniatura de la biblioteca** renombra sus `id` (`tc-mini-…`). Si no, la expansión del lienzo podía tomar los degradados de la miniatura, que vive en el mismo documento y puede estar oculta (un degradado dentro de algo oculto no pinta).
+
+**Cómo se comprobó que no se perdió nada:**
+- **Línea base antes de tocar el código:** suite completa (1014 OK, 0 fallas); netlist de KiCad y mediciones del núcleo de 12 circuitos (los 9 ejemplos de validación de TecnoBloques, `t1_protoboard` y dos circuitos sintéticos del Nano con los nombres viejos); capturas del lienzo.
+- **Después:** las mediciones son idénticas en los 12 circuitos (salvo las lecturas nuevas de `OUT_3V3_3` y `GND_OUT_3`). La netlist es idéntica en los del Uno; en los del Nano solo cambia el rótulo de los pads 4 y 29.
+- **`probar_vistas.py`** (nuevo, 29 comprobaciones): cada `data-contacto` cae sobre su punto de conexión (±0,05 px) en el Uno, el Nano y las dos expansiones; los LED L, PWR y el de la expansión siguen a la simulación y se apagan al detener; la expansión va debajo y recibe el clic dentro del marco del Nano; los cables con `OUT_5V`, `OUT_5V_2` y `SPI_G` siguen dibujados sobre el Nano; una pata enchufada en `OUT_5V` se suelta al abrir, con aviso; ningún `id` se repite en el lienzo (miniaturas incluidas); la imagen exportada es XML válido con los dibujos.
+- Se ajustaron las pruebas que dependían del dibujo viejo: el Uno de wokwi (`led13`, su CSS en la imagen exportada, la x de D13: 124,61 px en vez de 125), la ventana de la expansión, I2C y UART (en la placa medida son dos conectores, uno encima del otro), y el mapa de pads de KiCad.
+
+**Pendiente:** la validación eléctrica sigue igual que antes: los dibujos están medidos, pero la continuidad, el jack y los reguladores de la expansión se confirman en el laboratorio.

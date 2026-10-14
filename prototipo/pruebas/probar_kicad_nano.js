@@ -31,9 +31,10 @@ const opciones = { nombre: 'Nano referencia', fecha: FECHA };
 const SALIDA = path.join(__dirname, 'capturas', 'kicad_nano');
 fs.mkdirSync(SALIDA, { recursive: true });
 
-// Mapa independiente: numeración física del módulo según el símbolo KiCad y el Nano clásico.
-const FISICOS = ['D1', 'D0', 'RESET', 'GND1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12',
-  'D13', '3V3', 'AREF', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', '5V', 'RESET2', 'GND2', 'VIN'];
+// Mapa independiente: numeración física del módulo según el símbolo KiCad y el Nano clásico. Los nombres de los pads
+// repetidos (GND2/RESET2 en la fila de D12…D1) son los del lienzo: especificación de entrega, sección 6.1.
+const FISICOS = ['D1', 'D0', 'RESET2', 'GND2', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12',
+  'D13', '3V3', 'AREF', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', '5V', 'RESET', 'GND1', 'VIN'];
 revisar(igual(Object.fromEntries(FISICOS.map((pin, i) => [pin, String(i + 1)])), MODULO_NANO_KICAD.pines),
   'los 30 pads del Nano conservan el mapa físico independiente, incluidos A6/A7 y RESET/GND repetidos');
 const completo = {

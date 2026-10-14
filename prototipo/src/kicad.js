@@ -48,13 +48,15 @@ const RED_UNO = { GND1: 'GND', GND2: 'GND', GND3: 'GND', '5V': '+5V', '3V3': '+3
 // MCU_Module:Arduino_Nano_v3.x y Module:Arduino_Nano de KiCad 10.0.3. La numeración recorre las dos filas de
 // 15 pads, no es la de los conectores del Uno. A6/A7 tienen pads propios, exclusivamente analógicos.
 // El USB queda junto a los pads 15/16; el pad cuadrado 1 (TX) está en el extremo opuesto. Montaje por validar.
+// GND2/RESET2 son los de la fila de D12…D1 (pads 4 y 3) y GND1/RESET los de la fila de D13…VIN (29 y 28), como en el
+// lienzo (especificación de entrega, sección 6.1). Son la misma señal: solo cambia el nombre de cada pad.
 export const MODULO_NANO_KICAD = {
   ref: 'U', lib: 'MCU_Module', parte: 'Arduino_Nano_v3.x', huella: 'Module:Arduino_Nano', valor: 'Arduino Nano clásico',
   pines: {
-    D1: '1', D0: '2', RESET: '3', GND1: '4', D2: '5', D3: '6', D4: '7', D5: '8', D6: '9', D7: '10',
+    D1: '1', D0: '2', RESET2: '3', GND2: '4', D2: '5', D3: '6', D4: '7', D5: '8', D6: '9', D7: '10',
     D8: '11', D9: '12', D10: '13', D11: '14', D12: '15', D13: '16', '3V3': '17', AREF: '18',
     A0: '19', A1: '20', A2: '21', A3: '22', A4: '23', A5: '24', A6: '25', A7: '26',
-    '5V': '27', RESET2: '28', GND2: '29', VIN: '30',
+    '5V': '27', RESET: '28', GND1: '29', VIN: '30',
   },
 };
 // Si una red toca varios pines del Uno (un corto), manda el primero de esta lista.

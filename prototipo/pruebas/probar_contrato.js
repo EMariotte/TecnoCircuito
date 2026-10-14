@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { revisarCircuito, ESQUEMA, PINES, PINES_PLACA, HUECO } = require('./contrato.js');
-const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex, ALIASES_EXPANSION_SPI } = require('./codigo.cjs');
+const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex, ALIASES_EXPANSION } = require('./codigo.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -18,9 +18,14 @@ const D = ESQUEMA.$defs;
 
 // 1. El código está de acuerdo con el contrato
 console.log('— El código y el contrato dicen lo mismo');
-const uno = fs.readFileSync(require.resolve('@wokwi/elements/dist/esm/arduino-uno-element.js'), 'utf8');
-const pinesWokwi = [...new Set([...uno.matchAll(/\{ name: '([^']+)', x:/g)].map((m) => PLACAS.uno.nombrePin(m[1])))];
-revisar(mismo(pinesWokwi, PINES_PLACA.uno), `los ${pinesWokwi.length} pines del dibujo del Uno, con su nombre del contrato, son los del esquema`);
+// Las placas son piezas Tecno con vista de TecnoDiseñador: sus contactos son los del esquema, salvo los nombres que
+// son otro nombre del mismo pin (SDA es A4 en el Nano: no tiene agujero propio; en el Uno sí lo tiene).
+const ALIAS_NANO = ['SDA', 'SCL', 'MISO', 'MOSI', 'SCK', 'SS'];
+for (const placa of ['uno', 'nano', 'nano_old']) {
+  const pines = Object.keys(PLACAS[placa].dibujo.pines);
+  const esquema = PINES_PLACA[placa].filter((p) => placa === 'uno' || !ALIAS_NANO.includes(p));
+  revisar(mismo(pines, esquema), `los ${pines.length} contactos del dibujo de ${PLACAS[placa].nombre} son los del esquema`);
+}
 const DIBUJO = { resistencia: ['1', '2'], led: ['A', 'C'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1.l', '1.r', '2.l', '2.r'] };
 for (const [tipo, nombres] of Object.entries(DIBUJO)) {
   revisar(mismo(nombres.map(TIPOS[tipo].nombrePin), PINES[tipo]), `${tipo}: los pines del catálogo (${nombres.map(TIPOS[tipo].nombrePin).join(', ')}) son los del esquema`);
@@ -30,7 +35,7 @@ for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
   const variantes = def.dibujo.marco ? (def.campos || []).flatMap((c) => c.opciones.map(([v]) => ({ ...def.props, [c.prop]: v }))) : [def.props];
   for (const props of variantes) {
     const pines = Object.keys((def.dibujo.marco ? def.dibujo.marco(props) : def.dibujo).pines);
-    const nombres = tipo === 'shield_nano_io' ? [...pines, ...Object.keys(ALIASES_EXPANSION_SPI)] : pines;
+    const nombres = tipo === 'shield_nano_io' ? [...pines, ...Object.keys(ALIASES_EXPANSION)] : pines;
     revisar(mismo(nombres, PINES[tipo]), `${tipo} (pieza Tecno${def.dibujo.marco ? ', ' + JSON.stringify(props) : ''}): los contactos físicos y aliases documentados coinciden con el esquema`);
   }
 }

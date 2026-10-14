@@ -1066,3 +1066,30 @@ Efraín pidió revisar el imán con un segundo agente antes del commit. **Sin er
   - Contrato: +3.
   - TecnoBloques `test:simulador`: 53 OK (LED en GND3: se suelta en el Nano y se recupera en el Uno).
 - **Quedan como decisiones de diseño abiertas:** sin distinción macho/hembra, y el radio de 6 px. Están en COMO-FUNCIONA, sección 61.
+
+## 2026-10-14 — Claude: vistas de TecnoDiseñador (Uno, Nano y expansión roja/azul)
+
+**Pedido de Efraín:** integrar los SVG que ya entregó TecnoDiseñador sin reducir nada del funcionamiento actual, para luego publicar y probar desde TecnoBloques. Antes de empezar se le explicó la metodología (línea base, importador, Nano, Uno, pruebas, TecnoBloques, revisión, documentación) y aceptó las tres recomendaciones: seguir a la placa real en el bloque de seis, que Claude haga también la familia Nano (Codex revisa) e integrar ahora pero etiquetar después del laboratorio.
+
+- **Revisor de la entrega:** las cuatro entregas cumplen la especificación. Diferencia importante: el bloque de seis contactos de la expansión real es **tres 3V3 y tres GND, sin 5V**.
+- **Contrato (decisión de Efraín):** entran `OUT_3V3_3` y `GND_OUT_3`; `OUT_5V`/`OUT_5V_2` quedan como aliases del 5V del Nano, como los `SPI_*`. Esquema, revisor, CONTRATO (4.2 e historial), especificación de entrega, AGENTS.md y las dos bitácoras. En TecnoDiseñador se nombraron los terceros pines en `generar_nano_expansion.py`: solo cambian las salidas `-tc` (el maestro, el `-app` y los PNG salen idénticos byte a byte).
+- **Importador `npm run vistas`:** pasa el revisor y escribe `src/piezas/vistas/*.js` (versionados). `src/piezas/vista_td.js` pone mm → px, título y LED (`data-encendido`).
+- **Uno:** Pieza Tecno `src/piezas/uno.js`, mismos 31 pines y mismo marco; los pines se corren menos de 0,5 mm. La shield L293D toma sus headers apilables del Uno medido. Ya no se usa `wokwi-arduino-uno`.
+- **Nano y expansión:** marco 60 × 53,5 mm; el Nano va encima de la expansión (`debajo`), sin ventana; la placa solo recibe el clic donde está pintada. El LED PWR de la expansión sigue al Nano. La roja y la azul tienen la misma geometría.
+- **KiCad:** `GND2`/`RESET2` del Nano son los pads 4/3, como en el lienzo (especificación 9.5). Solo cambia el rótulo de dos pads de GND.
+- **Worker:** los dibujos se colaban en el Worker (de 90 a 232 KB) porque llega a los módulos de la shield y la expansión. Las llamadas van con `/* @__PURE__ */` y `construir.js` se detiene si vuelve a pasar. Paquete: 282 → 430 KB; Worker: 89 KB.
+- **Miniaturas:** renombran sus `id`, para no compartir degradados con la pieza del lienzo.
+
+**Cómo se comprobó que no se perdió nada:**
+- Línea base antes de tocar código: suite (1014 OK, 0 fallas), netlist y mediciones de 12 circuitos (ejemplos de validación de TecnoBloques, `t1_protoboard` y dos sintéticos del Nano con los nombres viejos) y capturas.
+- Después: mediciones idénticas en los 12; netlist idéntica en los del Uno; en los del Nano solo cambian los rótulos de los pads 4 y 29.
+- `probar_vistas.py` nuevo (29): contactos sobre sus puntos (±0,05 px) en las cuatro vistas, LED con la simulación, clic a través del marco del Nano, aliases dibujados sobre el Nano, pata en `OUT_5V` que se suelta con aviso, `id` sin repetir y SVG exportado válido.
+- Pruebas ajustadas porque dependían del dibujo viejo: contrato, simulación, prototipo, SVG, Nano (UI y Node) y KiCad Nano.
+- Resultado: suite completa **1053 OK en 25 grupos, 0 fallas** (antes 1014 en 24). TecnoBloques: `test:simulador` **53 OK** (se ajustó la búsqueda del LED «L» y del dibujo exportado de la expansión) y `npm test` con exit 0 y sin errores.
+
+**Revisión independiente (`/code-review`, alta):** 8 hallazgos.
+- Corregidos: los aliases de la expansión estaban en dos tablas (ahora `ALIASES_EXPANSION` es la fuente única de dibujo y red); la lista de rieles de `red.js` se deriva de la pieza; el importador acepta BOM, comentarios y DOCTYPE al inicio y conserva el espacio entre `<tspan>`; una sola función `renombrarIds` para miniaturas y exportación; `--origen` sin carpeta da un mensaje claro. Los módulos generados y la línea base de comportamiento siguen idénticos.
+- Para decidir con Efraín: al abrir un proyecto, un `en` que apunte a un pin del Nano o de la expansión queda enchufado aunque el pin se haya movido (unos 18 px). Es lo que dice el contrato («al abrir, el `en` manda»), y el Nano y el imán no se han publicado, así que no hay proyectos del aula afectados. En el Uno el corrimiento es menor que la tolerancia del imán.
+- Costo aceptado: las dos variantes van como SVG completos (unos 88 KB). Un solo dibujo con paleta por variante lo reduciría; queda como mejora.
+
+**Pendiente:** revisión de Codex para la familia Nano, validación física sin cambios (los dibujos están medidos; la continuidad, el jack y los reguladores no), la shield L293D de TecnoDiseñador y la etiqueta `v0.1.0` después del laboratorio. Commit y push: a la espera del sí de Efraín.

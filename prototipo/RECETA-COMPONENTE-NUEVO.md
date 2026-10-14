@@ -155,6 +155,8 @@ Una **pieza Tecno** es una pieza hecha para TecnoCircuito con esta receta: dibuj
 
 **Qué entrega exactamente y con qué datos** (archivos `-tc.svg` y `-tc.json`, reglas del SVG, `data-contacto`/`data-led`/`data-parte`, ficha de cada pieza y el revisor `pruebas/revisar_vista_td.py`): [docs/ENTREGA-VISTAS-TECNODISENADOR.md](../docs/ENTREGA-VISTAS-TECNODISENADOR.md). Es la especificación que sigue TecnoDiseñador; lo que sigue aquí es lo que TecnoCircuito revisa al aceptarlo.
 
+**Cómo se trae:** se agrega la entrega a la lista de `prototipo/vistas.js` y se corre `npm run vistas`. Pasa el revisor y escribe `src/piezas/vistas/<pieza>.js`, que se versiona; la pieza lo usa con `src/piezas/vista_td.js` (milímetros a píxeles, LED). Las llamadas que lo usan al cargar el módulo van con `/* @__PURE__ */`, para que el Worker no cargue el dibujo. Ejemplos: `uno.js`, `nano.js` y `shield_nano_io.js` (COMO-FUNCIONA, sección 62).
+
 Para aceptar un resultado de TecnoDiseñador como vista de una pieza nueva:
 
 1. **Licencia confirmada en su registro:** el `registro-verificacion.md` del componente, en TecnoDiseñador, tiene que decir explícitamente que no usó ningún archivo, foto oficial ni medida de una fuente «compartir igual» (CC BY-SA, GPL, CERN-OHL-S). Sin esa confirmación, no se acepta.

@@ -154,15 +154,17 @@ with sync_playwright() as p:
           const root = {RAIZ};
           const nano = root.querySelector('.tc-comp[data-id="placa"] > svg');
           const exp = root.querySelector('.tc-comp[data-id="exp1"] > svg');
+          // El dibujo de TecnoDiseñador está en mm: k pasa sus coordenadas a los px del lienzo.
+          const k = exp.width.baseVal.value / exp.viewBox.baseVal.width;
           const contactos = [...exp.querySelectorAll('[data-contacto]')].map(c => {{
             const pin = root.querySelector('.tc-pin[data-ref="exp1.' + c.dataset.contacto + '"]');
             const b = c.getBBox();
-            return !!pin && Math.abs(parseFloat(pin.style.left) - b.x - b.width / 2) < 0.02
-              && Math.abs(parseFloat(pin.style.top) - b.y - b.height / 2) < 0.02;
+            return !!pin && Math.abs(parseFloat(pin.style.left) - (b.x + b.width / 2) * k) < 0.05
+              && Math.abs(parseFloat(pin.style.top) - (b.y + b.height / 2) * k) < 0.05;
           }});
           return {{ nanoSVG: !!nano, ancho: nano.width.baseVal.value, alto: nano.height.baseVal.value,
             mismoMarco: nano.getAttribute('viewBox') === exp.getAttribute('viewBox'),
-            ventana: !!exp.querySelector('path[fill-rule="evenodd"]'),
+            debajo: !!(exp.parentNode.compareDocumentPosition(nano.parentNode) & Node.DOCUMENT_POSITION_FOLLOWING),
             contactos: contactos.length, alineados: contactos.every(Boolean),
             leds: [...nano.querySelectorAll('[data-led]')].map(n => n.dataset.led).sort(),
             marcas: !!nano.querySelector('image') || !!exp.querySelector('image') }};
@@ -182,19 +184,22 @@ with sync_playwright() as p:
         refs = puntos()
         revisar(len([r for r in refs if r.startswith('placa.')]) == 30, 'el Nano muestra treinta terminales físicos')
         revisar(len([r for r in refs if r.startswith('exp1.')]) == 82, 'la expansión muestra ochenta y dos terminales')
-        revisar(refs['exp1.I2C_SDA'][0] > refs['placa.D1'][0]
-                and abs(refs['exp1.I2C_SDA'][1] - refs['exp1.UART_TX'][1]) < 0.01
-                and 9.6 < refs['exp1.UART_TX'][0] - refs['exp1.I2C_SDA'][0] < 12,
+        # Placa medida por TecnoDiseñador: UART e I2C son dos conectores de cuatro, uno encima del otro.
+        fila = lambda pines: (all(abs(refs['exp1.' + p][1] - refs['exp1.' + pines[0]][1]) < 0.01 for p in pines)
+                              and all(abs(refs['exp1.' + b][0] - refs['exp1.' + a][0] - 9.6) < 0.05 for a, b in zip(pines, pines[1:])))
+        revisar(min(refs['exp1.I2C_SCL'][0], refs['exp1.UART_RX'][0]) > refs['placa.D1'][0]
+                and fila(['UART_RX', 'UART_TX', 'UART_V', 'UART_G']) and fila(['I2C_SCL', 'I2C_SDA', 'I2C_V', 'I2C_G'])
+                and 0 < refs['exp1.I2C_SDA'][1] - refs['exp1.UART_TX'][1] < 25,
                 'I2C está junto a UART, al final del Nano y fuera del cuerpo del módulo')
-        revisar(all('exp1.' + p in refs for p in ['OUT_5V', 'OUT_5V_2', 'OUT_3V3', 'OUT_3V3_2', 'GND_OUT', 'GND_OUT_2'])
-                and not any('exp1.' + p in refs for p in ['SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G']),
-                'el bloque de seis contactos es alimentación duplicada y no dibuja un falso puerto SPI')
+        revisar(all('exp1.' + p in refs for p in ['OUT_3V3', 'OUT_3V3_2', 'OUT_3V3_3', 'GND_OUT', 'GND_OUT_2', 'GND_OUT_3'])
+                and not any('exp1.' + p in refs for p in ['SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G', 'OUT_5V', 'OUT_5V_2']),
+                'el bloque de seis contactos son tres 3V3 y tres GND, como la placa medida, sin falso SPI ni 5V')
         revisar({'placa.A6', 'placa.A7', 'placa.RESET2', 'placa.GND2'} <= refs.keys()
                 and not any(r in refs for r in ['placa.D20', 'placa.D21', 'placa.IOREF']), 'A6/A7 tienen contactos analógicos propios, sin GPIO adicionales ni IOREF del Uno')
         g = geometria()
-        revisar(g['nanoSVG'] and g['mismoMarco'] and abs(g['ancho'] - 219.21) < 0.02 and abs(g['alto'] - 204.09) < 0.02,
-                'Nano y expansión comparten el marco SVG nominal 58 × 54 mm')
-        revisar(g['ventana'] and not g['marcas'], 'la expansión deja una ventana para el Nano y usa dibujos propios, sin imágenes incrustadas')
+        revisar(g['nanoSVG'] and g['mismoMarco'] and abs(g['ancho'] - 226.77) < 0.02 and abs(g['alto'] - 202.2) < 0.02,
+                'Nano y expansión comparten el marco medido por TecnoDiseñador, 60 × 53,5 mm')
+        revisar(g['debajo'] and not g['marcas'], 'la expansión va debajo del Nano, como en la mesa, y sin imágenes incrustadas')
         revisar(g['contactos'] == 82 and g['alineados'], 'los 82 puntos de cableado coinciden con los contactos dibujados')
         revisar(g['leds'] == ['L', 'PWR', 'RX', 'TX'], 'el Nano tiene sus cuatro LED actualizables')
         pwr_apagado = pg.locator('.tc-comp[data-id="placa"] [data-led="PWR"]').get_attribute('fill')
@@ -283,10 +288,10 @@ with sync_playwright() as p:
         revisar(abs(m['voltajes']['placa.A6'] - 1.25) < 0.01 and abs(m['voltajes']['placa.A7'] - 3.75) < 0.01,
                 'la medición y el ADC ven los mismos nodos A6/A7 a través de la expansión')
         revisar(not any(p in m['entradas'] for p in ['A6', 'A7']), 'el Worker conserva A6/A7 fuera de las entradas digitales')
-        revisar(m['voltajes']['exp1.OUT_5V_2'] == m['voltajes']['exp1.OUT_5V']
-                and m['voltajes']['exp1.OUT_3V3_2'] == m['voltajes']['exp1.OUT_3V3']
-                and m['voltajes']['exp1.GND_OUT_2'] == m['voltajes']['exp1.GND_OUT'],
-                'los dos contactos de cada salida comparten el voltaje de su red de alimentación')
+        revisar(m['voltajes']['exp1.OUT_5V_2'] == m['voltajes']['exp1.OUT_5V'] == m['voltajes']['placa.5V']
+                and m['voltajes']['exp1.OUT_3V3_2'] == m['voltajes']['exp1.OUT_3V3_3'] == m['voltajes']['exp1.OUT_3V3']
+                and m['voltajes']['exp1.GND_OUT_2'] == m['voltajes']['exp1.GND_OUT_3'] == m['voltajes']['exp1.GND_OUT'],
+                'los tres contactos de cada salida comparten el voltaje de su red, y los alias OUT_5V siguen en el 5V')
 
         # Cambiar la tarjeta redibuja los contactos y las puntas, preservando redes y CPU.
         seleccionar_expansion()
@@ -297,10 +302,11 @@ with sync_playwright() as p:
         cambiar('variante', 'azul')
         puntos_azul = puntos()
         revisar(pg.evaluate('lienzo.circuito().cables') == cables_roja, 'roja → azul conserva las seis referencias de cables')
-        revisar(puntos_roja['exp1.A6_S'] != puntos_azul['exp1.A6_S'] and puntos_roja['placa.A6'] == puntos_azul['placa.A6'],
-                'cambiar la variante mueve sus conectores y conserva la posición del módulo')
-        revisar(pg.locator('main .tc-cables .tc-cable-linea').evaluate_all('(p) => p.map(x => x.getAttribute("d"))') != trazos_roja,
-                'las puntas dibujadas siguen a los conectores movidos')
+        # La roja y la azul del ambiente tienen las mismas medidas (TecnoDiseñador, 13 oct): cambia el dibujo, no los puntos.
+        revisar(puntos_roja == puntos_azul and pg.locator('main .tc-comp[data-id="exp1"] [id^="td-exp-azul-"]').count() > 0,
+                'cambiar la variante redibuja la tarjeta y conserva sus contactos y la posición del módulo')
+        revisar(pg.locator('main .tc-cables .tc-cable-linea').evaluate_all('(p) => p.map(x => x.getAttribute("d"))') == trazos_roja,
+                'las puntas dibujadas siguen en sus conectores')
         revisar(geometria()['alineados'], 'los contactos azules y la capa de pines siguen coincidiendo')
         esperar_lectura(256, 768, 'el cambio de variante conserva el ADC')
         revisar(pg.evaluate('sim._medidas().estado') == 'corriendo' and pg.evaluate('sim.medidas().msSimulados') > t0,

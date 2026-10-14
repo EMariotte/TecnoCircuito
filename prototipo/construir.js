@@ -23,6 +23,11 @@ const trabajador = esbuild.buildSync({
   target: ['chrome120'],
   legalComments: 'eof', // conserva el aviso de licencia de avr8js (MIT) dentro del Worker
 }).outputFiles[0].text;
+// El Worker no dibuja: si un dibujo de TecnoDiseñador se cuela (una llamada sin /* @__PURE__ */ en src/piezas/), el
+// paquete crece unos 50 KB por pieza sin que nada falle. Mejor detenerse aquí.
+if (trabajador.includes('data-contacto')) {
+  throw new Error('El Worker trae dibujos de src/piezas/vistas/: marca como /* @__PURE__ */ las llamadas que los usan al cargar el módulo.');
+}
 
 // 2. El paquete: lienzo, simulador (lado de la página) y el Worker embebido.
 const { outputFiles } = esbuild.buildSync({
