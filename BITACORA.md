@@ -1146,3 +1146,15 @@ Efraín pidió revisar el imán con un segundo agente antes del commit. **Sin er
 ## 2026-10-14 — Claude: decisión de Efraín, el paso estándar manda sobre la foto
 
 Las filas +5 / Gnd / A0-5 de la shield van a **2,54 mm** entre sí (la entrega las tiene a 3,03 y 3,08 mm, como la foto). El estándar manda porque los pines reales tienen juego. Queda documentado para TecnoDiseñador: en su `CLAUDE.md` (decisión «Paso estándar de los headers» y pendiente 7), en su BITACORA y en `HALLAZGOS-PARA-TECNOCIRCUITO.md`. Aquí, en la especificación de entrega (sección 6.0) y en COMO-FUNCIONA (sección 64). Cuando regenere, basta `npm run vistas` y las pruebas: los nombres de los contactos no cambian.
+
+## 2026-10-14 — Validación humana de las vistas y encargo para la próxima sesión (Efraín, con Claude)
+
+**Efraín probó la app** (TecnoCircuito `d5ab43f`, TecnoBloques `fc81d23`): corrió todos los ejemplos y cambió los pines de las piezas enchufadas para validar el imán. Todo pasó y el imán funciona de manera satisfactoria. «Está gráficamente genial.» A los aprendices les gustó el diseño de las placas, muy cercano a la realidad, y el dibujo caricaturesco les fascinó: **aceptación 10/10**. Registro: `validacion/2026-10-14-vistas-uso.md` (validación de uso, no eléctrica; sin datos de los aprendices).
+
+**Para la próxima sesión, solo software:**
+1. **LED y resistencia como Piezas Tecno**, dibujados por TecnoDiseñador, para que todas las piezas de la suite nos pertenezcan.
+2. **La resistencia en dos tamaños:** uno más pequeño para 0,5 W y el diseño actual para 2 W.
+3. Antes del encargo a TecnoDiseñador, TecnoCircuito define sus fichas de vista y le explica el plan a Efraín.
+4. El pulsador y el potenciómetro siguen siendo de wokwi; quedan anotados para completar la suite.
+
+Anotado en `CLAUDE.md` («Próxima sesión») y en los pendientes de TecnoDiseñador.
