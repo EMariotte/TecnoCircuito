@@ -74,7 +74,7 @@ with sync_playwright() as p:
     pg.locator('main select[data-prop="puentePWR"]').select_option('false')
     pg.wait_for_timeout(200)
     revisar(de_tipo('shield_l293d')['props']['puentePWR'] is False, 'el campo «Puente PWR» guarda «quitado» (false, no el texto)')
-    capuchon = pg.evaluate(f'!!{RAIZ}.querySelector(\'[data-id="{sh["id"]}"] [data-puente]\')')
+    capuchon = pg.evaluate(f'!!{RAIZ}.querySelector(\'[data-id="{sh["id"]}"] [data-parte="puente-pwr"]\')')
     revisar(not capuchon, 'y el dibujo muestra los dos pines del puente sin su capuchón')
     pg.locator('main').screenshot(path=str(SALIDA / 'carro_1_shield.png'))
 

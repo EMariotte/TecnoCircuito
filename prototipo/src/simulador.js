@@ -74,7 +74,8 @@ export function crearSimulador(opciones = {}) {
       voltajes: vista.voltajes,
       servos: vista.servos || {},
       piezas: vista.piezas || {},
-      placa: { ledPower: vista.placa.encendida !== false, led13: vista.placa.led13, ledTX: vista.placa.ledTX },
+      // El LED L con su brillo promedio (0 a 1); TX y RX destellan al enviar y al recibir por el monitor serial.
+      placa: { ledPower: vista.placa.encendida !== false, led13: vista.placa.brilloL ?? vista.placa.led13, ledTX: vista.placa.ledTX, ledRX: vista.placa.ledRX },
     });
   }
 

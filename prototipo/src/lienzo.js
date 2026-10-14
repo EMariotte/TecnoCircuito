@@ -379,6 +379,33 @@ export function crearLienzo(elemento, opciones = {}) {
     marcarOcupados();
   }
 
+  // Al abrir, el `en` manda para la conexión (contrato). Si el dibujo de un pin cambió desde que se guardó (una vista
+  // nueva de la placa o de la expansión), la pieza enchufada se corre, con lo que cuelga de ella, hasta quedar sobre sus
+  // pines: lo que conduce y lo que se ve vuelven a coincidir. Si sus patas ya no caben a la vez en sus pines, o si
+  // también tiene patas en la protoboard (que no se movió), se queda donde estaba, enchufada como dice el archivo.
+  function alinearEnchufesAlAbrir() {
+    // Varias vueltas: una pieza enchufada en otra que se acaba de correr ya se corrió con ella.
+    for (let vuelta = 0; vuelta <= datos.componentes.length; vuelta++) {
+      let corrida = false;
+      for (const k of datos.componentes) {
+        if (!k.en || montada(k) || Object.values(k.en).some(esHueco)) continue;
+        const pasos = Object.entries(k.en).map(([pata, ref]) => {
+          const a = posicion(k.id + '.' + pata);
+          const b = posicion(ref);
+          return a && b ? { dx: b.x - a.x, dy: b.y - a.y } : null;
+        });
+        // Solo si alguna pata quedó fuera del imán: dentro de su tolerancia, la pieza se queda donde se guardó.
+        if (pasos.some((p) => !p) || pasos.every((p) => Math.hypot(p.dx, p.dy) <= ENCHUFE_TOL)) continue;
+        const { dx, dy } = pasos[0];
+        if (pasos.some((p) => Math.hypot(p.dx - dx, p.dy - dy) > ENCHUFE_TOL)) continue;
+        moverGrupo(k, dx, dy);
+        corrida = true;
+      }
+      if (!corrida) break;
+    }
+    marcarOcupados();
+  }
+
   // Corre una pieza y todo lo que cuelga de ella.
   function moverGrupo(c, dx, dy, grupo = colgantes(c.id)) {
     if (!dx && !dy) return;
@@ -1816,7 +1843,7 @@ export function crearLienzo(elemento, opciones = {}) {
   Promise.all([vistaPlaca, ...(datos.protoboard ? [crearVistaProtoboard()] : []), ...datos.componentes.map((c) => crearVista(c.id, c.tipo, c.props))]).then(() => {
     if (destruido) return;
     listo = true;
-    marcarOcupados();
+    alinearEnchufesAlAbrir();
     dibujarCables();
     encuadrado = encuadrar();
     const aviso = [

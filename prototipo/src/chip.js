@@ -72,6 +72,7 @@ export function crearChip(hex) {
 
   const alPines = [];
   const alByte = [];
+  const alRecibido = []; // cada byte del monitor serial que llega a la placa (el LED RX)
   const colaEntrada = [];
   let anterior = estados();
 
@@ -115,6 +116,7 @@ export function crearChip(hex) {
       if (colaEntrada.length && !usart.rxBusy) {
         usart.writeByte(colaEntrada[0]); // si el programa no abrió el serial, el byte se pierde, como en la placa
         colaEntrada.shift();
+        for (const fn of alRecibido) fn(); // el LED RX lo prende el conversor USB, aunque el programa no lea
       }
       for (const fn of alMs) fn();
     }
@@ -128,6 +130,7 @@ export function crearChip(hex) {
     },
     alCambiarPines: (fn) => alPines.push(fn),
     alByteSerial: (fn) => alByte.push(fn),
+    alByteRecibido: (fn) => alRecibido.push(fn),
     enviarSerial: (texto) => colaEntrada.push(...new TextEncoder().encode(texto)),
     // Voltaje que verá analogRead() en los canales ADC0–ADC7. A6/A7 no tienen GPIO.
     ponerAnalogico: (canal, voltios) => (adc.channelValues[canal] = Math.max(0, Math.min(5, voltios))),

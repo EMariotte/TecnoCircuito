@@ -1585,3 +1585,31 @@ Ningún cable guardado cambia de red. Una pata enchufada con el imán en `OUT_5V
 - Se ajustaron las pruebas que dependían del dibujo viejo: el Uno de wokwi (`led13`, su CSS en la imagen exportada, la x de D13: 124,61 px en vez de 125), la ventana de la expansión, I2C y UART (en la placa medida son dos conectores, uno encima del otro), y el mapa de pads de KiCad.
 
 **Pendiente:** la validación eléctrica sigue igual que antes: los dibujos están medidos, pero la continuidad, el jack y los reguladores de la expansión se confirman en el laboratorio.
+
+## 63. LED de las placas e imán al abrir (14 oct 2026, Claude)
+
+Después de integrar las vistas (sección 62), Efraín pidió mejorar los LED y el imán del Nano.
+
+**Los LED de la placa, de punta a punta:**
+
+```mermaid
+flowchart LR
+  C["chip.js<br/>byte enviado (TX)<br/>byte recibido (RX)"] --> N["nucleo.js · foto()<br/>brilloL = parte de la ventana con D13 en ALTO<br/>ledTX / ledRX = destello de 60 ms"]
+  N --> S["simulador.js<br/>{ledPower, led13: brilloL, ledTX, ledRX}"]
+  S --> L["lienzo · mostrar()<br/>vista_td.js: mostrarLeds"]
+  L --> D["data-led: color según el brillo,<br/>halo y data-encendido"]
+```
+
+- **RX:** antes nunca se prendía, porque el núcleo no lo informaba. Ahora `chip.js` avisa cada vez que entrega a la placa un byte del monitor serial (`alByteRecibido`), y el LED destella 60 ms, igual que TX al enviar. Se prende aunque el programa no lea el serial, porque en la placa real lo prende el conversor USB.
+- **L con brillo promedio:** antes era prendido o apagado según el pin en el instante de la foto. Si el pin 13 cambiaba más rápido que la foto (cada 16 ms), L parpadeaba al azar. Ahora el núcleo calcula qué parte de la ventana estuvo en ALTO (`brilloDe`, con los mismos tiempos que promedian el PWM del circuito) y L se ve con ese brillo. Con `rapido13` (1 kHz, 25 % en ALTO) se ve estable a un cuarto de brillo; con `parpadeo13`, apagado y prendido del todo, como antes.
+- **Color y halo:** `mostrarLeds` mezcla el color apagado y el encendido según el brillo, en pasos de 5 % (para no reescribir el dibujo por cambios que no se ven), con un mínimo de 20 % para que un LED tenue se vea. Encendido, lleva un halo de su color con dos sombras CSS (`drop-shadow`): una cercana y otra amplia. En un SVG, `drop-shadow` se mide en las unidades del dibujo (mm en las vistas de TecnoDiseñador, px en la shield), así que el radio sale del lado mayor del LED (`getBBox`). Si el lienzo está oculto no hay medida, y se vuelve a intentar en la próxima foto.
+- **Shield L293D:** su LED usa el mismo sistema (`data-led="PWR"`, `mostrarShield`) y el capuchón del puente PWR es la parte `data-parte="puente-pwr"`, como pide la especificación de entrega (sección 9.4). Cuando TecnoDiseñador entregue la shield medida, encaja sin cambios.
+
+**El imán al abrir.** El `en` es lo que manda para la conexión (contrato). Con la vista nueva del Nano, una pieza guardada enchufada en sus pines quedaba conectada pero dibujada unos 18 px lejos. Ahora, al abrir, `alinearEnchufesAlAbrir()` revisa cada pieza enchufada en pines (no en la protoboard):
+- si todas sus patas están dentro de la tolerancia del imán (3,5 px), no se toca: un LED de 10 px en dos pines a 9,6 px se queda donde se guardó;
+- si alguna quedó lejos y todas piden el mismo corrimiento, la pieza se corre con lo que cuelga de ella hasta quedar sobre sus pines;
+- si sus patas ya no caben juntas en sus pines, o si también tiene patas en la protoboard, se queda donde estaba y sigue enchufada, como dice el archivo.
+
+No se emiten eventos: abrir no es una edición del aprendiz.
+
+**Pruebas:** núcleo (L estable a 25 % con `rapido13`, apagado y prendido con `parpadeo13`, RX apagado sin datos, prendido al recibir y apagado después); `probar_vistas.py` (35: halo en L, RX en pantalla en el Uno y en el Nano, el LED corrido a D13/3V3 al abrir y el que no cabe, que se queda); `probar_carro.py` (el capuchón como `data-parte`); `probar_enchufe.py` (25, el LED en D13/GND sigue en el mismo lugar al recargar).

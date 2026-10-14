@@ -470,6 +470,31 @@ const desviacion = (xs) => {
     `el USB entrega ${mA(conPin.usb)}: 50 mA de la placa, ${mA(conPin.del5V)} del pin 5V y ${mA(conPin.pin)} que entrega el pin 13`);
 }
 
+// LED de la placa (14 oct). L sigue al promedio del pin 13, como los LED del circuito; RX destella al recibir.
+{
+  const vacio = { formato: 1, placa: 'uno', componentes: [], cables: [], protoboard: null };
+  // rapido13: el pin 13 cambia mil veces por segundo, 250 µs en ALTO de cada 1000 µs.
+  const rapido = crearNucleo({ hex: hex('rapido13'), circuito: vacio, semilla: 1 });
+  const brillos = [];
+  for (let t = 0; t < 20; t++) {
+    rapido.avanzar(CUADRO);
+    if (t >= 2) brillos.push(rapido.foto().placa.brilloL);
+  }
+  revisar(brillos.every((b) => b > 0.22 && b < 0.32), `L con el pin 13 a 1 kHz y 25 %: brillo estable de ${Math.min(...brillos)} a ${Math.max(...brillos)}, sin parpadear`);
+  const lento = crearNucleo({ hex: hex('parpadeo13'), circuito: vacio, semilla: 1 });
+  const vistos = new Set();
+  for (let t = 0; t < 2000; t += 16) {
+    lento.avanzar(CUADRO);
+    vistos.add(lento.foto().placa.brilloL);
+  }
+  revisar(vistos.has(0) && vistos.has(1), 'L con parpadeo13 (medio segundo prendido): se ve apagado y prendido del todo');
+  revisar(!correr(lento, 32).placa.ledRX, 'RX apagado si el monitor no envía nada');
+  lento.enviarSerial('on\n');
+  const conRX = correr(lento, 16).placa;
+  revisar(conRX.ledRX, 'RX se prende cuando el monitor serial le envía datos a la placa (aunque el programa no los lea)');
+  revisar(!correr(lento, 160).placa.ledRX, 'y se apaga después del destello');
+}
+
 // 5. Cuánto tarda el chip (Node, este PC): sin PWM, con PWM y con el potenciómetro.
 //    Es informativo: depende del PC y de si está con cargador (con batería, Windows baja la velocidad).
 const velocidades = {};

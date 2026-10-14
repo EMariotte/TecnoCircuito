@@ -109,6 +109,11 @@ with sync_playwright() as p:
         prendidos = pg.evaluate(ENCENDIDOS)
         esperado = ['placa.L', 'placa.PWR'] + (['exp1.PWR'] if variante else [])
         revisar(all(x in prendidos for x in esperado), f'{placa}: con parpadeo13 se encienden {", ".join(esperado)}')
+        halo = pg.evaluate(f'''() => {RAIZ}.querySelector('.tc-placa [data-led="L"]').style.filter''')
+        revisar('drop-shadow' in halo, f'{placa}: el LED L encendido tiene halo ({halo})')
+        pg.evaluate('window.sim.serialEnviar("hola")')
+        pg.wait_for_function(f'() => {RAIZ}.querySelector(\'.tc-placa [data-led="RX"][data-encendido]\')', timeout=3000)
+        revisar(True, f'{placa}: el LED RX destella cuando el monitor serial envía datos a la placa')
         pg.wait_for_function(f'() => !{RAIZ}.querySelector(\'.tc-placa [data-led="L"][data-encendido]\')', timeout=8000)
         revisar(True, f'{placa}: el LED L se apaga y se prende con el pin 13')
         pg.evaluate('window.sim.detener()')
@@ -157,6 +162,29 @@ with sync_playwright() as p:
     aviso = pg.evaluate(f'''() => {RAIZ}.querySelector('.tc-ayuda').textContent''')
     revisar(en == {'catodo': 'exp1.GND_OUT_3'} and 'Se soltó 1 conexión directa' in aviso,
             f'una pata enchufada en OUT_5V se suelta al abrir y se avisa; la de GND_OUT_3 se queda ({en})')
+
+    print('— Al abrir, una pieza enchufada se corre a sus pines si el dibujo cambió desde que se guardó')
+    # Como un proyecto guardado con el Nano anterior: el LED quedó lejos de D13/3V3 (ahora en otro lugar).
+    circ = circuito('nano', 'roja')
+    circ['componentes'] += [
+        {'id': 'led1', 'tipo': 'led', 'x': 300, 'y': 300, 'rot': 0, 'props': {'color': 'rojo'},
+         'en': {'anodo': 'placa.3V3', 'catodo': 'placa.D13'}},
+        # Este no cabe: sus patas piden corrimientos distintos. Se queda donde está, enchufado (el en manda).
+        {'id': 'led2', 'tipo': 'led', 'x': 500, 'y': 300, 'rot': 0, 'props': {'color': 'verde'},
+         'en': {'anodo': 'placa.VIN', 'catodo': 'exp1.A0_S'}},
+    ]
+    abrir(pg, circ)
+    r = pg.evaluate(f'''() => {{ const r = {RAIZ};
+      const p = (ref) => {{ const d = r.querySelector(`.tc-pin[data-ref="${{ref}}"]`); return [parseFloat(d.style.left), parseFloat(d.style.top)]; }};
+      const d = (a, b) => Math.hypot(p(a)[0] - p(b)[0], p(a)[1] - p(b)[1]);
+      const c = lz.circuito().componentes;
+      const k = (id) => c.find(x => x.id === id);
+      return {{ led1: [d('led1.anodo', 'placa.3V3'), d('led1.catodo', 'placa.D13')], en1: k('led1').en,
+        led2: [k('led2').x, k('led2').y], en2: k('led2').en, aviso: r.querySelector('.tc-ayuda').textContent }}; }}''')
+    revisar(max(r['led1']) < 1 and r['en1'] == {'anodo': 'placa.3V3', 'catodo': 'placa.D13'},
+            f'el LED guardado lejos queda sobre D13 y 3V3, con su en (distancias {[round(x, 2) for x in r["led1"]]} px)')
+    revisar(r['led2'] == [500, 300] and r['en2'] == {'anodo': 'placa.VIN', 'catodo': 'exp1.A0_S'} and 'Se solt' not in r['aviso'],
+            'el que ya no cabe en sus pines se queda donde estaba y sigue enchufado, sin aviso de soltar')
 
     print('— Los id del documento no se repiten (miniaturas de la biblioteca incluidas)')
     for placa, variante in [('nano', 'roja'), ('nano', 'azul'), ('uno', None)]:

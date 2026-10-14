@@ -1093,3 +1093,16 @@ Efraín pidió revisar el imán con un segundo agente antes del commit. **Sin er
 - Costo aceptado: las dos variantes van como SVG completos (unos 88 KB). Un solo dibujo con paleta por variante lo reduciría; queda como mejora.
 
 **Pendiente:** revisión de Codex para la familia Nano, validación física sin cambios (los dibujos están medidos; la continuidad, el jack y los reguladores no), la shield L293D de TecnoDiseñador y la etiqueta `v0.1.0` después del laboratorio. Commit y push: a la espera del sí de Efraín.
+
+## 2026-10-14 — Claude: LED de las placas e imán del Nano al abrir
+
+**Pedido de Efraín** (después del commit `4a4377f`): mejorar el imán del Nano (no hay proyectos publicados) y los LED. Eligió las cuatro mejoras propuestas para los LED.
+
+- **RX:** destella cuando el monitor serial le envía datos a la placa (`chip.alByteRecibido`). Antes nunca se prendía.
+- **L con brillo promedio:** el núcleo informa `brilloL`, la parte de la ventana con el pin 13 en ALTO. Si el pin cambia más rápido que la foto, L se ve a medio brillo en vez de parpadear al azar. Programa de prueba nuevo: `programas/rapido13` (1 kHz, 25 %).
+- **Halo:** el LED encendido toma un color según su brillo y un resplandor de su color (dos `drop-shadow`, con el radio medido sobre el LED, porque se miden en las unidades del dibujo).
+- **Shield L293D:** `data-led="PWR"` con el mismo sistema, y el capuchón como `data-parte="puente-pwr"` (especificación, 9.4).
+- **Imán al abrir:** una pieza enchufada cuyas patas quedaron fuera de la tolerancia (vista nueva del Nano) se corre con lo que cuelga de ella hasta sus pines, si todas piden el mismo corrimiento. Si no caben juntas, se queda enchufada donde estaba, como dice el contrato. Dentro de la tolerancia no se mueve nada.
+- COMO-FUNCIONA, sección 63.
+
+**Pruebas:** suite completa **1064 OK, 0 fallas** (antes 1053); TecnoBloques `test:simulador` **53 OK**. Sin cambios en el contrato: `brilloL` y `ledRX` son internos (Worker → lienzo).

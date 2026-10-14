@@ -3,7 +3,7 @@
 // Las piezas Tecno (dibujo propio, sin Wokwi) traen `dibujo` en vez de `etiqueta`: ver src/piezas/.
 
 import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
-import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, dibujarShield } from './piezas/shield_l293d.js';
+import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, dibujarShield, mostrarShield } from './piezas/shield_l293d.js';
 import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
 import { PROBADOR, TAMANO_PROBADOR, PINES_PROBADOR, dibujarProbador, mostrarProbador } from './piezas/probador_lipo.js';
@@ -196,12 +196,7 @@ export const TIPOS = {
       const nuevo = new DOMParser().parseFromString(dibujarShield(props.puentePWR !== false), 'image/svg+xml').documentElement;
       el.replaceChildren(...[...nuevo.childNodes].map((n) => el.ownerDocument.importNode(n, true)));
     },
-    // Mientras se simula, el LED de la shield se prende si los motores tienen energía.
-    mostrar(el, estado) {
-      const led = el.querySelector('[data-led-pwr]');
-      const color = estado && estado.motoresV > 1 ? '#3ddc5a' : '#1f5a2c';
-      if (led && led.getAttribute('fill') !== color) led.setAttribute('fill', color);
-    },
+    mostrar: mostrarShield,
   },
   // Tarea T3. Pieza Tecno: motorreductor TT de 6 V (src/piezas/motor_tt.js), con dos vistas y su lado del robot.
   // La vista cambia el tamaño del dibujo: el lienzo lo rehace al cambiarla (dibujo.marco).

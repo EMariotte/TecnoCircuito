@@ -24,16 +24,34 @@ export function svgDe(vista, { titulo, descripcion, encima = '' }) {
 
 // Enciende o apaga cada `data-led` con sus colores de la entrega. El estado admite la foto del núcleo
 // ({ledPower, led13, ledRX, ledTX}), {pwr, l, rx, tx} o {leds: {PWR, L, RX, TX}}; null o vacío los apaga.
-// `data-encendido` dice lo mismo sin depender del color (lo usan las pruebas).
+// Cada valor es true/false o un brillo de 0 a 1 (el LED L sigue al promedio del pin 13). Encendido, el LED toma un
+// color entre el apagado y el encendido según su brillo y un halo de su color, como un LED SMD real.
+// `data-encendido` dice si está prendido sin depender del color (lo usan las pruebas y TecnoBloques).
 const CLAVES_FOTO = { PWR: 'ledPower', L: 'led13', RX: 'ledRX', TX: 'ledTX' };
+const canales = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const mezclar = (a, b, t) => '#' + canales(a).map((x, i) => Math.round(x + (canales(b)[i] - x) * t).toString(16).padStart(2, '0')).join('');
+
 export function mostrarLeds(svg, leds, estado) {
   for (const [nombre, colores] of Object.entries(leds)) {
-    const intensidad = estado?.leds?.[nombre] ?? estado?.[nombre.toLowerCase()] ?? estado?.[CLAVES_FOTO[nombre]] ?? 0;
-    const prendido = intensidad > 0;
-    const color = prendido ? colores.encendido : colores.apagado;
+    const crudo = estado?.leds?.[nombre] ?? estado?.[nombre.toLowerCase()] ?? estado?.[CLAVES_FOTO[nombre]] ?? 0;
+    const nivel = Math.max(0, Math.min(1, Number(crudo) || 0));
+    // En pasos de 5 %, para no reescribir el dibujo por cambios que no se ven. Un LED que apenas prende se ve tenue,
+    // pero se ve (mínimo 20 %), como el ojo ve un LED con poca corriente.
+    const paso = nivel > 0.005 ? Math.max(0.2, Math.round(nivel * 20) / 20) : 0;
     const led = svg.querySelector(`[data-led="${nombre}"]`);
-    if (!led || led.getAttribute('fill') === color) continue;
-    led.setAttribute('fill', color);
-    led.toggleAttribute('data-encendido', prendido);
+    if (!led || led.dataset.nivel === String(paso)) continue;
+    led.dataset.nivel = String(paso);
+    led.setAttribute('fill', paso ? mezclar(colores.apagado, colores.encendido, paso) : colores.apagado);
+    led.toggleAttribute('data-encendido', paso > 0);
+    // El halo se mide en las unidades del dibujo (mm o px): sale del lado mayor del LED. Dos sombras: una cercana,
+    // que lo hace brillar, y una amplia y tenue, que es la luz alrededor.
+    const caja = paso && typeof led.getBBox === 'function' ? led.getBBox() : null;
+    const radio = caja && caja.width ? Math.max(caja.width, caja.height) : 0;
+    const [r, g, b] = canales(colores.encendido);
+    const sombra = (k, a) => `drop-shadow(0 0 ${(radio * k).toFixed(2)}px rgba(${r}, ${g}, ${b}, ${(paso * a).toFixed(2)}))`;
+    if (radio) led.style.filter = `${sombra(0.35, 1)} ${sombra(1.2, 0.85)}`;
+    else led.style.removeProperty('filter');
+    // Con el lienzo oculto (otra pestaña de TecnoBloques) no hay medida: se vuelve a intentar en la próxima foto.
+    if (paso && !radio) delete led.dataset.nivel;
   }
 }

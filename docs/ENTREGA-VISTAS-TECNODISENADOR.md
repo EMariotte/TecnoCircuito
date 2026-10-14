@@ -2,7 +2,7 @@
 
 12 de octubre de 2026 · Especificación de entrega, versión 1. Fuente única: este archivo. TecnoDiseñador la enlaza desde su `CLAUDE.md`.
 
-**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano y la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62). Falta la shield L293D.
+**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano y la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62). Falta la shield L293D; su dibujo actual ya usa `data-led="PWR"` y `data-parte="puente-pwr"` (paso 4 de la sección 9).
 
 **Para quién:** el agente que dibuja en `..\TecnoDiseñador` y Efraín. Dice exactamente qué archivos entregar, con qué reglas y con qué datos, para que el dibujo reemplace la vista de una pieza de TecnoCircuito **sin tocar nada a mano** al migrarlo.
 

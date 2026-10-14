@@ -22,7 +22,7 @@ export { pantallaProbador } from './piezas/probador_lipo.js'; // para probar la 
 export { perfilPlaca, esNano } from './placas.js';
 export { NANO_REFERENCIA, FUENTES_NANO, fuenteNano, resolverAlimentacionNano } from './alimentacion_nano.js';
 
-const DESTELLO_TX_MS = 60; // cuánto queda prendido el LED TX de la placa después de enviar
+const DESTELLO_TX_MS = 60; // cuánto queda prendido el LED TX (o RX) de la placa después de enviar (o recibir)
 // Entradas digitales que se leen del circuito (D0 y D1 son del monitor serial).
 const ENTRADAS = ['D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
 // Umbrales del ATmega328P a 5 V: ALTO desde 0,6·VCC y BAJO hasta 0,3·VCC. En medio la lectura no es segura:
@@ -88,6 +88,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let cambioPin = {}; // pin → ciclo de su último cambio (su ciclo útil se sigue promediando mientras cambie)
   let evaluaciones = 0;
   let txHasta = 0;
+  let rxHasta = 0;
   let serial = []; // bytes que mandó el programa desde la última foto
   // UTF-8 con memoria entre fotos: una «í» son dos bytes y pueden caer en fotos distintas.
   let decodificador = new TextDecoder('utf-8');
@@ -161,6 +162,9 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     chip.alByteSerial((byte) => {
       serial.push(byte);
       txHasta = ms() + DESTELLO_TX_MS;
+    });
+    chip.alByteRecibido(() => {
+      rxHasta = ms() + DESTELLO_TX_MS;
     });
   }
 
@@ -722,7 +726,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       quemados: [...quemados],
       voltajes: voltajesConAire(),
       entradas: entradasParaVer(),
-      placa: { led13: pines.D13 === PinState.High, ledTX: ms() < txHasta, ...(nano ? { encendida: true } : {}) },
+      // brilloL: la parte de la ventana con el pin 13 en ALTO. El LED L sigue al pin como los LED del circuito: si el
+      // pin cambia más rápido que la foto, se ve a medio brillo en vez de parpadear al azar.
+      placa: {
+        led13: pines.D13 === PinState.High, brilloL: brilloDe('D13', partes, total),
+        ledTX: ms() < txHasta, ledRX: ms() < rxHasta, ...(nano ? { encendida: true } : {}),
+      },
       serial: texto,
       fallas: fallasNuevas,
       medicion,
@@ -745,7 +754,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       quemados: [...quemados],
       voltajes: m?.voltajes || {},
       entradas: {},
-      placa: { led13: false, ledTX: false, encendida: false },
+      placa: { led13: false, brilloL: 0, ledTX: false, ledRX: false, encendida: false },
       serial: '',
       fallas: fallasNuevas,
       medicion: null,
@@ -790,6 +799,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     serial = [];
     decodificador = new TextDecoder('utf-8');
     txHasta = 0;
+    rxHasta = 0;
     energiaDeNuevo();
     nuevoChip();
     rehacerRed();
@@ -871,6 +881,13 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
 
 // Fracción del tiempo en ALTO de cada pin que cambió dentro de la ventana (el «ciclo útil» del PWM).
 // `recientes`: pines que cambiaron hace poco; entran aunque en esta ventana se queden en 0 o en 1.
+// Parte de la ventana en que `pin` estuvo en ALTO, de 0 a 1 (con dos decimales).
+function brilloDe(pin, partes, total) {
+  let alto = 0;
+  for (const [k, t] of partes) if (Math.floor(k / PESO[pin]) % 4 === PinState.High) alto += t;
+  return total > 0 ? Math.round((alto / total) * 100) / 100 : 0;
+}
+
 function ciclosUtiles(partes, total, recientes = new Set()) {
   const altos = {};
   const vistos = new Set();

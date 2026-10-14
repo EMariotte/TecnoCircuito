@@ -15,6 +15,7 @@
 // El dibujo se hizo a partir de la placa del kit y de las hojas de datos, sin copiar el de nadie.
 
 import { HEADERS_UNO } from './uno.js';
+import { mostrarLeds } from './vista_td.js';
 
 const MM = 9.6 / 2.54;
 export const TAMANO_SHIELD = { ancho: 72.58 * MM, alto: 53.34 * MM };
@@ -118,7 +119,16 @@ const electrolitico = (x, y, d) =>
   `<path d="M${r2(x)} ${r2(y - d / 2)} a ${r2(d / 2)} ${r2(d / 2)} 0 0 1 0 ${r2(d)}" fill="#8a8f96" opacity="0.55"/>` +
   `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(d / 2 - 2.2)}" fill="none" stroke="#c9ccd1" stroke-width="0.5"/>`;
 
+// El LED de encendido, con el mismo sistema que las placas (data-led y src/piezas/vista_td.js).
+const LED_SHIELD = { PWR: { apagado: '#1f5a2c', encendido: '#3ddc5a' } };
+
+// Mientras se simula, el LED de la shield se prende si los motores tienen energía.
+export function mostrarShield(svg, estado) {
+  mostrarLeds(svg, LED_SHIELD, { leds: { PWR: estado && estado.motoresV > 1 ? 1 : 0 } });
+}
+
 // La shield completa. `puentePWR`: si el puente PWR está puesto (la batería de EXT_PWR también alimenta el Vin del Uno).
+// El capuchón es la parte `puente-pwr` (especificación de entrega, sección 6.3), igual que lo traerá TecnoDiseñador.
 export function dibujarShield(puentePWR = true) {
   const { ancho, alto } = TAMANO_SHIELD;
   const headers = FILAS_UNO.map(({ y, xs }) => {
@@ -148,7 +158,7 @@ export function dibujarShield(puentePWR = true) {
     // capacitores y LED de encendido
     electrolitico(118, 140, 6.3 * MM) + electrolitico(205, 140, 6.3 * MM) +
     `<rect x="146" y="128" width="10" height="5" rx="1" fill="#d9a441"/><rect x="160" y="128" width="10" height="5" rx="1" fill="#d9a441"/>` +
-    `<circle data-led-pwr="1" cx="${jumperX + 20}" cy="${jumperY}" r="3.2" fill="#1f5a2c" stroke="#0e2a14" stroke-width="0.6"/>` +
+    `<circle data-led="PWR" cx="${jumperX + 20}" cy="${jumperY}" r="3.2" fill="${LED_SHIELD.PWR.apagado}" stroke="#0e2a14" stroke-width="0.6"/>` +
     // bornes de los motores, EXT_PWR y servos
     bornera_(xIzq, yBorneras, 5) + bornera_(xDer, yBorneras, 5) +
     bornera_(PINES_SHIELD.EXT_POS.x, PINES_SHIELD.EXT_POS.y, 2, false) +
@@ -156,7 +166,7 @@ export function dibujarShield(puentePWR = true) {
     // puente PWR (dos pines y, si está puesto, el capuchón)
     `<rect x="${jumperX - 9}" y="${jumperY - 4.4}" width="18" height="8.8" fill="#151515"/>` +
     `<rect x="${jumperX - 6.4}" y="${jumperY - 1.4}" width="2.8" height="2.8" fill="#d6b45a"/><rect x="${jumperX + 3.6}" y="${jumperY - 1.4}" width="2.8" height="2.8" fill="#d6b45a"/>` +
-    (puentePWR ? `<rect data-puente="1" x="${jumperX - 9.6}" y="${jumperY - 5.2}" width="19.2" height="10.4" rx="1.5" fill="#2b2b2b" stroke="#000000" stroke-width="0.6"/>` : '') +
+    (puentePWR ? `<g data-parte="puente-pwr"><rect x="${jumperX - 9.6}" y="${jumperY - 5.2}" width="19.2" height="10.4" rx="1.5" fill="#2b2b2b" stroke="#000000" stroke-width="0.6"/></g>` : '') +
     // botón de reinicio
     `<rect x="${r2(BORDE_X + 6)}" y="160" width="18" height="18" rx="2" fill="#c9ccd1" stroke="#6e737a" stroke-width="0.8"/><circle cx="${r2(BORDE_X + 15)}" cy="169" r="5" fill="#2b2b2b"/>` +
     // serigrafía
