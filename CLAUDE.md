@@ -5,7 +5,7 @@
 
 ## Estado en una línea
 
-Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 casi validada (15 oct):** shield L293D (continuidad y caída), LiPo (1,2 Ω), motor TT y probador medidos y el modelo ajustado; quedan el sentido de giro de la rueda derecha, el USB del Nano con servos y el MG90S. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. **Vistas de TecnoDiseñador integradas (14 oct):** el Uno es Pieza Tecno y el Nano, la expansión y la shield usan dibujos medidos, sin cambiar el comportamiento (COMO-FUNCIONA, secciones 62 a 64). **Validación humana de uso (14 oct): todos los ejemplos y el imán pasaron; aceptación de los aprendices 10/10** (`validacion/2026-10-14-vistas-uso.md`). Suite: **25 grupos, 1089 OK, cero fallas** (16 oct, con el modelo de T3 ajustado al laboratorio y `resistenciaBateria`); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
+Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 casi validada (15 oct):** shield L293D (continuidad y caída), LiPo (1,2 Ω), motor TT y probador medidos y el modelo ajustado; quedan el sentido de giro de la rueda derecha, el USB del Nano con servos y el MG90S. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. **Vistas de TecnoDiseñador integradas (14 oct):** el Uno es Pieza Tecno y el Nano, la expansión y la shield usan dibujos medidos, sin cambiar el comportamiento (COMO-FUNCIONA, secciones 62 a 64). **Validación humana de uso (14 oct): todos los ejemplos y el imán pasaron; aceptación de los aprendices 10/10** (`validacion/2026-10-14-vistas-uso.md`). Suite: **25 grupos, 1089 OK, cero fallas** (16 oct, con el modelo de T3 ajustado al laboratorio y `resistenciaBateria`); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). **`v0.1.0` etiquetada el 16 oct** (pedido de Efraín, antes de dos días solo de software), con los pendientes de T3 del 16 oct conocidos.
 
 ## Qué es
 
@@ -121,11 +121,11 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 ## Próxima sesión
 
 **Laboratorio** (formato del 9 oct, varias prácticas seguidas; pasos en `prototipo/LEEME.md`):
-1. **5 y 6 SG90 con el Uno** («Validar: seis servos en el USB»): el simulador predice reinicio. El 15 oct se hizo con el **Nano** y no se reinició (4,12/4,03 V); falta el Uno y el 5V del Nano sin servos y con 1 a 4, para ajustar el USB del Nano y el golpe de arranque.
+1. **Pendientes de T3 (16 oct), en `validacion/2026-10-16-polaridad-bloqueo-servos-uno.md`:** el Uno **no** se reinicia con 5 ni 6 SG90 (el simulador sí: golpe de arranque exagerado) → probar 10 servos (6 SG90 + 4 MG90S) y anotar el 5V; M1 con FORWARD tiene positivo el **segundo** tornillo (el simulador, el primero) → medir M4, confirmar la orientación y un motor directo a la batería; motor bloqueado: 3,00 V (200) y 3,44 V (255) en M1 → falta la batería durante el bloqueo para separar el bobinado (¿3,8 Ω?) de la caída del L293D (¿1,7 V/A?); el 5V del Nano con 0 a 4 SG90.
 2. **MG90S** (suspendido: hay solo 4): corrientes (quieto, barrido, bloqueado ≤ 2 s) y ángulos con el transportador. Con la hoja de datos, el simulador predice que 4 MG90S reinician el Uno.
 3. Opcional: repetir el ADC con el programa corregido.
 4. **La protoboard con 2 o 3 aprendices**, y la velocidad con TecnoBloques en el aula cuando exista `v0.1.0`.
-5. ✅ **Shield L293D y motor TT** (15 oct). Queda: **sentido de giro** (la rueda derecha real avanza con el mismo cableado; el simulador la manda atrás): en «adelante 200», qué tornillo de M1 y de M4 queda positivo, y cada motor directo a la batería. Y el voltaje de la batería y de M1 con la rueda bloqueada (≤ 1 s), para el aumento por amperio del L293D.
+5. ✅ **Shield L293D y motor TT** (15 oct). Lo que queda está en el punto 1.
 6. ✅ **Probador de celdas** (15 oct).
 7. ✅ **Continuidad de la shield del kit** (15 oct).
 8. **Monitor serial con la placa real:** CSV y gráfico con `validar_adc` (solo se probaron con el simulador).

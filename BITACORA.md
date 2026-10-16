@@ -1196,3 +1196,11 @@ Con la batería en 7,64 V, todas las medidas del carro quedan dentro del criteri
 - Pruebas: modo ideal con 8,40 V en el motor, y sin `resistenciaBateria` (con la caída del L293D encendida) la batería queda en 8,40 V. La prueba del Nano con la LiPo en el jack enciende la clave.
 
 **Pruebas:** suite completa **1089 OK, 0 fallas** (16 oct); TecnoBloques `test:simulador` **53 OK**.
+
+## 2026-10-16 — Laboratorio: polaridad de M1, motor bloqueado y servos en el Uno (Efraín, con Claude)
+
+Registro: `validacion/2026-10-16-polaridad-bloqueo-servos-uno.md`. **El modelo no se cambió:** quedan medidas pendientes y Efraín las dejó para la próxima sesión de laboratorio.
+- **Servos en el Uno:** con 5 y 6 SG90 por USB **no se reinicia**, igual que el Nano. El simulador predice reinicio desde 5: el golpe de arranque (590 mA por servo) está exagerado.
+- **Polaridad de M1:** con FORWARD queda positivo el segundo tornillo (de arriba hacia abajo); el simulador y el dibujo ponen M1A en el primero. La librería AFMotor_R4 del kit (BSD-3) hace lo mismo que el simulador. Hipótesis: en la shield real, M1 tiene A y B al revés del dibujo y M4 no; eso explicaría las dos ruedas avanzando del 15 oct.
+- **Motor bloqueado:** M1 da 3,00 V (adelante 200) y 3,44 V (atrás 255); el modelo da ~3,45 y 4,25 V. Apunta a un bobinado de ~3,8 Ω y una caída del L293D de ~1,7 V/A. Falta el voltaje de la batería durante el bloqueo.
+- Pendientes en CLAUDE.md («Próxima sesión», punto 1).
