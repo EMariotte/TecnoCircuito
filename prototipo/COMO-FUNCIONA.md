@@ -1057,7 +1057,7 @@ Cada foto toma un pedazo distinto de la onda, y su promedio salta. Algunas venta
                                                 │ L293D: A ≠ B → V = útil × (VS − caída)         │
   batería en EXT_PWR ─► VS de los L293D ──────► │        A = B → frena · sin PWM → gira libre    │
   (con el puente PWR, también el VIN del Uno)   │ motor: V = I·R + k·ω ; J·dω/dt = k·I − b·ω     │
-                                                │ batería: V = 8,4 − 0,05 Ω × corriente          │
+                                                │ batería: V = 8,4 − 1,2 Ω × corriente           │
                                                 └───────────────┬───────────────────────────────┘
                                                                 │ foto.piezas { rpm, giro, velocidad, i, voltios }
                                                                 ▼
@@ -1096,7 +1096,7 @@ Cada foto toma un pedazo distinto de la onda, y su promedio salta. Algunas venta
 
 ### La caída del L293D (no idealidad `caidaL293D`)
 
-Sus transistores son bipolares: entre los dos lados del puente se comen unos **1,4 V más 1 V por amperio**. Con la batería llena, al motor le llegan 6,8 V a toda velocidad; en modo ideal, los 8,4 V. Por eso el carro va más lento con la shield que conectado directo a la batería.
+Sus transistores son bipolares: entre los dos lados del puente se comen unos **1,3 V más 1 V por amperio** (medido el 15 oct: 1,43 a 1,47 V con 0,13 A; ver la sección 65). Con la batería llena, al motor le llegan unos 6,5 V a toda velocidad; en modo ideal, todo lo que da la batería. Por eso el carro va más lento con la shield que conectado directo a la batería.
 
 **La shield se puede agregar con la simulación corriendo.** El 74HC595, el pin 7 (habilitación) y el PWM de los pines 11, 3, 6 y 5 se siguen siempre, haya o no shield. Si el aprendiz la agrega después, ya sabe cómo están los pines: por ejemplo, con D7 en BAJO y un `analogWrite(…, 255)` que dejó el pin quieto en ALTO, los motores arrancan sin esperar un cambio (lo encontró la revisión de código del 11 oct).
 
@@ -1185,7 +1185,7 @@ Resultado en Node: de **0,22×** a **1,29×** el chip real con ese programa. El 
 > Hecho el 10 de octubre de 2026 (punto 5 del orden acordado), con la foto del probador del kit y la descripción de Efraín de su pantalla. Archivos: [src/piezas/probador_lipo.js](src/piezas/probador_lipo.js) y [src/piezas/bateria_lipo.js](src/piezas/bateria_lipo.js); la lógica, en [src/potencia.js](src/potencia.js).
 
 ```
-   LiPo 2S                                   probador 1-8S                       pantalla (cada 0,8 s)
+   LiPo 2S                                   probador 1-8S                       pantalla (cada 1 s; al conectar, «2CS»; antes del total, «ALL»)
   ┌───────────────┐  BAL0 (−) ─────────────► −                                ┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐
   │ celda 1  3,7 V│  BAL1 (medio) ─────────► 1   celda 1 = V(1) − V(−)        │7.40 ││ 2S  ││ -1- ││3.70 ││ -2- ││3.70 │ → otra vez
   │ celda 2  3,7 V│  BAL2 (+) ─────────────► 2   celda 2 = V(2) − V(1)        └─────┘└─────┘└─────┘└─────┘└─────┘└─────┘
@@ -1672,3 +1672,48 @@ flowchart LR
 - Núcleo: un potenciómetro en +5/Gnd/A3 de la shield da 1,500 V en A3, igual que directo a la placa.
 - `probar_carro.py`: 36 pines y el capuchón oculto.
 - `probar_vistas.py` (46): 36 contactos alineados, el aviso de SCL tapado, el LED apagado oscuro, servos «− + S» con SERVO_1 arriba, A0 a A5 de izquierda a derecha, SCL/SDA/IOREF tapados con la shield y libres sin ella, el cable viejo a SCL conservado, el LED y el puente, `id` sin repetir e imagen exportada.
+
+## 65. Laboratorio de T3: la shield, la LiPo y el probador medidos (15 oct 2026, Claude)
+
+> Medidas de Efraín en el laboratorio el 15 de octubre. Registros: `validacion/2026-10-15-shield-continuidad.md`, `-probador-celdas.md`, `-carro-l293d.md` y `-servos-nano-usb.md`. La hoja original, con las predicciones de antes, es `validacion/2026-10-15-hoja-laboratorio-t3.md`.
+
+**La shield del kit es la de AFMotor_R4.** La continuidad confirma que cada motor lo manejan el PWM y las dos salidas del 74HC595 que usa la librería. Lo que difería era el cableado interno de los L293D (qué canal lleva cada motor), y eso solo lo usa la netlist de KiCad (`l293d()` en `src/kicad.js`).
+
+**La batería tiene 1,2 Ω, no 0,05.** Contando el paquete, los cables y el conector. Lo dicen dos medidas independientes:
+
+```
+  sin carga ─────────────── 7,63 V
+  motores a 255 (0,32 A) ── 7,22 V   →  R = (7,63 − 7,22) / 0,32 ≈ 1,2 Ω
+  rueda bloqueada ───────── 0,90 A   →  con 1,2 Ω el modelo da 0,85 A; con 0,05 Ω daba 1,03 A
+```
+
+**Lo que lee el multímetro en el motor con PWM.** El L293D apaga el puente cuando el PWM está en BAJO. Los bornes quedan al aire y el motor, que sigue girando, genera su propio voltaje (la «fem», k·ω). El multímetro promedia las dos partes:
+
+```
+  voltaje en los bornes del motor (PWM a 200 = 78 %)
+
+   5,9 V ┤ ┌──────────┐  ┌──────────┐      encendido: batería − caída del L293D
+         │ │          │  │          │
+   4,0 V ┤ │          └──┘          └──    apagado: la fem del motor (al aire)
+         │ │
+     0 V ┼─┘
+            ◄─ 78 % ─►◄22%►
+
+  promedio del PWM:     0,78 × 5,9                ≈ 4,6 V   (lo que mostraba el simulador)
+  lo que lee el multímetro: 0,78 × 5,9 + 0,22 × 4,0 ≈ 5,5 V   (medido: 5,36 V)
+```
+
+El motor sigue moviéndose con el promedio del PWM, porque su inercia filtra los pulsos. Solo cambia lo que se informa: `motor_tt.js` entrega `fem` y `potencia.js` suma `(1 − ciclo útil) × fem` al voltaje del motor en `mediciones()`.
+
+**Dos errores que estaban escondidos detrás de los 0,05 Ω:**
+- **El freno no gasta batería.** Con RELEASE y el PWM encendido, el puente une los dos bornes del motor a GND. La corriente de frenado da la vuelta por el puente, pero el simulador se la cobraba a la batería, que bajaba a 5,9 V en cada «quieto».
+- **El aviso `bateria_celdas` espera 0,5 s** (`LIPO.avisoCeldaMs`). Al arrancar a 255 desde quieto, los dos motores piden unos 2 A por unos milisegundos y las celdas bajan de 3,0 V sin dañarse.
+
+**El probador del kit:** dice «2CS» una vez al conectarse y después repite «ALL», el total, «2S» y cada celda, 1 s por paso (antes 0,8 s y sin «ALL»).
+
+**Lo que sigue abierto:**
+- **Sentido de giro:** con el mismo cableado, la rueda derecha real avanzó y la del simulador retrocede. La continuidad descarta la shield; falta revisar los motores.
+- **USB del Nano:** con 5 y 6 SG90 el 5V real baja a 4,12 y 4,03 V, y el simulador del Nano casi no baja. El modelo del USB del Uno (5,11 V − 1,66 Ω) lo explica, pero también predice reinicios que el Nano real no tuvo. Antes de cambiarlo: 5 y 6 SG90 con el Uno.
+- **Modo ideal:** la resistencia de la batería todavía no se apaga.
+
+**Cómo quedó el modelo frente a lo medido** (batería en 7,64 V): batería con motores 7,22 V (real 7,22), M1 a 255 5,78 V (5,79), M1 a 200 5,53 V (5,36), corriente 114/144 mA (120/130), RPM 155/193 (160/185), motor bloqueado 0,85 A (0,90). Todo dentro del criterio.

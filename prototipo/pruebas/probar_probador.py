@@ -13,7 +13,7 @@ RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
 fallos = []
 # Segmentos encendidos → letra (los mismos de src/piezas/probador_lipo.js)
 LETRAS = {'abcdef': '0', 'bc': '1', 'abdeg': '2', 'abcdg': '3', 'bcfg': '4', 'acdfg': '5', 'acdefg': '6', 'abc': '7',
-          'abcdefg': '8', 'abcdfg': '9', 'g': '-', '': ' '}
+          'abcdefg': '8', 'abcdfg': '9', 'g': '-', 'abcefg': 'A', 'adef': 'C', 'def': 'L', '': ' '}
 
 
 def revisar(condicion, texto):
@@ -55,12 +55,12 @@ with sync_playwright() as p:
     pg.click('#iniciar')
     pg.wait_for_function('() => window.sim && sim.medidas().msSimulados > 200', timeout=15000)
     vistos = set()
-    fin = time.time() + 7
+    fin = time.time() + 10
     while time.time() < fin:
         vistos.add(pantalla())
         pg.wait_for_timeout(120)
-    esperados = {'7.40', ' 25', '-1-', '3.70', '-2-'}
-    revisar(esperados <= vistos, f'la pantalla repite total, «2S», «-1-», celda y «-2-»: {sorted(vistos)}')
+    esperados = {'ALL', '7.40', ' 25', '-1-', '3.70', '-2-'}
+    revisar(esperados <= vistos, f'la pantalla repite «ALL», total, «2S», «-1-», celda y «-2-»: {sorted(vistos)}')
     pitido = pg.evaluate(f'{RAIZ}.querySelector(\'[data-id="probador1"] [data-pitido]\').getAttribute("visibility")')
     revisar(pitido == 'hidden', 'con la batería nominal no pita')
     fila = pg.evaluate('[...document.querySelectorAll("#mediciones tbody tr")].map(r => r.textContent).find(x => x.includes("probador1")) || ""')

@@ -134,7 +134,8 @@ for (const variante of ['roja', 'azul']) {
   c.cables.push(cable('bat.BAL2', 'exp.JACK_POS'), cable('bat.BAL0', 'exp.JACK_GND'), cable('exp.OUT_5V', 'r.1'), cable('r.2', 'exp.GND_OUT'));
   const f = correr(nucleo(c, 'parpadeo13', { limiteUSB: true }), 100).foto;
   const b = f.medicion.baterias[0];
-  verificar(f.energia.voltiosJack < 7.4 && f.energia.voltiosJack > 7.3 && casi(f.voltajes['exp.JACK_POS'], b.voltios, 0.001), 'la LiPo cableada reemplaza voltajeJack y la caída interna llega a MNA');
+  // Resistencia interna medida con la LiPo del kit (15 oct): 1,2 Ω.
+  verificar(b.i > 0.1 && casi(f.energia.voltiosJack, 7.4 - 1.2 * b.i, 0.02) && casi(f.voltajes['exp.JACK_POS'], b.voltios, 0.001), `la LiPo cableada reemplaza voltajeJack y la caída interna llega a MNA (${f.energia.voltiosJack.toFixed(2)} V con ${b.i.toFixed(3)} A)`);
   verificar(casi(b.i, f.energia.amperios, 0.001) && b.i > 0.25 && b.conectada, 'corriente del jack registrada en batería sin añadir60mA del Uno');
   const sinTierra = JSON.parse(JSON.stringify(c));
   sinTierra.cables = sinTierra.cables.filter((x) => x.a !== 'exp.JACK_GND');
@@ -166,14 +167,14 @@ for (const expansion of [true, false]) {
   const f = correr(nucleo(c, 'parpadeo13', { limiteUSB: true }), 100).foto;
   const b = f.medicion.baterias[0];
   const iDirecta = f.medicion.fuentes.find((x) => x.pin === (expansion ? entrada : 'VIN')).i;
-  verificar(iDirecta > 0.36 && casi(b.i, 0.025 + iDirecta, 0.001) && casi(f.energia.amperios, b.i, 0.001),
+  verificar(iDirecta > 0.3 && casi(iDirecta, b.voltios / 20, 0.005) && casi(b.i, 0.025 + iDirecta, 0.001) && casi(f.energia.amperios, b.i, 0.001),
     `${expansion ? 'jack externo' : 'VIN Nano suelto'}: carga directa de entrada incluida una vez en fuente y batería`);
   verificar(casi(f.energia.voltios, 5 - 0.025 * 0.25, 0.001),
     `${expansion ? 'jack externo' : 'VIN Nano suelto'}: carga de entrada no provoca una falsa caída en el regulador de5V`);
   if (expansion) {
     c.componentes.find((x) => x.id === 'exp').props.alimentacion = 'usb';
     const u = correr(nucleo(c, 'parpadeo13', { limiteUSB: true }), 100).foto;
-    verificar(u.medicion.baterias[0].i > 0.36 && casi(u.energia.amperios, 0.025, 0.001),
+    verificar(u.medicion.baterias[0].i > 0.3 && casi(u.medicion.baterias[0].i, u.medicion.baterias[0].voltios / 20, 0.005) && casi(u.energia.amperios, 0.025, 0.001),
       'con selecciónUSB la carga directa del jack sigue en la batería y no se atribuye al USB');
   }
 }

@@ -47,7 +47,8 @@ export function crearMotor() {
     },
     estado() {
       const rpm = (w * 60) / (2 * Math.PI) / MOTOR_TT.reduccion;
-      return { rpm, i, giro, velocidad: (rpm / 60) * Math.PI * (MOTOR_TT.ruedaMM / 10) }; // velocidad en cm/s
+      // velocidad en cm/s; fem: el voltaje que genera al girar (lo que se mide en sus bornes al aire)
+      return { rpm, i, giro, velocidad: (rpm / 60) * Math.PI * (MOTOR_TT.ruedaMM / 10), fem: K * w };
     },
   };
 }

@@ -11,7 +11,7 @@
 // El dibujo se hizo a partir del probador del kit (foto de Efraín), sin copiar el de nadie.
 
 export const PROBADOR = {
-  pasoMs: 800, // cuánto dura cada cosa en la pantalla
+  pasoMs: 1000, // cuánto dura cada cosa en la pantalla (medido el 15 oct con el probador del kit)
   umbralV: 3.3, // de fábrica
   umbrales: [0, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8], // 0 = alarma apagada
 };
@@ -54,7 +54,7 @@ function segmentos(x, y) {
 }
 const LETRAS = {
   0: 'abcdef', 1: 'bc', 2: 'abdeg', 3: 'abcdg', 4: 'bcfg', 5: 'acdfg', 6: 'acdefg', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg',
-  '-': 'g', S: 'acdfg', L: 'def', o: 'cdeg', ' ': '',
+  '-': 'g', S: 'acdfg', L: 'def', o: 'cdeg', A: 'abcefg', C: 'adef', ' ': '',
 };
 
 export function dibujarProbador(umbral = PROBADOR.umbralV) {
@@ -101,13 +101,16 @@ function voltaje3(v) {
 }
 const palabra3 = (t) => t.padEnd(3).slice(0, 3).split('').map((c) => ({ c, punto: false }));
 
-// Lo que muestra la pantalla en el instante `ms`: la secuencia total → «2S» → «-1-» → celda 1 → «-2-» → celda 2 → …
+// Lo que muestra la pantalla en el instante `ms`, como el del kit (15 oct): al conectarse, una vez, cuántas celdas
+// encontró («2CS»); después repite «ALL» → total → «2S» → «-1-» → celda 1 → «-2-» → celda 2 → …
 // estado: { encendido, celdas: [voltios…], total }. Devuelve 3 dígitos { c, punto } o null (apagada).
 export function pantallaProbador(estado, ms) {
   if (!estado || !estado.encendido || !estado.celdas.length) return null;
-  const pasos = [voltaje3(estado.total), palabra3(`${estado.celdas.length}S`.padStart(3))];
+  const n = estado.celdas.length;
+  if (ms < PROBADOR.pasoMs) return palabra3(`${n}CS`);
+  const pasos = [palabra3('ALL'), voltaje3(estado.total), palabra3(`${n}S`.padStart(3))];
   estado.celdas.forEach((v, i) => pasos.push(palabra3(`-${i + 1}-`), voltaje3(v)));
-  return pasos[Math.floor(ms / PROBADOR.pasoMs) % pasos.length];
+  return pasos[Math.floor((ms - PROBADOR.pasoMs) / PROBADOR.pasoMs) % pasos.length];
 }
 
 // Al simular: la pantalla, el pitido y, con la alarma, la pantalla parpadea (4 veces por segundo).

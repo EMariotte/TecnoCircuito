@@ -118,7 +118,8 @@ with sync_playwright() as p:
     revisar(re.search(r'1[5-9]\d RPM · atrás', m2) is not None, f'motor 2, del lado derecho y cableado igual: va hacia atrás «{m2}»')
     vel = pg.evaluate(f'{RAIZ}.querySelector(\'[data-id="motor1"] [data-velocidad]\').textContent')
     revisar(vel.startswith('adelante'), f'debajo de la flecha de la rueda izquierda: «{vel}»')
-    revisar('8,3' in fila('bateria1') or '8,4' in fila('bateria1'), f'batería: «{fila("bateria1")}»')
+    # Con los motores andando la batería baja por su resistencia interna (1,2 Ω, medida el 15 oct): de 8,4 a unos 8,0–8,2 V.
+    revisar(re.search(r'(7,9|8,[0-3])\d V', fila('bateria1')) is not None, f'batería con los motores andando: «{fila("bateria1")}»')
     revisar('VIN' in fila('motores (EXT_PWR)'), f'shield: «{fila("motores (EXT_PWR)")}»')
     pg.locator('main').screenshot(path=str(SALIDA / 'carro_3_simulando.png'))
     g1 = pg.evaluate(f'{RAIZ}.querySelector(\'[data-id="motor1"] [data-rueda]\').getAttribute("transform")')

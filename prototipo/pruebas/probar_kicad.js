@@ -147,7 +147,9 @@ revisar([0, 1, 2, 3, 4, 5].every((i) => (carro.redes['A' + i] || []).includes(`J
 // PWM M1 = 11, M2 = 3, M3 = 6, M4 = 5; sentido A y B de cada motor en Q2/Q3, Q1/Q4, Q5/Q7 y Q0/Q6 del 74HC595.
 const PATA_Q = { 0: 15, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7 };
 const AFMOTOR = { 1: ['D11', 2, 3], 2: ['D3', 1, 4], 3: ['D6', 5, 7], 4: ['D5', 0, 6] };
-const CANAL = { 1: ['U1', 1, 2, 3, 7, 6], 2: ['U1', 9, 10, 11, 15, 14], 3: ['U2', 1, 2, 3, 7, 6], 4: ['U2', 9, 10, 11, 15, 14] }; // en, inA, outA, inB, outB
+// Patas medidas con continuidad en la shield del kit (15 oct, validacion/2026-10-15-shield-continuidad.md): M4 va por la
+// primera mitad de U2 y M3 por la segunda; en M2 y M3 la A entra por la pata 15 y la B por la 10.
+const CANAL = { 1: ['U1', 1, 2, 3, 7, 6], 2: ['U1', 9, 15, 14, 10, 11], 3: ['U2', 9, 15, 14, 10, 11], 4: ['U2', 1, 2, 3, 7, 6] }; // en, inA, outA, inB, outB
 const malos = [];
 for (const [m, [pwm, qa, qb]] of Object.entries(AFMOTOR)) {
   const [u, en, inA, outA, inB, outB] = CANAL[m];

@@ -101,8 +101,8 @@ Las medidas van a `validacion/` y se vuelven pruebas, como las del LED.
 
 Los valores del motor TT y de la caída del L293D son de hojas de datos. Con el kit (shield L293D Rev4, motores TT amarillos de 6 V y la LiPo 2S) se ajustan así, con «Validar: carro con la shield L293D» (`programas/carro_motores`, AFMotor_R4: M1 y M4 2 s adelante a 200, 1 s quietos, 2 s atrás a 255 y 1 s quietos):
 
-1. **Voltaje de la batería** (multímetro en EXT_PWR) quieta y con los motores girando. El simulador usa 8,4 / 7,4 / 6,4 V y 0,05 Ω de resistencia interna (`LIPO` en `src/piezas/bateria_lipo.js`).
-2. **Caída del L293D** (multímetro entre los dos bornes de M1, con el motor girando «atrás 255»): el simulador da 8,4 − 1,57 = 6,8 V con la batería llena (`SHIELD.caidaV` y `caidaPorA` en `src/potencia.js`).
+1. **Voltaje de la batería** (multímetro en EXT_PWR) quieta y con los motores girando. El simulador usa 8,4 / 7,4 / 6,4 V y 1,2 Ω de resistencia interna (`LIPO` en `src/piezas/bateria_lipo.js`). **Medido el 15 oct:** 7,63 V quieta y 7,22 V con los motores a 255.
+2. **Caída del L293D** (multímetro entre los dos bornes de M1, con el motor girando «atrás 255»): el simulador usa 1,3 V + 1 V por amperio (`SHIELD.caidaV` y `caidaPorA` en `src/potencia.js`). **Medido el 15 oct:** 1,43 a 1,47 V con 0,13 A. Con PWM (a 200), el multímetro marca más que el promedio del PWM, porque el motor genera voltaje mientras el puente está apagado: el simulador muestra lo mismo que el multímetro.
 3. **Motor TT sin carga** (rueda en el aire): la corriente (multímetro en serie con un cable del motor) y las RPM (contando vueltas de la rueda en 10 s, o con el celular en cámara lenta). El simulador: unos 130 mA y 180 RPM a 200, 227 RPM a 255 (`MOTOR_TT` en `src/piezas/motor_tt.js`).
 4. **Motor bloqueado** (rueda frenada con la mano, máximo 1 s): la corriente de arranque. El simulador usa 1,2 A a 6 V.
 5. **Hacia dónde gira cada rueda** con FORWARD, con los dos motores cableados igual (rojo en A): en el simulador, la del lado derecho va hacia atrás.
@@ -126,7 +126,7 @@ Las patas de los integrados pueden no coincidir con nuestra tabla (qué canal ll
 
 Con «Validar: probador de celdas LiPo» (la LiPo del kit por el cable de balance al probador):
 
-1. **La pantalla:** ¿repite lo mismo que el simulador (total, «2S», «-1-» y la celda 1, «-2-» y la celda 2)? Anota cuánto dura cada cosa (el simulador usa 0,8 s, `PROBADOR.pasoMs`).
+1. **La pantalla:** ¿repite lo mismo que el simulador («2CS» al conectar y después «ALL», total, «2S», «-1-» y la celda 1, «-2-» y la celda 2)? Anota cuánto dura cada cosa (el simulador usa 1 s, `PROBADOR.pasoMs`). **Comparado el 15 oct:** igual al real.
 2. **Cada celda con el multímetro** (en el conector de balance: negro al medio y medio al rojo) y lo que dice el probador.
 3. **La alarma:** el umbral de fábrica (el simulador usa 3,3 V) y cómo se cambia con el botón.
 

@@ -1158,3 +1158,30 @@ Las filas +5 / Gnd / A0-5 de la shield van a **2,54 mm** entre sí (la entrega l
 4. El pulsador y el potenciómetro siguen siendo de wokwi; quedan anotados para completar la suite.
 
 Anotado en `CLAUDE.md` («Próxima sesión») y en los pendientes de TecnoDiseñador.
+
+## 2026-10-15/16 — Laboratorio de T3: shield, LiPo, motor y probador medidos (Efraín, con Claude)
+
+**Efraín midió en el laboratorio** (15 oct) con la hoja `validacion/2026-10-15-hoja-laboratorio-t3.md`, que traía las predicciones del simulador. Registros: `validacion/2026-10-15-shield-continuidad.md`, `-probador-celdas.md`, `-carro-l293d.md` y `-servos-nano-usb.md`. Explicación: COMO-FUNCIONA, sección 65.
+
+**Lo que confirmó:**
+- **Continuidad de la shield:** cada motor va por el PWM y las salidas del 74HC595 de AFMotor_R4 (el simulador no cambia). Headers analógicos a 2,54 mm, servos − + S, puente PWR al VIN y LED1 con 985 Ω.
+- **Probador:** umbral de 3,3 V y la misma secuencia de celdas; marca un 1 % menos que el multímetro.
+
+**Lo que corrigió (16 oct):**
+- **KiCad:** en cada L293D, el segundo motor entra por las patas 15/10 y sale por las 14/11; en U2, M4 va por la primera mitad y M3 por la segunda.
+- **LiPo de 1,2 Ω** (antes 0,05): de 7,63 a 7,22 V con 0,32 A; el motor bloqueado (0,90 A; el modelo da 0,85 A) lo confirma.
+- **Caída del L293D de 1,3 V** + 1 V/A (medida: 1,43 a 1,47 V con 0,13 A).
+- **El multímetro en el motor con PWM** suma lo que genera el motor mientras el puente está apagado (5,36 V medidos a 200; antes el simulador mostraba 4,77 V y ahora 5,53 V).
+- **Dos errores escondidos detrás de los 0,05 Ω:** el freno ya no gasta batería, y `bateria_celdas` espera 0,5 s (un arranque baja las celdas unos milisegundos).
+- **Probador:** «2CS» al conectar, «ALL» antes del total y 1 s por paso.
+- Fichas de la shield, la LiPo y el probador: validadas. Motor TT: dentro del criterio, pero falta el sentido de giro.
+
+Con la batería en 7,64 V, todas las medidas del carro quedan dentro del criterio (tabla en el registro).
+
+**Abierto:**
+- **Sentido de giro:** la rueda derecha real avanza con el mismo cableado y la del simulador retrocede. La continuidad descarta la shield.
+- **USB del Nano:** con 5 y 6 SG90, el 5V real baja a 4,12 y 4,03 V sin reiniciarse; el simulador del Nano casi no baja. No se cambió: primero, 5 y 6 SG90 con el Uno.
+- **Modo ideal:** la resistencia de la LiPo no se apaga. Decidir con Efraín si se vuelve una no idealidad (cambia el contrato).
+- MG90S suspendido (hay solo 4).
+
+**Pruebas:** suite completa **1088 OK, 0 fallas** (16 oct, con el cargador; se actualizaron las predicciones viejas de potencia, Nano y carro); TecnoBloques `test:simulador` **53 OK**.

@@ -65,25 +65,28 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
   const ad = r.en(1800).piezas;
   revisar(ad.motor1.rpm > 160 && ad.motor1.rpm < 200, `adelante a 200 (78 %): el motor 1 gira a ${Math.round(ad.motor1.rpm)} RPM (sin carga, con 8,4 V − caída del L293D)`);
   revisar(Math.abs(ad.motor1.rpm - ad.motor2.rpm) < 5, `los dos motores van igual: ${Math.round(ad.motor1.rpm)} y ${Math.round(ad.motor2.rpm)} RPM`);
-  revisar(ad.motor1.voltios > 5 && ad.motor1.voltios < 5.7, `al motor le llegan ${coma(ad.motor1.voltios)} V en promedio (0,78 × (8,4 − 1,5))`);
+  // Lo que marca el multímetro con PWM: el voltaje aplicado el 78 % del tiempo y lo que genera el motor el resto (15 oct:
+  // 5,36 V medidos con la LiPo en 7,6 V).
+  revisar(ad.motor1.voltios > 5.9 && ad.motor1.voltios < 6.5, `el multímetro marca ${coma(ad.motor1.voltios)} V en el motor (el PWM y lo que genera el motor mientras el puente está apagado)`);
   revisar(ad.motor1.velocidad > 0, `motor 1 (izquierdo) con FORWARD: avanza (${coma(ad.motor1.velocidad, 0)} cm/s)`);
   revisar(ad.motor1.i > 0.08 && ad.motor1.i < 0.25, `sin carga pide ${Math.round(ad.motor1.i * 1000)} mA`);
   const at = r.en(4800).piezas;
   revisar(at.motor1.rpm < -200 && at.motor1.rpm > -245, `atrás a 255: gira al revés a ${Math.round(at.motor1.rpm)} RPM`);
-  revisar(at.motor1.voltios > 6.6 && at.motor1.voltios < 7.1, `a 255 le llegan ${coma(at.motor1.voltios)} V: la caída del L293D es de ${coma(at.bateria1.voltios - at.motor1.voltios)} V`);
+  const caida = at.bateria1.voltios - at.motor1.voltios;
+  revisar(at.motor1.voltios > 6.2 && at.motor1.voltios < 6.8 && caida > 1.35 && caida < 1.55, `a 255 le llegan ${coma(at.motor1.voltios)} V: la caída del L293D es de ${coma(caida)} V (medida el 15 oct: 1,43 a 1,47 V)`);
   revisar(Math.abs(r.en(2900).piezas.motor1.rpm) < 15, `con RELEASE se detiene solo en menos de 1 s (${Math.round(r.en(2900).piezas.motor1.rpm)} RPM a los 0,9 s)`);
   revisar(r.ultima.medicion && r.ultima.medicion.porVin === true && r.ultima.energia.amperios === 0, 'con el puente PWR y 8,4 V, el Uno toma la energía del VIN: el USB no entrega nada');
-  revisar(r.en(4800).piezas.bateria1.voltios < 8.4 && r.en(4800).piezas.bateria1.voltios > 8.3, `la batería baja a ${coma(r.en(4800).piezas.bateria1.voltios)} V con los motores (resistencia interna)`);
+  revisar(r.en(4800).piezas.bateria1.voltios < 8.1 && r.en(4800).piezas.bateria1.voltios > 7.7, `la batería baja a ${coma(r.en(4800).piezas.bateria1.voltios)} V con los motores (resistencia interna de 1,2 Ω, medida el 15 oct)`);
   revisar(!r.fallas.length, 'sin fallas: ' + (r.fallas.map((f) => f.tipo).join(', ') || 'ninguna'));
   const sh = r.en(1800).medicion.shield;
   revisar(sh && sh.habilitada && sh.motoresV > 8, `la shield está habilitada (pin 7 en BAJO) con ${coma(sh.motoresV)} V para los motores`);
 }
 
-// 2. Modo ideal: sin la caída del L293D el motor recibe los 8,4 V completos.
+// 2. Modo ideal: sin la caída del L293D el motor recibe todo el voltaje de la batería.
 {
   const r = correr(carro(), IDEAL, 4900);
   const at = r.en(4800).piezas;
-  revisar(at.motor1.voltios > 8.3, `ideal: a 255 al motor le llegan ${coma(at.motor1.voltios)} V (sin caída)`);
+  revisar(Math.abs(at.motor1.voltios - at.bateria1.voltios) < 0.02, `ideal: a 255 al motor le llegan ${coma(at.motor1.voltios)} V, los mismos de la batería (sin caída)`);
   revisar(at.motor1.rpm < -260, `ideal: gira más rápido, ${Math.round(at.motor1.rpm)} RPM`);
 }
 
@@ -155,10 +158,12 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
 {
   const texto = (p) => (p ? p.map((d) => d.c + (d.punto ? '.' : '')).join('') : 'apagada');
   const e = { encendido: true, celdas: [3.7, 3.7], total: 7.4 };
-  const secuencia = [0, 800, 1600, 2400, 3200, 4000, 4800].map((ms) => texto(pantallaProbador(e, ms)));
-  revisar(secuencia.join(' | ') === '7.40 |  2S | -1- | 3.70 | -2- | 3.70 | 7.40',
-    `la pantalla repite: total, celdas, «-1-», celda 1, «-2-», celda 2 (${secuencia.join(' | ')})`);
-  revisar(texto(pantallaProbador({ encendido: true, celdas: [4.2, 4.2, 4.2], total: 12.6 }, 0)) === '12.6', 'con 12,6 V muestra «12.6»');
+  // Como el probador del kit (15 oct): «2CS» una vez al conectarse y después, cada segundo, «ALL», total, «2S» y celdas.
+  const secuencia = [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000].map((ms) => texto(pantallaProbador(e, ms)));
+  revisar(secuencia.join(' | ') === '2CS | ALL | 7.40 |  2S | -1- | 3.70 | -2- | 3.70 | ALL | 7.40',
+    `la pantalla dice una vez «2CS» y repite: «ALL», total, «2S», «-1-», celda 1, «-2-», celda 2 (${secuencia.join(' | ')})`);
+  revisar(texto(pantallaProbador({ encendido: true, celdas: [4.2, 4.2, 4.2], total: 12.6 }, 2000)) === '12.6', 'con 12,6 V muestra «12.6»');
+  revisar(texto(pantallaProbador({ encendido: true, celdas: [4.2, 4.2, 4.2], total: 12.6 }, 0)) === '3CS', 'con 3 celdas empieza con «3CS»');
   revisar(pantallaProbador({ encendido: false, celdas: [], total: 0 }, 0) === null, 'sin batería, la pantalla queda apagada');
 
   const conProbador = (carga, cables, umbral = 3.3) => ({

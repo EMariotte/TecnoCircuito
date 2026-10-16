@@ -135,7 +135,7 @@ export const FICHAS = {
       ['Reducción', `1:${MOTOR_TT.reduccion} · rueda de ${MOTOR_TT.ruedaMM} mm`],
       ['Vista y lado', `${p.vista === 'rueda' ? 'con la rueda' : 'solo el eje'} · lado ${p.lado || 'izquierdo'}`],
     ],
-    validacion: () => porValidar('Valores de hojas de datos: falta medir la corriente y las RPM del motor del kit.'),
+    validacion: () => porValidar('Corriente, RPM y corriente bloqueado medidas en un motor del kit (15 oct): dentro del criterio. Falta confirmar hacia dónde gira cada rueda con el mismo cableado.'),
   },
   shield_l293d: {
     nombre: 'Shield L293D',
@@ -152,7 +152,7 @@ export const FICHAS = {
       ['Librería', 'AFMotor_R4'],
       ['En KiCad', 'sale desarmada: U1 y U2 (L293D), U3 (74HC595), borneras, servos, headers analógicos, puente PWR, C1 a C4 y el LED'],
     ],
-    validacion: () => porValidar('Dibujo medido por TecnoDiseñador desde la shield del kit (14 oct). Conexiones de la librería del kit y de las hojas de datos: falta medir la caída del L293D y la continuidad de los servos y de los headers analógicos en la placa real.'),
+    validacion: () => validado('Dibujo medido por TecnoDiseñador (14 oct). Continuidad de la shield del kit y caída del L293D medidas el 15 oct: cada motor va por los pines de la librería del kit y al motor le llegan 1,4 V menos que la batería.'),
   },
   bateria_lipo: {
     nombre: 'Batería LiPo 2S',
@@ -169,7 +169,7 @@ export const FICHAS = {
         ['Capacidad', '1300 mAh'],
       ];
     },
-    validacion: () => porValidar('Valores típicos de una LiPo 2S: falta medir la del kit con los motores.'),
+    validacion: () => validado('Medida con la LiPo del kit y los motores (15 oct): su resistencia interna, con cables y conector, es de 1,2 Ω. Con los dos motores andando baja unos 0,4 V.'),
   },
   probador_lipo: {
     nombre: 'Probador de celdas',
@@ -182,7 +182,7 @@ export const FICHAS = {
       ['Mide', `de 1 a 8 celdas (LiPo, Li-ion, LiFe); de fábrica pita en ${coma(PROBADOR.umbralV)} V`],
       ['Energía', 'la toma de la misma batería, por el cable de balance'],
     ],
-    validacion: () => porValidar('Hecho a partir del probador del kit: falta comparar su pantalla con la del real.'),
+    validacion: () => validado('Comparado con el probador del kit (15 oct): la misma secuencia de pantalla, 1 s por paso y el umbral de 3,3 V. El real marca un 1 % menos que el multímetro.'),
   },
 };
 

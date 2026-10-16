@@ -19,8 +19,11 @@ export const CARGAS_LIPO = {
 };
 export const LIPO = {
   celdas: 2,
-  ohmios: 0.05, // resistencia interna del paquete y sus cables (típica de una 2S pequeña; por medir)
+  // Resistencia interna del paquete, sus cables y el conector. Medida con la LiPo del kit (15 oct,
+  // validacion/2026-10-15-carro-l293d.md): de 7,63 a 7,22 V con unos 0,32 A; la corriente del motor bloqueado la confirma.
+  ohmios: 1.2,
   minimoCeldaV: 3.0, // por debajo, la celda se daña
+  avisoCeldaMs: 500, // si sigue por debajo este tiempo (un arranque la baja unos milisegundos sin dañarla)
   avisoCeldaV: 3.3, // descargada: hay que cargarla
 };
 export const voltiosLipo = (carga) => (CARGAS_LIPO[carga] || CARGAS_LIPO.nominal).voltios;

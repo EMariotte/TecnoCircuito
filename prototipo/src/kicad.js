@@ -108,12 +108,13 @@ const V5 = 'placa:5V';
 const VMOT = 'pieza:EXT_POS';
 // Patas del 74HC595 según la salida Q0 a Q7 (QA = pata 15; QB a QH = patas 1 a 7).
 const PATA_Q = [15, 1, 2, 3, 4, 5, 6, 7];
-// Un L293D maneja dos motores: el primero con los canales 1 y 2, el segundo con el 3 y el 4.
+// Un L293D maneja dos motores: el primero con los canales 1 y 2, el segundo con el 3 y el 4. Como en la shield del kit
+// (continuidad del 15 oct): en el segundo motor la A entra por la pata 15 (sale por la 14) y la B por la 10 (sale por la 11).
 function l293d(m1, m2) {
   const pwm = CONEXIONES_SHIELD.pwm;
   return {
     1: 'placa:' + pwm[m1], 2: `IN_M${m1}A`, 3: `pieza:M${m1}A`, 6: `pieza:M${m1}B`, 7: `IN_M${m1}B`,
-    9: 'placa:' + pwm[m2], 10: `IN_M${m2}A`, 11: `pieza:M${m2}A`, 14: `pieza:M${m2}B`, 15: `IN_M${m2}B`,
+    9: 'placa:' + pwm[m2], 15: `IN_M${m2}A`, 14: `pieza:M${m2}A`, 11: `pieza:M${m2}B`, 10: `IN_M${m2}B`,
     4: GND, 5: GND, 12: GND, 13: GND, 8: VMOT, 16: V5,
   };
 }
@@ -136,7 +137,7 @@ const C_100NF = { ref: 'C', lib: 'Device', parte: 'C', huella: 'Capacitor_THT:C_
 // `externo`: un conector donde se enchufa algo de afuera (motores, batería, servos).
 export const SHIELD_KICAD = [
   { ref: 'U', lib: 'Driver_Motor', parte: 'L293D', huella: DIP16, valor: 'L293D', nota: 'M1 y M2', pads: l293d(1, 2) },
-  { ref: 'U', lib: 'Driver_Motor', parte: 'L293D', huella: DIP16, valor: 'L293D', nota: 'M3 y M4', pads: l293d(3, 4) },
+  { ref: 'U', lib: 'Driver_Motor', parte: 'L293D', huella: DIP16, valor: 'L293D', nota: 'M4 y M3', pads: l293d(4, 3) },
   { ref: 'U', lib: '74xx', parte: '74HC595', huella: DIP16, valor: '74HC595', nota: 'sentido de los motores', pads: hc595() },
   { ref: 'J', lib: 'Connector_Generic', parte: 'Conn_01x05', huella: BORNERA_5, valor: 'M1 GND M2', externo: true,
     pads: { 1: 'pieza:M1A', 2: 'pieza:M1B', 3: 'pieza:GND_IZQ', 4: 'pieza:M2A', 5: 'pieza:M2B' } },

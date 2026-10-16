@@ -1,11 +1,11 @@
 # CLAUDE.md — TecnoCircuito
 
 > Foto del estado actual para Claude Code. Se sobrescribe cuando algo cambia; la historia está en [`BITACORA.md`](BITACORA.md) (append-only) y las explicaciones técnicas en [`prototipo/COMO-FUNCIONA.md`](prototipo/COMO-FUNCIONA.md) (secciones numeradas).
-> Actualizado: 14 de octubre de 2026.
+> Actualizado: 16 de octubre de 2026.
 
 ## Estado en una línea
 
-Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 completa en software**, con SG90 y USB validados y el resto pendiente de laboratorio. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. **Vistas de TecnoDiseñador integradas (14 oct):** el Uno es Pieza Tecno y el Nano, la expansión y la shield usan dibujos medidos, sin cambiar el comportamiento (COMO-FUNCIONA, secciones 62 a 64). **Validación humana de uso (14 oct): todos los ejemplos y el imán pasaron; aceptación de los aprendices 10/10** (`validacion/2026-10-14-vistas-uso.md`). Suite: **25 grupos, 1087 OK, cero fallas** (14 oct, con la shield L293D medida); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
+Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 validadas con la placa real; T3 casi validada (15 oct):** shield L293D (continuidad y caída), LiPo (1,2 Ω), motor TT y probador medidos y el modelo ajustado; quedan el sentido de giro de la rueda derecha, el USB del Nano con servos y el MG90S. **Nano/Nano antiguo + expansión roja/azul implementados y verificados en software**, con alimentación y geometría de referencia pendientes de validación física. **Vistas de TecnoDiseñador integradas (14 oct):** el Uno es Pieza Tecno y el Nano, la expansión y la shield usan dibujos medidos, sin cambiar el comportamiento (COMO-FUNCIONA, secciones 62 a 64). **Validación humana de uso (14 oct): todos los ejemplos y el imán pasaron; aceptación de los aprendices 10/10** (`validacion/2026-10-14-vistas-uso.md`). Suite: **25 grupos, 1088 OK, cero fallas** (16 oct, con el modelo de T3 ajustado al laboratorio); TecnoBloques **53 OK** en integración y pruebas generales exit 0 sin errores. **Efraín confirmó en la app las lecturas independientes de A6/A7** (11 oct). Falta la primera etiqueta `v0.1.0` para llegar al instalador del aula.
 
 ## Qué es
 
@@ -61,7 +61,7 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 |---|---|---|---|
 | T1. LED y botón | LED con resistencia; botón con pull-up o pull-down | LED quemado; corriente del pin; entrada al aire | ✅ validada |
 | T2. Potenciómetro y brillo | Potenciómetro en A0; LED con PWM | Ruido del ADC; entrada analógica al aire | ✅ validada |
-| T3. Motor y servo | Shield L293D, motor TT, servo, LiPo | Caída del L293D; límite del USB; reinicio por caída | ◐ software hecho; validar shield, motor, LiPo y probador |
+| T3. Motor y servo | Shield L293D, motor TT, servo, LiPo | Caída del L293D; límite del USB; reinicio por caída | ◐ shield, LiPo, motor y probador medidos (15 oct); faltan sentido de giro, USB del Nano/Uno con 5–6 servos y MG90S |
 
 **Calendario** (borrador): etapa 0 hasta el 30 oct; etapa 1 (chip y circuito DC) hasta el 27 nov; etapa 3 reducida (potencia) hasta el 11 dic; validación final del 14 al 18 dic (versión candidata «estudio 1.0»). Vamos adelantados en software. **Pasa a 2027:** módulos (HC-SR04, LCD, DHT11, MPU6050, PCA9685, MAX7219, HC-05), robots (Otto, carro en pista) y explicaciones con LLM verificadas por el simulador.
 
@@ -116,18 +116,18 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 - **El porcentaje se calcula respecto de la medida** (decisión de Efraín, 11 oct): `|simulador − medida| / |medida|`. Una comparación cumple si la diferencia es ≤ criterio · |medida| + la incertidumbre del instrumento. UT33B+ en voltios DC: ±(0,5 % de la lectura + 2 dígitos); en la escala de 20 V, 1 dígito = 0,01 V. Lo aplica `probar_motor.js`. Ninguna medida física respalda aún el ±1 % en tiempos.
 - Instrumentos: multímetro UNI-T UT33B+; analizador lógico USB de 8 canales (pedido) con PulseView.
 - **Uso validado** (14 oct, `validacion/2026-10-14-vistas-uso.md`): vistas medidas, LED de las placas e imán en la app, con Efraín y aprendices; aceptación 10/10. No reemplaza la validación eléctrica.
-- **Validado** (registros en `validacion/`): LED rojo con 215/326/1000 Ω (7 oct: 11 de 12 dentro del criterio; la resistencia con 215 Ω da 5,01 % y cumple sumando la incertidumbre del UT33B+ (±0,5 % + 2 dígitos; ±0,033 V en 2,61 V)); velocidad en el PC del aula HP ProBook 450 G7 (≥ 90 %); ruido del ADC (0,1 pasos); entrada al aire (se queda en su nivel; con la mano capta 60 Hz: «la mano es el mouse»); SG90 (ángulos 7°/90°/175°; corriente quieto < 10 mA, ~100 y 590 mA); 5V del USB (5,11 V − 1,66 Ω; 4 SG90 no reinician).
+- **Validado** (registros en `validacion/`): LED rojo con 215/326/1000 Ω (7 oct: 11 de 12 dentro del criterio; la resistencia con 215 Ω da 5,01 % y cumple sumando la incertidumbre del UT33B+ (±0,5 % + 2 dígitos; ±0,033 V en 2,61 V)); velocidad en el PC del aula HP ProBook 450 G7 (≥ 90 %); ruido del ADC (0,1 pasos); entrada al aire (se queda en su nivel; con la mano capta 60 Hz: «la mano es el mouse»); SG90 (ángulos 7°/90°/175°; corriente quieto < 10 mA, ~100 y 590 mA); 5V del USB (5,11 V − 1,66 Ω; 4 SG90 no reinician); **15 oct:** continuidad de la shield L293D (AFMotor_R4 confirmado; KiCad corregido), caída del L293D (1,43–1,47 V con 0,13 A), LiPo del kit (1,2 Ω), motor TT (corriente, RPM y bloqueado dentro del criterio), probador (pantalla «2CS», «ALL», 1 s por paso) y 5/6 SG90 en el USB del **Nano** sin reinicio (4,12/4,03 V).
 
 ## Próxima sesión
 
 **Laboratorio** (formato del 9 oct, varias prácticas seguidas; pasos en `prototipo/LEEME.md`):
-1. **5 y 6 SG90** saltando juntos («Validar: seis servos en el USB»): el simulador predice reinicio.
-2. **MG90S:** corrientes (quieto, barrido, bloqueado ≤ 2 s) y ángulos con el transportador.
+1. **5 y 6 SG90 con el Uno** («Validar: seis servos en el USB»): el simulador predice reinicio. El 15 oct se hizo con el **Nano** y no se reinició (4,12/4,03 V); falta el Uno y el 5V del Nano sin servos y con 1 a 4, para ajustar el USB del Nano y el golpe de arranque.
+2. **MG90S** (suspendido: hay solo 4): corrientes (quieto, barrido, bloqueado ≤ 2 s) y ángulos con el transportador. Con la hoja de datos, el simulador predice que 4 MG90S reinician el Uno.
 3. Opcional: repetir el ADC con el programa corregido.
 4. **La protoboard con 2 o 3 aprendices**, y la velocidad con TecnoBloques en el aula cuando exista `v0.1.0`.
-5. **Shield L293D y motor TT** («Validar: carro con la shield L293D»): LiPo quieta y con motores, caída del L293D en M1, corriente y RPM sin carga, corriente bloqueado (≤ 1 s), hacia dónde gira cada rueda.
-6. **Probador de celdas** («Validar: probador de celdas LiPo»): secuencia y duración de la pantalla, umbral de fábrica, cada celda con el multímetro.
-7. **Continuidad de la shield del kit** (suelta, sin Uno ni batería): a qué pata de cada integrado llega cada pin y borne; comparar con `SHIELD_KICAD` (sección 53).
+5. ✅ **Shield L293D y motor TT** (15 oct). Queda: **sentido de giro** (la rueda derecha real avanza con el mismo cableado; el simulador la manda atrás): en «adelante 200», qué tornillo de M1 y de M4 queda positivo, y cada motor directo a la batería. Y el voltaje de la batería y de M1 con la rueda bloqueada (≤ 1 s), para el aumento por amperio del L293D.
+6. ✅ **Probador de celdas** (15 oct).
+7. ✅ **Continuidad de la shield del kit** (15 oct).
 8. **Monitor serial con la placa real:** CSV y gráfico con `validar_adc` (solo se probaron con el simulador).
 9. **Fotos para TecnoDiseñador:** ✅ Uno, Nano, expansión y shield L293D medidos e integrados (13–14 oct). Pendiente en TecnoDiseñador: pasar las filas +5/Gnd/A0-5 de la shield a 2,54 mm (decisión de Efraín: el estándar manda sobre la foto) y luego `npm run vistas` aquí. En el laboratorio: su continuidad. Lo que sigue es histórico: el **Uno R3 del kit**, según `TecnoDiseñador/plantillas/pedido-fotos.md` (desde arriba, regla a lo largo, regla a lo ancho girando 180°, cada chip de cerca), y decidir qué nombre queda impreso («UNO» es marca) y la **licencia**: el Uno del kit es original (CC BY-SA); conviene dibujar un clon si lo hay, o el original sin pistas (especificación 6.5). Después, las de la shield L293D. Ficha: especificación de entrega, sección 6.5.
 
@@ -156,7 +156,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 
 ## Riesgos técnicos
 
-- **Supuestos sin validar en T3:** resistencia interna de la LiPo (0,05 Ω), datos del motor TT (200 RPM y 150 mA sin carga a 6 V, 1,2 A bloqueado), caída del L293D (1,4 V + 1 V/A), cableado interno de la shield del kit y pantalla del probador. Las pruebas comparten estos supuestos: solo el laboratorio los confirma.
+- **T3 medido el 15 oct** (`validacion/2026-10-15-*.md`, COMO-FUNCIONA sección 65): LiPo de 1,2 Ω (antes 0,05), caída del L293D de 1,3 V + 1 V/A (el aumento por amperio sigue sin medir), motor TT dentro del criterio con un solo motor medido. **Sin validar:** el sentido de giro (la rueda derecha real avanza con el mismo cableado), el USB del Nano (el real baja ~1 V con 5–6 SG90; el modelo casi nada) y si el golpe de arranque de los servos está exagerado (el Nano real no se reinició con 6). En modo ideal, la resistencia de la LiPo todavía no se apaga.
 - **Nano + expansión:** geometría y alimentación de referencia; sin identificar reguladores/protecciones comerciales. Confirmar continuidad, jack, aislamiento USB/jack, curvas de carga, disipación y montaje antes del aula o fabricación. La exportación de KiCad lleva notas de pendientes y no es una PCB terminada.
 - Rendimiento con programas que cambian pines sin pausa: atendido (sección 50); medir con TecnoBloques en el aula.
 - La protoboard con aprendices: falta probarla.

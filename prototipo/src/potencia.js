@@ -11,12 +11,15 @@
 //     FORWARD: A = 1, B = 0. BACKWARD: A = 0, B = 1. RELEASE: los dos en 0 (con PWM, el puente une los bornes y frena).
 //   - PWM: M1 = 11, M2 = 3, M3 = 6, M4 = 5. Sin PWM (pin en 0 o de entrada), el puente queda abierto y el motor gira libre.
 //
-// Caída del L293D (no idealidad «caidaL293D»): sus transistores son bipolares y se comen 1,4 V más 1 V por amperio
-// (hoja de datos: 1,4 V típico a poca corriente, hasta unos 2 V cerca de 0,6 A). Con la batería llena (8,4 V) al motor
-// le llegan unos 6,8 V. Por medir con el multímetro en la placa del kit.
+// Caída del L293D (no idealidad «caidaL293D»): sus transistores son bipolares y se comen 1,3 V más 1 V por amperio.
+// Medido en la shield del kit (15 oct, validacion/2026-10-15-carro-l293d.md): 1,43 a 1,47 V con 0,13 A (la hoja de
+// datos da 1,4 V típico a poca corriente). El aumento por amperio sigue siendo el de la hoja: por medir.
 //
 // El PWM se promedia en cada milisegundo: el motor siente el voltaje medio (ciclo útil × voltaje), porque su
 // inductancia y su inercia filtran los pulsos. El voltaje de la batería baja con la corriente (resistencia interna).
+// Lo que mide el multímetro en los bornes del motor no es ese promedio: mientras el PWM apaga el puente, los bornes
+// quedan al aire y el motor, que sigue girando, genera su propio voltaje. El multímetro promedia los dos (15 oct: 5,36 V
+// medidos a 200 con la LiPo en 7,6 V, cuando el voltaje aplicado era de unos 4,6 V).
 import { crearMotor } from './piezas/motor_tt.js';
 import { LIPO, voltiosLipo, celdasLipo } from './piezas/bateria_lipo.js';
 import { PROBADOR } from './piezas/probador_lipo.js';
@@ -25,7 +28,7 @@ import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
 
 export const SHIELD = {
   ...CONEXIONES_SHIELD, // datos, reloj, cierre, habilita, pwm y bits: los de AFMotor_R4
-  caidaV: 1.4, // caída del puente H con poca corriente
+  caidaV: 1.3, // caída del puente H con poca corriente (medida: 1,43 V con 0,13 A)
   caidaPorA: 1.0, // y lo que sube por cada amperio
   maximoCanalA: 0.6, // corriente continua por canal del L293D
   avisoCanalMs: 500, // pasada de 0,6 A por este tiempo: se calienta
@@ -247,6 +250,7 @@ export function crearPotencia({ activas, avisar }) {
       if (!d) {
         m.vAhora = 0;
         m.logico.avanzar(1, 0, { conectado: false }); // puente abierto: gira libre y se detiene solo
+        m.vMedido = m.logico.estado().fem; // al aire, el multímetro lee lo que genera el motor
       } else {
         const dif = a.v - b.v;
         const nShield = (a.shield ? 1 : 0) + (b.shield ? 1 : 0);
@@ -257,11 +261,13 @@ export function crearPotencia({ activas, avisar }) {
         }
         m.vAhora = v;
         m.logico.avanzar(1, v, { conectado: true }); // con dif = 0 (los dos bornes iguales) el puente frena el motor
+        m.vMedido = v + (1 - d) * m.logico.estado().fem; // el tiempo apagado del PWM, el motor genera
         if (nShield === 2 && (salidas >> SHIELD.bits[m.a.n][m.a.s] & 1) !== (salidas >> SHIELD.bits[m.b.n][m.b.s] & 1) && vs < 1) sinEnergia = true;
-        // La corriente que sale de la fuente del borne más alto (solo la que va en el sentido en que empuja).
+        // La corriente que sale de la fuente del borne más alto (solo la que va en el sentido en que empuja). Frenando
+        // (los dos bornes al mismo voltaje), la corriente del motor da la vuelta por el puente y no sale de la fuente.
         const iMotor = m.logico.estado().i;
         const alto = dif >= 0 ? a : b;
-        const iFuente = Math.max(0, iMotor * Math.sign(dif || 1)) * d;
+        const iFuente = Math.abs(dif) > 1e-9 ? Math.max(0, iMotor * Math.sign(dif)) * d : 0;
         if (alto.shield) deLosMotores(iFuente);
         else if (alto.del5V) i5V += iFuente;
         else if (alto.fuenteAux) iFuentes[alto.fuenteAux] = (iFuentes[alto.fuenteAux] || 0) + iFuente;
@@ -270,7 +276,7 @@ export function crearPotencia({ activas, avisar }) {
       const e = m.logico.estado();
       m.iAntes = e.i;
       m.sumaI += Math.abs(e.i);
-      m.sumaV += Math.abs(m.vAhora || 0);
+      m.sumaV += Math.abs(m.vMedido || 0);
       m.ms++;
       // Más de 0,6 A por un canal del L293D por medio segundo: se calienta.
       const enShield = (m.a && m.a.tipo === 'shield') || (m.b && m.b.tipo === 'shield');
@@ -299,8 +305,10 @@ export function crearPotencia({ activas, avisar }) {
       b.iAntes = amperios;
       b.sumaI += amperios;
       b.ms++;
+      // Un arranque baja las celdas por unos milisegundos sin dañarlas: se avisa si siguen bajas medio segundo.
       const baja = Math.min(...celdasCargadas(b));
-      if (baja < LIPO.minimoCeldaV) {
+      b.bajaMs = baja < LIPO.minimoCeldaV ? (b.bajaMs || 0) + 1 : 0;
+      if (b.bajaMs > LIPO.avisoCeldaMs) {
         avisar({
           tipo: 'bateria_celdas',
           componente: id,
