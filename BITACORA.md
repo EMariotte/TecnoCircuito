@@ -1204,3 +1204,11 @@ Registro: `validacion/2026-10-16-polaridad-bloqueo-servos-uno.md`. **El modelo n
 - **Polaridad de M1:** con FORWARD queda positivo el segundo tornillo (de arriba hacia abajo); el simulador y el dibujo ponen M1A en el primero. La librería AFMotor_R4 del kit (BSD-3) hace lo mismo que el simulador. Hipótesis: en la shield real, M1 tiene A y B al revés del dibujo y M4 no; eso explicaría las dos ruedas avanzando del 15 oct.
 - **Motor bloqueado:** M1 da 3,00 V (adelante 200) y 3,44 V (atrás 255); el modelo da ~3,45 y 4,25 V. Apunta a un bobinado de ~3,8 Ω y una caída del L293D de ~1,7 V/A. Falta el voltaje de la batería durante el bloqueo.
 - Pendientes en CLAUDE.md («Próxima sesión», punto 1).
+
+## 2026-10-16 — Claude: etiqueta v0.1.0
+
+Por pedido de Efraín, antes de dos días solo de software. `npm run preparar-version`: 480 KB, contrato 1, versión exacta. La suite pasó en verde sobre el mismo código (1089 OK; después solo cambió documentación). Commit `chore: v0.1.0 con dist/tecnocircuito.js` y etiqueta **`v0.1.0`**, publicada en GitHub.
+
+En TecnoBloques: depende de `#v0.1.0` y sube a 0.3.0. `npm test`, `test:simulador` (53 OK) y `test:app` pasan. El instalador `TecnoBloques-Setup-0.3.0.exe` está armado y probado con `app-empaquetada.js`, con el simulador de la etiqueta. **El Release no se publicó:** las apps del aula se actualizan solas.
+
+**La versión lleva estos pendientes conocidos** (`validacion/2026-10-16-polaridad-bloqueo-servos-uno.md`): el simulador predice reinicio con 5 SG90 y el Uno real no se reinicia; el positivo de M1 con FORWARD está en el otro tornillo; el motor bloqueado da más voltaje que el real.
