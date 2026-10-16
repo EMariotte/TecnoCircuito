@@ -1,3 +1,5 @@
+<p align="center"><img src="marca/png/logo-horizontal.png" alt="TecnoCircuito" width="420"></p>
+
 # TecnoCircuito
 
 **Simulador de circuitos con microcontrolador** para [TecnoBloques](https://github.com/EMariotte/TecnoBloques), el editor de bloques en español para Arduino de la TecnoAcademia Tolima (SENA). El aprendiz arma el circuito en una protoboard dibujada, TecnoBloques compila su programa y TecnoCircuito lo ejecuta sobre ese circuito, mostrando también las fallas reales: un LED que se quema, un pin con demasiada corriente, una entrada que lee al azar.

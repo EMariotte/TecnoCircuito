@@ -11,6 +11,9 @@ Este producto incluye software de terceros, embebido en el paquete construido:
   licencia MIT.
 - Lit (https://lit.dev), Copyright Google LLC, licencia BSD-3-Clause.
 
+La marca (carpeta marca/) usa la fuente Atkinson Hyperlegible, Copyright 2020 Braille
+Institute of America, Inc., licencia SIL Open Font License 1.1 (marca/fuentes/OFL.txt).
+
 El dibujo de la protoboard, el solucionador eléctrico (análisis nodal modificado con
 Newton-Raphson) y el resto del código son propios de TecnoCircuito.
 
