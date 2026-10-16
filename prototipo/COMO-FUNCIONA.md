@@ -1714,6 +1714,6 @@ El motor sigue moviéndose con el promedio del PWM, porque su inercia filtra los
 **Lo que sigue abierto:**
 - **Sentido de giro:** con el mismo cableado, la rueda derecha real avanzó y la del simulador retrocede. La continuidad descarta la shield; falta revisar los motores.
 - **USB del Nano:** con 5 y 6 SG90 el 5V real baja a 4,12 y 4,03 V, y el simulador del Nano casi no baja. El modelo del USB del Uno (5,11 V − 1,66 Ω) lo explica, pero también predice reinicios que el Nano real no tuvo. Antes de cambiarlo: 5 y 6 SG90 con el Uno.
-- **Modo ideal:** la resistencia de la batería todavía no se apaga.
+- ~~Modo ideal~~ **Resuelto el 16 oct (decisión de Efraín):** la resistencia de la batería es la no idealidad `resistenciaBateria`. El modo «realista» la enciende; apagada, la batería da siempre su voltaje sin carga.
 
 **Cómo quedó el modelo frente a lo medido** (batería en 7,64 V): batería con motores 7,22 V (real 7,22), M1 a 255 5,78 V (5,79), M1 a 200 5,53 V (5,36), corriente 114/144 mA (120/130), RPM 155/193 (160/185), motor bloqueado 0,85 A (0,90). Todo dentro del criterio.

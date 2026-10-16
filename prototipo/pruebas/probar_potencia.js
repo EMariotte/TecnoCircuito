@@ -55,8 +55,8 @@ function correr(circuito, activas, hasta) {
   r.en = (ms) => r.fotos[Math.floor(ms / 16)];
   return r;
 }
-const REALISTA = { caidaL293D: true, limiteUSB: true, danoComponentes: true, limitePin: true };
-const IDEAL = { caidaL293D: false, limiteUSB: false };
+const REALISTA = { caidaL293D: true, limiteUSB: true, danoComponentes: true, limitePin: true, resistenciaBateria: true };
+const IDEAL = { caidaL293D: false, limiteUSB: false, resistenciaBateria: false };
 
 // 1. Con la batería llena: el programa mueve los motores por el 74HC595 y el PWM, con la caída del L293D.
 {
@@ -86,7 +86,10 @@ const IDEAL = { caidaL293D: false, limiteUSB: false };
 {
   const r = correr(carro(), IDEAL, 4900);
   const at = r.en(4800).piezas;
-  revisar(Math.abs(at.motor1.voltios - at.bateria1.voltios) < 0.02, `ideal: a 255 al motor le llegan ${coma(at.motor1.voltios)} V, los mismos de la batería (sin caída)`);
+  revisar(at.motor1.voltios > 8.39, `ideal: a 255 al motor le llegan ${coma(at.motor1.voltios)} V, los 8,4 V de la batería (sin caída del L293D ni de la batería)`);
+  // Cada una se apaga por separado: sin la resistencia de la batería, pero con la caída del L293D.
+  const solo = correr(carro(), { ...REALISTA, resistenciaBateria: false }, 4900).en(4800).piezas;
+  revisar(solo.bateria1.voltios === 8.4 && solo.motor1.voltios < 7.1, `sin resistenciaBateria la batería queda en ${coma(solo.bateria1.voltios)} V y el L293D sigue comiendo (${coma(solo.motor1.voltios)} V al motor)`);
   revisar(at.motor1.rpm < -260, `ideal: gira más rápido, ${Math.round(at.motor1.rpm)} RPM`);
 }
 

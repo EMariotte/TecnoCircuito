@@ -132,7 +132,7 @@ for (const variante of ['roja', 'azul']) {
   const c = circuito('nano', 'roja', { alimentacion: 'jack', voltajeJack: 9 });
   c.componentes.push(pieza('bat', 'bateria_lipo', { carga: 'nominal' }), pieza('r', 'resistencia', { ohmios: 20 }));
   c.cables.push(cable('bat.BAL2', 'exp.JACK_POS'), cable('bat.BAL0', 'exp.JACK_GND'), cable('exp.OUT_5V', 'r.1'), cable('r.2', 'exp.GND_OUT'));
-  const f = correr(nucleo(c, 'parpadeo13', { limiteUSB: true }), 100).foto;
+  const f = correr(nucleo(c, 'parpadeo13', { limiteUSB: true, resistenciaBateria: true }), 100).foto;
   const b = f.medicion.baterias[0];
   // Resistencia interna medida con la LiPo del kit (15 oct): 1,2 Ω.
   verificar(b.i > 0.1 && casi(f.energia.voltiosJack, 7.4 - 1.2 * b.i, 0.02) && casi(f.voltajes['exp.JACK_POS'], b.voltios, 0.001), `la LiPo cableada reemplaza voltajeJack y la caída interna llega a MNA (${f.energia.voltiosJack.toFixed(2)} V con ${b.i.toFixed(3)} A)`);

@@ -16,7 +16,8 @@
 // datos da 1,4 V típico a poca corriente). El aumento por amperio sigue siendo el de la hoja: por medir.
 //
 // El PWM se promedia en cada milisegundo: el motor siente el voltaje medio (ciclo útil × voltaje), porque su
-// inductancia y su inercia filtran los pulsos. El voltaje de la batería baja con la corriente (resistencia interna).
+// inductancia y su inercia filtran los pulsos. El voltaje de la batería baja con la corriente: su resistencia interna
+// es la no idealidad «resistenciaBateria» (apagada, la batería da siempre su voltaje sin carga).
 // Lo que mide el multímetro en los bornes del motor no es ese promedio: mientras el PWM apaga el puente, los bornes
 // quedan al aire y el motor, que sigue girando, genera su propio voltaje. El multímetro promedia los dos (15 oct: 5,36 V
 // medidos a 200 con la LiPo en 7,6 V, cuando el voltaje aplicado era de unos 4,6 V).
@@ -301,7 +302,7 @@ export function crearPotencia({ activas, avisar }) {
       if (!b.valida) continue;
       b.cargaExterna = Object.prototype.hasOwnProperty.call(cargasBateria, id);
       const amperios = (iBateria.get(id) || 0) + (b.vin && porVin ? consumoPorVinA : 0) + Math.max(0, cargasBateria[id] || 0);
-      b.v = Math.max(0, b.voc - LIPO.ohmios * amperios);
+      b.v = Math.max(0, b.voc - ohmiosBateria() * amperios);
       b.iAntes = amperios;
       b.sumaI += amperios;
       b.ms++;
@@ -321,10 +322,11 @@ export function crearPotencia({ activas, avisar }) {
     return { i5V, porVin, iFuentes };
   }
 
+  const ohmiosBateria = () => (activas.resistenciaBateria ? LIPO.ohmios : 0);
   // Voltaje de cada celda ahora: cada una pierde su parte de la caída por la resistencia interna.
   function celdasCargadas(b) {
     const i = b.valida ? b.iAntes : 0;
-    return b.celdas.map((v) => Math.max(0, v - (LIPO.ohmios / b.celdas.length) * i));
+    return b.celdas.map((v) => Math.max(0, v - (ohmiosBateria() / b.celdas.length) * i));
   }
 
   // Lo que muestra cada probador: el voltaje de cada celda que tiene conectada, del − hacia arriba (C1, C2…).

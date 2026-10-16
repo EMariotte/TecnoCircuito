@@ -1185,3 +1185,14 @@ Con la batería en 7,64 V, todas las medidas del carro quedan dentro del criteri
 - MG90S suspendido (hay solo 4).
 
 **Pruebas:** suite completa **1088 OK, 0 fallas** (16 oct, con el cargador; se actualizaron las predicciones viejas de potencia, Nano y carro); TecnoBloques `test:simulador` **53 OK**.
+
+## 2026-10-16 — Contrato: la resistencia de la LiPo es una no idealidad (Efraín, con Claude)
+
+**Decisión de Efraín:** la resistencia interna de la LiPo (1,2 Ω, medida el 15 oct) pasa a ser la no idealidad `resistenciaBateria`. El modo «realista» la enciende y el «ideal» la apaga; apagada, la batería da siempre su voltaje sin carga. Así se cumple la regla de que cada no idealidad se pueda apagar: con 0,05 Ω no se notaba, y con 1,2 Ω la batería baja 0,4 V con el carro andando.
+
+- `src/simulador.js`: la clave entra en `CLAVES_NO_IDEALIDADES`. `src/potencia.js`: la batería y sus celdas usan la resistencia solo si está encendida.
+- **CONTRATO**, sección 7 (la clave nueva y `caidaL293D` con su valor medido) y sección 10 (historial). Agregar una clave no rompe nada ni sube `v`.
+- **TecnoBloques no cambia de código:** usa `modo: 'realista'` y no ajusta claves sueltas. Se anotó en su BITACORA y en su «Proyecto hermano».
+- Pruebas: modo ideal con 8,40 V en el motor, y sin `resistenciaBateria` (con la caída del L293D encendida) la batería queda en 8,40 V. La prueba del Nano con la LiPo en el jack enciende la clave.
+
+**Pruebas:** suite completa **1089 OK, 0 fallas** (16 oct); TecnoBloques `test:simulador` **53 OK**.
