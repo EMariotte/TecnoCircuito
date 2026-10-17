@@ -1232,3 +1232,7 @@ TecnoBloques ya escribe el registro (commits `4d428b9` y `7e1432b` allá; detall
 Corrección a la entrada de las fases 1 y 2: `probar_registro.py` tiene **18** comprobaciones, no 17 (la de `simulacion_reanudada` entró después de escribirla).
 
 Siguen la fase 4 (un script que cuente la historia de un `.jsonl` y la prueba de Efraín en la app) y la 5 (revisión).
+
+## 2026-10-16 — Idea: registro central en la suite TecnoRuta (Efraín, con Claude)
+
+Al cerrar la sesión, Efraín propuso que los `.jsonl` lleguen solos a una base de datos central de la suite TecnoRuta (Supabase) en vez de salir por USB. Claude leyó el CLAUDE.md de TecnoRuta (prototipo v0.2; su fase 2 con Supabase está pendiente) y dejó un borrador para decidir: [docs/PLAN-REGISTRO-CENTRAL-TECNORUTA.md](docs/PLAN-REGISTRO-CENTRAL-TECNORUTA.md). Propone un subidor en TecnoBloques con un token por PC que solo inserta, un `id` por línea para no duplicar, el archivo local como fuente y un proyecto de Supabase aparte para la investigación, sin cruzar los códigos de equipo con los alias en la base. Faltan las decisiones de Efraín (sección 4 del borrador), entre ellas la región de los datos y el consentimiento. El orden de las próximas sesiones quedó en CLAUDE.md, «Próxima sesión».
