@@ -5,7 +5,13 @@
 import { leerHex } from './hex.js';
 import { PLACAS } from './catalogo.js';
 
-const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB', 'caidaL293D', 'resistenciaBateria'];
+import { VERSION_EVENTOS } from './eventos.js';
+
+// Las corridas se cuentan mientras la página está abierta, no por simulador: TecnoBloques crea uno nuevo cada vez
+// que se pulsa Simular, y así la corrida 2 es la segunda simulación de la sesión (contrato, sección 6.1).
+let corridas = 0;
+
+export const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB', 'caidaL293D', 'resistenciaBateria'];
 // El código del Worker, ya armado: lo pone construir.js. Va como texto para que todo quepa en un solo archivo.
 const CODIGO_TRABAJADOR = typeof __CODIGO_TRABAJADOR__ === 'string' ? __CODIGO_TRABAJADOR__ : '';
 
@@ -26,12 +32,13 @@ export function crearSimulador(opciones = {}) {
 
   let estado = 'detenido';
   let vivo = true;
-  let corrida = 0; // sube con cada cambio de estado: las fotos de antes se descartan
+  let turno = 0; // sube con cada cambio de estado (no es la «corrida» del registro): las fotos de antes se descartan
   let vista = null; // la última foto, para dibujarla en el próximo cuadro
   let cuadro = 0;
   const medidas = { msSimulados: 0, msReales: 0, velocidad: 1, evaluaciones: 0 };
   let medicion = null;
   let reiniciosVistos = 0; // reinicios por energía ya avisados en esta corrida
+  let corrida = 0; // el número de la corrida en el registro de eventos (sube en cada simulacion_iniciada)
   const fallas = [];
 
   const trabajador = crearTrabajador(recibir);
@@ -40,7 +47,7 @@ export function crearSimulador(opciones = {}) {
   function recibir(m) {
     if (!vivo) return;
     if (m.tipo === 'error') return console.error('TecnoCircuito:', m.mensaje);
-    if (m.tipo !== 'foto' || m.corrida !== corrida || estado === 'detenido') return;
+    if (m.tipo !== 'foto' || m.turno !== turno || estado === 'detenido') return;
     Object.assign(medidas, { msSimulados: m.msSimulados, msReales: m.msReales, velocidad: m.velocidad, evaluaciones: m.evaluaciones });
     // La tabla usa los voltajes de la foto (con «al aire») y cómo lee el programa cada entrada.
     medicion = m.medicion ? { ...m.medicion, voltajes: m.voltajes, entradas: m.entradas } : null;
@@ -87,8 +94,9 @@ export function crearSimulador(opciones = {}) {
     }
   }
 
+  // Contrato, sección 6.1: cada evento del simulador lleva su corrida y el tiempo simulado de esa corrida.
   function emitir(tipo, datos) {
-    if (alEvento) avisar(alEvento, { t: Date.now(), origen: 'simulador', tipo, datos });
+    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(medidas.msSimulados), datos });
   }
 
   function cambiarEstado(nuevo) {
@@ -112,14 +120,14 @@ export function crearSimulador(opciones = {}) {
   // Si el aprendiz cambia el cableado (o gira la perilla), el Worker resuelve otra vez al instante.
   lienzo.alCambiar((nuevo) => {
     if (!vivo) return;
-    trabajador.enviar({ tipo: 'circuito', circuito: nuevo, mostrar: estado !== 'detenido', corrida });
+    trabajador.enviar({ tipo: 'circuito', circuito: nuevo, mostrar: estado !== 'detenido', turno });
   });
 
   return {
     iniciar() {
       if (!vivo || estado === 'corriendo') return;
       const nuevo = estado === 'detenido';
-      corrida++;
+      turno++;
       if (nuevo) {
         // Cada corrida empieza con piezas nuevas: sin LED quemados y sin fallas avisadas.
         fallas.length = 0;
@@ -127,34 +135,45 @@ export function crearSimulador(opciones = {}) {
         vista = null;
         reiniciosVistos = 0;
         Object.assign(medidas, { msSimulados: 0, msReales: 0, velocidad: 1 });
-        emitir('simulacion_iniciada', { placa, modo });
+        corrida = ++corridas;
+        // El circuito completo: cada corrida se puede analizar sola, sin reconstruirla desde los cambios.
+        emitir('simulacion_iniciada', { placa, modo, activas: { ...activas }, circuito: lienzo.circuito() });
+      } else {
+        emitir('simulacion_reanudada', {}); // con simulacion_pausada, dice cuánto duró la pausa
       }
       cambiarEstado('corriendo');
-      trabajador.enviar({ tipo: 'iniciar', nuevo, corrida });
+      trabajador.enviar({ tipo: 'iniciar', nuevo, turno });
     },
     pausar() {
       if (estado !== 'corriendo') return;
-      corrida++;
-      trabajador.enviar({ tipo: 'pausar', corrida });
+      turno++;
+      trabajador.enviar({ tipo: 'pausar', turno });
+      emitir('simulacion_pausada', {});
       cambiarEstado('pausado');
     },
     reiniciar() {
       if (!vivo || estado === 'detenido') return;
-      corrida++;
+      turno++;
+      // Reiniciar en pausa también la reanuda. Los eventos llevan el momento en que se pulsó; después el chip vuelve a
+      // cero (sigue siendo la misma corrida).
+      if (estado === 'pausado') emitir('simulacion_reanudada', {});
+      emitir('reinicio_placa', { motivo: 'boton' });
       medidas.msSimulados = 0; // el chip vuelve a cero ya; la foto del Worker llega un instante después
       // Como apretar el botón RESET: el programa empieza desde setup().
-      trabajador.enviar({ tipo: 'reiniciar', corrida });
-      trabajador.enviar({ tipo: 'iniciar', nuevo: false, corrida });
+      trabajador.enviar({ tipo: 'reiniciar', turno });
+      trabajador.enviar({ tipo: 'iniciar', nuevo: false, turno });
       reiniciosVistos = 0;
-      emitir('reinicio_placa', { motivo: 'boton' });
       cambiarEstado('reiniciado');
       cambiarEstado('corriendo');
     },
     detener() {
       if (estado === 'detenido') return;
-      corrida++;
-      trabajador.enviar({ tipo: 'detener', corrida });
-      emitir('simulacion_detenida', { ms_simulados: Math.round(medidas.msSimulados) });
+      turno++;
+      trabajador.enviar({ tipo: 'detener', turno });
+      // Las fallas de esta corrida, una vez cada una: si una falta en la corrida siguiente, el equipo la corrigió.
+      const vistas = new Map(fallas.map((f) => [f.tipo + '|' + f.componente, { tipo: f.tipo, componente: f.componente }]));
+      const ms = Math.round(medidas.msSimulados);
+      emitir('simulacion_detenida', { ms_sim: ms, ms_simulados: ms, fallas: [...vistas.values()] });
       cambiarEstado('detenido');
       medicion = null;
       dibujar();

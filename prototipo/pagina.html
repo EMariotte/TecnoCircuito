@@ -306,7 +306,12 @@
   function mostrar(c) {
     $('json').textContent = JSON.stringify(c, null, 2).replace(/\[\s+(-?[\d.]+),\s+(-?[\d.]+)\s+\]/g, '[$1, $2]');
   }
+  // Todos los eventos, completos: las pruebas los revisan contra contrato/evento.schema.json (eventos_contrato.py).
+  // guardarEventoTC lo pone la prueba de Chromium, para juntarlos aunque la página se recargue.
+  window.eventosTC = [];
   function anotar(ev) {
+    window.eventosTC.push(ev);
+    if (typeof window.guardarEventoTC === 'function') window.guardarEventoTC(ev);
     const li = document.createElement('li');
     const hora = new Date(ev.t).toLocaleTimeString('es-CO', { hour12: false });
     li.append(

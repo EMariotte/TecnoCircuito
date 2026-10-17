@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/EMariotte/TecnoCircuito/blob/main/contrato/evento.schema.json",
+  "title": "Evento del registro de TecnoBloques y TecnoCircuito, versión 1 (contrato 1)",
+  "description": "La raíz es una línea del archivo .jsonl de un equipo: el evento con el sobre completo que pone TecnoBloques. $defs/evento es lo que emite quien emite (el lienzo, el simulador o el editor), antes del sobre. Ver CONTRATO.md, secciones 6 y 6.1. Es tolerante con lo nuevo: un tipo de evento o un campo que no conoce no lo invalida, y el análisis lo ignora. Cambiar o quitar uno sube «v».",
+  "allOf": [
+    { "$ref": "#/$defs/evento" },
+    { "required": ["equipo", "sesion", "version_tb", "version_tc"] }
+  ],
+  "$defs": {
+    "evento": {
+      "description": "Lo que emite quien emite. Los eventos del simulador llevan además «corrida» y «ms_sim».",
+      "type": "object",
+      "required": ["v", "t", "origen", "tipo", "datos"],
+      "properties": {
+        "v": { "const": 1, "description": "Versión del esquema de eventos." },
+        "t": { "type": "integer", "minimum": 0, "description": "Hora real, en ms desde 1970." },
+        "origen": { "enum": ["circuito", "simulador", "editor"] },
+        "tipo": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "datos": { "type": "object" },
+        "corrida": { "type": "integer", "minimum": 1, "description": "Número de la simulación mientras la app está abierta (1, 2, 3…). Lo cuenta TecnoCircuito." },
+        "ms_sim": { "type": "number", "minimum": 0, "description": "Tiempo simulado de esa corrida, en ms." },
+        "equipo": { "type": "string", "minLength": 1, "description": "El código del equipo, sin datos de los aprendices. Su formato no es parte del contrato." },
+        "sesion": { "type": "string", "minLength": 1, "description": "Un identificador al azar por cada vez que se abre la app." },
+        "version_tb": { "type": "string", "minLength": 1 },
+        "version_tc": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        { "if": { "properties": { "origen": { "const": "simulador" } }, "required": ["origen"] }, "then": { "required": ["corrida", "ms_sim"] } },
+
+        { "if": { "properties": { "tipo": { "const": "componente_agregado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "required": ["id", "tipo"], "properties": { "id": { "type": "string" }, "tipo": { "type": "string" } } } } } },
+        { "if": { "properties": { "tipo": { "const": "componente_quitado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "required": ["id", "tipo"], "properties": { "id": { "type": "string" }, "tipo": { "type": "string" } } } } } },
+        { "if": { "properties": { "tipo": { "const": "componente_cambiado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": {
+          "description": "Solo lo que cambió: la posición final (y dónde quedó enchufada), el giro o las propiedades.",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string" },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "rot": { "enum": [0, 90, 180, 270] },
+            "en": { "oneOf": [{ "type": "null" }, { "type": "object", "additionalProperties": { "$ref": "circuito.schema.json#/$defs/referencia" } }] },
+            "props": { "type": "object" }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "cable_agregado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "$ref": "#/$defs/extremos" } } } },
+        { "if": { "properties": { "tipo": { "const": "cable_quitado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "$ref": "#/$defs/extremos" } } } },
+        { "if": { "properties": { "tipo": { "const": "boton_pulsado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "required": ["id", "ms"], "properties": { "id": { "type": "string" }, "ms": { "type": "integer", "minimum": 0, "description": "Cuánto tiempo estuvo presionado." } } } } } },
+
+        { "if": { "properties": { "tipo": { "const": "simulacion_iniciada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
+          "required": ["placa", "modo", "activas", "circuito"],
+          "properties": {
+            "placa": { "$ref": "#/$defs/placa" },
+            "modo": { "enum": ["realista", "ideal"] },
+            "activas": { "$ref": "#/$defs/activas" },
+            "circuito": { "$ref": "circuito.schema.json", "description": "El circuito completo con que empieza la corrida (sección 4)." }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "simulacion_pausada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con" } },
+        { "if": { "properties": { "tipo": { "const": "simulacion_reanudada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con" } },
+        { "if": { "properties": { "tipo": { "const": "simulacion_detenida" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
+          "required": ["ms_sim", "fallas"],
+          "properties": {
+            "ms_sim": { "type": "number", "minimum": 0 },
+            "ms_simulados": { "type": "number", "minimum": 0, "description": "El nombre de antes del 16 oct: se conserva." },
+            "fallas": { "type": "array", "items": { "type": "object", "required": ["tipo", "componente"], "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" } } }, "description": "Las fallas de esa corrida. Si una aparece en una corrida y no en la siguiente, se corrigió." }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "falla" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
+          "description": "Puede traer medidas de la falla, como corriente_mA o voltios. Nunca el mensaje en pantalla.",
+          "required": ["tipo", "componente"],
+          "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" }, "mensaje": false } } } } },
+        { "if": { "properties": { "tipo": { "const": "reinicio_placa" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
+          "required": ["motivo"],
+          "properties": {
+            "motivo": { "type": "string", "description": "Conocidos: boton, energia_usb y energia_nano (con «fuente»)." },
+            "nuevos": { "type": "integer", "minimum": 1 },
+            "total": { "type": "integer", "minimum": 1 }
+          } } } } },
+
+        { "if": { "properties": { "tipo": { "const": "sesion_iniciada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "required": ["placa", "nivel"],
+          "properties": {
+            "placa": { "$ref": "#/$defs/placa" },
+            "nivel": { "type": "integer", "minimum": 1 },
+            "condicion": { "description": "Reservado para 2027: el modo asignado al equipo, si lo hay." }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "proyecto_abierto" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "Sin el nombre del proyecto: lo escribe el aprendiz (decisión del 16 oct).",
+          "required": ["placa"],
+          "properties": { "placa": { "$ref": "#/$defs/placa" }, "nombre": false } } } } },
+        { "if": { "properties": { "tipo": { "const": "ejemplo_cargado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } } } } },
+        { "if": { "properties": { "tipo": { "const": "bloques_cambiados" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "Un resumen, no el XML.",
+          "required": ["bloques", "tipos"],
+          "properties": {
+            "bloques": { "type": "integer", "minimum": 0 },
+            "tipos": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 }, "description": "Cuántos bloques de cada tipo." }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "codigo_compilado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "required": ["ok", "codigo"],
+          "properties": {
+            "ok": { "type": "boolean" },
+            "error": { "type": ["string", "null"], "description": "El tipo de error, si lo hay." },
+            "bytes": { "type": ["integer", "null"], "minimum": 0 },
+            "codigo": { "type": "string", "description": "El C++ completo sin comentarios. Los textos entre comillas se conservan." }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "programa_subido" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["ok", "placa"], "properties": { "ok": { "type": "boolean" }, "placa": { "$ref": "#/$defs/placa" } } } } } },
+        { "if": { "properties": { "tipo": { "const": "sesion_terminada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["ms"], "properties": { "ms": { "type": "integer", "minimum": 0 } } } } } }
+      ]
+    },
+
+    "circuito-con": { "properties": { "origen": { "const": "circuito" } } },
+    "simulador-con": { "properties": { "origen": { "const": "simulador" } } },
+    "editor-con": { "properties": { "origen": { "const": "editor" } } },
+
+    "extremos": {
+      "required": ["de", "a"],
+      "properties": { "de": { "$ref": "circuito.schema.json#/$defs/referencia" }, "a": { "$ref": "circuito.schema.json#/$defs/referencia" } }
+    },
+    "placa": { "enum": ["uno", "nano", "nano_old", "mega"] },
+    "activas": {
+      "description": "Las no idealidades de la corrida: true si está encendida (sección 7).",
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "claves-no-idealidad": {
+      "description": "Las claves que manda el simulador hoy en «activas». Una clave nueva no invalida el evento; esta lista la compara la prueba con el código.",
+      "enum": ["danoComponentes", "limitePin", "entradaFlotante", "ruidoADC", "limiteUSB", "caidaL293D", "resistenciaBateria"]
+    },
+    "tipo-falla": {
+      "description": "Una falla nueva no invalida el evento (sección 6: agregar no rompe). Las conocidas están en «fallas-conocidas», y la prueba revisa que el código no avise una que no esté ahí.",
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "fallas-conocidas": {
+      "enum": [
+        "led_quemado", "resistencia_caliente", "corriente_pin", "corriente_chip", "cortocircuito", "sin_solucion",
+        "servo_alimentacion", "reinicio_usb", "fusible_usb",
+        "bateria_baja", "bateria_celdas", "bateria_invertida", "bateria_corto", "bateria_en_5v", "motores_sin_energia",
+        "motor_en_pin", "l293d_corriente", "bateria_desbalanceada", "probador_alarma",
+        "nano_alimentacion", "nano_3v3_sobrecarga", "nano_bajo_voltaje"
+      ]
+    }
+  }
+}

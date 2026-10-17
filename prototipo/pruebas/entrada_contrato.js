@@ -5,3 +5,4 @@ export { PIEZAS_KICAD, CONECTORES_SHIELD } from '../src/kicad.js';
 export { CATEGORIAS, FICHAS } from '../src/biblioteca.js';
 export { leerHex } from '../src/hex.js';
 export { ALIASES_EXPANSION } from '../src/piezas/shield_nano_io.js';
+export { CLAVES_NO_IDEALIDADES } from '../src/simulador.js';

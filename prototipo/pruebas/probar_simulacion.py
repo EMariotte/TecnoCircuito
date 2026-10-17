@@ -3,6 +3,8 @@ import json
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+sys.path.insert(0, str(Path(__file__).parent))  # python -I no agrega la carpeta de la prueba
+from eventos_contrato import vigilar_eventos, revisar_eventos  # noqa: E402
 
 sys.stdout.reconfigure(encoding='utf-8')
 PAGINA = Path(sys.argv[1]).resolve().as_uri()
@@ -36,6 +38,7 @@ MUESTREO = f'''async (segundos) => {{
 with sync_playwright() as p:
     nav = p.chromium.launch()
     pg = nav.new_page(viewport={'width': 1366, 'height': 900})
+    eventos_tc = vigilar_eventos(pg)
     errores = []
     pg.on('console', lambda m: errores.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
     pg.on('pageerror', lambda e: errores.append(f'pageerror: {e}'))
@@ -134,13 +137,15 @@ with sync_playwright() as p:
     }}''')
     revisar(apagados, 'al detener, todo se apaga (también el LED ON de la placa)')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos b")].map(b => b.textContent)')
-    revisar(eventos[:3] == ['simulacion_detenida', 'reinicio_placa', 'simulacion_iniciada'], f'eventos de la simulación (con el reinicio por el botón): {eventos[:3]}')
+    revisar(eventos[:5] == ['simulacion_detenida', 'reinicio_placa', 'simulacion_reanudada', 'simulacion_pausada', 'simulacion_iniciada'],
+            f'eventos de la simulación (con la pausa y el reinicio por el botón): {eventos[:5]}')
 
     # 7. Un .hex dañado se rechaza con un mensaje claro
     msg = pg.evaluate('''() => { try { TecnoCircuito.crearSimulador({ lienzo, hex: ":1000000BAD\\n" }); return "aceptado"; }
                           catch (e) { return e.message; } }''')
     revisar('no es válido' in msg or 'dañado' in msg, f'.hex dañado: «{msg}»')
 
+    revisar_eventos(eventos_tc, revisar, 'simulacion')
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))
     nav.close()
 

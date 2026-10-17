@@ -1,12 +1,14 @@
 // Prueba el esquema del circuito (contrato/circuito.schema.json) con Node, sin navegador:
 //   1. el código está de acuerdo con el contrato (pines, colores, huecos de la protoboard, tabla de KiCad);
 //   2. los ejemplos del contrato y de la página de prueba cumplen el esquema;
-//   3. los circuitos con errores se rechazan con un mensaje que dice qué está mal.
+//   3. los circuitos con errores se rechazan con un mensaje que dice qué está mal;
+//   4. los eventos del registro (contrato/evento.schema.json): uno de cada tipo se acepta y los mal formados no.
 // Lo que guarda el lienzo se revisa en Chromium (probar_protoboard.py). Uso: npm run probar:contrato
 const fs = require('fs');
 const path = require('path');
 const { revisarCircuito, ESQUEMA, PINES, PINES_PLACA, HUECO } = require('./contrato.js');
-const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex, ALIASES_EXPANSION } = require('./codigo.cjs');
+const { revisarEvento, ESQUEMA: ESQUEMA_EVENTO } = require('./contrato_eventos.js');
+const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex, ALIASES_EXPANSION, CLAVES_NO_IDEALIDADES } = require('./codigo.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -203,6 +205,118 @@ for (const [texto, cambiar, espera] of casos) {
   const p = revisarCircuito(c);
   if (espera === null) revisar(!p.length, `se acepta ${texto}` + (p.length ? ': ' + p.join(' | ') : ''));
   else revisar(p.length > 0 && p.some((x) => espera.test(x)), `se rechaza ${texto}: ${p[0] || '(no se rechazó)'}`);
+}
+
+// 4. Los eventos del registro (contrato/evento.schema.json; contrato, sección 6.1)
+console.log('— Los eventos del registro cumplen el contrato');
+{
+  const E = ESQUEMA_EVENTO.$defs;
+  // El código y el esquema dicen lo mismo: cada falla que el núcleo puede avisar está entre las conocidas, y las
+  // claves de «activas» son las del simulador. Las fallas se buscan en el código como «tipo: '…', componente».
+  const fuentes = ['nucleo.js', 'energia.js', 'potencia.js', 'alimentacion_nano.js', 'motor/red.js']
+    .map((f) => fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8')).join('\n');
+  const enCodigo = [...new Set([...fuentes.matchAll(/tipo: '([a-z0-9_]+)',\s*componente/g)].map((m) => m[1]))];
+  const sinDocumentar = enCodigo.filter((t) => !E['fallas-conocidas'].enum.includes(t));
+  revisar(enCodigo.length >= 20 && !sinDocumentar.length, `las ${enCodigo.length} fallas que avisa el código están en el esquema${sinDocumentar.length ? ' (faltan: ' + sinDocumentar + ')' : ''}`);
+  const contrato6 = contrato.split('## 6. Eventos')[1].split('### 6.1')[0];
+  const sinContrato = E['fallas-conocidas'].enum.filter((t) => !contrato6.includes('`' + t + '`'));
+  revisar(!sinContrato.length, `cada falla conocida está explicada en CONTRATO.md, sección 6${sinContrato.length ? ' (faltan: ' + sinContrato + ')' : ''}`);
+  revisar(mismo(CLAVES_NO_IDEALIDADES, E['claves-no-idealidad'].enum), `las ${CLAVES_NO_IDEALIDADES.length} claves de «activas» son las del simulador`);
+  revisar(mismo(E.placa.enum, ESQUEMA.properties.placa.enum), 'las placas de los eventos son las del circuito');
+
+  // Los ejemplos de la sección 6 son eventos válidos como los emite el paquete.
+  const ejemplos6 = contrato.split('## 6. Eventos')[1].match(/```json\n([\s\S]*?)\n```/)[1].split('\n').map((l) => JSON.parse(l));
+  const p6 = ejemplos6.flatMap((ev) => revisarEvento(ev, { emitido: true }));
+  revisar(ejemplos6.length === 2 && !p6.length, `los ${ejemplos6.length} ejemplos de CONTRATO.md, sección 6` + (p6.length ? ': ' + p6.join(' | ') : ''));
+  // El ejemplo del sobre en la sección 6.1 es una línea válida del archivo.
+  const sobre = JSON.parse(contrato.split('**El sobre de cada evento:**')[1].match(/```json\n([\s\S]*?)\n```/)[1]);
+  const pSobre = revisarEvento(sobre);
+  revisar(!pSobre.length, 'el ejemplo del sobre de CONTRATO.md, sección 6.1' + (pSobre.length ? ': ' + pSobre.join(' | ') : ''));
+
+  // Un evento de cada tipo, como lo emite quien emite (sin el sobre de TecnoBloques).
+  const t = 1760600000000;
+  const sim = (tipo, datos, ms = 1520) => ({ v: 1, t, origen: 'simulador', tipo, corrida: 2, ms_sim: ms, datos });
+  const circ = (tipo, datos) => ({ v: 1, t, origen: 'circuito', tipo, datos });
+  const edi = (tipo, datos) => ({ v: 1, t, origen: 'editor', tipo, datos });
+  const activas = Object.fromEntries(CLAVES_NO_IDEALIDADES.map((k) => [k, true]));
+  const EVENTOS = {
+    componente_agregado: circ('componente_agregado', { id: 'led1', tipo: 'led' }),
+    componente_quitado: circ('componente_quitado', { id: 'protoboard', tipo: 'protoboard' }),
+    componente_cambiado: circ('componente_cambiado', { id: 'led1', x: 120, y: 40, en: { anodo: 'protoboard.a5', catodo: 'protoboard.a6' } }),
+    'componente_cambiado (giro)': circ('componente_cambiado', { id: 'r1', rot: 90, en: null }),
+    'componente_cambiado (props)': circ('componente_cambiado', { id: 'r1', props: { ohmios: 220 } }),
+    cable_agregado: circ('cable_agregado', { de: 'placa.D13', a: 'r1.1' }),
+    cable_quitado: circ('cable_quitado', { de: 'placa.D13', a: 'r1.1' }),
+    boton_pulsado: circ('boton_pulsado', { id: 'b1', ms: 340 }),
+    simulacion_iniciada: sim('simulacion_iniciada', { placa: 'uno', modo: 'realista', activas, circuito: ejemplos.EJEMPLO_PB }, 0),
+    simulacion_pausada: sim('simulacion_pausada', {}),
+    simulacion_reanudada: sim('simulacion_reanudada', {}),
+    simulacion_detenida: sim('simulacion_detenida', { ms_sim: 1520, ms_simulados: 1520, fallas: [{ tipo: 'led_quemado', componente: 'led1' }] }),
+    'simulacion_detenida (sin fallas)': sim('simulacion_detenida', { ms_sim: 800, fallas: [] }),
+    falla: sim('falla', { tipo: 'led_quemado', componente: 'led1', corriente_mA: 41.2 }),
+    reinicio_placa: sim('reinicio_placa', { motivo: 'energia_usb', nuevos: 1, total: 2 }),
+    'reinicio_placa (botón)': sim('reinicio_placa', { motivo: 'boton' }),
+    sesion_iniciada: edi('sesion_iniciada', { placa: 'nano', nivel: 2 }),
+    proyecto_abierto: edi('proyecto_abierto', { placa: 'uno' }),
+    ejemplo_cargado: edi('ejemplo_cargado', { id: 'validar_led' }),
+    bloques_cambiados: edi('bloques_cambiados', { bloques: 7, tipos: { arduino_setup: 1, digital_write: 2 } }),
+    codigo_compilado: edi('codigo_compilado', { ok: true, error: null, bytes: 924, codigo: 'void setup() {\n  Serial.println("http://x");\n}\nvoid loop() {}\n' }),
+    'codigo_compilado (con error)': edi('codigo_compilado', { ok: false, error: 'sintaxis', bytes: null, codigo: 'void loop() {' }),
+    programa_subido: edi('programa_subido', { ok: true, placa: 'uno' }),
+    sesion_terminada: edi('sesion_terminada', { ms: 3600000 }),
+  };
+  const SOBRE = { equipo: 'A7', sesion: '5f2c9a', version_tb: '0.4.0', version_tc: '0.2.0' };
+  for (const [nombre, ev] of Object.entries(EVENTOS)) {
+    const p = revisarEvento(ev, { emitido: true });
+    const pLinea = revisarEvento({ ...ev, ...SOBRE });
+    revisar(!p.length && !pLinea.length, `evento ${nombre}: emitido y en el archivo` + ([...p, ...pLinea].length ? ': ' + [...p, ...pLinea].join(' | ') : ''));
+  }
+  const tiposConEjemplo = new Set(Object.values(EVENTOS).map((ev) => ev.tipo));
+  const delContrato6 = [...new Set([...contrato.split('## 6. Eventos')[1].split('## 7.')[0].matchAll(/`([a-z]+_[a-z_]+)`/g)].map((m) => m[1]))]
+    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|bloques|codigo|programa)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
+  const sinEjemplo = delContrato6.filter((x) => !tiposConEjemplo.has(x));
+  revisar(!sinEjemplo.length, `cada tipo de evento de la sección 6 tiene su ejemplo aquí (${tiposConEjemplo.size})${sinEjemplo.length ? ': faltan ' + sinEjemplo : ''}`);
+
+  // Lo que está mal se rechaza con su motivo; lo nuevo se acepta.
+  const casosEv = [
+    ['un tipo de evento que esta versión no conoce', () => ({ ...edi('bloque_arrastrado', { x: 1 }) }), null],
+    ['un campo que esta versión no conoce', () => ({ ...EVENTOS.falla, nota: 'nueva', datos: { ...EVENTOS.falla.datos, temperatura: 80 } }), null],
+    ['una falla que esta versión no conoce', () => sim('falla', { tipo: 'motor_caliente', componente: 'm1' }), null],
+    ['sin «v»', () => { const e = { ...EVENTOS.falla }; delete e.v; return e; }, /v/],
+    ['«v» 2', () => ({ ...EVENTOS.falla, v: 2 }), /\/v/],
+    ['la hora como texto', () => ({ ...EVENTOS.falla, t: '2026-10-16' }), /\/t/],
+    ['origen «otro»', () => ({ ...EVENTOS.cable_agregado, origen: 'otro' }), /origen/],
+    ['un evento del simulador sin «corrida»', () => { const e = { ...EVENTOS.falla }; delete e.corrida; return e; }, /corrida/],
+    ['la corrida 0', () => ({ ...EVENTOS.falla, corrida: 0 }), /corrida/],
+    ['una falla con el mensaje en pantalla', () => sim('falla', { ...EVENTOS.falla.datos, mensaje: 'El LED se quemó' }), /mensaje/],
+    ['una falla sin componente', () => sim('falla', { tipo: 'led_quemado' }), /componente/],
+    ['una falla que dice venir del lienzo', () => ({ ...EVENTOS.falla, origen: 'circuito' }), /origen/],
+    ['simulacion_detenida sin la lista de fallas', () => sim('simulacion_detenida', { ms_sim: 10 }), /fallas/],
+    ['simulacion_iniciada sin el circuito', () => sim('simulacion_iniciada', { placa: 'uno', modo: 'realista', activas }, 0), /circuito/],
+    ['simulacion_iniciada en modo «medio»', () => sim('simulacion_iniciada', { ...EVENTOS.simulacion_iniciada.datos, modo: 'medio' }, 0), /modo/],
+    ['simulacion_iniciada con un cable a una pieza que no existe', () => sim('simulacion_iniciada', { ...EVENTOS.simulacion_iniciada.datos, circuito: { ...ejemplos.EJEMPLO_PB, cables: [{ de: 'placa.D13', a: 'led9.anodo' }] } }, 0), /circuito: .*led9/],
+    ['una no idealidad «a medias»', () => sim('simulacion_iniciada', { ...EVENTOS.simulacion_iniciada.datos, activas: { ...activas, limiteUSB: 'a medias' } }, 0), /activas/],
+    ['un cable sin su punta «a»', () => circ('cable_agregado', { de: 'placa.D13' }), /a/],
+    ['un cable a «D13» sin la pieza', () => circ('cable_agregado', { de: 'D13', a: 'r1.1' }), /de/],
+    ['un giro de 45°', () => circ('componente_cambiado', { id: 'r1', rot: 45 }), /rot/],
+    ['proyecto_abierto con el nombre que escribió el aprendiz', () => edi('proyecto_abierto', { placa: 'uno', nombre: 'LED de Sofía' }), /nombre/],
+    ['codigo_compilado sin el código', () => edi('codigo_compilado', { ok: true }), /codigo/],
+    ['sesion_iniciada en la placa «leonardo»', () => edi('sesion_iniciada', { placa: 'leonardo', nivel: 1 }), /placa/],
+    ['bloques_cambiados con el XML en vez del resumen', () => edi('bloques_cambiados', { xml: '<xml/>' }), /bloques/],
+  ];
+  for (const [texto, armar, espera] of casosEv) {
+    const p = revisarEvento(armar(), { emitido: true });
+    if (espera === null) revisar(!p.length, `se acepta ${texto}` + (p.length ? ': ' + p.join(' | ') : ''));
+    else revisar(p.length > 0 && p.some((x) => espera.test(x)), `se rechaza ${texto}: ${p[0] || '(no se rechazó)'}`);
+  }
+  // La línea del archivo necesita el sobre completo de TecnoBloques.
+  for (const campo of Object.keys(SOBRE)) {
+    const linea = { ...EVENTOS.falla, ...SOBRE };
+    delete linea[campo];
+    const p = revisarEvento(linea);
+    revisar(p.some((x) => x.includes(campo)), `se rechaza una línea del archivo sin «${campo}»: ${p[0] || '(no se rechazó)'}`);
+  }
+  revisar(revisarEvento({ ...EVENTOS.falla, ...SOBRE, equipo: '' }).length > 0, 'se rechaza una línea con el código de equipo vacío');
 }
 
 console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');

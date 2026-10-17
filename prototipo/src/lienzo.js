@@ -12,6 +12,7 @@ import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encaj
 import { esNano, perfilPlaca } from './placas.js';
 import { ALIASES_EXPANSION } from './piezas/shield_nano_io.js';
 import { PATAS } from './motor/red.js';
+import { VERSION_EVENTOS } from './eventos.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Marca de la imagen SVG exportada (abajo a la derecha). La imagen sigue siendo de quien la hace (NOTICE).
@@ -1762,7 +1763,7 @@ export function crearLienzo(elemento, opciones = {}) {
   function emitir(tipo, d) {
     if (!alEvento) return;
     try {
-      alEvento({ t: Date.now(), origen: 'circuito', tipo, datos: d });
+      alEvento({ v: VERSION_EVENTOS, t: Date.now(), origen: 'circuito', tipo, datos: d });
     } catch (err) {
       console.error(err); // un error de quien escucha no debe romper el lienzo
     }

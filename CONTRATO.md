@@ -232,21 +232,31 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 - TecnoBloques puede pasar la misma función a los dos.
 
 ```json
-{ "t": 1734567890123, "origen": "circuito", "tipo": "cable_agregado", "datos": { "de": "placa.D13", "a": "r1.1" } }
-{ "t": 1734567895000, "origen": "simulador", "tipo": "falla", "datos": { "tipo": "led_quemado", "componente": "led1" } }
+{ "v": 1, "t": 1734567890123, "origen": "circuito", "tipo": "cable_agregado", "datos": { "de": "placa.D13", "a": "r1.1" } }
+{ "v": 1, "t": 1734567895000, "origen": "simulador", "tipo": "falla", "corrida": 1, "ms_sim": 412, "datos": { "tipo": "led_quemado", "componente": "led1" } }
 ```
 
-- `t`: milisegundos desde 1970. `origen`: `circuito` o `simulador`.
-- Tipos del contrato 1: `componente_agregado`, `componente_quitado`, `componente_cambiado`, `cable_agregado`, `cable_quitado`, `boton_pulsado`, `simulacion_iniciada`, `simulacion_detenida`, `falla`, `reinicio_placa`.
-- `falla` lleva en `datos.tipo` qué pasó: `led_quemado`, `resistencia_caliente`, `corriente_pin`, `corriente_chip` (entre todos, los pines pasan de 200 mA por las patas VCC o por las GND del chip; `componente` es `placa.VCC` o `placa.GND`), `cortocircuito`, `sin_solucion`, `servo_alimentacion` (un servo alimentado desde un pin), `reinicio_usb` (la placa se reinició por un golpe de corriente) o `fusible_usb` (el fusible del USB se abrió y la placa se apagó). Con la shield L293D, el motor TT y la batería (10 oct): `bateria_baja` (descargada; se avisa al empezar), `bateria_celdas` (bajó de 3,0 V por celda), `bateria_invertida`, `bateria_corto`, `bateria_en_5v`, `motores_sin_energia` (los motores reciben la orden y no hay batería en EXT_PWR), `motor_en_pin` y `l293d_corriente` (más de 0,6 A por canal). Con el balance y el probador (10 oct): `bateria_desbalanceada` (se avisa al empezar) y `probador_alarma` (una celda bajó del umbral del probador). Cada falla se avisa una vez por corrida.
-- `reinicio_placa` (origen `simulador`): `{ motivo: 'boton' }` al pulsar Reiniciar, o `{ motivo: 'energia_usb', nuevos, total }` cuando la placa se reinicia o se apaga por la energía del USB (una vez por foto, con cuántos hubo).
+- `v`: versión del esquema de eventos (`contrato/evento.schema.json`; desde el 16 oct). `t`: milisegundos desde 1970. `origen`: `circuito` o `simulador`.
+- Los eventos del simulador llevan `corrida` y `ms_sim` (sección 6.1). Los del lienzo no: pasan aunque nunca se simule.
+- Tipos del contrato 1: `componente_agregado`, `componente_quitado`, `componente_cambiado`, `cable_agregado`, `cable_quitado`, `boton_pulsado`, `simulacion_iniciada`, `simulacion_pausada` y `simulacion_reanudada` (16 oct), `simulacion_detenida`, `falla`, `reinicio_placa`.
+- `falla` lleva en `datos.tipo` qué pasó: `led_quemado`, `resistencia_caliente`, `corriente_pin`, `corriente_chip` (entre todos, los pines pasan de 200 mA por las patas VCC o por las GND del chip; `componente` es `placa.VCC` o `placa.GND`), `cortocircuito`, `sin_solucion`, `servo_alimentacion` (un servo alimentado desde un pin), `reinicio_usb` (la placa se reinició por un golpe de corriente) o `fusible_usb` (el fusible del USB se abrió y la placa se apagó). Con la shield L293D, el motor TT y la batería (10 oct): `bateria_baja` (descargada; se avisa al empezar), `bateria_celdas` (bajó de 3,0 V por celda), `bateria_invertida`, `bateria_corto`, `bateria_en_5v`, `motores_sin_energia` (los motores reciben la orden y no hay batería en EXT_PWR), `motor_en_pin` y `l293d_corriente` (más de 0,6 A por canal). Con el balance y el probador (10 oct): `bateria_desbalanceada` (se avisa al empezar) y `probador_alarma` (una celda bajó del umbral del probador). Con el Nano y su alimentación de referencia (11 oct): `nano_alimentacion` (el jack recibe menos de 7 V), `nano_3v3_sobrecarga` (la salida de 3,3 V del módulo pasa de 50 mA o la de la expansión de 100 mA) y `nano_bajo_voltaje` (la alimentación bajó del umbral de reinicio, 2,7 V). Cada falla se avisa una vez por corrida.
+- `reinicio_placa` (origen `simulador`): `{ motivo: 'boton' }` al pulsar Reiniciar, o `{ motivo: 'energia_usb', nuevos, total }` cuando la placa se reinicia o se apaga por la energía del USB (una vez por foto, con cuántos hubo). En el Nano con su alimentación de referencia: `{ motivo: 'energia_nano', fuente, nuevos, total }`.
 - `boton_pulsado` (origen `circuito`) sale al soltar un botón presionado con el mouse durante la simulación: `{ id, ms }`, con cuánto tiempo estuvo presionado. Muestra cómo prueba el aprendiz su montaje.
 - TecnoBloques completa cada evento, suma los suyos con `origen: 'editor'` y los escribe en un archivo por equipo: ver 6.1. (Hasta el 11 oct decía `alias`; desde la decisión de ese día, el registro identifica al equipo, nunca al aprendiz.)
 - **Agregar un tipo de evento nuevo no rompe el contrato.** Cambiar o quitar uno sí.
 
-### 6.1 El registro de eventos (aprobado el 11 oct 2026; se implementa en la próxima sesión)
+### 6.1 El registro de eventos (aprobado el 11 oct 2026; en implementación desde el 16 oct)
 
 > Decisiones de Efraín del 11 de octubre de 2026. Hasta que se implemente, rige lo de arriba. Al implementarlo, esta sección pasa a describir lo que hay, nace `contrato/evento.schema.json` y se anota en las dos bitácoras.
+
+> **Decisiones del 16 de octubre de 2026** (Efraín aprobó la propuesta de Claude antes de implementar):
+>
+> - **`corrida` cuenta en el paquete mientras la app está abierta**, no por simulador: TecnoBloques crea un simulador nuevo cada vez que se pulsa Simular, y con un contador por simulador todas las corridas serían la 1. Sube con cada `simulacion_iniciada`. La API no cambia.
+> - `simulacion_detenida` manda `ms_sim` y conserva `ms_simulados` (el nombre de antes), porque quitar un campo rompería el contrato.
+> - **`proyecto_abierto` no lleva el nombre del proyecto**: lo escribe el aprendiz y puede tener su nombre («LED de Sofía»). Lleva solo `placa`. `ejemplo_cargado` sí lleva el `id`, que es nuestro.
+> - **El código del equipo se limpia para el nombre del archivo** (solo letras sin tilde, dígitos, `-` y `_`; lo demás pasa a `_`), así un código como `..\x` no escribe fuera de `registros\`. En la línea va tal como se escribió, sin los espacios de los extremos. El código lo entrega el instructor.
+> - **La opción del instructor se abre con un atajo de teclado y un PIN** que el instructor define la primera vez. El atajo y la forma del PIN son de TecnoBloques: no son parte del contrato.
+> - `contrato/evento.schema.json` tiene dos niveles: `$defs/evento` es lo que emite quien emite (sin `equipo`, `sesion` ni versiones) y la raíz es la línea del archivo, con el sobre completo.
 
 **Para qué.** El registro permite reconstruir el trabajo de cada equipo: qué armó, qué falla vio, qué cambió y si la falla desapareció en la corrida siguiente. También permite saber con qué modo y con qué no idealidades trabajó.
 
@@ -286,6 +296,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 |---|---|
 | `simulacion_iniciada` | `placa`, `modo`, `activas` (las no idealidades encendidas) y **`circuito` completo** (sección 4): cada corrida se puede analizar sola, sin reconstruirla desde los cambios |
 | `simulacion_pausada` | nuevo, sin datos |
+| `simulacion_reanudada` | nuevo (16 oct), sin datos: la simulación sigue después de una pausa (con Iniciar o con Reiniciar). Con `simulacion_pausada` dice cuánto duró la pausa |
 | `simulacion_detenida` | `ms_sim` y **`fallas`**: `[{ tipo, componente }]` de esa corrida. Si una falla aparece en una corrida y no en la siguiente, se corrigió |
 
 **Eventos del editor** (`origen: 'editor'`, los emite TecnoBloques):
@@ -293,7 +304,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | Tipo | `datos` |
 |---|---|
 | `sesion_iniciada` | `placa`, `nivel` y `condicion` (reservado: el modo asignado, si lo hay) |
-| `proyecto_abierto` / `ejemplo_cargado` | `nombre` del proyecto o `id` del ejemplo |
+| `proyecto_abierto` / `ejemplo_cargado` | `placa` del proyecto (sin su nombre: decisión del 16 oct) o `id` del ejemplo |
 | `bloques_cambiados` | resumen: cuántos bloques y cuántos de cada tipo. No el XML entero |
 | `codigo_compilado` | `ok`, `error` (el tipo de error, si lo hay), `bytes` y **`codigo`**: el C++ completo **sin comentarios** |
 | `programa_subido` | `ok` y `placa`: el programa fue a la placa real |

@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+sys.path.insert(0, str(Path(__file__).parent))  # python -I no agrega la carpeta de la prueba
+from eventos_contrato import vigilar_eventos, revisar_eventos  # noqa: E402
 
 sys.stdout.reconfigure(encoding='utf-8')
 PAGINA = Path(sys.argv[1]).resolve().as_uri()
@@ -19,6 +21,7 @@ def revisar(condicion, texto):
 with sync_playwright() as p:
     nav = p.chromium.launch()
     pg = nav.new_page(viewport={'width': 1366, 'height': 768})
+    eventos_tc = vigilar_eventos(pg)
     errores = []
     pg.on('console', lambda m: errores.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
     pg.on('pageerror', lambda e: errores.append(f'pageerror: {e}'))
@@ -147,6 +150,7 @@ with sync_playwright() as p:
     c = pg.evaluate('lienzo.circuito()')
     revisar([k['id'] for k in c['componentes']] == ['r1'] and len(c['cables']) == 1, 'borrar el LED quita también sus 2 cables')
 
+    revisar_eventos(eventos_tc, revisar, 'extras')
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))
     nav.close()
 

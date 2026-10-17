@@ -3,6 +3,8 @@ import json
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+sys.path.insert(0, str(Path(__file__).parent))  # python -I no agrega la carpeta de la prueba
+from eventos_contrato import vigilar_eventos, revisar_eventos  # noqa: E402
 
 sys.stdout.reconfigure(encoding='utf-8')
 PAGINA = Path(sys.argv[1]).resolve().as_uri()
@@ -35,6 +37,7 @@ MUESTREO = f'''async (segundos) => {{
 with sync_playwright() as p:
     nav = p.chromium.launch()
     pg = nav.new_page(viewport={'width': 1366, 'height': 900})
+    eventos_tc = vigilar_eventos(pg)
     errores = []
     pg.on('console', lambda m: errores.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
     pg.on('pageerror', lambda e: errores.append(f'pageerror: {e}'))
@@ -147,6 +150,7 @@ with sync_playwright() as p:
             f'realista: la lectura del potenciómetro baila un poco ({len(ruido)} lecturas entre {min(ruido)} y {max(ruido)})')
     revisar(len(limpio) >= 15 and len(set(limpio)) == 1, f'ideal: la lectura no se mueve (siempre {limpio[0] if limpio else "?"})')
 
+    revisar_eventos(eventos_tc, revisar, 't1t2')
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))
     nav.close()
 

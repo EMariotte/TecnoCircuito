@@ -4,6 +4,8 @@ import re
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+sys.path.insert(0, str(Path(__file__).parent))  # python -I no agrega la carpeta de la prueba
+from eventos_contrato import vigilar_eventos, revisar_eventos  # noqa: E402
 
 sys.stdout.reconfigure(encoding='utf-8')
 PAGINA = Path(sys.argv[1]).resolve().as_uri()
@@ -22,6 +24,7 @@ def revisar(condicion, texto):
 with sync_playwright() as p:
     nav = p.chromium.launch()
     pg = nav.new_page(viewport={'width': 1366, 'height': 900})
+    eventos_tc = vigilar_eventos(pg)
     errores = []
     pg.on('console', lambda m: errores.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
     pg.on('pageerror', lambda e: errores.append(f'pageerror: {e}'))
@@ -142,6 +145,7 @@ with sync_playwright() as p:
     m1 = fila('motor1 (M1)')
     revisar(re.search(r'2[0-4]\d RPM · atrás', m1) is not None, f'a 255 hacia atrás: «{m1}»')
     pg.click('#detener')
+    revisar_eventos(eventos_tc, revisar, 'carro')
     revisar(not errores, 'sin errores en la consola' + (': ' + ' | '.join(errores[:3]) if errores else ''))
     nav.close()
 

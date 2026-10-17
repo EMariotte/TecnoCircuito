@@ -3,7 +3,7 @@
 // ni competir con Blockly, y la velocidad no depende de cuánto tarde la página en dibujar.
 //
 // Mensajes que recibe: crear, iniciar, pausar, reiniciar, detener, circuito, serial, pulsador, mano.
-// Mensajes que manda: listo, foto, error. Cada foto lleva la «corrida» con la que se pidió, para que la página
+// Mensajes que manda: listo, foto, error. Cada foto lleva el «turno» con el que se pidió, para que la página
 // descarte las que llegan tarde (de antes de pausar, detener o reiniciar).
 import { crearNucleo, FRECUENCIA } from './nucleo.js';
 
@@ -15,7 +15,7 @@ const CICLOS_MS = FRECUENCIA / 1000;
 
 let nucleo = null;
 let corriendo = false;
-let corrida = 0;
+let turno = 0;
 let deuda = 0; // ciclos que el chip debe para alcanzar al reloj real
 let ultimo = 0;
 let ultimaFoto = 0;
@@ -51,7 +51,7 @@ function velocidad(ahora) {
 function enviarFoto(ahora = performance.now()) {
   ultimaFoto = ahora;
   const f = nucleo.foto();
-  self.postMessage({ tipo: 'foto', corrida, ...f, velocidad: velocidad(ahora), msReales: tiempoReal });
+  self.postMessage({ tipo: 'foto', turno, ...f, velocidad: velocidad(ahora), msReales: tiempoReal });
 }
 
 function ciclo() {
@@ -79,7 +79,7 @@ function ciclo() {
 self.onmessage = (e) => {
   const m = e.data || {};
   try {
-    if ('corrida' in m) corrida = m.corrida;
+    if ('turno' in m) turno = m.turno;
     switch (m.tipo) {
       case 'crear':
         nucleo = crearNucleo({ hex: m.hex, circuito: m.circuito, activas: m.activas });
