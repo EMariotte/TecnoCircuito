@@ -1224,3 +1224,11 @@ En TecnoBloques: depende de `#v0.1.0` y sube a 0.3.0. `npm test`, `test:simulado
 - **Pruebas de Chromium:** `probar_registro.py` (nueva, 17 comprobaciones) reproduce lo que haría un equipo: LED sin resistencia → se quema → arma el circuito con 330 Ω en un lienzo y simulador nuevos → corrida 2 sin fallas, con pausa y reinicio. Además, 12 pruebas existentes revisan cada evento que emiten contra el esquema (`eventos_contrato.py`, con la misma revisión de Node). `pagina.html` guarda los eventos completos en `window.eventosTC`.
 
 **Pruebas:** suite completa **1179 OK, 0 fallas** (16 oct). Sin medidas físicas: el registro no tiene no idealidades que validar. Falta la fase 3 (TecnoBloques).
+
+## 2026-10-16 — Registro de eventos, fase 3: TecnoBloques (Efraín, con Claude)
+
+TecnoBloques ya escribe el registro (commits `4d428b9` y `7e1432b` allá; detalle en su BITACORA): apagado por defecto, el instructor lo enciende con Ctrl+Alt+Mayús+R y su PIN, el equipo escribe su código con confirmación, un aviso discreto lo dice en pantalla, «Exportar registros» copia los `.jsonl`, y F12 solo abre las herramientas de desarrollo después del PIN. Sus pruebas revisan cada línea con `pruebas/contrato_eventos.js` de aquí: `test:registro` 58 OK y `test:registro-app` 36 OK (de punta a punta, en Electron).
+
+Corrección a la entrada de las fases 1 y 2: `probar_registro.py` tiene **18** comprobaciones, no 17 (la de `simulacion_reanudada` entró después de escribirla).
+
+Siguen la fase 4 (un script que cuente la historia de un `.jsonl` y la prueba de Efraín en la app) y la 5 (revisión).
