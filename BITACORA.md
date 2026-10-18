@@ -1324,3 +1324,17 @@ PROC-001 se devuelve por dos omisiones de evidencia (preparación verificable de
 Segunda revisión de la entrega CLA-20261018-003: PROC-R1/R2/R3 cerrados por cotejo exacto y regresión documental. Evidencia, hashes de los archivos sin commit y precisión sobre la tabla inicial en PROC-001, TecnoSuite. Comprobador: 18 fichas, 43 documentos, cero errores/avisos; herramienta: 10 OK. Los cuerpos técnicos permanecen íntegros. Codex actualiza ficha, registro y su canal; no edita CLAUDE.md ni PROCESO.
 
 Tercer cierre documental del piloto: datos del primer balance presentados en INVESTIGACION.md; pendientes la opinión corta de Claude y decisión de Efraín. Sin cierres funcionales nuevos, pruebas de producto, hardware, commit ni publicación.
+
+## 2026-10-18 10:09 · Codex: AUD-01 devuelta tras verificación independiente
+
+Revisada CLA-20261018-005 sobre TB 8897b85 y src/registro.js SHA256 792cb03ecc7fef575d9c0e1a9ed63fa57aed17664dda0d21adda24fcc2356135. Siete casos originales corregidos; subsisten comentario privado en número empalmado de macro (alta), alteración de macro multilínea/include válido (media) y falso negativo del oráculo (media). Informe y diagnóstico propios en TecnoCircuito/docs/VERIFICACION-AUD01-CODEX-2026-10-18.md y verificar-aud01-2026-10-18.cjs; entrega COD-20261018-003 y estado pendiente en la ficha.
+
+Pruebas propias: Node 78 OK, Electron 36 OK sin errores, cargador Online. Preprocesador con semilla 18102026 y CASOS=5000: exit 0, 39 casos fijos, 5000 aleatorios con cuatro diferencias disculpadas por el límite de stray y cuatro comprobaciones de límites; V3 demuestra el falso negativo para macros. Diagnóstico adverso exit 1: reproduce incumplimientos, no acredita regresión aprobada. Codex no editó producto, pruebas ni memoria de Claude. Claude corrige con reservas coordinadas; sin commit, push, publicación ni validación física nueva.
+
+## 2026-10-18 14:26 · Codex: cierre verificado de AUD-01
+
+Verificada CLA-20261018-006 sobre src/registro.js SHA256 bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7, sin commit. V1/V2/V3 cerrados: casos originales y variantes limpios, programas válidos preservados y juez capaz de rechazar las tres salidas defectuosas capturadas de la entrega anterior. Informe posterior: TecnoCircuito/docs/CIERRE-AUD01-CODEX-2026-10-18.md. No se reescribió el informe de devolución.
+
+Pruebas propias: Node 89 OK, 66 comprobaciones fijas con 80 variantes, siete programas válidos, 2000 aleatorios sin excepciones y ocho fronteras adicionales. Electron tuvo una falla inicial al cerrar herramientas sin PIN; la repetición completa sin otra suite pasó 36/36, sin cambiar aserciones y sin acreditar una causa. Excepción /**/ vacío de Efraín respetada y remitida a REG-005 para documentarla.
+
+Primer cierre funcional del grupo para el segundo balance; AUD-02/04 siguen sus fichas y Efraín conserva prioridades. Codex no modificó producto, tests ni CLAUDE.md. Sin instalador, hardware, commit, push ni publicación nuevos.

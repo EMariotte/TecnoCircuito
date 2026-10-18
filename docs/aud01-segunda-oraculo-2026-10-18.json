@@ -1,0 +1,146 @@
+{
+  "fechaUTC": "2026-10-18T19:19:56.127Z",
+  "sha256Registro": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7",
+  "v3": {
+    "fuenteControlNegativo": "Salidas reales capturadas de la primera entrega (792cb03e), no una copia reconstruida de su implementación",
+    "entradas": 3,
+    "rechazadasAntes": 3,
+    "erroresDetectados": [
+      [
+        "quedó un comentario"
+      ],
+      [
+        "el compilador ve otra cosa"
+      ],
+      [
+        "el compilador ve otra cosa"
+      ]
+    ],
+    "fallosActuales": 0,
+    "fallosLiteralLegitimo": 0,
+    "conservaLiterales": true,
+    "eliminaComentario": true
+  },
+  "fronteras": [
+    {
+      "nombre": "comentario en #if",
+      "entrada": "#if 1 /* COMENTARIO_PRIVADO */\nint main(){return 0;}\n#endif\n",
+      "salida": "#if 1  \nint main(){return 0;}\n#endif\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "comentario multilínea en #if",
+      "entrada": "#if 1 /* COMENTARIO_PRIVADO\n */ && 1\nint main(){return 0;}\n#endif\n",
+      "salida": "#if 1  \\\n && 1\nint main(){return 0;}\n#endif\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "comentario en bloque #if 0",
+      "entrada": "#if 0\nint n; // COMENTARIO_PRIVADO\n#endif\nint main(){return 0;}\n",
+      "salida": "#if 0\nint n;\n#endif\nint main(){return 0;}\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "texto ordinario en bloque #if 0",
+      "entrada": "#if 0\nconst char*s=\"// COMENTARIO_PRIVADO\";\n#endif\nint main(){return 0;}\n",
+      "salida": "#if 0\nconst char*s=\"// COMENTARIO_PRIVADO\";\n#endif\nint main(){return 0;}\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "texto crudo en bloque #if 0",
+      "entrada": "#if 0\nR\"(\n// COMENTARIO_PRIVADO\n)\"\n#endif\nint main(){return 0;}\n",
+      "salida": "#if 0\nR\"(\n// COMENTARIO_PRIVADO\n)\"\n#endif\nint main(){return 0;}\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "texto sin cerrar en bloque #if 0",
+      "entrada": "#if 0\n\"a\n// COMENTARIO_PRIVADO\n#endif\nint main(){return 0;}\n",
+      "salida": "#if 0\n\"a\n\n#endif\nint main(){return 0;}\n",
+      "original": {
+        "estado": 0,
+        "errores": "<stdin>:2:1: warning: missing terminating \" character\r\n"
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": "<stdin>:2:1: warning: missing terminating \" character\r\n"
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "comentarios de bloques condicionales anidados",
+      "entrada": "#if 0\n#if 1\n/* COMENTARIO_PRIVADO */\n#endif\n#endif\nint main(){return 0;}\n",
+      "salida": "#if 0\n#if 1\n \n#endif\n#endif\nint main(){return 0;}\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    },
+    {
+      "nombre": "separador vacío decidido por Efraín",
+      "entrada": "#define M a \\// COMENTARIO_PRIVADO\nint main(){return 0;}\n",
+      "salida": "#define M a \\/**/\nint main(){return 0;}\n",
+      "original": {
+        "estado": 0,
+        "errores": ""
+      },
+      "limpio": {
+        "estado": 0,
+        "errores": ""
+      },
+      "literalConservadoOComentarioEliminado": true,
+      "lineasConservadas": true
+    }
+  ]
+}

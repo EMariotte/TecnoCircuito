@@ -1,0 +1,96 @@
+{
+  "fechaUTC": "2026-10-18T15:04:51.745Z",
+  "versionCompilador": "7.3.0",
+  "sha256Registro": "792cb03ecc7fef575d9c0e1a9ed63fa57aed17664dda0d21adda24fcc2356135",
+  "originales": [
+    {
+      "nombre": "empalme LF",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "int valor=1; /\\\n/ MARCADOR_PRIVADO_SINTETICO\n",
+      "despues": "int valor=1;\n\n"
+    },
+    {
+      "nombre": "empalme CRLF",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "int valor=1; /\\\r\n/ MARCADOR_PRIVADO_SINTETICO\r\n",
+      "despues": "int valor=1;\r\n\r\n"
+    },
+    {
+      "nombre": "bloque empalmado",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "int valor; /\\\n* MARCADOR_PRIVADO_SINTETICO *\\\n/ int otro;\n",
+      "despues": "int valor; \n\n int otro;\n"
+    },
+    {
+      "nombre": "u8R",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "const auto s = u8R\"(a \" b)\"; // MARCADOR_PRIVADO_SINTETICO\n",
+      "despues": "const auto s = u8R\"(a \" b)\";\n"
+    },
+    {
+      "nombre": "uR",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "const auto s = uR\"(a \" b)\"; // MARCADOR_PRIVADO_SINTETICO\n",
+      "despues": "const auto s = uR\"(a \" b)\";\n"
+    },
+    {
+      "nombre": "UR",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "const auto s = UR\"(a \" b)\"; // MARCADOR_PRIVADO_SINTETICO\n",
+      "despues": "const auto s = UR\"(a \" b)\";\n"
+    },
+    {
+      "nombre": "LR",
+      "defectoAntes": true,
+      "corregidoAhora": true,
+      "entrada": "const auto s = LR\"(a \" b)\"; // MARCADOR_PRIVADO_SINTETICO\n",
+      "despues": "const auto s = LR\"(a \" b)\";\n"
+    }
+  ],
+  "privacidad": {
+    "entrada": "#define M 1e\\\n+R\"(a \" // MARCADOR_PRIVADO_SINTETICO)\"\nint main(){return 0;}\n",
+    "salida": "#define M 1e\\\n+R\"(a \" // MARCADOR_PRIVADO_SINTETICO)\"\nint main(){return 0;}\n",
+    "originalCompila": true,
+    "definicionCompilador": [
+      "#define M 1e+R\"(a \""
+    ],
+    "eliminaSinEmpalme": true,
+    "conservaConEmpalme": true,
+    "variantes": 40,
+    "variantesQueConservanComentario": 40,
+    "consumidorRealEmiteComentario": true,
+    "limiteConsumidor": "Función real extraída de app.js, con sumidero sintético; no es recorrido Electron del caso nuevo."
+  },
+  "oraculo": {
+    "numeroDeFallosDetectados": 0,
+    "pasoIndebidamente": true
+  },
+  "preservacion": [
+    {
+      "nombre": "macro multilínea",
+      "entrada": "#define VALOR (1 /* comentario\n */ + 2)\nint dato = VALOR;\n",
+      "salida": "#define VALOR (1 \n + 2)\nint dato = VALOR;\n",
+      "compilabaAntes": true,
+      "compilaLimpio": false,
+      "erroresLimpio": "<stdin>:2:2: error: expected unqualified-id before '+' token\r\n",
+      "salidaHead": "#define VALOR (1 \n + 2)\nint dato = VALOR;\n",
+      "compilaLimpioHead": false
+    },
+    {
+      "nombre": "include válido",
+      "entrada": "#include <avr//io.h>\nint main(){return 0;}\n",
+      "salida": "#include <avr\nint main(){return 0;}\n",
+      "compilabaAntes": true,
+      "compilaLimpio": false,
+      "erroresLimpio": "<stdin>:1:14: error: missing terminating > character\r\n<stdin>:1:10: fatal error: avr: No such file or directory\r\ncompilation terminated.\r\n",
+      "salidaHead": "#include <avr\nint main(){return 0;}\n",
+      "compilaLimpioHead": false
+    }
+  ]
+}
