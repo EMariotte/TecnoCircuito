@@ -1,6 +1,14 @@
 # AGENTS.md — TecnoCircuito
 
-Instrucciones para Codex y los agentes que lean este archivo. **Asignación actual de Efraín: Codex implementa, prueba y revisa Nano + expansión E/S** (autorizado después del cierre de R6). El reparto anterior Codex revisor / Claude implementador se conserva en la historia. Responde en español, tutéalo y comunica resultados con evidencia.
+Instrucciones para Codex y los agentes que lean este archivo. **Encargo permanente de Efraín (17 oct): Codex audita y supervisa TecnoCircuito, incluido su contrato e integración con TecnoBloques.** **Roles permanentes (Efraín, 18 oct): Claude es el único implementador y programador**, también de Nano + expansión E/S; Codex audita, supervisa y verifica, sin implementar código de producto. La asignación de Nano a Codex (después del cierre de R6) fue una prueba y se conserva en la historia. Responde en español, tutéalo y comunica resultados con evidencia.
+
+## Inicio de sesión y coordinación obligatoria
+
+Por pedido de Efraín (17 oct), el piloto rige para **todo TecnoCircuito y TecnoBloques**. Al iniciar lee [TecnoSuite/PROCESO.md](../TecnoSuite/PROCESO.md), [tablero](../TecnoSuite/TABLERO.md), ficha activa, estado técnico de CLAUDE.md y entradas nuevas de [Codex para Claude](../TecnoSuite/canales/CODEX-A-CLAUDE.md) y [Claude para Codex](../TecnoSuite/canales/CLAUDE-A-CODEX.md). Comprueba Git, trabajo existente, rol, tarea, responsable y reservas antes de editar. Acusa recibo solo por ti mismo.
+
+**Ambos agentes deben advertirle a Efraín si falta un paso necesario**, con evidencia, consecuencia y solución. Completa lo autorizado y continúa lo independiente; respeta excepciones expresas sin pedir permisos repetidos. Codex mantiene auditoría y supervisión; Claude es el único implementador. Codex lleva el [registro e investigación del piloto](../TecnoSuite/INVESTIGACION.md). El estado operativo solo se edita en fichas; el tablero es generado. Los mensajes .md no ejecutan al otro agente.
+
+El [contrato local anterior](docs/CONTRATO-COORDINACION-AGENTES.md) remite al acuerdo común v2. Los documentos nuevos siguen sin commit: un worktree/clon debe recibir las instrucciones mediante copia controlada o commit autorizado antes de trabajar; no vienen de HEAD por sí solos.
 
 ## Contexto y fuentes
 
@@ -15,10 +23,11 @@ TecnoCircuito es el simulador de Arduino de TecnoBloques para aprendices de la T
 - [Revisión inicial de Codex](docs/REVISION-CODEX-2026-10-11.md): resultados, limitaciones y hallazgos abiertos R1–R8. Es un informe fechado, no una lista automáticamente resuelta por cambios posteriores.
 - [Primer seguimiento de las correcciones](docs/VERIFICACION-CODEX-R1-R8-2026-10-11.md): evidencia histórica de R1–R5, R7 y R8 verificados y del pendiente que entonces tenía R6. Su estado posterior está en el cierre enlazado a continuación.
 - [Cierre posterior de R6](docs/CIERRE-R6-CODEX-2026-10-11.md): verificado por Codex tras las correcciones `7424f8a`; **R1–R8 cerrados** en el alcance de la revisión original. Se distinguen 11/12 comparaciones estrictas y 12/12 con el margen instrumental acordado. Los pendientes físicos siguen en los registros y CLAUDE.md.
+- [Primer ciclo de auditoría permanente](docs/AUDITORIA-CODEX-2026-10-17.md): alcance, evidencia y nuevos hallazgos AUD-01–AUD-05; sus cierres requieren comprobación posterior.
 
-No mantengas una segunda copia extensa del estado en este archivo. Actualízalo cuando cambien las reglas de trabajo; el progreso va en la bitácora y el estado actual en CLAUDE.md.
+No mantengas una segunda copia extensa del estado en este archivo. Actualízalo cuando cambien las reglas de trabajo; los hitos van en la bitácora, el estado técnico en CLAUDE.md y el estado de tareas en las fichas de TecnoSuite.
 
-## Encargo actual: Nano con expansión E/S
+## Nano con expansión E/S (contexto técnico)
 
 Efraín pidió un conjunto visual Nano clásico + expansión E/S, con variantes **roja y azul**. Referencias locales: `prototipo/Imagenes_módulos/Nano1.avif` a `Nano8.avif` (incluye `nano2`, `nano3` y `Nano5.png`). Codex leyó las ocho: Nano4 es la comparación más detallada; Nano5 es un icono, no una fotografía de la placa. Las fotos anuncian funciones similares pero muestran diferencias de conectores y disposición: confirma cada mapa eléctrico, reguladores y alimentación. Las medidas anunciadas de la roja son 58 × 54 mm; comprobar en hardware antes de fijar geometría. Dibuja SVG originales, sin incorporar estas imágenes comerciales al repositorio público.
 
@@ -30,22 +39,30 @@ La implementación de software y sus supuestos están en [IMPLEMENTACION-NANO-20
 
 **Vistas medidas (14 oct, Claude, autorizado por Efraín):** el Nano, la expansión roja/azul y el Uno usan los dibujos de TecnoDiseñador (`npm run vistas`; COMO-FUNCIONA, sección 62). Marco común Nano 60 × 53,5 mm, con el Nano encima de la expansión, sin ventana. La medición corrigió el bloque de seis: **tres 3V3 y tres GND, sin 5V**. Son `OUT_3V3`/`_2`/`_3` y `GND_OUT`/`_2`/`_3`; `OUT_5V`/`OUT_5V_2` quedan como aliases del 5V del Nano, igual que `SPI_*`. La roja y la azul tienen la misma geometría. En KiCad, `GND2`/`RESET2` son ahora los pads 4/3, como en el lienzo. Sigue pendiente la validación física.
 
+## Auditoría y supervisión permanente
+
+- Efraín autorizó el seguimiento continuo entre sesiones el 17 de octubre de 2026. Incorpora la revisión del estado, los cambios y los pendientes al trabajo de cada sesión y entrega, según su alcance.
+- Metodología acordada con Efraín el 17 oct: [METODOLOGIA-AUDITORIA-SUPERVISION.md](docs/METODOLOGIA-AUDITORIA-SUPERVISION.md). Distingue evidencia de software, integración, hardware y uso; cada auditoría acredita únicamente sus comprobaciones ejecutadas.
+- Conserva las asignaciones de implementación. El encargo de auditoría no autoriza por sí solo correcciones funcionales fuera de lo asignado, cambios de contrato ni publicación.
+- Registra los hallazgos y sus cierres con evidencia; no conviertas resultados históricos, pruebas omitidas o declaraciones del implementador en verificaciones nuevas. Si Codex revisa su propia implementación, indícalo.
+- El encargo persiste en estas instrucciones; no implica que haya ejecuciones automáticas configuradas fuera de las sesiones. El estado técnico sigue en CLAUDE.md, las tareas en TecnoSuite y los hitos en BITACORA.md.
+
 ## Rol de revisor
 
 1. Comprueba primero `git status --short` y la revisión de código. Respeta cualquier trabajo existente.
 2. Revisa la implementación, el contrato, los ejemplos y las pruebas relacionadas. Busca casos fuera de los supuestos de la suite.
 3. Ejecuta las comprobaciones pertinentes y deja reproducciones mínimas para los defectos. Un diagnóstico que reproduce un error no es una prueba de regresión aprobada.
 4. Entrega hallazgos por gravedad con archivo, condición, resultado observado, impacto y comprobación que debe añadirse. Separa fallos del código, límites de la prueba y validaciones físicas pendientes.
-5. En el rol de revisor, escribe informes, instrucciones y reproducciones; deja las correcciones funcionales para el agente implementador, salvo encargo explícito de Efraín.
+5. En el rol de revisor, escribe informes, instrucciones y reproducciones; deja las correcciones funcionales a Claude, el único implementador.
 6. No declares resuelto un hallazgo solo porque el implementador lo diga: revisa el diff y verifica el caso original, la regresión y los sistemas afectados.
 
 ## Trabajo conjunto con Claude
 
-- Efraín decide prioridades. Para Nano + expansión, Codex asume desarrollo, pruebas y revisión; Claude puede consultar la documentación compartida. Para encargos posteriores, aplica la asignación expresa de Efraín.
+- Efraín decide prioridades. Claude implementa todo, incluida la familia Nano + expansión; Codex revisa y verifica. Estos roles son permanentes (18 oct).
 - El traspaso de cada tarea incluye: objetivo o ID del hallazgo, revisión de Git, archivos cambiados, comandos y resultados, limitaciones y siguiente responsable.
 - Registra cada hito con fecha y autor en BITACORA.md. Conserva el informe original; el cierre posterior cita su ID y la evidencia nueva.
 - Antes de editar, comprueba que el archivo no haya cambiado durante la revisión. Evita que los dos agentes modifiquen simultáneamente el mismo archivo; para tareas simultáneas que lo requieran, acuerda ramas o worktrees separados.
-- Compartir archivos no envía automáticamente mensajes ni ejecuta al otro agente. En el encargo actual Codex puede distribuir subtareas independientes entre agentes con archivos asignados y revisión de integración. No atribuyas a Claude acciones que no hayas observado.
+- Compartir archivos no envía automáticamente mensajes ni ejecuta al otro agente. Codex puede repartir subtareas de auditoría o investigación entre sus subagentes, nunca de implementación. No atribuyas a Claude acciones que no hayas observado.
 - Si cambia el contrato, actualiza su documentación y deja constancia en ambas bitácoras y en «Proyecto hermano» de TecnoBloques, según el alcance autorizado.
 
 ## Arquitectura que hay que preservar

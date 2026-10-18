@@ -17,7 +17,7 @@
   - servos que piden más corriente de la que da el USB: el 5V baja, la placa se reinicia o el fusible la apaga, como en la real;
   - caída de voltaje del L293D y batería LiPo que se descarga o se desbalancea.
 - **Piezas:** Arduino Uno, LED, resistencia, potenciómetro, botón, microservo (SG90 o MG90S), shield de motores L293D, motor TT, batería LiPo 2S, probador de celdas y una media protoboard de 400 puntos en la que las piezas se encajan solas. La protoboard, el servo y las piezas de potencia son **piezas Tecno**: dibujos propios, hechos desde la pieza real.
-- **Arduino Nano clásico y Nano antiguo:** conjunto con expansión E/S roja o azul, ocho entradas analógicas (A6/A7 solo ADC), conectores GVS/I2C/UART y seis salidas de alimentación (dos GND, dos 3,3V y dos 5V). SPI se conecta en los pines del Nano. La geometría y alimentación siguen pendientes de medir en hardware.
+- **Arduino Nano clásico y Nano antiguo:** conjunto con expansión E/S roja o azul, ocho entradas analógicas (A6/A7 solo ADC), conectores GVS/I2C/UART y seis contactos de salida medidos en la vista (tres GND y tres 3,3V); los nombres OUT_5V heredados son aliases del 5V del Nano. SPI se conecta en los pines del Nano. La continuidad, la alimentación y el montaje conservan validación física pendiente.
 - **Para documentar:** el circuito se guarda como imagen SVG, para un proyecto o una evidencia.
 - **Para hacer una placa:** el circuito se exporta como netlist de KiCad. Sobre la plantilla «Arduino Uno Shield» de KiCad aparecen las piezas con sus conexiones a los conectores del Uno, listas para diseñar un shield.
 - **KiCad con Nano:** exporta el módulo Nano de 30 pads, regulación/filtro de referencia de 5V y 3,3V, jack e I2C/SPI. [Alcance, supuestos y pruebas físicas](docs/IMPLEMENTACION-NANO-2026-10-11.md).
@@ -30,7 +30,11 @@
 
 ## Estado
 
-Es un **prototipo**: demostró la viabilidad técnica del simulador y ya funciona dentro de TecnoBloques en modo de desarrollo. Las tareas T1 (LED y botón) y T2 (potenciómetro y brillo) están completas y validadas con la placa real. La T3 (servo, shield L293D, motor TT, batería LiPo y probador de celdas) está hecha en software; el servo SG90 y la energía del USB ya se validaron, y lo demás se valida en el laboratorio antes de la primera versión, `v0.1.0`.
+La versión `v0.1.0` fue etiquetada el 16 de octubre de 2026 y está incorporada al instalador 0.3.0 preparado de TecnoBloques, según sus bitácoras; su Release no se había publicado. T1 y T2 están validadas con placa real. T3 tiene mediciones y ajustes documentados, con contrastes físicos todavía pendientes; Nano/expansión conserva validación física pendiente. La auditoría del 17 de octubre documentó cinco defectos de software entre los dos proyectos. Consulta el [estado técnico](CLAUDE.md), el [informe fechado](docs/AUDITORIA-CODEX-2026-10-17.md) y las fichas vigentes; una suite aprobada no acredita hardware.
+
+## Colaboración en la suite
+
+El piloto de desarrollo, revisión y supervisión de ambos productos se coordina en [TecnoSuite](../TecnoSuite/README.md). Al trabajar con agentes, empieza por [AGENTS.md](AGENTS.md), el proceso común y la ficha correspondiente. Codex registra el piloto y su investigación. El tablero es generado desde las fichas; los registros históricos se conservan. TecnoRuta se incorporará posteriormente.
 
 ## Probarlo
 

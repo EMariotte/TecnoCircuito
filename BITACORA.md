@@ -1236,3 +1236,73 @@ Siguen la fase 4 (un script que cuente la historia de un `.jsonl` y la prueba de
 ## 2026-10-16 — Idea: registro central en la suite TecnoRuta (Efraín, con Claude)
 
 Al cerrar la sesión, Efraín propuso que los `.jsonl` lleguen solos a una base de datos central de la suite TecnoRuta (Supabase) en vez de salir por USB. Claude leyó el CLAUDE.md de TecnoRuta (prototipo v0.2; su fase 2 con Supabase está pendiente) y dejó un borrador para decidir: [docs/PLAN-REGISTRO-CENTRAL-TECNORUTA.md](docs/PLAN-REGISTRO-CENTRAL-TECNORUTA.md). Propone un subidor en TecnoBloques con un token por PC que solo inserta, un `id` por línea para no duplicar, el archivo local como fuente y un proyecto de Supabase aparte para la investigación, sin cruzar los códigos de equipo con los alias en la base. Faltan las decisiones de Efraín (sección 4 del borrador), entre ellas la región de los datos y el consentimiento. El orden de las próximas sesiones quedó en CLAUDE.md, «Próxima sesión».
+
+## 2026-10-17 — Codex (Sol): encargo permanente de auditoría y supervisión
+
+Efraín validó la formulación del encargo y pidió que la auditoría y supervisión sean permanentes; autorizó avanzar a la metodología. Se registra la asignación en AGENTS.md y el estado en CLAUDE.md, conservando las responsabilidades de implementación y las autorizaciones de publicación existentes.
+
+- Referencia inicial: `390ef34a119df754a06ff35c96e2286800819f21`; `git status --short` sin cambios al comenzar. Git avisó que no podía leer el ignore global del usuario; las lecturas de estado y revisión finalizaron con código 0.
+- Documento nuevo: [METODOLOGIA-AUDITORIA-SUPERVISION.md](docs/METODOLOGIA-AUDITORIA-SUPERVISION.md). Propone roles, ciclo de revisión y cierre, matriz de pruebas, frecuencia por riesgo, trazabilidad de evidencia y un primer ciclo de auditoría.
+- Contexto consultado: instrucciones y estado de TecnoCircuito, contrato, scripts de pruebas, historia reciente, cierre de R6 y registro físico de T3 del 16 oct; estado y scripts de TecnoBloques para delimitar la integración. Los resultados históricos se mantienen separados de verificaciones nuevas.
+- Alcance de la sesión: documentación de metodología. No se ejecutaron pruebas funcionales ni mediciones, no se modificó código o contrato, no se configuraron automatizaciones y no hubo commit, push ni publicación. La metodología es una propuesta; el encargo permanente sí fue autorizado.
+- Siguiente responsable: Codex para establecer la referencia actual y realizar el primer ciclo; Efraín para prioridades y contraste físico. Las discrepancias físicas conocidas conservan sus registros y pendientes.
+
+## 2026-10-17 — Codex (Sol): primer ciclo de auditoría permanente
+
+Efraín aceptó la metodología y pidió iniciar. Referencias: TecnoCircuito `390ef34a119df754a06ff35c96e2286800819f21`; TecnoBloques `5b6d37a1f4b65474ec52a162fb5c3c330bc48445`. Se conservaron los cambios documentales de la fase anterior y el árbol limpio del hermano. Dos subrevisiones Codex, solo lectura, apoyaron Nano y eventos; el agente principal verificó las reproducciones. La familia Nano incluye implementación previa de Codex; no se presenta como auditoría externa.
+
+- Informe: [AUDITORIA-CODEX-2026-10-17.md](docs/AUDITORIA-CODEX-2026-10-17.md). **Cinco hallazgos abiertos:** AUD-01 (alto, comentarios C++ conservados), AUD-02 (alto, pérdida silenciosa por fallo de disco), AUD-04 (alto, cambio de equipo durante corrida), AUD-03 (medio, fallas en fotos descartadas) y AUD-05 (medio, instrucciones AVR tras brownout con pasos grandes). Los tres primeros afectan TecnoBloques; los otros, TecnoCircuito. No se reabren por ello los R1–R8 cerrados en su alcance anterior.
+- Diagnóstico nuevo: `node docs/diagnostico-auditoria-2026-10-17.cjs`, cinco defectos reproducidos con datos sintéticos. El compilador AVR real contrasta los comentarios; el fallo de disco y los contadores de instrucciones se inyectan solo en memoria. No es una regresión aprobada.
+- AUD-04 confirmado además con clics y compilación real en Electron: `node docs/repro-equipo-electron-2026-10-17.cjs`. Archivos sintéticos A7/B2, captura inspeccionada y secuencia del cambio de equipo en `prototipo/pruebas/capturas/auditoria-equipo-2026-10-17/` (excluidos de Git).
+- **TecnoCircuito: cobertura de 26 grupos, 1179 OK por tramos.** `npm.cmd run probar` se detuvo en simulación con tres métricas de velocidad/parpadeo fallidas; comenzó en batería y coincidió con otro verificador. Tras conectar Efraín el cargador y comprobar AC, el grupo repetido y los restantes 13 grupos pasaron sin modificar umbrales: 799 OK previos + 380 OK de continuación. No se declara un comando completo con exit 0. Con cargador: 3224 ms simulados / 3224 ms reales. KiCad Uno/Nano se ejecutó, sin omitirlo.
+- **TecnoBloques:** `test:simulador` 53 OK; `test:registro` 58; `test:registro-app` 36; `test:graficador` 28; `npm test` y `test:app` exit 0, con apartados de errores revisados y vacíos. Integración local, no instalador empaquetado.
+- **Verificadores históricos:** correcciones 34 OK, cierre R6 16 OK (11/12 estrictas, 12/12 con U); R8 6/6 escenarios correctos, incluidos errores JS/archivo que deben devolver 1. Logs separados en `prototipo/pruebas/auditoria-2026-10-17-*.log`, excluidos de Git.
+- Se consolidaron la metodología acordada y el estado de la auditoría en AGENTS.md/CLAUDE.md; se conciliaron dos frases de estado Nano con la revisión y la etiqueta. Se conserva la historia previa. Sin cambios funcionales, de contrato ni de medidas, sin commit/push/etiqueta/publicación y sin nueva validación física. No se probaron el instalador, su ejecución sin red ni uso humano nuevo.
+- Siguiente responsable: asignar implementación de los altos de TecnoBloques y del protocolo de eventos; Codex conserva Nano y la supervisión de todos los cierres. Cada corrección debe comprobar caso original, regresión y dependencias. La aceptación del registro para el estudio sigue pendiente.
+
+## 2026-10-17 — Codex (Sol): traspaso preparado para Claude Code
+
+Por pedido de Efraín, se consolidó el [traspaso de auditoría](docs/TRASPASO-CLAUDE-AUDITORIA-2026-10-17.md) con mensaje listo para entregar, revisiones Git, prioridades AUD-01/02/04, coordinación de AUD-03 y asignación Nano/AUD-05 conservada en Codex. Incluye reproducciones, resultados previos, criterios de cierre y formato de devolución. El informe enlaza el seguimiento y CLAUDE.md registra el estado.
+
+Efraín indicó que Claude trabaja en VS Code. No hay canal conectado para escribir en esa conversación y no se encontró un comando `claude` disponible en el entorno. Se dejó un aviso destacado en CLAUDE.md de TecnoBloques y una entrada al final de su BITACORA.md, verificando los hashes antes de editar y conservando sus bytes anteriores. **Esto es documentación compartida; la entrega directa y el acuse de Claude siguen pendientes.** No se afirma que se lo haya ejecutado o notificado dentro de VS Code.
+
+Siguiente fase: correcciones con regresiones y verificación independiente por ID; después, cierre integrado con cargador y sin verificadores concurrentes, prueba humana de utilidad del registro y auditoría pendiente de distribución/uso. Los cinco hallazgos siguen abiertos. Esta sesión de traspaso no añade pruebas funcionales ni modifica código, contrato, medidas o versiones. Sin commit, push ni publicación.
+
+## 2026-10-17 — Codex (Sol): contrato permanente de coordinación entre agentes
+
+Efraín pidió formalizar los roles y la comunicación por .md para que ambos agentes tengan el acuerdo en el contexto de cada sesión y puedan advertirle cuando se omita un paso necesario. Se creó [CONTRATO-COORDINACION-AGENTES.md](docs/CONTRATO-COORDINACION-AGENTES.md), versión 1, como fuente única de coordinación. No cambia CONTRATO.md ni la API del producto.
+
+- Roles conservados: Efraín dirige y decide; Claude programa sus tareas asignadas; Codex audita/supervisa y mantiene implementación Nano/expansión. Las nuevas instrucciones expresas de Efraín prevalecen y se registran.
+- Inicio de sesión: enlace al acuerdo, estado, canales y comprobación de Git/rol/tarea/paso siguiente en AGENTS.md y CLAUDE.md de ambos repositorios. En TecnoBloques se creó AGENTS.md, que no existía; se comprobó su ausencia y los hashes de los otros dos archivos antes de editar. Las bitácoras conservan sus entradas anteriores.
+- Canales por remitente: [CODEX-A-CLAUDE.md](coordinacion/CODEX-A-CLAUDE.md) y [CLAUDE-A-CODEX.md](coordinacion/CLAUDE-A-CODEX.md). Codex publicó COD-20261017-001 con el acuerdo y el traspaso; el canal de Claude solo contiene una cabecera inicializada por Codex, **sin mensajes ni acuses atribuidos a Claude**. No hay ejecución automática ni envío directo a VS Code.
+- Ambos deben informar a Efraín del paso omitido, evidencia, consecuencia y cómo subsanarlo. Se completa lo rutinario autorizado y se continúa lo independiente; se respetan sus decisiones y excepciones, sin inventar resultados, cerrar sin evidencia ni pedir permisos repetidos.
+- Se actualizaron el estado y las referencias del traspaso/informe. Se revisan enlaces, diffs, archivos de entrada y preservación de historia; no se ejecuta de nuevo la suite funcional por este cambio documental. Los cinco hallazgos mantienen su estado abierto. Sin cambios funcionales, medidas, versiones, commit, push ni publicación.
+
+Siguiente responsable: Claude, al abrir su sesión, para leer y acusar COD-20261017-001 y declarar IDs/archivos; Codex para su trabajo asignado y la verificación de cierres. La vigencia del acuerdo procede del pedido de Efraín; no se afirma lectura o aceptación personal de Claude sin su respuesta real.
+
+## 2026-10-17 — Codex (Sol): investigación de prácticas de desarrollo y comparación con el acuerdo .md
+
+Efraín pidió investigar cómo trabajan equipos de desarrollo, explicar y evaluar alternativas, compararlas con el proceso instalado y ayudarle a decidir. Validó la formulación y autorizó avanzar. Entrega: [COMPARACION-PROCESOS-DESARROLLO-2026-10-17.md](docs/COMPARACION-PROCESOS-DESARROLLO-2026-10-17.md).
+
+Se consultaron fuentes primarias de Google Engineering Practices, DORA, Kanban Guides, Scrum Guides, Git/GitHub, Cucumber, Martin Fowler, Michael Nygard, documentación oficial de OpenAI y Anthropic y estudios de METR. Se separan guías y experiencia industrial de evidencia experimental y de la inspección local. Tres subtareas Codex de lectura apoyaron prácticas de equipos, agentes y evaluación del proceso; el agente principal contrastó fuentes e integró la recomendación.
+
+Recomendación para decidir: conservar .md como memoria y reglas, añadir flujo visible inspirado en Kanban, cambios pequeños, revisión de una versión exacta y comprobaciones por etapas; empezar con un piloto AUD-01. Scrum completo y orquestación automática se evalúan como opciones de mayor compromiso. No se prometen porcentajes de mejora ni se toma el acuerdo entre modelos como prueba suficiente.
+
+Condición local relevante: documentos/canales nuevos aún sin commit; un worktree desde HEAD no los heredaría. La adopción debe preparar referencia y entorno, mantener una sola verdad operativa por tarea y respetar las autorizaciones vigentes de Efraín. No se inspeccionaron controles remotos ni se midió productividad comparativa propia.
+
+Esta investigación solo añade informe y referencia de estado: no modifica el contrato de coordinación, canales, roles, código, pruebas, configuración, permisos o publicación. No se repite la suite por documentación. Los hallazgos de auditoría conservan su estado; el acuse real de Claude sigue pendiente. Siguiente paso: decisión de Efraín sobre el piloto y el medio de seguimiento, sin aplicar por anticipado la propuesta.
+
+## 2026-10-17 — Codex (Sol): piloto completo de trabajo en la suite Tecno
+
+Efraín autorizó aplicar el piloto a **todo TecnoBloques y TecnoCircuito**, con investigación paralela y registro a cargo de Codex; TecnoRuta queda previsto. Se creó el repositorio local [TecnoSuite](../TecnoSuite/README.md), sin commit ni remoto, como coordinación neutral de los productos. Su [acuerdo v2](../TecnoSuite/PROCESO.md) sustituye operativamente v1, cuyo texto íntegro se conserva en docs. El contrato de software no cambia.
+
+Se actualizaron AGENTS.md, CLAUDE.md y README.md de ambos productos; metodología/contrato/canales locales dirigen al proceso común. Fichas únicas y tablero generado abarcan los cinco hallazgos, fases del registro, laboratorio Nano/T3, UX, distribución, evolución e incorporación futura. Codex mantiene la investigación y sesiones observadas; no se inventan tiempos ni acuses. Canales vigentes desde COD-20261017-002; no consta lectura de Claude.
+
+Se conciliaron descripciones vencidas de etiqueta/instalador y contactos de expansión con los registros existentes. No se modifica código funcional, esquemas, medidas, versiones ni pendientes de hardware; ninguna corrección AUD se cierra por esta adopción. Las bitácoras e informes conservan su historia. Ver [entrega de instalación y comprobaciones](../TecnoSuite/registro/INSTALACION-2026-10-17.md) para evidencia documental, referencias exactas y límites. No se repite la suite funcional por documentación. Sin commit, push, etiqueta ni publicación; las instrucciones sin commit requieren copia controlada antes de usarse en otro worktree.
+
+
+## 2026-10-18 — Claude: roles permanentes de implementación
+
+Efraín aclaró que la asignación de Nano + expansión a Codex fue una prueba y decidió, de forma permanente, que **Claude es el único implementador y programador** de TecnoCircuito, TecnoBloques y sus dependencias, incluidos Nano/expansión y AUD-05. Codex audita, supervisa, verifica y lleva el registro del piloto, sin implementar código de producto. El código Nano que escribió Codex se conserva y su historia también.
+
+Se actualizaron AGENTS.md, CLAUDE.md (estado y tabla de decisiones) y una nota en la metodología de auditoría; en TecnoSuite, PROCESO, AGENTS, fichas y canal (CLA-20261018-001). Sin cambios de código ni pruebas funcionales; sin commit ni push.
