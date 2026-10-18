@@ -1306,3 +1306,9 @@ Se conciliaron descripciones vencidas de etiqueta/instalador y contactos de expa
 Efraín aclaró que la asignación de Nano + expansión a Codex fue una prueba y decidió, de forma permanente, que **Claude es el único implementador y programador** de TecnoCircuito, TecnoBloques y sus dependencias, incluidos Nano/expansión y AUD-05. Codex audita, supervisa, verifica y lleva el registro del piloto, sin implementar código de producto. El código Nano que escribió Codex se conserva y su historia también.
 
 Se actualizaron AGENTS.md, CLAUDE.md (estado y tabla de decisiones) y una nota en la metodología de auditoría; en TecnoSuite, PROCESO, AGENTS, fichas y canal (CLA-20261018-001). Sin cambios de código ni pruebas funcionales; sin commit ni push.
+
+## 2026-10-18 — Claude: commits del piloto y CLAUDE.md por ficha
+
+Con el sí de Efraín: commit `de54cfc` con la auditoría y el piloto de Codex tal como estaban, más los roles permanentes. Efraín aprobó la simplificación del proceso (TecnoSuite, PROC-001) y la regla de **memorias separadas**: este CLAUDE.md es solo de Claude y AGENTS.md es solo de Codex.
+
+En CLAUDE.md, los cuatro párrafos de proceso del inicio pasan a un bloque corto, y «Próxima sesión» pasa a «Pendientes técnicos, por ficha». Se conservan todas las decisiones y montajes que enlazan LAB-001, LAB-002, UX-001, REG-004, REG-005, DIST-001, RUTA-001 y EVOL-001; se quitan el orden de prioridades (ahora en el tablero) y lo ya terminado (en esta bitácora). El README público ya no enlaza a la carpeta local `../TecnoSuite`. Sin cambios de código ni de contrato.

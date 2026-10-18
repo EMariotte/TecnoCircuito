@@ -34,7 +34,7 @@ La versión `v0.1.0` fue etiquetada el 16 de octubre de 2026 y está incorporada
 
 ## Colaboración en la suite
 
-El piloto de desarrollo, revisión y supervisión de ambos productos se coordina en [TecnoSuite](../TecnoSuite/README.md). Al trabajar con agentes, empieza por [AGENTS.md](AGENTS.md), el proceso común y la ficha correspondiente. Codex registra el piloto y su investigación. El tablero es generado desde las fichas; los registros históricos se conservan. TecnoRuta se incorporará posteriormente.
+TecnoCircuito y TecnoBloques se construyen con dos agentes de IA: Claude programa y Codex revisa y verifica; Efraín decide. Su coordinación (proceso común, tareas y mensajes) vive en un repositorio privado aparte, `TecnoSuite/`, que se coloca junto a este. La documentación técnica y la historia permanecen aquí.
 
 ## Probarlo
 
