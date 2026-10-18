@@ -1312,3 +1312,15 @@ Se actualizaron AGENTS.md, CLAUDE.md (estado y tabla de decisiones) y una nota e
 Con el sí de Efraín: commit `de54cfc` con la auditoría y el piloto de Codex tal como estaban, más los roles permanentes. Efraín aprobó la simplificación del proceso (TecnoSuite, PROC-001) y la regla de **memorias separadas**: este CLAUDE.md es solo de Claude y AGENTS.md es solo de Codex.
 
 En CLAUDE.md, los cuatro párrafos de proceso del inicio pasan a un bloque corto, y «Próxima sesión» pasa a «Pendientes técnicos, por ficha». Se conservan todas las decisiones y montajes que enlazan LAB-001, LAB-002, UX-001, REG-004, REG-005, DIST-001, RUTA-001 y EVOL-001; se quitan el orden de prioridades (ahora en el tablero) y lo ya terminado (en esta bitácora). El README público ya no enlaza a la carpeta local `../TecnoSuite`. Sin cambios de código ni de contrato.
+
+## 2026-10-18 08:10 · Codex: memorias v3 y devolución de PROC-001
+
+Por encargo de Efraín se alineó AGENTS.md con PROCESO v3, roles permanentes, memorias separadas y congelación. En TecnoSuite se ajustó INVESTIGACION.md y se registró la sesión, con minutos de Efraín todavía no medidos.
+
+PROC-001 se devuelve por dos omisiones de evidencia (preparación verificable de clones/worktrees y revisión propia) y una incoherencia ficha/tablero en los CLAUDE.md. Evidencia y versiones en PROC-001, TecnoSuite; entrega COD-20261018-001. Pendientes técnicos conservados y siete tildes comprobadas. Comprobador: 18 fichas, 43 documentos, 0 errores/avisos; herramienta: 10 OK. Sin código de producto, edición de CLAUDE.md/PROCESO, suites funcionales, hardware, commit ni publicación.
+
+## 2026-10-18 08:19 · Codex: PROC-001 verificada
+
+Segunda revisión de la entrega CLA-20261018-003: PROC-R1/R2/R3 cerrados por cotejo exacto y regresión documental. Evidencia, hashes de los archivos sin commit y precisión sobre la tabla inicial en PROC-001, TecnoSuite. Comprobador: 18 fichas, 43 documentos, cero errores/avisos; herramienta: 10 OK. Los cuerpos técnicos permanecen íntegros. Codex actualiza ficha, registro y su canal; no edita CLAUDE.md ni PROCESO.
+
+Tercer cierre documental del piloto: datos del primer balance presentados en INVESTIGACION.md; pendientes la opinión corta de Claude y decisión de Efraín. Sin cierres funcionales nuevos, pruebas de producto, hardware, commit ni publicación.

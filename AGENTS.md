@@ -2,13 +2,15 @@
 
 Instrucciones para Codex y los agentes que lean este archivo. **Encargo permanente de Efraín (17 oct): Codex audita y supervisa TecnoCircuito, incluido su contrato e integración con TecnoBloques.** **Roles permanentes (Efraín, 18 oct): Claude es el único implementador y programador**, también de Nano + expansión E/S; Codex audita, supervisa y verifica, sin implementar código de producto. La asignación de Nano a Codex (después del cierre de R6) fue una prueba y se conserva en la historia. Responde en español, tutéalo y comunica resultados con evidencia.
 
-## Inicio de sesión y coordinación obligatoria
+## Proceso y memoria de Codex
 
-Por pedido de Efraín (17 oct), el piloto rige para **todo TecnoCircuito y TecnoBloques**. Al iniciar lee [TecnoSuite/PROCESO.md](../TecnoSuite/PROCESO.md), [tablero](../TecnoSuite/TABLERO.md), ficha activa, estado técnico de CLAUDE.md y entradas nuevas de [Codex para Claude](../TecnoSuite/canales/CODEX-A-CLAUDE.md) y [Claude para Codex](../TecnoSuite/canales/CLAUDE-A-CODEX.md). Comprueba Git, trabajo existente, rol, tarea, responsable y reservas antes de editar. Acusa recibo solo por ti mismo.
+Rige [TecnoSuite/PROCESO.md v3](../TecnoSuite/PROCESO.md), del 18 oct, como fuente única de reglas comunes, glosario, estados y coordinación. Entrada breve: [EFRAIN.md](../TecnoSuite/EFRAIN.md). Al empezar consulta el [tablero](../TecnoSuite/TABLERO.md), la ficha activa, lo nuevo del [canal de Claude](../TecnoSuite/canales/CLAUDE-A-CODEX.md) y el estado técnico de CLAUDE.md. Registra Git, trabajo existente y reservas antes de editar.
 
-**Ambos agentes deben advertirle a Efraín si falta un paso necesario**, con evidencia, consecuencia y solución. Completa lo autorizado y continúa lo independiente; respeta excepciones expresas sin pedir permisos repetidos. Codex mantiene auditoría y supervisión; Claude es el único implementador. Codex lleva el [registro e investigación del piloto](../TecnoSuite/INVESTIGACION.md). El estado operativo solo se edita en fichas; el tablero es generado. Los mensajes .md no ejecutan al otro agente.
+Claude es el único implementador y programador de todos los proyectos y dependencias, incluido TecnoDiseñador. Codex audita, supervisa y verifica; Efraín decide. Este AGENTS.md es memoria exclusiva de Codex y CLAUDE.md es memoria exclusiva de Claude. Lee la del otro sin editarla y solicita ajustes por [tu canal](../TecnoSuite/canales/CODEX-A-CLAUDE.md).
 
-El [contrato local anterior](docs/CONTRATO-COORDINACION-AGENTES.md) remite al acuerdo común v2. Los documentos nuevos siguen sin commit: un worktree/clon debe recibir las instrucciones mediante copia controlada o commit autorizado antes de trabajar; no vienen de HEAD por sí solos.
+El proceso está congelado hasta el primer balance conforme a PROCESO §8. Codex mantiene [INVESTIGACION.md](../TecnoSuite/INVESTIGACION.md) y el registro de sesiones, presenta datos y recoge los minutos de coordinación de Efraín. Efraín revisa INV-001 y decide; Claude aporta una opinión corta. El estado operativo vive en las fichas.
+
+El [contrato local anterior](docs/CONTRATO-COORDINACION-AGENTES.md) es antecedente; para el trabajo actual consulta PROCESO v3. La instalación anterior ya tiene commit; identifica aparte cualquier cambio posterior sin commit.
 
 ## Contexto y fuentes
 
@@ -58,12 +60,7 @@ La implementación de software y sus supuestos están en [IMPLEMENTACION-NANO-20
 
 ## Trabajo conjunto con Claude
 
-- Efraín decide prioridades. Claude implementa todo, incluida la familia Nano + expansión; Codex revisa y verifica. Estos roles son permanentes (18 oct).
-- El traspaso de cada tarea incluye: objetivo o ID del hallazgo, revisión de Git, archivos cambiados, comandos y resultados, limitaciones y siguiente responsable.
-- Registra cada hito con fecha y autor en BITACORA.md. Conserva el informe original; el cierre posterior cita su ID y la evidencia nueva.
-- Antes de editar, comprueba que el archivo no haya cambiado durante la revisión. Evita que los dos agentes modifiquen simultáneamente el mismo archivo; para tareas simultáneas que lo requieran, acuerda ramas o worktrees separados.
-- Compartir archivos no envía automáticamente mensajes ni ejecuta al otro agente. Codex puede repartir subtareas de auditoría o investigación entre sus subagentes, nunca de implementación. No atribuyas a Claude acciones que no hayas observado.
-- Si cambia el contrato, actualiza su documentación y deja constancia en ambas bitácoras y en «Proyecto hermano» de TecnoBloques, según el alcance autorizado.
+Aplica el flujo y las entregas de PROCESO v3. Ante un cambio de contrato, pide a Claude la documentación y las entradas de ambas bitácoras y de «Proyecto hermano» de TecnoBloques; Codex verifica su coherencia con el alcance autorizado. No edites CLAUDE.md para actualizar el estado.
 
 ## Arquitectura que hay que preservar
 

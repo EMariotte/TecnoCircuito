@@ -10,7 +10,7 @@ Repositorio publicado (https://github.com/EMariotte/TecnoCircuito). **T1/T2 vali
 **Trabajo en la suite** ([reglas](../TecnoSuite/PROCESO.md) · [hoja de Efraín](../TecnoSuite/EFRAIN.md) · [tablero](../TecnoSuite/TABLERO.md)):
 - **Roles permanentes (Efraín, 18 oct):** soy el único implementador y programador de TecnoCircuito, TecnoBloques, TecnoDiseñador y sus dependencias, incluida la familia Nano + expansión. Codex audita, supervisa y verifica, sin programar. Efraín decide. La asignación de Nano a Codex (11–17 oct) fue una prueba.
 - **Memorias separadas:** este archivo es solo mío y AGENTS.md es solo de Codex. Ninguno edita la memoria del otro; nos hablamos por los canales de TecnoSuite ([Codex para Claude](../TecnoSuite/canales/CODEX-A-CLAUDE.md), [Claude para Codex](../TecnoSuite/canales/CLAUDE-A-CODEX.md)).
-- **Al empezar:** tablero, ficha activa, lo nuevo del canal de Codex y `git status` de cada repositorio. La prioridad y el estado de las tareas viven solo en el tablero; aquí queda el detalle técnico.
+- **Al empezar:** tablero, ficha activa, lo nuevo del canal de Codex y `git status` de cada repositorio. La prioridad y el estado de cada tarea viven en su ficha; el tablero solo los muestra. Aquí queda el detalle técnico.
 - **Auditoría del 17 oct (Codex):** [metodología](docs/METODOLOGIA-AUDITORIA-SUPERVISION.md), [primer ciclo](docs/AUDITORIA-CODEX-2026-10-17.md) y [traspaso](docs/TRASPASO-CLAUDE-AUDITORIA-2026-10-17.md). Cinco defectos sin corregir: tres altos en el registro de TecnoBloques (AUD-01 comentarios C++, AUD-02 escritura fallida silenciosa, AUD-04 cambio de equipo durante una corrida) y dos medios aquí (AUD-03 fallas en una foto descartada, AUD-05 brownout con pasos grandes del núcleo). Base de esa auditoría: 26 grupos y 1179 OK por tramos (tres métricas de velocidad pasaron al repetir con cargador); TecnoBloques: integración 53, registro Node 58 y Electron 36, graficador 28.
 
 ## Qué es
@@ -127,7 +127,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 
 ## Pendientes técnicos, por ficha
 
-> La prioridad y el estado de cada tarea están **solo en el [tablero](../TecnoSuite/TABLERO.md)**. Aquí queda el detalle técnico y las decisiones que las fichas enlazan. Lo terminado está en BITACORA.md.
+> La prioridad y el estado de cada tarea están **en su ficha de TecnoSuite**; el [tablero](../TecnoSuite/TABLERO.md) los muestra todos juntos. Aquí queda el detalle técnico y las decisiones que las fichas enlazan. Lo terminado está en BITACORA.md.
 
 **Registro de eventos: AUD-01 a AUD-05, REG-004 y REG-005** (CONTRATO, sección 6.1; plazo de la etapa 0: 30 oct). Aprobado el 11 oct, con un plan de cinco fases aprobado el 16 oct. Las fases 1 a 3 se hicieron el 16 oct: esquema `contrato/evento.schema.json`, emisor de TecnoCircuito y registro en TecnoBloques (PIN del instructor con Ctrl+Alt+Mayús+R, código del equipo, `.jsonl`, exportar).
 - **Decisiones de Efraín:**
