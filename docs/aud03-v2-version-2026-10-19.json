@@ -1,0 +1,66 @@
+{
+  "autor": "Codex",
+  "entrega": "CLA-20261019-001",
+  "git_inicial": {
+    "TC": {
+      "HEAD": "3d4c4d9ed3804d59cdd4b901aab37c1fc52431a6",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M prototipo/COMO-FUNCIONA.md\n M prototipo/pruebas/probar_t1t2.py\n?? docs/VERIFICACION-AUD03-CODEX-2026-10-19.md\n?? docs/aud03-electron-2026-10-19.json\n?? docs/aud03-electron-2026-10-19.log\n?? docs/aud03-fotos-original-2026-10-19.log\n?? docs/aud03-registro-app-2026-10-19.log\n?? docs/aud03-t1t2-2026-10-19.log\n?? docs/aud03-version-2026-10-19.json\n?? docs/observar-t1t2-2026-10-19.py\n?? docs/verificar-aud03-cierre-2026-10-19.cjs"
+    },
+    "TB": {
+      "HEAD": "f6e5cf3d9694dcbe6b113c72900259ef01a0fe46",
+      "rama": "main",
+      "status": "M BITACORA.md\n M src/app.js\n M test/registro-app.js"
+    },
+    "TS": {
+      "HEAD": "794d7bdb1e5f0060d8d686030d45ce5194ebc928",
+      "rama": "main",
+      "status": "M INVESTIGACION.md\n M canales/CLAUDE-A-CODEX.md\n M canales/CODEX-A-CLAUDE.md\n M registro/SESIONES.md\n M tareas/AUD-03.md\n M tareas/INV-001.md"
+    }
+  },
+  "sha256": {
+    "TC": {
+      "prototipo/src/simulador.js": "91e1a29d1f8a8ebc9aea6393e500e5b7146aea34c49c66290857aa26620dc249",
+      "prototipo/src/trabajador.js": "cd6fe3742d174ba8e72f90f28e646f5050836c4076ba7c915ab815f8256905c2",
+      "prototipo/src/chip.js": "a5378cae59d406cf4765d611b24ef80f1470bf53344df0054272f2b67af13956",
+      "prototipo/src/nucleo.js": "12cac2d81ebfd051794b3bec779a6d257a1250d263b374225ffa54d3cd3c2119",
+      "prototipo/pruebas/probar_t1t2.py": "93b24cb152179328afd2c945b836cb684d8f79aafc2ed9bab1c4c8fb464ba0e3",
+      "prototipo/pruebas/probar_fotos.js": "d595d3994d42d4bf9dec7ffaebf86f2e01fae5d6bc5c13347f754cb7f7d00b56",
+      "prototipo/COMO-FUNCIONA.md": "748940659ad91ad99d8ddd81955c21b9efea3789078ebe2f0932f309622df9ba",
+      "prototipo/dist/tecnocircuito.js": "c9dfb1f5065823a65719d37181e56278f2bc9eb76af79742e800811f5aaa747f",
+      "CONTRATO.md": "e370bd8669f89d7eb114629974d8cbc9587eaacf2cf9e9ba68f02f0ac61b7a1e",
+      "dist/tecnocircuito.js": "d63792fe1ab1e32c078bcabf1aa01786e65c916b01b48ce89f21e0c168392ec9"
+    },
+    "TB": {
+      "src/app.js": "4d4f162227c266b3945ca62626b7f30204b56918c0e31823eabf1cafa6eabf75",
+      "test/registro-app.js": "7b372cd273d4744f0748399500701d736ed6964874eec9c518cac2e2c7e07958",
+      "src/registro.js": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7"
+    }
+  },
+  "nota": "Trabajo sin commit de Claude y evidencia previa de Codex registrados antes de editar. Solo auditoría; no producto.",
+  "comprobacion_final": {
+    "hora": "2026-10-19T12:27:38-05:00",
+    "fuentes_coinciden_con_inicial": true,
+    "resultado": "AUD-03 verificada en software e integración local; original, V1 y V2 corregidos",
+    "artefactos": {
+      "TB/dist/TecnoBloques.html": "d8909bbfe95386938d677c7b44debefc66a18d3b3a407f4ab6c6726f6abfca57",
+      "TC/prototipo/pruebas/nucleo.cjs": "c4cc4ed6a771ce075e43584dfb671333edf39da6c457dac24ef84738005ec967",
+      "TC/prototipo/pruebas/codigo.cjs": "6867242d8e9f25a0778de97c2ea2fd7dfc5d474cf7261055573220509697febf"
+    },
+    "coordinacion": "AUD-03 verificado, reservas liberadas; 19 fichas y 44 documentos, 0 errores/avisos",
+    "hora_entrega": "2026-10-19T12:29:12-05:00"
+  },
+  "logs_sha256": {
+    "aud03-v2-electron-2026-10-19.log": "f0d0daf87d85e01e3d4cfec18ba986a182f386575e23329dbc9e3403bc229abc",
+    "aud03-v2-fotos-2026-10-19.log": "32755ba9de8a52218fce14f5d7048561ea223a00d3e535195c6439764fffb64f",
+    "aud03-v2-original-2026-10-19.log": "6a976f6f0a2c4f2f5523f66ea13c1234afe209fa82baf6e8cfc0b6ae462c9585",
+    "aud03-v2-registro-app-2026-10-19.log": "e105de03b4cf47459f98051a7df22d20343a6ef1324a2ca742f43f96d0875c3c",
+    "aud03-v2-simulador-2026-10-19.log": "4265c05eeee58f3dcc7947d3d90f14eb6bdefc2837a212cc76d8521d788a8e01",
+    "aud03-v2-t1t2-2026-10-19.log": "586413620ba0fe229ba86975b96c5c65e0bd74a199228de3af0f371c8d5c10a2"
+  },
+  "auditoria_sha256": {
+    "CIERRE-AUD03-CODEX-2026-10-19.md": "e94239e3815ee28abc439ca2292644b96c2e0217ba91e630b5a0d1b1df3db3ef",
+    "verificar-aud03-v2-2026-10-19.cjs": "64c0c65b2911584b0ef7ca7c40f133983ee751d91d50c7ea0d7d460dd0d227ce",
+    "aud03-v2-electron-2026-10-19.json": "a13ed5169d3ed8904028440def9286a1495121fc325d14d9e132a90eece7e513"
+  }
+}

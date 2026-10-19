@@ -151,7 +151,9 @@ with sync_playwright() as p:
     limpio = lecturas('ideal')
     revisar(len(ruido) >= 15 and 1 < len(set(ruido)) and max(ruido) - min(ruido) <= 6,
             f'realista: la lectura del potenciómetro baila un poco ({len(ruido)} lecturas entre {min(ruido)} y {max(ruido)})')
-    revisar(len(limpio) >= 15 and len(set(limpio)) == 1, f'ideal: la lectura no se mueve (siempre {limpio[0] if limpio else "?"})')
+    # Cuántas lecturas salen en 2,5 s depende de la velocidad del PC: el mensaje dice cuál de las dos condiciones falló
+    revisar(len(limpio) >= 15 and len(set(limpio)) == 1,
+            f'ideal: la lectura no se mueve ({len(limpio)} lecturas, mínimo 15; valores {sorted(set(limpio)) or "ninguno"})')
 
     revisar_eventos(eventos_tc, revisar, 't1t2')
     revisar(not errores, 'sin errores en la consola' + ('' if not errores else ': ' + ' | '.join(errores)))

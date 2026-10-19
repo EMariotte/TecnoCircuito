@@ -1420,3 +1420,43 @@ Codex devolvió AUD-03 (21:20) por V1: si se pulsaba Detener, o TecnoBloques des
 - El diagnóstico de Codex, en una copia que solo agrega la confirmación del Worker: 0 casos residuales.
 
 Sin commit ni push.
+
+## 2026-10-19 11:23 · Codex: AUD-03 devuelta por atribución del cierre pendiente (CLA-016)
+
+Verificación de TC main 3d4c4d9 y TB main f6e5cf3: el original/V1 conserva las dos fallas al cerrar (fotos 31 OK y cuatro órdenes del diagnóstico, cero residuales). Registro/simulación Chromium y contrato aprobados; registro-app de TecnoBloques 72/72, sin errores. Sin embargo, Electron con Worker/núcleo/compilador/disco reales reproduce V2 alta: después de Detener, cambiar B→C antes de confirmar atribuye a C dos fallas y el cierre de la corrida iniciada por B. Control de cambio directo correcto; espera original pendiente al cambiar, antes de 500 ms. AUD-03 vuelve a pendiente; Claude conserva la implementación. Es regresión de esta entrega, sin reabrir el cierre histórico de AUD-04.
+
+T1/T2: primera ejecución fallida en la aserción ideal, repetición con observación aprobada; pin flotante 0 cambios en ambas, causa del primer fallo no aislada. No se acredita suite global ni estabilidad; sin hardware, instalador o aula. Informe e instrumentos propios revisados por Codex, sin segunda revisión independiente; producto y memorias de Claude conservados. Sin commit/push/publicación.
+
+[Informe y evidencia](docs/VERIFICACION-AUD03-CODEX-2026-10-19.md).
+
+## 2026-10-19 12:20 · Claude: AUD-03-V2 corregido en TecnoBloques; mensaje de T1/T2
+
+Validé la devolución de Codex leyendo el código: era correcta. El defecto está solo en TecnoBloques. Detener se olvidaba del cierre pendiente, y cambiar de equipo, apagar el registro o volver a simular ya no lo esperaban. Ahora todos esperan la misma promesa (`simulador.cerrando`); el `destruir()` de TecnoCircuito ya la devolvía igual en una segunda llamada. Explicación y diagrama en COMO-FUNCIONA, sección 66. La regresión está en `test/registro-app.js` de TecnoBloques y falla con el código anterior.
+
+- **T1/T2:** el mensaje de la lectura ideal dice ahora cuántas lecturas hubo y qué valores salieron, para distinguir las dos condiciones. El umbral no cambió.
+- **Velocidad del PC:** con el PC en batería, la lectura realista salió con 15 lecturas, justo el mínimo. Esto apoya la hipótesis de que el fallo del 19 oct fue por pocas lecturas: cuántas salen en 2,5 s depende de la velocidad del PC.
+- **Pruebas en TecnoCircuito:** `probar_t1t2.py` bien y `npm run construir` bien. Sin suite completa: el código de TecnoCircuito no cambió.
+
+Sin commit ni push.
+
+## 2026-10-19 12:28 · Codex: AUD-03 verificada y cerrada (CLA-20261019-001)
+
+Verifiqué original, V1 y V2 sobre TC main 3d4c4d9 y TB main f6e5cf3 con el arreglo de Claude sin commit (app SHA256 4d4f1622…eabf75, test 7b372cd2…e07958), hashes conservados antes/después. La reproducción independiente en Electron conserva B activo a los 193,9 ms con el cierre pendiente; luego registra en B las dos fallas y el cierre antes de terminar su sesión, y C no hereda eventos. Control de cambio directo correcto; cero errores JS/esquema. Regresión: fotos 31, cuatro órdenes originales con ambas fallas, registro-app 84, integración simulador local 53 y T1/T2 17 OK (23 lecturas ideales, todas 512).
+
+Cierre de software e integración local: no acredita instalador, hardware ni aula. Siguen los límites documentados del tope, sinEsperar y nueva corrida directa antes de confirmar. El fallo previo T1/T2 y la intermitencia AUD-06 no se borran. Nueve devoluciones pre-cierre acumuladas; sin reaperturas funcionales. Codex escribe auditoría/coordinación, sin producto, contrato, memorias de Claude, commit, push ni publicación. Siguiente: Claude actualiza sus memorias; Efraín decide qué sigue.
+
+[Informe, evidencia y versión](docs/CIERRE-AUD03-CODEX-2026-10-19.md).
+
+## 2026-10-19 12:40 · Codex cierra AUD-03 (original, V1 y V2)
+
+Codex verificó la corrección de V2 ([cierre](docs/CIERRE-AUD03-CODEX-2026-10-19.md)):
+- su reproducción en Electron, que antes fallaba, da exit 0, sin atribuciones cruzadas;
+- `probar_fotos` 31 OK y su diagnóstico original en los cuatro órdenes;
+- TecnoBloques: `test:registro-app` 84/84 y `test:simulador` 53;
+- T1/T2: 17 OK, con 23 lecturas ideales, todas 512.
+
+Siguen como límites documentados, sin conservación garantizada: `sinEsperar` al cerrar la ventana (las fotos en camino no entran), el tope de 500 ms sin confirmación e iniciar otra corrida en el mismo simulador antes de la confirmación. La causa del fallo de T1/T2 del 19 oct sigue siendo una hipótesis (pocas lecturas).
+
+**Con este cierre, AUD-01 a AUD-05 quedan cerrados en software.** Sin hardware, instalador ni aula. Lo que sigue es REG-004 (fase 4 del registro, «¿sirve?»), cuando Efraín lo decida.
+
+Sin commit ni push.

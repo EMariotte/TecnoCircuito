@@ -1,0 +1,210 @@
+{
+  "casos": [
+    {
+      "caso": "cambio-directo-control",
+      "antesDeEntregar": {
+        "equipo": "AUD_A",
+        "cambiandoEquipo": true
+      }
+    },
+    {
+      "caso": "detener-cambiar-equipo-entregar",
+      "alDetener": {
+        "equipo": "AUD_B",
+        "simuladorNulo": true,
+        "promesaCumplida": false
+      },
+      "antesDeEntregar": {
+        "equipo": "AUD_C",
+        "promesaCumplida": false,
+        "msDesdeDetener": 248.5
+      }
+    }
+  ],
+  "historia": [
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "sesion_iniciada"
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "ejemplo_cargado"
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "bloques_cambiados"
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "codigo_compilado"
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "simulacion_iniciada",
+      "corrida": 1,
+      "ms_sim": 0
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "falla",
+      "corrida": 1,
+      "ms_sim": 2,
+      "datos": {
+        "tipo": "led_quemado",
+        "componente": "led1",
+        "corriente_mA": 100.6
+      }
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "falla",
+      "corrida": 1,
+      "ms_sim": 2,
+      "datos": {
+        "tipo": "corriente_pin",
+        "componente": "placa.D13",
+        "corriente_mA": 100.6
+      }
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "simulacion_detenida",
+      "corrida": 1,
+      "ms_sim": 294,
+      "datos": {
+        "ms_sim": 294,
+        "ms_simulados": 294,
+        "fallas": [
+          {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          {
+            "tipo": "corriente_pin",
+            "componente": "placa.D13"
+          }
+        ]
+      }
+    },
+    {
+      "equipo": "AUD_A",
+      "sesion": "4bb9d222-7647-4836-8f5c-aa47e57e1fc2",
+      "tipo": "sesion_terminada"
+    },
+    {
+      "equipo": "AUD_B",
+      "sesion": "1c386550-8b12-421a-a6b1-353e5c8dc973",
+      "tipo": "sesion_iniciada"
+    },
+    {
+      "equipo": "AUD_B",
+      "sesion": "1c386550-8b12-421a-a6b1-353e5c8dc973",
+      "tipo": "ejemplo_cargado"
+    },
+    {
+      "equipo": "AUD_B",
+      "sesion": "1c386550-8b12-421a-a6b1-353e5c8dc973",
+      "tipo": "codigo_compilado"
+    },
+    {
+      "equipo": "AUD_B",
+      "sesion": "1c386550-8b12-421a-a6b1-353e5c8dc973",
+      "tipo": "simulacion_iniciada",
+      "corrida": 2,
+      "ms_sim": 0
+    },
+    {
+      "equipo": "AUD_B",
+      "sesion": "1c386550-8b12-421a-a6b1-353e5c8dc973",
+      "tipo": "bloques_cambiados"
+    },
+    {
+      "equipo": "AUD_B",
+      "sesion": "1c386550-8b12-421a-a6b1-353e5c8dc973",
+      "tipo": "sesion_terminada"
+    },
+    {
+      "equipo": "AUD_C",
+      "sesion": "9067355a-8318-41eb-be54-ff28c5fe5c2b",
+      "tipo": "sesion_iniciada"
+    },
+    {
+      "equipo": "AUD_C",
+      "sesion": "9067355a-8318-41eb-be54-ff28c5fe5c2b",
+      "tipo": "falla",
+      "corrida": 2,
+      "ms_sim": 4,
+      "datos": {
+        "tipo": "led_quemado",
+        "componente": "led1",
+        "corriente_mA": 100.6
+      }
+    },
+    {
+      "equipo": "AUD_C",
+      "sesion": "9067355a-8318-41eb-be54-ff28c5fe5c2b",
+      "tipo": "falla",
+      "corrida": 2,
+      "ms_sim": 4,
+      "datos": {
+        "tipo": "corriente_pin",
+        "componente": "placa.D13",
+        "corriente_mA": 100.6
+      }
+    },
+    {
+      "equipo": "AUD_C",
+      "sesion": "9067355a-8318-41eb-be54-ff28c5fe5c2b",
+      "tipo": "simulacion_detenida",
+      "corrida": 2,
+      "ms_sim": 13,
+      "datos": {
+        "ms_sim": 13,
+        "ms_simulados": 13,
+        "fallas": [
+          {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          {
+            "tipo": "corriente_pin",
+            "componente": "placa.D13"
+          }
+        ]
+      }
+    },
+    {
+      "equipo": "AUD_C",
+      "sesion": "9067355a-8318-41eb-be54-ff28c5fe5c2b",
+      "tipo": "sesion_terminada"
+    }
+  ],
+  "atribucionCruzada": [
+    {
+      "tipo": "falla",
+      "corrida": 2,
+      "equipo": "AUD_C"
+    },
+    {
+      "tipo": "falla",
+      "corrida": 2,
+      "equipo": "AUD_C"
+    },
+    {
+      "tipo": "simulacion_detenida",
+      "corrida": 2,
+      "equipo": "AUD_C"
+    }
+  ],
+  "erroresContrato": [],
+  "erroresJS": [],
+  "alcance": "Electron/Arduino CLI/Worker/núcleo/registro/disco reales; retención FIFO sintética de foto/detenido, liberada antes de 500 ms; sin hardware."
+}

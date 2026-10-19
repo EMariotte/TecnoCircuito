@@ -1,0 +1,65 @@
+{
+  "fecha": "2026-10-19",
+  "autor": "Codex",
+  "alcance": "CLA-20261018-016, AUD-03",
+  "estado_inicial": "TC, TB y TS main, limpios, comprobados antes de reservar o editar; entrega ya en commits.",
+  "git": {
+    "TC": {
+      "HEAD": "3d4c4d9ed3804d59cdd4b901aab37c1fc52431a6",
+      "rama": "main",
+      "status": "?? docs/aud03-electron-2026-10-19.json\n?? docs/aud03-registro-app-2026-10-19.log\n?? docs/aud03-t1t2-2026-10-19.log\n?? docs/observar-t1t2-2026-10-19.py\n?? docs/verificar-aud03-cierre-2026-10-19.cjs"
+    },
+    "TB": {
+      "HEAD": "f6e5cf3d9694dcbe6b113c72900259ef01a0fe46",
+      "rama": "main",
+      "status": ""
+    },
+    "TS": {
+      "HEAD": "794d7bdb1e5f0060d8d686030d45ce5194ebc928",
+      "rama": "main",
+      "status": "M tareas/AUD-03.md"
+    }
+  },
+  "sha256": {
+    "TC": {
+      "prototipo/src/simulador.js": "91e1a29d1f8a8ebc9aea6393e500e5b7146aea34c49c66290857aa26620dc249",
+      "prototipo/src/trabajador.js": "cd6fe3742d174ba8e72f90f28e646f5050836c4076ba7c915ab815f8256905c2",
+      "prototipo/pruebas/probar_fotos.js": "d595d3994d42d4bf9dec7ffaebf86f2e01fae5d6bc5c13347f754cb7f7d00b56",
+      "prototipo/pruebas/probar_t1t2.py": "3337ea10f1034bde5a5ec52cb7db81b59ac5cdaab62a64ccd0dd789a90de2b43",
+      "prototipo/pruebas/probar_registro.py": "5f5ba5ad561a1ba7b3d3b01838ef162d514d37aaf9d8aecf5db99c08361f1652",
+      "prototipo/pruebas/probar_simulacion.py": "30421d208d5b79c053dbd1f8e14de56223e2b51c30c24908b184b75a16251b62",
+      "prototipo/pagina.html": "b66d83516e3c1e9624c1d927dc1f2cefdc9cc1a7168d0f94d13b7d43f1839f82",
+      "CONTRATO.md": "e370bd8669f89d7eb114629974d8cbc9587eaacf2cf9e9ba68f02f0ac61b7a1e",
+      "prototipo/COMO-FUNCIONA.md": "875e7b7fcd4861f948647665e2e8e8c17252bc87d330f4d319ea0d6ac6bc6cf1",
+      "prototipo/src/chip.js": "a5378cae59d406cf4765d611b24ef80f1470bf53344df0054272f2b67af13956",
+      "prototipo/src/nucleo.js": "12cac2d81ebfd051794b3bec779a6d257a1250d263b374225ffa54d3cd3c2119",
+      "prototipo/package.json": "3fefa8f89c061f658b0204aa925444230c15e0547ea0b5951e5cc35aa75920fe",
+      "prototipo/dist/tecnocircuito.js": "c9dfb1f5065823a65719d37181e56278f2bc9eb76af79742e800811f5aaa747f",
+      "prototipo/dist/prototipo.html": "415ea35596a00172157a8f41ecadea35a92b268207c45742f8ea29925cb7e4d0",
+      "dist/tecnocircuito.js": "d63792fe1ab1e32c078bcabf1aa01786e65c916b01b48ce89f21e0c168392ec9"
+    },
+    "TB": {
+      "src/app.js": "6b71c5d563c07a6ffa2342b2f4c4f1101a522262ae389e54f2f6e0496cf3727d",
+      "src/registro.js": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7",
+      "test/registro-app.js": "5d1bb735503834a2d0580aacd0dfb30a21025c62fb187c80f8a357a1aa766f67",
+      "dist/TecnoBloques.html": "669e895f841fdcd682945ba5071fb4a58014349333672c388ec01d2900587360"
+    }
+  },
+  "limites": "No se cambian fuentes de producto ni CLAUDE.md; builds locales, sin commit/push/publicacion ni hardware. El estado de cargador no se obtuvo por CIM en sandbox; no se acredita benchmark formal.",
+  "comprobacion_final": {
+    "fuentes_y_artefactos_sin_cambios": true,
+    "resultado": "AUD-03 devuelta, V2 alta; original/V1 corregidos; T1/T2 primera fallida y repetición aprobada",
+    "coordinacion": "19 fichas / 44 documentos, 0 errores y 0 avisos; git diff --check aprobado en TC/TB/TS",
+    "hora": "2026-10-19T11:25:43-05:00"
+  },
+  "evidencia_sha256": {
+    "aud03-electron-2026-10-19.json": "f9a4b13deb5ded720b09cf5247ffd69025fc2691d26ee2ee8906bfe5eb6a476e",
+    "aud03-electron-2026-10-19.log": "ba97589411d6b4a643e25f3d2ea6d079b7a96419e971719aa1c4facd32e21d96",
+    "aud03-fotos-original-2026-10-19.log": "6a976f6f0a2c4f2f5523f66ea13c1234afe209fa82baf6e8cfc0b6ae462c9585",
+    "aud03-registro-app-2026-10-19.log": "85d95ed3dbfebb632465a6e98ee4c1161d16547fbbcf226db288b1eeff08f38b",
+    "aud03-t1t2-2026-10-19.log": "25f1dc04e6623211a18651701142246905acb1870926b75a0740ded796009ca5",
+    "observar-t1t2-2026-10-19.py": "a25d76af28ff543e7be5d2022602abb284d5c328a8dbdb19549785fdbff3dcc7",
+    "VERIFICACION-AUD03-CODEX-2026-10-19.md": "0293093c7145f2b72718d07245fddb98cf8fbbd5ba4f5766d1ea2cd324e3b8a0",
+    "verificar-aud03-cierre-2026-10-19.cjs": "d9c2f92de5e2c398fd1b17cfbdae6b70a4f865a7a8ccda1bf53efb8114111ea1"
+  }
+}

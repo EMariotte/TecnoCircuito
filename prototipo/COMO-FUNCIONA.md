@@ -1770,6 +1770,19 @@ Antes, la página descartaba entera una foto con un turno viejo. Si el LED se qu
 - **TecnoBloques espera el cierre** antes de cerrar la sesión de un equipo (cambiar de código, apagar el registro) y antes de compilar otra vez. Así AUD-04 se conserva: la corrida y su cierre quedan en el equipo que la empezó.
 - **Lo que no cubre:** al cerrar la ventana no se puede esperar. TecnoBloques usa `{ sinEsperar: true }` y el cierre sale en ese instante, sin la foto en camino (a lo sumo unos 16 ms de simulación).
 
+**Una sola espera para todos (AUD-03-V2, 19 oct).** Codex encontró un hueco en TecnoBloques. Detener soltaba el simulador (`simulador.sim = null`) y se olvidaba de su cierre. Si el equipo cambiaba antes de que el Worker confirmara, la segunda llamada a `detenerSimulacion()` no veía nada que esperar y la sesión se cerraba. Así, las fallas y el cierre de la corrida de B quedaban en el registro de C. Ahora TecnoBloques guarda el simulador que se está cerrando (`simulador.cerrando`) y todos esperan la misma promesa:
+
+```
+ Detener ──► destruir() ──► simulador.cerrando = sim ──► [Worker confirma o 500 ms] ──► simulacion_detenida ──► cerrando = null
+                                   ▲
+ cambiar de equipo ─┐              │ destruir() otra vez: la MISMA promesa
+ apagar el registro ├──────────────┘ (con sinEsperar, la termina ya)
+ volver a simular ──┤
+ cerrar la ventana ─┘
+```
+
+TecnoCircuito no cambió: su `destruir()` ya devolvía la misma promesa si se llamaba dos veces. La prueba está en `test/registro-app.js` de TecnoBloques. Retiene en orden las fotos y el «detenido» del Worker real y revisa los cuatro caminos. Sin la corrección fallan los seis controles que revisan la espera: sesión y corrida al cambiar de equipo, la segunda llamada al volver a simular, cerrar la ventana, y sesión y corrida al apagar. También falla el de AUD-04 al apagar, porque J7 heredaba eventos de I6. El orden de las corridas al volver a simular pasa igual, porque la compilación tarda más que el tope de 500 ms; sin esa demora, el cierre viejo también podría quedar después del inicio nuevo.
+
 **La prueba** (`probar_fotos.js`, Node): corre el `simulador.js` real con un Worker controlado, que entrega las fotos del núcleo real en el orden que se quiera, y un reloj falso. Es la técnica del diagnóstico de Codex. Revisa:
 - la pausa (con y sin reanudar), el RESET, el serial en la pausa, el recableado y una foto de la corrida anterior;
 - el RESET después de un reinicio por energía;
