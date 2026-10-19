@@ -1,0 +1,56 @@
+{
+  "fecha_utc": "2026-10-19T02:17:59.603674+00:00",
+  "repositorios": {
+    "TecnoCircuito": {
+      "head": "4fce9d820b27ec09130151bf801d330ab07a987a",
+      "rama": "main",
+      "estado": "M BITACORA.md\n M CLAUDE.md\n M prototipo/COMO-FUNCIONA.md\n M prototipo/dist/prototipo.html\n M prototipo/dist/tecnocircuito.js\n M prototipo/package.json\n M prototipo/pruebas/probar_nucleo.js\n M prototipo/src/chip.js\n M prototipo/src/nucleo.js\n M prototipo/src/simulador.js\n?? docs/aud0305-base-version-2026-10-18.json\n?? docs/aud0305-evidencia-2026-10-18.json\n?? docs/parche-aud05-sobre-aud03-2026-10-18.diff\n?? docs/verificar-aud03-aud05-2026-10-18.cjs\n?? prototipo/pruebas/probar_corte.js\n?? prototipo/pruebas/probar_fotos.js"
+    },
+    "TecnoBloques": {
+      "head": "2db4e758e3ae6f7be48e254c5484ce5184627c61",
+      "rama": "main",
+      "estado": ""
+    },
+    "TecnoSuite": {
+      "head": "d5c92142bdd5ee30c23d4b7636476e5df02c89ae",
+      "rama": "main",
+      "estado": "M TABLERO.md\n M canales/CLAUDE-A-CODEX.md\n M tareas/AUD-03.md\n M tareas/AUD-05.md"
+    }
+  },
+  "sha256_antes_documentacion_de_cierre": {
+    "TecnoCircuito/prototipo/src/simulador.js": "463decfc78f4ade6296b363959b66b788d81be088e377a876bd4b7cc94eb8c0b",
+    "TecnoCircuito/prototipo/src/chip.js": "a5378cae59d406cf4765d611b24ef80f1470bf53344df0054272f2b67af13956",
+    "TecnoCircuito/prototipo/src/nucleo.js": "12cac2d81ebfd051794b3bec779a6d257a1250d263b374225ffa54d3cd3c2119",
+    "TecnoCircuito/prototipo/pruebas/probar_fotos.js": "8c6fc35144ecabe305b9c6fb6f4585cad84fdbf39f7a868788e7073b9a296994",
+    "TecnoCircuito/prototipo/pruebas/probar_corte.js": "13a2e95de90c8f532e6961b1a711d98cde0c9355f9e52def444eaf42f8fa9fe5",
+    "TecnoCircuito/prototipo/pruebas/probar_nucleo.js": "0cb2119aa9736bb5dacd667f7cd7ddb16b35f2c0a1557f36eb27941f54b4ce77",
+    "TecnoCircuito/prototipo/package.json": "3fefa8f89c061f658b0204aa925444230c15e0547ea0b5951e5cc35aa75920fe",
+    "TecnoCircuito/prototipo/COMO-FUNCIONA.md": "fe8a4b3b23dc275c2d522f547b4cd59ca1488b0d8eb9dec8c8f5bf2695949bc5",
+    "TecnoCircuito/docs/parche-aud05-sobre-aud03-2026-10-18.diff": "b2c0e6358a5630d8bc88288fba5e91e3b30400a495a305afa85498154ef2b283",
+    "TecnoCircuito/CLAUDE.md": "2e90acfbf0bb98427d5937e25118e92b272ddc7bf410b684b24f493f20fbe25d",
+    "TecnoBloques/CLAUDE.md": "697730e9a5829604ac1c7f86eb19a70326da62b296e59809f912b8beca03d855",
+    "TecnoCircuito/BITACORA.md": "d3995751d57181fe567f4f46fc6bdf0e9391ced48dce0dcada6cdf4652caf5c6",
+    "TecnoBloques/BITACORA.md": "38b4ac9cf246beb5db9593e0ffddb542251454b5cd9b5610c81f1296fa5012f9",
+    "TecnoSuite/BITACORA.md": "620520290fd84a8f2815e13ab3be9a11c013708a0caaac5f7af2d911e4d7b6bf",
+    "TecnoSuite/tareas/AUD-03.md": "e19012ea1477bbdcec30ea95e43f1d8deb659a13630e1112885f39776ac245cf",
+    "TecnoSuite/tareas/AUD-05.md": "c86a122bc8268cdf137b40ae3dfd97983c8b059e8fdfc434b49b08401d3a82b7",
+    "TecnoSuite/tareas/INV-001.md": "aaa5772de6370ff286660af4afaf8bd7d0192aecb75a8ae2754284de31b34d0b",
+    "TecnoSuite/canales/CODEX-A-CLAUDE.md": "efdce2142e488375599b25eb71da4c226954fc552011c5c76d95ed83a21162cc",
+    "TecnoSuite/registro/SESIONES.md": "863c896a365eabeba60f030ca868f1e4aef51783f1fce9ea3c9e4bc1f5eafa66",
+    "TecnoSuite/INVESTIGACION.md": "3b8d84399049fe585af80b95da26bbcdb2b3bdd3ccbb58e146531b1e019f5eba"
+  },
+  "todos_los_hashes_de_inicio_coinciden": true,
+  "artefactos_e_instrumento": {
+    "TecnoCircuito/prototipo/dist/tecnocircuito.js": "4f5d3553dbd1838514a1f843a303978a8005a3a4d7427efe9722afb6613d3cdf",
+    "TecnoCircuito/prototipo/dist/prototipo.html": "d01f1ef9fb518b3c1baf617136c5af8fe6e13ee768fafa11c44a7614567baaab",
+    "TecnoBloques/dist/TecnoBloques.html": "5e2b725de750588e4652f3e1d839808ce416b6d219a049db401b4bd6851eda3f",
+    "TecnoBloques/dist/artefacto.html": "4cb44331f01d99f04b28dba73bbf9d1727789e276141f3f3b4cbdadd3371a432",
+    "TecnoCircuito/docs/verificar-aud03-aud05-2026-10-18.cjs": "d782de5e4c63914185a0f02d5803783ed6587e44257efa66c36fc9b80f0f0790"
+  },
+  "cruce_parche": {
+    "git_apply_reverse_en_copia_temporal": 0,
+    "package_bytes_crlf": "95767875e71adc74ff84e01350fc91f8b51d23ffc38e14859a7a31c1acd4a3c0",
+    "package_normalizado_lf": "a23fb62ba531e269e8bcd9d948e7b48e12c3fc7c3dd4f864115fda0fac4880fe",
+    "COMO_FUNCIONA_bytes": "965948185db6c65c5d5da26b45d4bc5d16873a7ba1ff13e7eae0665bcb09ef70"
+  }
+}

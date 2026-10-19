@@ -390,7 +390,8 @@ const desviacion = (xs) => {
       antes = f.msSimulados;
       if (t > 1000 && !f.energia.apagada) suma += f.energia.voltios, n++;
     }
-    return { inicios: (serial.match(/Inicio/g) || []).length, reinicios: f.energia.reinicios, fallas, retrocede, vProm: suma / n, ms: f.msSimulados };
+    // arranques: cada arranque manda al menos la «I» de «Inicio»; con reinicios muy seguidos no alcanza a salir entero.
+    return { inicios: (serial.match(/Inicio/g) || []).length, arranques: (serial.match(/I/g) || []).length, reinicios: f.energia.reinicios, fallas, retrocede, vProm: suma / n, ms: f.msSimulados };
   };
   const hasta4 = [1, 2, 3, 4].map((k) => usb(k, { limiteUSB: true }));
   revisar(hasta4.every((r) => r.reinicios === 0 && r.inicios === 1), 'con 1, 2, 3 y 4 SG90 moviéndose a la vez desde el USB, la placa no se reinicia (igual que la placa real)');
@@ -399,8 +400,10 @@ const desviacion = (xs) => {
     `el 5V promedio baja como en el multímetro: ${v3.toFixed(2).replace('.', ',')} V con 3 (real 4,55) y ${v4.toFixed(2).replace('.', ',')} V con 4 (real 4,30)`);
   const seis = usb(6, { limiteUSB: true });
   const aviso6 = seis.fallas.find((x) => x.tipo === 'reinicio_usb');
-  revisar(seis.reinicios > 3 && seis.inicios === seis.reinicios + 1 && aviso6 && /bajó a/.test(aviso6.mensaje),
-    `con 6 SG90, como un Otto, la placa se reinicia una y otra vez (${seis.reinicios} veces en 8 s): «${aviso6 && aviso6.mensaje}»`);
+  // Desde AUD-05 el corte es en su milisegundo exacto, como ya lo veía la app (el Worker avanza de a ≤ 1 ms): la placa se
+  // reinicia cada pocas decenas de ms. Exagera lo medido el 16 oct (el Uno real no se reinició con 5 ni 6 SG90): LAB-001.
+  revisar(seis.reinicios > 3 && seis.arranques === seis.reinicios + 1 && aviso6 && /bajó a/.test(aviso6.mensaje),
+    `con 6 SG90, como un Otto, la placa se reinicia una y otra vez (${seis.reinicios} veces en 8 s, ${seis.arranques} arranques): «${aviso6 && aviso6.mensaje}»`);
   revisar(seis.fallas.filter((x) => x.tipo === 'reinicio_usb').length === 1, 'el aviso sale una sola vez, aunque se reinicie muchas');
   revisar(!seis.retrocede && Math.abs(seis.ms - 8000) < 20, `el tiempo simulado no retrocede con los reinicios (${Math.round(seis.ms)} ms)`);
   const ideal = usb(6, {});

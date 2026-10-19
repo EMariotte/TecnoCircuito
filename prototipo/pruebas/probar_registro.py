@@ -73,6 +73,8 @@ with sync_playwright() as p:
     pg.locator('#reiniciar').click()
     pg.wait_for_timeout(300)
     pg.locator('#detener').click()
+    # El cierre de la corrida sale cuando el Worker confirma que paró (AUD-03-V1): unos ms después del clic
+    pg.wait_for_function('window.eventosTC.filter(e => e.tipo === "simulacion_detenida").length === 2', timeout=3000)
 
     eventos = revisar_eventos(pg, revisar, 'registro')
     sim = [e for e in eventos if e['origen'] == 'simulador']

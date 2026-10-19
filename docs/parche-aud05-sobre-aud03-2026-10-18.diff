@@ -1,0 +1,64 @@
+--- a/prototipo/package.json
++++ b/prototipo/package.json
+@@ -8,13 +8,14 @@
+     "construir": "node construir.js",
+     "compilar": "node compilar.js",
+     "vistas": "node vistas.js",
+-    "probar": "npm run construir && npm run probar:motor && npm run probar:nucleo && npm run probar:nano && npm run probar:kicad && npm run probar:contrato && npm run probar:fotos && node pruebas/probar_fixtures.js && python -I pruebas/probar_kicad_pcb.py && python -I pruebas/probar_kicad_nano_pcb.py && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_svg.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_t1t2.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_protoboard.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_servo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_carro.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_biblioteca.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_probador.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_nano_ui.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_enchufe.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_vistas.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_registro.py dist/prototipo.html pruebas/capturas",
++    "probar": "npm run construir && npm run probar:motor && npm run probar:nucleo && npm run probar:nano && npm run probar:kicad && npm run probar:contrato && npm run probar:fotos && npm run probar:corte && node pruebas/probar_fixtures.js && python -I pruebas/probar_kicad_pcb.py && python -I pruebas/probar_kicad_nano_pcb.py && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_svg.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_t1t2.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_protoboard.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_servo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_carro.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_biblioteca.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_probador.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_nano_ui.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_enchufe.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_vistas.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_registro.py dist/prototipo.html pruebas/capturas",
+     "probar:motor": "esbuild src/motor/index.js --bundle --format=cjs --platform=node --outfile=pruebas/motor.cjs --log-level=warning && node pruebas/probar_motor.js",
+     "probar:nucleo": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_nucleo.js && node pruebas/probar_potencia.js",
+     "probar:kicad": "esbuild src/kicad.js --bundle --format=cjs --platform=node --outfile=pruebas/kicad.cjs --log-level=warning && node pruebas/probar_kicad.js && node pruebas/probar_kicad_nano.js",
+     "probar:contrato": "esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_contrato.js",
+     "probar:fotos": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_fotos.js",
+-    "probar:fixtures":"esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_fixtures.js",
++    "probar:corte": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_corte.js",
++    "probar:fixtures": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_fixtures.js",
+     "fixtures": "node pruebas/traer_fixtures.js",
+     "medir": "esbuild src/chip.js --bundle --format=cjs --platform=node --outfile=pruebas/chip.cjs --log-level=warning && node pruebas/medir_chip.js",
+     "probar:nano": "esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && esbuild src/motor/index.js --bundle --format=cjs --platform=node --outfile=pruebas/motor.cjs --log-level=warning && node pruebas/probar_nano.js"
+--- a/prototipo/COMO-FUNCIONA.md
++++ b/prototipo/COMO-FUNCIONA.md
+@@ -1753,3 +1753,42 @@
+ **Lo que no cubre:** si se pulsa Detener (o TecnoBloques destruye el simulador) mientras una foto viaja, sus hechos no llegan: el cierre sale en ese mismo instante, y no puede esperar al Worker porque TecnoBloques necesita el cierre antes de cerrar la sesión del equipo (AUD-04). Es a lo sumo una foto: unos 16 ms de simulación que tampoco se alcanzaron a ver.
+ 
+ **La prueba** (`probar_fotos.js`, Node): corre el `simulador.js` real con un Worker controlado, que entrega las fotos del núcleo real en el orden que se quiera. Es la técnica del diagnóstico de Codex. Revisa la pausa (con y sin reanudar), el RESET, el serial en la pausa, el recableado, una foto de la corrida anterior, una foto después del cierre y el RESET después de un reinicio por energía.
++
++## 67. El chip para en el milisegundo del corte (AUD-05, 18 oct 2026, Claude)
++
++> Defecto encontrado por la auditoría de Codex del 17 oct (AUD-05). Archivos: [src/chip.js](src/chip.js), [src/nucleo.js](src/nucleo.js) y la prueba [pruebas/probar_corte.js](pruebas/probar_corte.js) (`npm run probar:corte`).
++
++**El problema.** Los modelos de energía corren «cada ms» (sección 54): ahí se descubre que el Nano se quedó sin alimentación o que el 5V del Uno cayó por debajo de 2,7 V. Pero `chip.correr(ciclos)` seguía ejecutando hasta terminar el pedazo, y el corte se atendía después. Lo que pasaba dependía del tamaño del pedazo:
++
++| Mismos 16 ms del caso de la auditoría (Nano, 0,25 Ω en OUT_5V) | Instrucciones sin energía |
++|---|---:|
++| un pedazo de 16 ms | 184 852 |
++| pedazos de 7919 ciclos (como los del Worker, que no caen en el ms exacto) | 5 938 |
++| pedazos de 1 ms exactos | 0 |
++
++Con seis SG90 en el USB del Uno, los mismos 3 s daban 8 reinicios en pedazos de 16 ms y 110 en pedazos de 1 ms.
++
++**La corrección:**
++
++```
++  avanzar(ciclos)                         chip.correr(resto, hayCorte)
++  ┌─────────────────────────────┐         ┌───────────────────────────────────┐
++  │ mientras falte:             │         │ instrucciones hasta el próximo ms │
++  │   apagada → seguirApagada() ├──resto─►│ modelos de cada ms (energía…)     │
++  │             devuelve resto  │         │ ¿hayCorte()? → para en este ms    │
++  │   correr(resto, hayCorte) ──┼────────►└───────────────────────────────────┘
++  │   resto −= lo que avanzó    │
++  │   atender el corte          │  reinicio: chip nuevo desde ese instante
++  └─────────────────────────────┘  apagada: el tiempo pasa sin instrucciones
++```
++
++- `chip.correr(ciclos, parar)`: después de los modelos de cada ms pregunta `parar()`. Si hay un corte, se detiene en esa frontera.
++- `avanzar()` atiende el corte en ese instante (reinicio o apagado) y sigue con lo que falta del pedazo. Si la energía vuelve dentro del mismo pedazo, sigue vigilando otro corte. El tiempo global no cambia.
++- **Consecuencia:** con seis SG90 en el USB del Uno, la placa se reinicia cada pocas decenas de ms (299 veces en 8 s). Eso ya pasaba en la app, porque el Worker avanza de a 1 ms o menos; lo que cambió es la prueba de `probar_nucleo.js`, que avanzaba en pedazos de 16 ms. Ahora cuenta cada arranque por la «I» de «Inicio», porque muchas veces no alcanza a salir entero (decisión de Efraín, 18 oct). **Exagera lo medido:** el Uno real no se reinició con 5 ni 6 SG90 (16 oct); sigue pendiente en LAB-001.
++
++**La prueba** (`probar_corte.js`, Node) avanza lo mismo en pedazos de 16 ms, de 1 ms y de 7919 ciclos, y exige el mismo resultado:
++- **Nano sin energía:** ninguna instrucción sin energía, el mismo ciclo de corte y lo mismo en serial, energía y fallas.
++- **Nano con la energía de vuelta:** el mismo serial y el mismo tiempo.
++- **Uno con seis servos:** un arranque por reinicio y lo mismo en serial, energía y fallas.
++
++El contador de instrucciones se agrega en memoria al núcleo armado, sin escribirlo (técnica del diagnóstico de Codex). El tiempo se compara con una tolerancia de unos ciclos, porque el chip ejecuta instrucciones enteras y cada pedazo puede pasarse un poco, como en el Worker.

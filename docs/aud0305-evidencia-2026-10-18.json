@@ -1,0 +1,223 @@
+{
+  "instrumento": "docs/verificar-aud03-aud05-2026-10-18.cjs",
+  "condiciones": "Datos sintéticos; Worker controlado; núcleos y controlador reales. Cargador online durante benchmarks de la suite, sin otras suites concurrentes entonces.",
+  "diagnosticos": {
+    "fotos": {
+      "exit": 1,
+      "stdout": "{\"orden\":\"pausa-entrega-cierre\",\"fotoMs\":16.0000625,\"fotoFallas\":\"corriente_pin,led_quemado\",\"fallasRegistradas\":2,\"fallasCierre\":2,\"conserva\":true,\"mismaCorrida\":true}\n{\"orden\":\"pausa-cierre-entrega\",\"fotoMs\":16.0000625,\"fotoFallas\":\"corriente_pin,led_quemado\",\"fallasRegistradas\":0,\"fallasCierre\":0,\"conserva\":false,\"mismaCorrida\":null}\n{\"orden\":\"cierre-entrega\",\"fotoMs\":16.0000625,\"fotoFallas\":\"corriente_pin,led_quemado\",\"fallasRegistradas\":0,\"fallasCierre\":0,\"conserva\":false,\"mismaCorrida\":null}\n{\"orden\":\"destruir-entrega\",\"fotoMs\":16.0000625,\"fotoFallas\":\"corriente_pin,led_quemado\",\"fallasRegistradas\":0,\"fallasCierre\":0,\"conserva\":false,\"mismaCorrida\":null}\nCasos residuales que incumplen aceptación de cierre: 3\n",
+      "stderr": ""
+    },
+    "fusible": {
+      "exit": 0,
+      "stdout": "{\"paso\":256000,\"serial\":\"Hola desde el Uno simulado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nHola desde el Uno simulado\\r\\nPrendido\\r\\nApagado\\r\\n\",\"fallas\":[\"fusible_usb\"],\"ciclos\":216000001,\"ms\":13500.0000625,\"energia\":{\"amperios\":1.1138297872390426,\"pico\":1.1138297872390426,\"voltios\":3.2610425531831897,\"fusible\":0.09,\"apagada\":false,\"reinicios\":1},\"instruccionesSinEnergia\":0,\"primerCorteNano\":null}\n{\"paso\":16000,\"serial\":\"Hola desde el Uno simulado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nHola desde el Uno simulado\\r\\nPrendido\\r\\nApagado\\r\\n\",\"fallas\":[\"fusible_usb\"],\"ciclos\":216000001,\"ms\":13500.0000625,\"energia\":{\"amperios\":1.1138297872390426,\"pico\":1.1138297872390426,\"voltios\":3.2610425531831897,\"fusible\":0.09,\"apagada\":false,\"reinicios\":1},\"instruccionesSinEnergia\":0,\"primerCorteNano\":null}\n{\"paso\":7919,\"serial\":\"Hola desde el Uno simulado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nPrendido\\r\\nApagado\\r\\nHola desde el Uno simulado\\r\\nPrendido\\r\\nApagado\\r\\n\",\"fallas\":[\"fusible_usb\"],\"ciclos\":216000001,\"ms\":13500.0000625,\"energia\":{\"amperios\":1.1138297872390426,\"pico\":1.1138297872390426,\"voltios\":3.2610425531831897,\"fusible\":0.09,\"apagada\":false,\"reinicios\":1},\"instruccionesSinEnergia\":0,\"primerCorteNano\":null}\nAPROBADO: fusible abre y recupera alimentación; tres pasos, serial/fallas/energía iguales, cero instrucciones apagada.\n",
+      "stderr": ""
+    },
+    "corte-base": {
+      "exit": 1,
+      "stdout": "FALLA Nano sin energía, pasos de 16 ms: corte en el ciclo 16000, 184852 instrucciones sin energía\nOK    Nano sin energía, pasos de 1 ms: corte en el ciclo 16000, 0 instrucciones sin energía\nFALLA Nano sin energía, pasos de pedazos de 7919 ciclos: corte en el ciclo 16000, 5938 instrucciones sin energía\nOK    Nano sin energía: con los tres tamaños de paso, el mismo corte, tiempo, serial, energía y fallas (2.496874999999251 V, 1 reinicio)\nFALLA Nano, vuelve la energía: el mismo serial (16 líneas), tiempo y energía con los tres tamaños de paso\nOK    Uno con seis servos: cada reinicio arranca el programa una vez (16 ms: 8 reinicios, 9 arranques; 1 ms: 110 reinicios, 111 arranques; pedazos de 7919 ciclos: 110 reinicios, 111 arranques)\nFALLA Uno con seis servos: el mismo serial, tiempo, energía y fallas con los tres tamaños de paso\n\n4 FALLA(S)\n",
+      "stderr": ""
+    }
+  },
+  "fecha_utc": "2026-10-19T02:16:41.012939+00:00",
+  "suite_completa": {
+    "comando": "npm.cmd run probar",
+    "exit": 1,
+    "fallo": "probar_t1t2.py: entrada al aire sin mano: 3 cambios en 3 s, esperado <= 2",
+    "observado": "Motor, núcleo/potencia, Nano, KiCad Node, contrato, fotos 17 OK, corte 7 OK, fixtures 17 y KiCad real Uno/Nano pasaron antes; Chromium hasta T1/T2.",
+    "log_integral_persistido": false,
+    "continuacion": "Nueve recorridos pendientes ejecutados individualmente; repetición aislada T1/T2 aprobada (17 OK). No convierte el comando completo en aprobado.",
+    "cargador": "ACLineStatus=1, batería 69% antes del comienzo; benchmarks sin suites concurrentes",
+    "benchmarks_observados": "parpadeo13 2.50x, pwm9 3.60x, potenciometro 2.43x, motor 1.34x; sin cambiar umbrales"
+  },
+  "continuacion_e_integracion": {
+    "biblioteca": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\biblioteca.txt",
+      "sha256": "785c8095f0780863b3fc34ece0552132a656773cf5c6984382cf43c747a1e804",
+      "exit": 0,
+      "comprobaciones_ok": 27,
+      "fallas": [],
+      "final": [
+        "OK    la protoboard se arrastra y queda en el lienzo",
+        "OK    su ficha explica las tiras (sin aviso de validación: no tiene modelo eléctrico)",
+        "OK    sin errores en la consola",
+        "",
+        "Todo bien."
+      ]
+    },
+    "carro": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\carro.txt",
+      "sha256": "55112e87de9da8cd5d6b7f3ddb33384d229a227c5eeaef669f9cd6ab9dbfc513",
+      "exit": 0,
+      "comprobaciones_ok": 28,
+      "fallas": [],
+      "final": [
+        "OK    a 255 hacia atrás: «motor1 (M1)6,48 V161,9 mA216 RPM · atrás 75 cm/s»",
+        "OK    carro: los 9 eventos cumplen contrato/evento.schema.json (componente_agregado, componente_cambiado, simulacion_detenida, simulacion_iniciada)",
+        "OK    sin errores en la consola",
+        "",
+        "Todo bien."
+      ]
+    },
+    "enchufe": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\enchufe.txt",
+      "sha256": "4558b53c4171a7d0dd29aec4083d3fe9df201be4801905f1039c046453503be6",
+      "exit": 0,
+      "comprobaciones_ok": 26,
+      "fallas": [],
+      "final": [
+        "OK    en el Nano, SDA es otro nombre de A4: una pata no se enchufa en el alias ({'catodo': 'placa.GND1'})",
+        "OK    enchufe: los 20 eventos cumplen contrato/evento.schema.json (componente_cambiado, componente_quitado)",
+        "OK    sin errores ni avisos de consola",
+        "",
+        "26 comprobaciones; todo bien."
+      ]
+    },
+    "nano_ui": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\nano_ui.txt",
+      "sha256": "ad90d5670637d5f91cada5b8826fe06fc9da2ca12ac5e0ef32bfb9250da5ffe4",
+      "exit": 0,
+      "comprobaciones_ok": 85,
+      "fallas": [],
+      "final": [
+        "OK    el mismo circuito en el Uno se abre completo, con IOREF, sin quitar nada",
+        "OK    nano_ui: los 14 eventos cumplen contrato/evento.schema.json (componente_cambiado, simulacion_detenida, simulacion_iniciada)",
+        "OK    sin errores ni avisos de consola",
+        "",
+        "85 comprobaciones; todo bien."
+      ]
+    },
+    "probador": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\probador.txt",
+      "sha256": "4a85a34f246bc122a601e541fd9ff12dfdc13958688253388633ffdc94ef2df6",
+      "exit": 0,
+      "comprobaciones_ok": 11,
+      "fallas": [],
+      "final": [
+        "OK    al detener, la pantalla se apaga",
+        "OK    probador: los 6 eventos cumplen contrato/evento.schema.json (componente_cambiado, falla, simulacion_detenida, simulacion_iniciada)",
+        "OK    sin errores en la consola",
+        "",
+        "Todo bien."
+      ]
+    },
+    "protoboard": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\protoboard.txt",
+      "sha256": "5338d4cf7e9455f0ba513cab810f68219d4ee7daedd6c8424d96b44f585a33e2",
+      "exit": 0,
+      "comprobaciones_ok": 30,
+      "fallas": [],
+      "final": [
+        "OK    los 7 circuitos que guarda el lienzo cumplen el contrato (esquema y referencias)",
+        "OK    protoboard: los 19 eventos cumplen contrato/evento.schema.json (boton_pulsado, cable_quitado, componente_agregado, componente_cambiado, componente_quitado, simulacion_detenida, simulacion_iniciada)",
+        "OK    sin errores en la consola",
+        "",
+        "TODO BIEN"
+      ]
+    },
+    "registro": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\registro.txt",
+      "sha256": "912d02061ab6a12f8be648b8e609ec529a6eb10a1886053008cede6e7751489f",
+      "exit": 0,
+      "comprobaciones_ok": 18,
+      "fallas": [],
+      "final": [
+        "OK    simulacion_detenida: ms_sim (y ms_simulados, el nombre de antes) cuenta desde el reinicio (320 ms)",
+        "OK    el cambio de la resistencia queda como evento del lienzo, sin corrida",
+        "OK    sin errores en la consola",
+        "",
+        "TODO BIEN"
+      ]
+    },
+    "servo": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\servo.txt",
+      "sha256": "48470fdfe2cbd484c364326c982882a421b6ff2b8a7edfacc15c1dce21131d10",
+      "exit": 0,
+      "comprobaciones_ok": 19,
+      "fallas": [],
+      "final": [
+        "OK    los reinicios quedan en los eventos (reinicio_placa, motivo energia_usb)",
+        "OK    servo: los 22 eventos cumplen contrato/evento.schema.json (componente_agregado, componente_cambiado, falla, reinicio_placa, simulacion_detenida, simulacion_iniciada)",
+        "OK    sin errores en la consola",
+        "",
+        "TODO BIEN"
+      ]
+    },
+    "t1t2-repeticion": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\t1t2-repeticion.txt",
+      "sha256": "f955fc2ce728be28015a842652d92631dede355e1814c1ecbc7395ec8b905aaf",
+      "exit": 0,
+      "comprobaciones_ok": 17,
+      "fallas": [],
+      "final": [
+        "OK    ideal: la lectura no se mueve (siempre 512)",
+        "OK    t1t2: los 7 eventos cumplen contrato/evento.schema.json (boton_pulsado, componente_cambiado, simulacion_iniciada)",
+        "OK    sin errores en la consola",
+        "",
+        "TODO BIEN"
+      ]
+    },
+    "TB-registro-app": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\TB-registro-app.txt",
+      "sha256": "c62cfebe9ed25455126b0f527e6c34690800872241979dd2a6b58d4827096e93",
+      "exit": 0,
+      "comprobaciones_ok": 72,
+      "fallas": [],
+      "final": [
+        "OK    V2: con el PIN nuevo, el registro queda apagado y la configuración dañada se guarda aparte",
+        "OK    V2: el aviso se quita y los registros guardados siguen ahí",
+        "OK    sin errores en la consola",
+        "",
+        "TODO BIEN"
+      ]
+    },
+    "TB-simulador": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\TB-simulador.txt",
+      "sha256": "1fc385d328f39fb5257d158152b2af4ae4be88c692aa4c2a649f11d932f69b3d",
+      "exit": 0,
+      "comprobaciones_ok": 53,
+      "fallas": [],
+      "final": [
+        "OK    LED enchufado en GND3: en el Nano se suelta esa pata y al volver a Uno se recupera ({\"anodo\":\"placa.VIN\"} → {\"catodo\":\"placa.GND3\",\"anodo\":\"placa.VIN\"})",
+        "OK    Mega sigue deshabilitada con explicación de las placas disponibles",
+        "OK    sin errores de JavaScript",
+        "",
+        "Todo bien."
+      ]
+    },
+    "vistas": {
+      "log_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-aud0305-ly2q02zs\\vistas.txt",
+      "sha256": "9b977d4a715b2a244d2a9b58905d98580d03d74ccf06a05bf900d9722734658f",
+      "exit": 0,
+      "comprobaciones_ok": 46,
+      "fallas": [],
+      "final": [
+        "OK    nano: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos",
+        "OK    uno: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos",
+        "OK    sin errores en la consola",
+        "",
+        "46 comprobaciones; todo bien."
+      ]
+    }
+  },
+  "graficador": {
+    "comando": "npm.cmd run test:graficador",
+    "exit": 0,
+    "ok": 28
+  },
+  "comprobacion_documental": {
+    "piloto": "19 fichas, 44 documentos; 0 errores, 0 avisos",
+    "diff_check_TecnoSuite_TecnoBloques_documentacion_TC": 0,
+    "diff_check_TC_global": {
+      "exit": 2,
+      "hallazgos": [
+        "prototipo/dist/prototipo.html:146: trailing whitespace.",
+        "prototipo/dist/prototipo.html:147: trailing whitespace.",
+        "prototipo/dist/tecnocircuito.js:1: trailing whitespace.",
+        "prototipo/dist/tecnocircuito.js:2: trailing whitespace."
+      ],
+      "observacion": "Espacios finales en literales del paquete generado; no se recortan ni se edita producto."
+    },
+    "hashes_fuentes_pruebas_memorias_Claude_y_artefactos_conservados": true,
+    "enlaces_informes": true
+  }
+}

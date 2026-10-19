@@ -12,6 +12,8 @@ import { VERSION_EVENTOS } from './eventos.js';
 let corridas = 0;
 
 export const CLAVES_NO_IDEALIDADES = ['danoComponentes', 'limitePin', 'entradaFlotante', 'ruidoADC', 'limiteUSB', 'caidaL293D', 'resistenciaBateria'];
+// Si el Worker no confirma que paró en este tiempo, el cierre de la corrida sale con lo que llegó (AUD-03-V1).
+const ESPERA_CIERRE_MS = 500;
 // El código del Worker, ya armado: lo pone construir.js. Va como texto para que todo quepa en un solo archivo.
 const CODIGO_TRABAJADOR = typeof __CODIGO_TRABAJADOR__ === 'string' ? __CODIGO_TRABAJADOR__ : '';
 
@@ -31,8 +33,14 @@ export function crearSimulador(opciones = {}) {
   const oyentes = { serial: [], falla: [], estado: [] };
 
   let estado = 'detenido';
-  let vivo = true;
-  let turno = 0; // sube con cada cambio de estado (no es la «corrida» del registro): las fotos de antes se descartan
+  let vivo = true; // acepta órdenes; destruir() lo apaga enseguida
+  let oyendo = true; // recibe lo que manda el Worker; se apaga cuando el cierre de destruir() termina
+  // El cierre de una corrida que espera al Worker (AUD-03): { turno, promesa, terminar(m) }. Mientras espera, la
+  // página ya se ve detenida, pero las fotos pendientes de la corrida todavía entregan sus hechos.
+  let cierre = null;
+  let finDestruir = null;
+  let turno = 0; // sube con cada cambio de estado (no es la «corrida» del registro): la vista de las fotos de antes se descarta
+  let turnoCorrida = 0; // el turno con que empezó la corrida: las fotos desde ahí son de esta corrida (AUD-03)
   let vista = null; // la última foto, para dibujarla en el próximo cuadro
   let cuadro = 0;
   const medidas = { msSimulados: 0, msReales: 0, velocidad: 1, evaluaciones: 0 };
@@ -42,20 +50,35 @@ export function crearSimulador(opciones = {}) {
   const fallas = [];
 
   const trabajador = crearTrabajador(recibir);
-  trabajador.enviar({ tipo: 'crear', hex, circuito: lienzo.circuito(), activas });
+  // `_semilla` (interna, no es del contrato): las pruebas fijan el azar del núcleo para que se repitan.
+  const semilla = Number.isInteger(opciones._semilla) ? opciones._semilla : undefined;
+  trabajador.enviar({ tipo: 'crear', hex, circuito: lienzo.circuito(), activas, semilla });
 
+  // Una foto trae dos cosas. Los hechos (fallas nuevas, texto del monitor serial, reinicios) el núcleo los manda una
+  // sola vez: se entregan aunque la foto llegue tarde, si es de esta corrida. La vista (lo que se dibuja y se mide)
+  // solo si es del turno actual: una de antes de pausar o reiniciar mostraría un momento que ya pasó (AUD-03).
+  // Con la corrida detenida, los hechos llegan hasta que el Worker confirma que paró: como los mensajes llegan en
+  // orden, antes de su «detenido» llegan todas las fotos pendientes (AUD-03-V1).
   function recibir(m) {
-    if (!vivo) return;
+    if (!oyendo) return;
     if (m.tipo === 'error') return console.error('TecnoCircuito:', m.mensaje);
-    if (m.tipo !== 'foto' || m.turno !== turno || estado === 'detenido') return;
+    if (m.tipo === 'detenido') return cierre && m.turno === cierre.turno ? cierre.terminar(m) : undefined;
+    if (m.tipo !== 'foto' || m.turno < turnoCorrida || (estado === 'detenido' && !cierre)) return;
+    entregarHechos(m);
+    if (m.turno !== turno || estado === 'detenido') return;
     Object.assign(medidas, { msSimulados: m.msSimulados, msReales: m.msReales, velocidad: m.velocidad, evaluaciones: m.evaluaciones });
     // La tabla usa los voltajes de la foto (con «al aire») y cómo lee el programa cada entrada.
     medicion = m.medicion ? { ...m.medicion, voltajes: m.voltajes, entradas: m.entradas } : null;
+    vista = m;
+    if (!cuadro) cuadro = requestAnimationFrame(dibujar);
+  }
+  function entregarHechos(m) {
+    const ms = Math.round(m.msSimulados); // el tiempo simulado de la foto: el de los hechos, aunque llegue tarde
     for (const f of m.fallas) {
       fallas.push(f);
       oyentes.falla.forEach((fn) => avisar(fn, { tipo: f.tipo, componente: f.componente, mensaje: f.mensaje }));
       const { mensaje, ...datos } = f;
-      emitir('falla', datos);
+      emitir('falla', datos, ms);
     }
     // Reinicios por la energía del USB (no idealidad «limiteUSB»): uno por foto, con cuántos hubo desde la anterior.
     const reinicios = m.energia ? m.energia.reinicios : 0;
@@ -63,11 +86,9 @@ export function crearSimulador(opciones = {}) {
       motivo: m.energia.referencia ? 'energia_nano' : 'energia_usb',
       ...(m.energia.referencia ? { fuente: m.energia.fuente } : {}),
       nuevos: reinicios - reiniciosVistos, total: reinicios,
-    });
-    reiniciosVistos = reinicios;
+    }, ms);
+    reiniciosVistos = Math.max(reiniciosVistos, reinicios);
     if (m.serial) oyentes.serial.forEach((fn) => avisar(fn, m.serial));
-    vista = m;
-    if (!cuadro) cuadro = requestAnimationFrame(dibujar);
   }
 
   // Lo que se ve: el LED «L» de la placa sigue al pin 13, y cada LED brilla según su corriente promedio.
@@ -95,8 +116,8 @@ export function crearSimulador(opciones = {}) {
   }
 
   // Contrato, sección 6.1: cada evento del simulador lleva su corrida y el tiempo simulado de esa corrida.
-  function emitir(tipo, datos) {
-    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(medidas.msSimulados), datos });
+  function emitir(tipo, datos, msSim = medidas.msSimulados) {
+    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(msSim), datos });
   }
 
   function cambiarEstado(nuevo) {
@@ -126,9 +147,13 @@ export function crearSimulador(opciones = {}) {
   return {
     iniciar() {
       if (!vivo || estado === 'corriendo') return;
+      // Una corrida nueva antes de que el Worker confirme el cierre de la anterior: ese cierre sale ya, con lo que
+      // llegó, para que no quede después del inicio de la nueva.
+      if (cierre) cierre.terminar();
       const nuevo = estado === 'detenido';
       turno++;
       if (nuevo) {
+        turnoCorrida = turno;
         // Cada corrida empieza con piezas nuevas: sin LED quemados y sin fallas avisadas.
         fallas.length = 0;
         medicion = null;
@@ -162,21 +187,47 @@ export function crearSimulador(opciones = {}) {
       // Como apretar el botón RESET: el programa empieza desde setup().
       trabajador.enviar({ tipo: 'reiniciar', turno });
       trabajador.enviar({ tipo: 'iniciar', nuevo: false, turno });
-      reiniciosVistos = 0;
+      // reiniciosVistos no vuelve a 0: el núcleo cuenta los reinicios por energía de toda la corrida, y contarlos otra
+      // vez desde 0 avisaría de nuevo los que ya se avisaron (AUD-03).
       cambiarEstado('reiniciado');
       cambiarEstado('corriendo');
     },
-    detener() {
-      if (estado === 'detenido') return;
+    // Contrato 1: se ve detenida al instante y devuelve una promesa que se cumple cuando sale simulacion_detenida.
+    // Ese cierre espera a que el Worker confirme que paró, así trae las fallas de las fotos que venían en camino
+    // (AUD-03-V1); si el Worker no contesta en ESPERA_CIERRE_MS, sale con lo que llegó. { sinEsperar: true } lo saca
+    // ya (al cerrar la ventana no se puede esperar).
+    detener({ sinEsperar = false } = {}) {
+      if (cierre) {
+        const p = cierre.promesa;
+        if (sinEsperar) cierre.terminar();
+        return p;
+      }
+      if (estado === 'detenido') return Promise.resolve();
       turno++;
       trabajador.enviar({ tipo: 'detener', turno });
-      // Las fallas de esta corrida, una vez cada una: si una falta en la corrida siguiente, el equipo la corrigió.
-      const vistas = new Map(fallas.map((f) => [f.tipo + '|' + f.componente, { tipo: f.tipo, componente: f.componente }]));
-      const ms = Math.round(medidas.msSimulados);
-      emitir('simulacion_detenida', { ms_sim: ms, ms_simulados: ms, fallas: [...vistas.values()] });
+      let cumplir;
+      const promesa = new Promise((r) => { cumplir = r; });
+      const espera = setTimeout(() => cierre && cierre.terminar(), ESPERA_CIERRE_MS);
+      const este = {
+        turno,
+        promesa,
+        terminar(m) {
+          if (cierre !== este) return;
+          cierre = null;
+          clearTimeout(espera);
+          // Las fallas de esta corrida, una vez cada una: si una falta en la corrida siguiente, el equipo la corrigió.
+          const vistas = new Map(fallas.map((f) => [f.tipo + '|' + f.componente, { tipo: f.tipo, componente: f.componente }]));
+          const ms = Math.round(m && typeof m.msSimulados === 'number' ? m.msSimulados : medidas.msSimulados);
+          emitir('simulacion_detenida', { ms_sim: ms, ms_simulados: ms, fallas: [...vistas.values()] }, ms);
+          cumplir();
+        },
+      };
+      cierre = este;
       cambiarEstado('detenido');
       medicion = null;
       dibujar();
+      if (sinEsperar) este.terminar();
+      return promesa;
     },
     serialEnviar(texto) {
       if (estado !== 'detenido') trabajador.enviar({ tipo: 'serial', texto: String(texto) });
@@ -186,20 +237,28 @@ export function crearSimulador(opciones = {}) {
     alEstado: (fn) => typeof fn === 'function' && oyentes.estado.push(fn),
     // Contrato 1: lo que necesita la línea de estado. velocidad va de 0 a 1 (1 = al ritmo del chip real).
     medidas: () => ({ ...medidas, estado, hilo: trabajador.hilo() }),
-    // Contrato 1: detiene la simulación, libera el Worker y suelta el lienzo. Después ya no se puede usar.
-    destruir() {
-      if (!vivo) return;
-      this.detener();
+    // Contrato 1: detiene la simulación, suelta el lienzo y libera el Worker. Después ya no se puede usar. Devuelve la
+    // promesa del cierre (como detener): el Worker se libera cuando sale simulacion_detenida.
+    destruir(opciones = {}) {
+      if (finDestruir) {
+        if (opciones.sinEsperar && cierre) cierre.terminar();
+        return finDestruir;
+      }
       vivo = false;
       cancelAnimationFrame(cuadro);
-      trabajador.terminar();
+      cuadro = 0;
+      finDestruir = this.detener(opciones).then(() => {
+        oyendo = false;
+        trabajador.terminar();
+      });
+      return finDestruir;
     },
     // Nombres del prototipo que TecnoBloques usó antes de que entraran al contrato: se conservan por ahora.
     _medidas() {
       return this.medidas();
     },
-    _destruir() {
-      this.destruir();
+    _destruir(opciones) {
+      return this.destruir(opciones);
     },
     // Contrato 1: lo que mediría un multímetro en cada pieza, con el promedio de la vista (sección 48 de COMO-FUNCIONA).
     // null si no se está simulando. TecnoCircuito.filasDeMediciones(m) lo convierte en la tabla en español.

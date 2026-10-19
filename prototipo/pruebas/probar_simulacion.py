@@ -136,6 +136,8 @@ with sync_playwright() as p:
       return !r.querySelector('wokwi-led').value && !r.querySelector('.tc-placa [data-led="PWR"]').hasAttribute('data-encendido');
     }}''')
     revisar(apagados, 'al detener, todo se apaga (también el LED ON de la placa)')
+    # El cierre de la corrida sale cuando el Worker confirma que paró (AUD-03-V1): unos ms después del clic
+    pg.wait_for_function('document.querySelector("#eventos b")?.textContent === "simulacion_detenida"', timeout=3000)
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos b")].map(b => b.textContent)')
     revisar(eventos[:5] == ['simulacion_detenida', 'reinicio_placa', 'simulacion_reanudada', 'simulacion_pausada', 'simulacion_iniciada'],
             f'eventos de la simulación (con la pausa y el reinicio por el botón): {eventos[:5]}')

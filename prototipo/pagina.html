@@ -337,12 +337,14 @@
 
   // ---- Simulación (prototipo 1)
   let sim = null;
+  const SEMILLA = Number.parseInt(new URLSearchParams(location.search).get('semilla'), 10);
   const NOMBRES = { corriendo: 'Corriendo', pausado: 'En pausa', detenido: 'Detenida', reiniciado: 'Reiniciada' };
   function crearSim() {
     if (sim) sim._destruir();
     try { localStorage.setItem(CLAVE + '-programa', $('programa').value); } catch { /* preferencias opcionales */ }
     sim = TecnoCircuito.crearSimulador({
       lienzo, placa: lienzo.circuito().placa, hex: PROGRAMAS[$('programa').value], modo: $('modo').value, alEvento: anotar,
+      _semilla: SEMILLA, // ?semilla=N: las pruebas fijan el azar del núcleo (la entrada al aire, el ruido del ADC)
     });
     $('fallas').textContent = '';
     sim.alFalla((f) => {

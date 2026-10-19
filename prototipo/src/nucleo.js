@@ -443,6 +443,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   // Sin energía (fusible abierto): el tiempo pasa, el fusible se enfría y el chip espera. Los modelos «de cada ms»
   // corren solo al completar un milisegundo, como en chip.correr: con pedazos de 4801 ciclos el fusible no puede
   // enfriarse un ms entero en cada pedazo (se enfriaría 3 veces más rápido que el tiempo simulado).
+  // Devuelve los ciclos del pedazo que quedan cuando vuelve la energía: los corre avanzar(), que vigila otro corte.
   function seguirApagada(ciclos) {
     const porMs = FRECUENCIA / 1000;
     let resto = ciclos;
@@ -456,8 +457,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       avanzarServos();
       if (!nano && !fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
     }
-    if (resto > 0) chip.correr(resto);
+    return resto;
   }
+  // Un modelo «de cada ms» declaró un corte (el Nano sin energía, o el 5V del Uno cayó): el chip para ahí (AUD-05).
+  const hayCorte = () => corteNano || corteUSB !== null;
 
   // Lo que pasó con el USB desde la última foto. El pico es el mayor del último segundo, como el «máximo» de un
   // multímetro: el golpe de corriente dura milisegundos y en una sola foto casi nunca se alcanza a ver.
@@ -837,11 +840,21 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     get ciclos() {
       return base + chip.ciclos;
     },
+    // Lo que pasa no depende del tamaño del paso (AUD-05): el chip corre hasta el milisegundo de un corte, el corte se
+    // atiende ahí (reinicio o apagado) y el resto del paso sigue desde ese instante, con el tiempo global intacto.
     avanzar(ciclos) {
-      if (apagada) return seguirApagada(ciclos);
-      chip.correr(ciclos);
-      if (corteNano) atenderCorteNano();
-      if (corteUSB) atenderCorte();
+      let resto = ciclos;
+      while (resto > 0) {
+        if (apagada) {
+          resto = seguirApagada(resto);
+          continue;
+        }
+        const antes = chip.ciclos;
+        chip.correr(resto, hayCorte);
+        resto -= chip.ciclos - antes;
+        if (corteNano) atenderCorteNano();
+        if (corteUSB) atenderCorte();
+      }
     },
     foto,
     ponerCircuito(c) {

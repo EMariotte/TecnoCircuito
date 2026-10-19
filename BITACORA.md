@@ -1365,3 +1365,58 @@ Node 106 OK, Electron 47 OK sin errores, contrato aprobado y registro Chromium 1
 2026-10-18 19:50 · Codex: [cierre AUD-02](docs/CIERRE-AUD02-CODEX-2026-10-18.md), V1–V4 verificados en disco del hermano; [AUD-04 devuelta](docs/VERIFICACION-AUD04-CODEX-2026-10-18.md) por inicio tras desconexión serial pendiente con cambio de turno. Consumidores/contrato identificados, Node 142/Electron 67 OK, reproducción V1 exit 1. Segundo cierre funcional, 2/3. Sin producto/memoria de Claude editados, nueva validación física ni publicación.
 
 2026-10-18 20:22 · Codex: [cierre AUD-04](docs/CIERRE-AUD04-CODEX-2026-10-18.md), integración local del hermano y atribución por turno verificadas; Electron 72 OK y diagnóstico independiente exit 0 con puerto sintético. Tercer cierre funcional; segundo balance presentado en TecnoSuite/INVESTIGACION.md. Hardware/instalador/aula no validados por estas pruebas; memoria de Claude preservada. Sin commit/push/publicación por Codex.
+
+## 2026-10-18 20:45 · Claude: AUD-03, los hechos de una foto que llega tarde ya no se pierden, en revisión
+
+La auditoría de Codex del 17 oct (AUD-03) encontró que, si el LED se quemaba justo antes de pulsar Pausa, la foto con la falla llegaba después y la página la descartaba entera: nunca salía el evento `falla` y el cierre decía «sin fallas». Lo reproduje con una prueba nueva, `probar_fotos.js`, que corre el `simulador.js` real con un Worker controlado y el núcleo real (la técnica del diagnóstico de Codex): 8 fallas sobre el código anterior. Además de las fallas de la pausa, también se perdían las del RESET y el texto del monitor serial.
+
+**Corrección** (`src/simulador.js`; COMO-FUNCIONA, sección 66): una foto que llega tarde se separa en dos partes. **La vista** (dibujo, medición, tiempo) solo se usa si es del turno actual. **Los hechos** (fallas, serial, reinicios) se entregan si la foto es de la misma corrida, con el `ms_sim` de la foto. Una foto de una corrida anterior, o una que llega con la simulación detenida, se descarta entera. El protocolo con el Worker no cambia: la página guarda el turno con que empezó la corrida.
+
+**Error corregido de paso:** al pulsar RESET, la página volvía a contar desde 0 los reinicios por energía, y el siguiente `reinicio_placa` por energía salía repetido. El núcleo cuenta los de toda la corrida.
+
+**Pruebas** (20:09–20:42, con cargador):
+- `probar:fotos` 17 OK, grupo nuevo de `npm run probar`.
+- `npm run probar` completo: exit 0, 27 grupos, 1200 OK, cero fallas.
+- TecnoBloques con este paquete local: `test:simulador` 53 y `test:registro-app` 72/72.
+
+**Límite:** si se pulsa Detener mientras una foto viaja (a lo sumo unos 16 ms de simulación), sus hechos no llegan, porque el cierre sale en ese mismo instante.
+
+Sin commit ni push.
+
+## 2026-10-18 21:05 · Claude: AUD-05, el chip para en el milisegundo del corte, en revisión
+
+La auditoría de Codex del 17 oct (AUD-05) mostró que, cuando el modelo de energía declaraba un corte, `chip.correr()` seguía ejecutando hasta el final del pedazo. Lo reproduje con una prueba nueva, `probar_corte.js`. El caso de la auditoría (Nano, 0,25 Ω en OUT_5V) da 184 852 instrucciones sin energía con un pedazo de 16 ms, igual que en el informe. Encontré además 5938 con pedazos de 7919 ciclos, que se parecen a los del Worker. Con seis SG90 en el USB del Uno, los reinicios dependían del tamaño del paso: 8 en 3 s con pasos de 16 ms y 110 con pasos de 1 ms.
+
+**Corrección** (`src/chip.js`, `src/nucleo.js`; COMO-FUNCIONA, sección 67): `chip.correr(ciclos, parar)` se detiene en la frontera del milisegundo en que un modelo declara el corte. `avanzar()` atiende el corte en ese instante y sigue con lo que falta del pedazo, también después de que la energía vuelve.
+
+**Una prueba existente cambió** (decisión de Efraín): la del Otto en `probar_nucleo.js` avanzaba en pedazos de 16 ms. Ahora la placa se reinicia unas 300 veces en 8 s, como ya pasaba en la app (el Worker avanza de a 1 ms o menos), y el «Inicio» casi nunca sale entero, así que la prueba cuenta cada arranque por su «I». Exagera lo medido el 16 oct: el Uno real no se reinició con 5 ni 6 SG90 (LAB-001).
+
+**Pruebas** (20:50–21:03, con cargador):
+- `probar:corte` 7 OK con pedazos de 16 ms, 1 ms y 7919 ciclos. Con el núcleo anterior fallan cuatro.
+- `npm run probar` completo: exit 0, 28 grupos, 1207 OK, cero fallas.
+- TecnoBloques con este paquete local: `test:simulador` 53 y `test:registro-app` 72/72.
+
+Sin commit ni push.
+
+2026-10-18 21:20 · Codex: revisión de CLA-014/015: **AUD-05 verificada** para corte lógico, pasos parciales y recuperación; **AUD-03 devuelta** por pérdida de hechos al cerrar con foto pendiente. [Cierre AUD-05](docs/CIERRE-AUD05-CODEX-2026-10-18.md), [revisión AUD-03](docs/VERIFICACION-AUD03-CODEX-2026-10-18.md), evidencia/manifiesto enlazados. Corte actual 7 OK; versión anterior cuatro fallos; fusible adicional en tres pasos exit 0. Fotos 17 OK, pero reproducción de cierre exit 1 (tres intercalaciones).
+Suite completa TC exit 1 por T1/T2 (3 cambios de pin flotante frente a ≤2); una repetición aislada 17 OK y nueve recorridos restantes aprobados, sin borrar el fallo. KiCad real Uno/Nano ejecutado. TB local 53/72 y graficador 28 OK, sin errores de app. Cargador Online durante benchmarks; sin producto ni memoria de Claude editados por Codex, hardware, instalador, commit ni publicación. Siguiente: Claude corrige AUD-03, revisa T1/T2 y actualiza su memoria del cierre.
+
+## 2026-10-18 22:25 · Claude: Contrato 1: el cierre de la corrida espera al Worker (AUD-03), en revisión
+
+Codex devolvió AUD-03 (21:20) por V1: si se pulsaba Detener, o TecnoBloques destruía el simulador, mientras viajaba una foto con fallas, esas fallas no llegaban al cierre de la corrida. Era el límite que yo había declarado, y la aceptación incluye el cierre. Efraín eligió el «cierre que espera».
+
+**Contrato 1 (aditivo):** `sim.detener()` y `sim.destruir()` devuelven una promesa que se cumple cuando sale `simulacion_detenida`. La simulación se ve detenida al instante, pero el cierre espera a que el Worker confirme que paró (`detenido`, después de una última foto). Como los mensajes llegan en orden, antes llegan las fotos en camino y sus fallas entran en el cierre. Si el Worker no confirma en 500 ms, el cierre sale con lo que llegó. `{ sinEsperar: true }` lo saca ya. CONTRATO, sección 2 y su historial.
+
+**TecnoCircuito:** `simulador.js` (el cierre abierto, el tope, `destruir()` que espera y después libera el Worker, `iniciar()` que cierra primero la corrida anterior) y `trabajador.js` (la última foto y `detenido`). COMO-FUNCIONA, sección 66, corregida: el `ms_sim` de una falla que llega en la pausa puede ser mayor que el de la pausa (lo mostró Codex).
+
+**TecnoBloques:** `detenerSimulacion()` devuelve la promesa. `cerrarTrabajoDelEquipo()` sube el turno al instante y espera el cierre antes de cerrar la sesión (cambiar de código, apagar el registro). `simular()` espera el cierre anterior antes de compilar. Al cerrar la ventana se usa `sinEsperar` (límite declarado). Un segundo clic en «Sí, somos ese equipo» mientras espera no abre otra sesión.
+
+**T1/T2 con semilla fija** (decisión de Efraín): la prueba falló una vez a Codex por azar. Con 1000 semillas, HEAD y AUD-05 dan lo mismo semilla por semilla, y más de 2 cambios en 3 s sale en el 0,2 % de las semillas. `pagina.html?semilla=` pasa `_semilla` (interna, no es del contrato) y la prueba fija la suya.
+
+**Pruebas** (22:00–22:24, con cargador):
+- `probar:fotos` 31 OK, con el cierre que espera.
+- `npm run probar` completo: exit 0, 28 grupos, 1221 OK, cero fallas.
+- TecnoBloques: `test:registro-app` 72/72 y `test:simulador` 53.
+- El diagnóstico de Codex, en una copia que solo agrega la confirmación del Worker: 0 casos residuales.
+
+Sin commit ni push.

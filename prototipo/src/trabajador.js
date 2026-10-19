@@ -3,8 +3,9 @@
 // ni competir con Blockly, y la velocidad no depende de cuánto tarde la página en dibujar.
 //
 // Mensajes que recibe: crear, iniciar, pausar, reiniciar, detener, circuito, serial, pulsador, mano.
-// Mensajes que manda: listo, foto, error. Cada foto lleva el «turno» con el que se pidió, para que la página
-// descarte las que llegan tarde (de antes de pausar, detener o reiniciar).
+// Mensajes que manda: listo, foto, detenido, error. Cada foto lleva el «turno» con el que se pidió, para que la
+// página descarte la vista de las que llegan tarde (de antes de pausar, detener o reiniciar). «detenido» confirma
+// que paró, después de una última foto: la página cierra la corrida al recibirlo.
 import { crearNucleo, FRECUENCIA } from './nucleo.js';
 
 const RITMO_FOTO_MS = 16; // unas 60 fotos por segundo, como los cuadros de la pantalla
@@ -52,6 +53,7 @@ function enviarFoto(ahora = performance.now()) {
   ultimaFoto = ahora;
   const f = nucleo.foto();
   self.postMessage({ tipo: 'foto', turno, ...f, velocidad: velocidad(ahora), msReales: tiempoReal });
+  return f;
 }
 
 function ciclo() {
@@ -82,7 +84,7 @@ self.onmessage = (e) => {
     if ('turno' in m) turno = m.turno;
     switch (m.tipo) {
       case 'crear':
-        nucleo = crearNucleo({ hex: m.hex, circuito: m.circuito, activas: m.activas });
+        nucleo = crearNucleo({ hex: m.hex, circuito: m.circuito, activas: m.activas, semilla: m.semilla });
         break;
       case 'iniciar':
         if (m.nuevo) {
@@ -104,9 +106,14 @@ self.onmessage = (e) => {
         deuda = 0;
         enviarFoto();
         break;
-      case 'detener':
+      case 'detener': {
+        // Una última foto con lo que el núcleo tenía sin mandar (fallas, serial) y la confirmación: la página cierra
+        // la corrida al recibirla, con todo lo de antes (AUD-03-V1).
         corriendo = false;
+        const f = nucleo ? enviarFoto() : null;
+        self.postMessage({ tipo: 'detenido', turno, msSimulados: f ? f.msSimulados : undefined });
         break;
+      }
       case 'circuito':
         nucleo.ponerCircuito(m.circuito);
         if (m.mostrar) enviarFoto(); // en pausa también: el aprendiz ve el cambio sin que avance el tiempo

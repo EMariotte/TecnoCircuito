@@ -102,8 +102,10 @@ export function crearChip(hex) {
   // Avanza el chip `ciclos` ciclos de reloj. Al cruzar cada milisegundo simulado (y solo entonces) entrega un byte
   // pendiente del serial y corre los modelos «de cada ms» (servos, motores, energía, entradas al aire). El Worker
   // avanza en pedazos que no son ms exactos: el próximo milisegundo se cuenta en ciclos absolutos, no por llamada.
+  // `parar()`, si se da, se pregunta después de los modelos de cada ms: si dice que sí (un corte de energía), el chip
+  // se detiene en esa frontera y no ejecuta nada más del pedazo (AUD-05). Quien llama ve cuántos ciclos alcanzó.
   let proximoMs = CICLOS_MS;
-  function correr(ciclos) {
+  function correr(ciclos, parar) {
     const fin = cpu.cycles + ciclos;
     while (cpu.cycles < fin) {
       const tramo = Math.min(fin, proximoMs);
@@ -119,6 +121,7 @@ export function crearChip(hex) {
         for (const fn of alRecibido) fn(); // el LED RX lo prende el conversor USB, aunque el programa no lea
       }
       for (const fn of alMs) fn();
+      if (parar && parar()) return;
     }
   }
 

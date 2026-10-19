@@ -7,7 +7,10 @@ sys.path.insert(0, str(Path(__file__).parent))  # python -I no agrega la carpeta
 from eventos_contrato import vigilar_eventos, revisar_eventos  # noqa: E402
 
 sys.stdout.reconfigure(encoding='utf-8')
-PAGINA = Path(sys.argv[1]).resolve().as_uri()
+# Semilla fija: la entrada al aire cambia al azar (en promedio cada 10 s), y con una semilla distinta en cada corrida
+# «≤ 2 cambios en 3 s» fallaba en ~0,2 % de las corridas sin que hubiera un error (medido con 1000 semillas, 18 oct).
+SEMILLA = 20261018
+PAGINA = Path(sys.argv[1]).resolve().as_uri() + f'?semilla={SEMILLA}'
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'

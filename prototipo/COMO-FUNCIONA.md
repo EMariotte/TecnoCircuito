@@ -439,7 +439,7 @@ página (simulador.js)                         Worker (trabajador.js + nucleo.js
 ```
 
 - **El Worker sale de un Blob:** `construir.js` arma primero `trabajador.js` y lo mete en el paquete como texto. Así el paquete sigue siendo un solo archivo, como pide TecnoBloques.
-- **La «corrida»:** cada orden que cambia el estado (iniciar, pausar, reiniciar, detener) sube un número. Cada foto lleva el número con que se pidió, y la página descarta las que llegan tarde. Así, después de pausar, el tiempo no avanza por una foto atrasada.
+- **La «corrida»:** cada orden que cambia el estado (iniciar, pausar, reiniciar, detener) sube un número (el «turno»). Cada foto lleva el número con que se pidió, y la página descarta **la vista** de las que llegan tarde. Así, después de pausar, el tiempo no avanza por una foto atrasada. Sus **hechos** (fallas, serial, reinicios) sí se entregan si son de la misma corrida: sección 66.
 - **Sin Worker:** si el navegador no deja crearlo, el mismo código corre en la página con un `self` falso. Funciona igual, pero sin la ventaja del hilo aparte. `sim._medidas().hilo` dice `worker` o `pagina`.
 - **El `.hex` se revisa en la página** con `hex.js` (sin avr8js), así un `.hex` dañado da el error al crear el simulador, como antes.
 
@@ -1717,3 +1717,101 @@ El motor sigue moviéndose con el promedio del PWM, porque su inercia filtra los
 - ~~Modo ideal~~ **Resuelto el 16 oct (decisión de Efraín):** la resistencia de la batería es la no idealidad `resistenciaBateria`. El modo «realista» la enciende; apagada, la batería da siempre su voltaje sin carga.
 
 **Cómo quedó el modelo frente a lo medido** (batería en 7,64 V): batería con motores 7,22 V (real 7,22), M1 a 255 5,78 V (5,79), M1 a 200 5,53 V (5,36), corriente 114/144 mA (120/130), RPM 155/193 (160/185), motor bloqueado 0,85 A (0,90). Todo dentro del criterio.
+
+## 66. Las fotos que llegan tarde: la vista se descarta, los hechos no (AUD-03, 18 oct 2026, Claude)
+
+> Defecto encontrado por la auditoría de Codex del 17 oct (AUD-03). Archivos: [src/simulador.js](src/simulador.js) y la prueba [pruebas/probar_fotos.js](pruebas/probar_fotos.js) (`npm run probar:fotos`).
+
+**El problema.** Cada foto del Worker trae dos clases de cosas:
+- **la vista:** brillos, voltajes, medición y tiempo simulado, que se pueden volver a pedir;
+- **los hechos:** las fallas nuevas, el texto del monitor serial y los reinicios por energía. El núcleo los manda **una sola vez** y no los repite en la foto siguiente.
+
+Antes, la página descartaba entera una foto con un turno viejo. Si el LED se quemaba justo antes de pulsar Pausa, la foto con `led_quemado` llegaba después de la pausa y se tiraba. El LED seguía quemado, pero nunca salía el evento `falla` y el cierre de la corrida decía «sin fallas». Lo mismo pasaba con lo que el programa imprimía justo antes de Pausa o de RESET.
+
+```
+  Worker                                página
+  foto (turno 1): led_quemado ──┐
+                                │       Pausa: turno 2
+                                └────►  llega la foto del turno 1
+                                        antes: se descarta entera → la falla se pierde
+                                        ahora: hechos ✔ (falla, serial)   vista ✘ (no se dibuja)
+```
+
+**La regla nueva:**
+
+| La foto es… | Vista | Hechos |
+|---|---|---|
+| del turno actual | se dibuja | se entregan |
+| de un turno anterior de la misma corrida (antes de Pausa o RESET) | se descarta | se entregan, con el `ms_sim` de la foto |
+| de una corrida anterior (`turno` menor que el de su `simulacion_iniciada`) | se descarta | se descartan: no contaminan la corrida nueva |
+| que llega después de Detener, antes de que el Worker confirme | se descarta | se entregan y van en el cierre |
+| que llega después del cierre | se descarta | se descartan: el cierre ya salió |
+
+- **Cómo sabe de qué corrida es:** el turno sube siempre y la página guarda el turno con que empezó la corrida (`turnoCorrida`). Una foto con un turno igual o mayor es de esta corrida.
+- **En el registro:** una falla de una foto que llegó en la pausa sale **después** de `simulacion_pausada`, con el `ms_sim` de su foto, que es cuando ocurrió. Ese `ms_sim` puede ser **mayor** que el de la pausa: la pausa lleva el tiempo de la última foto que se dibujó, y el Worker siguió unos ms hasta recibir la orden. (La primera versión de esta sección decía «menor o igual»; Codex mostró que no se puede garantizar.) Las fallas de la corrida van en su `simulacion_detenida`.
+- **Error corregido de paso: el RESET volvía a avisar los reinicios por energía.** La página ponía en 0 su cuenta de reinicios vistos al pulsar RESET, pero el núcleo cuenta los de toda la corrida. La foto siguiente repetía el `reinicio_placa` por energía. Ahora la cuenta solo vuelve a 0 en una corrida nueva.
+
+**El cierre que espera (AUD-03-V1, decisión de Efraín, 18 oct).** La primera corrección no cubría Detener: si se pulsaba (o TecnoBloques destruía el simulador) mientras una foto viajaba, el cierre ya había salido y sus fallas se perdían. Codex lo devolvió. Ahora el cierre espera al Worker:
+
+```
+  página                                   Worker
+  detener(): se ve detenida ─ detener ───►  para; manda una última foto (lo que el núcleo tenía sin mandar)
+             cierre abierto                 y «detenido»
+  foto en camino ◄──────────────────────── (hechos: van al cierre)
+  última foto    ◄──────────────────────── (hechos: van al cierre)
+  «detenido»     ◄────────────────────────
+  simulacion_detenida con todas las fallas; la promesa de detener() se cumple
+```
+
+- **Los mensajes llegan en orden:** cuando llega «detenido», ya llegaron todas las fotos de antes.
+- **Si el Worker no contesta en 500 ms,** el cierre sale con lo que llegó. Una confirmación tardía no lo repite.
+- **`destruir()`** espera el mismo cierre y después libera el Worker. Desde que se llama ya no acepta órdenes.
+- **Iniciar otra corrida antes de la confirmación:** el cierre de la anterior sale en ese momento, para que no quede después del inicio de la nueva.
+- **TecnoBloques espera el cierre** antes de cerrar la sesión de un equipo (cambiar de código, apagar el registro) y antes de compilar otra vez. Así AUD-04 se conserva: la corrida y su cierre quedan en el equipo que la empezó.
+- **Lo que no cubre:** al cerrar la ventana no se puede esperar. TecnoBloques usa `{ sinEsperar: true }` y el cierre sale en ese instante, sin la foto en camino (a lo sumo unos 16 ms de simulación).
+
+**La prueba** (`probar_fotos.js`, Node): corre el `simulador.js` real con un Worker controlado, que entrega las fotos del núcleo real en el orden que se quiera, y un reloj falso. Es la técnica del diagnóstico de Codex. Revisa:
+- la pausa (con y sin reanudar), el RESET, el serial en la pausa, el recableado y una foto de la corrida anterior;
+- el RESET después de un reinicio por energía;
+- el cierre que espera: Detener y Pausa→Detener con una foto en camino, la última foto del Worker, `destruir()`, el tope de 500 ms, `sinEsperar` e iniciar antes de la confirmación.
+
+**La semilla de las pruebas.** Las pruebas de Chromium usan `pagina.html?semilla=N`, que pasa `_semilla` al simulador (opción interna, no es del contrato). La de T1/T2 fija la suya: con una semilla al azar, «≤ 2 cambios en 3 s» de la entrada al aire fallaba en ~0,2 % de las corridas sin que hubiera un error (medido el 18 oct con 1000 semillas: 728 sin cambios, 233 con 1, 37 con 2 y 2 con 3).
+
+## 67. El chip para en el milisegundo del corte (AUD-05, 18 oct 2026, Claude)
+
+> Defecto encontrado por la auditoría de Codex del 17 oct (AUD-05). Archivos: [src/chip.js](src/chip.js), [src/nucleo.js](src/nucleo.js) y la prueba [pruebas/probar_corte.js](pruebas/probar_corte.js) (`npm run probar:corte`).
+
+**El problema.** Los modelos de energía corren «cada ms» (sección 54): ahí se descubre que el Nano se quedó sin alimentación o que el 5V del Uno cayó por debajo de 2,7 V. Pero `chip.correr(ciclos)` seguía ejecutando hasta terminar el pedazo, y el corte se atendía después. Lo que pasaba dependía del tamaño del pedazo:
+
+| Mismos 16 ms del caso de la auditoría (Nano, 0,25 Ω en OUT_5V) | Instrucciones sin energía |
+|---|---:|
+| un pedazo de 16 ms | 184 852 |
+| pedazos de 7919 ciclos (como los del Worker, que no caen en el ms exacto) | 5 938 |
+| pedazos de 1 ms exactos | 0 |
+
+Con seis SG90 en el USB del Uno, los mismos 3 s daban 8 reinicios en pedazos de 16 ms y 110 en pedazos de 1 ms.
+
+**La corrección:**
+
+```
+  avanzar(ciclos)                         chip.correr(resto, hayCorte)
+  ┌─────────────────────────────┐         ┌───────────────────────────────────┐
+  │ mientras falte:             │         │ instrucciones hasta el próximo ms │
+  │   apagada → seguirApagada() ├──resto─►│ modelos de cada ms (energía…)     │
+  │             devuelve resto  │         │ ¿hayCorte()? → para en este ms    │
+  │   correr(resto, hayCorte) ──┼────────►└───────────────────────────────────┘
+  │   resto −= lo que avanzó    │
+  │   atender el corte          │  reinicio: chip nuevo desde ese instante
+  └─────────────────────────────┘  apagada: el tiempo pasa sin instrucciones
+```
+
+- `chip.correr(ciclos, parar)`: después de los modelos de cada ms pregunta `parar()`. Si hay un corte, se detiene en esa frontera.
+- `avanzar()` atiende el corte en ese instante (reinicio o apagado) y sigue con lo que falta del pedazo. Si la energía vuelve dentro del mismo pedazo, sigue vigilando otro corte. El tiempo global no cambia.
+- **Consecuencia:** con seis SG90 en el USB del Uno, la placa se reinicia cada pocas decenas de ms (299 veces en 8 s). Eso ya pasaba en la app, porque el Worker avanza de a 1 ms o menos; lo que cambió es la prueba de `probar_nucleo.js`, que avanzaba en pedazos de 16 ms. Ahora cuenta cada arranque por la «I» de «Inicio», porque muchas veces no alcanza a salir entero (decisión de Efraín, 18 oct). **Exagera lo medido:** el Uno real no se reinició con 5 ni 6 SG90 (16 oct); sigue pendiente en LAB-001.
+
+**La prueba** (`probar_corte.js`, Node) avanza lo mismo en pedazos de 16 ms, de 1 ms y de 7919 ciclos, y exige el mismo resultado:
+- **Nano sin energía:** ninguna instrucción sin energía, el mismo ciclo de corte y lo mismo en serial, energía y fallas.
+- **Nano con la energía de vuelta:** el mismo serial y el mismo tiempo.
+- **Uno con seis servos:** un arranque por reinicio y lo mismo en serial, energía y fallas.
+
+El contador de instrucciones se agrega en memoria al núcleo armado, sin escribirlo (técnica del diagnóstico de Codex). El tiempo se compara con una tolerancia de unos ciclos, porque el chip ejecuta instrucciones enteras y cada pedazo puede pasarse un poco, como en el Worker.
