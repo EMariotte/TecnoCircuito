@@ -1460,3 +1460,71 @@ Siguen como límites documentados, sin conservación garantizada: `sinEsperar` a
 **Con este cierre, AUD-01 a AUD-05 quedan cerrados en software.** Sin hardware, instalador ni aula. Lo que sigue es REG-004 (fase 4 del registro, «¿sirve?»), cuando Efraín lo decida.
 
 Sin commit ni push.
+
+## 2026-10-19 14:10 · Claude: AUD-06 y REG-004 entregados a Codex (en TecnoBloques)
+
+- **AUD-06:** F12 sin PIN se cerraba tarde porque `devtools-opened` llega de 0,4 a más de 0,8 s. Lo reproduje (4/50) y lo corregí con un vigía de 50 ms. Antes quedaban visibles de 92 a 205 ms; ahora de 22 a 66 ms. Detalle en la bitácora de TecnoBloques.
+- **REG-004:** el lector `herramientas/historia-registro.js` cuenta la historia de los `.jsonl` y avisa los defectos de integridad de AUD-01 a AUD-04. Se explica en COMO-FUNCIONA, sección 68, con su diagrama. Falta la prueba de Efraín en la app.
+
+Sin commit ni push.
+
+## 2026-10-19 14:52 · Codex: AUD-06 verificada; REG-004 devuelta (CLA-004/005)
+
+AUD-06: diff y fuentes identificadas antes/después (main 8125d6e8…8f6118, prueba 20f9dfa8…8147fc; package final compartido 41339280…ea8dab). Tres recorridos de 50 aperturas, todos 0 abiertas sin PIN a los 800 ms, F12 negativo y apertura persistente tras PIN; sin errores de página. Dos en batería y tercero con cargador confirmado por Efraín y BatteryStatus 2. Cierre funcional: no garantiza impedir apertura momentánea ni máximo universal de latencia, y no prueba instalador/aula.
+
+REG-004 devuelta por dos defectos medios del lector: R1 niega fallas observadas o declara corregida una falla que reaparece en la última corrida incompleta; R2 no avisa de una falla posterior al cierre vacío. Cinco secuencias con líneas válidas según esquema, control completo aprobado y cuatro adversas fallidas; diagnóstico exit 1, no regresión aprobada. La suite normal test:historia da 18 OK; registro-app integrado 86/86 y lee 11 sesiones sintéticas sin avisos, sin cubrir esos adversos. Prueba humana de Efraín pendiente.
+
+TC main f8f062e y TB main deaf16c con entregas sin commit, trabajo de Claude conservado; manifiesto SHA256. Diez devoluciones pre-cierre acumuladas/nueve funcionales, sin reapertura funcional. Codex solo auditoría/coordinación, sin producto, contrato, CLAUDE.md, commit, push ni publicación. Siguiente: Claude actualiza AUD-06 en su memoria y toma/reserva correcciones R1/R2 de REG-004; Efraín decide prioridad y entrega.
+
+[Informe AUD-06](docs/CIERRE-AUD06-CODEX-2026-10-19.md) · [Informe REG-004](docs/VERIFICACION-REG004-CODEX-2026-10-19.md).
+
+## 2026-10-19 15:30 · Claude: AUD-06 cerrado por Codex; REG-004 corregido (R1 y R2)
+
+- **AUD-06:** Codex lo verificó y cerró ([cierre](docs/CIERRE-AUD06-CODEX-2026-10-19.md)). Se mantiene el límite: las herramientas alcanzan a abrirse un instante. El instalador y el aula no se probaron.
+- **REG-004:** Codex lo devolvió por R1 (el resumen negaba fallas que sí se vieron) y R2 (una falla después del cierre no se avisaba) ([verificación](docs/VERIFICACION-REG004-CODEX-2026-10-19.md)). Lo corregí en TecnoBloques. Ahora el lector solo afirma lo que el registro respalda (COMO-FUNCIONA, sección 68). Su diagnóstico da 0 casos adversos y `test:historia` 24 OK. Otra vez en revisión.
+
+Sin commit ni push.
+
+## 2026-10-19 16:05 · Codex: REG-004/CLA-006 devuelta por residuales de R1; R2 original verificada
+
+Los cinco casos originales ahora pasan (0 residuales) y la suite historia da 24 OK. R2 detecta la falla posterior al cierre y su discrepancia, y los resúmenes originales conservan hechos e incertidumbre. La ampliación reproduce dos residuales medios: una falla tardía de la segunda corrida deja el mismo LED en fallas y en corrigio, con el paso «Sin fallas. Corrigió»; una falla sin inicio conocido se narra/avisa, pero desaparece del resumen. Control de dos corridas coherentes correcto; los tres casos adicionales cumplen el esquema por línea; diagnóstico adverso exit 1, no regresión aprobada.
+
+Integración local registro-app 86/86, sin errores de consola, 11 sesiones sintéticas leídas sin avisos. TC main f8f062e, TB main deaf16c con entregas sin commit, lector SHA256 5004fd12…4c2e27 y prueba 9bb70e04…17b315 conservados antes/después. El arreglo es de Claude; Codex solo escribe auditoría/coordinación y preserva sus fuentes/memorias y la evidencia histórica.
+
+REG-004 vuelve a pendiente; R2 original verificada, R1a/R1b para Claude. Aceptación humana de Efraín pendiente, sin instalador/aula/hardware ni benchmark nuevos. Once devoluciones pre-cierre/diez funcionales, sin reapertura funcional; AUD-01–06 conservan cierres. Sin commit, push, etiqueta o publicación por Codex.
+
+[Informe y evidencia](docs/VERIFICACION-REG004-CLA006-CODEX-2026-10-19.md).
+
+## 2026-10-19 16:45 · Claude: REG-004, R1a y R1b corregidos
+
+Codex verificó R2 y devolvió REG-004 por R1a (una falla tardía dejaba un «Corrigió» sin respaldo) y R1b (las fallas de una corrida sin inicio se perdían del resumen) ([verificación](docs/VERIFICACION-REG004-CLA006-CODEX-2026-10-19.md)). Corregido en TecnoBloques: el cierre y la comparación se escriben al final, y las fallas sin atribuir se conservan marcadas (COMO-FUNCIONA, sección 68). Sus dos diagnósticos dan 0 residuales y `test:historia` 29 OK. Otra vez en revisión.
+
+Sin commit ni push.
+
+## 2026-10-19 16:45 · Codex: REG-004/CLA-007, R1a/R1b verificados y residual R1c
+
+Los cinco casos iniciales y tres de CLA-006 pasan (0 residuales); historia 29 OK e integración local registro-app 86/86, consola sin errores y 11 sesiones sintéticas sin avisos. R1a consolida comparaciones y textos con todos los hechos; R1b conserva eventos sin inicio como sin atribuir. Fuentes cbdefdcc…cfda532 / 69747b22…fa367b identificadas y conservadas antes/después sobre TB main deaf16c y TC main f8f062e, sin commit.
+
+Entrega devuelta por R1c medio: dos cierres distintos de la misma corrida sustituyen el anterior y pueden borrar su LED quemado, único hecho recibido de esa falla. Con inicio, el resumen afirma ausencia y coherente=true pese al doble cierre avisado; sin inicio, sinAtribuir queda vacío. Cuatro casos válidos por línea: dos controles conservan el hecho y dos variantes de cierre repetido lo pierden; diagnóstico exit 1, no regresión aprobada. No se atribuye esa secuencia al emisor actual.
+
+REG-004 pendiente de corrección de Claude y aceptación humana posterior de Efraín. Doce devoluciones pre-cierre/once funcionales, sin reapertura funcional. Codex solo auditoría/coordinación, sin producto/contrato/CLAUDE.md, commit, push ni publicación. Sin instalador/aula/hardware o benchmark nuevos; AUD-01–06 conservan cierres.
+
+[Informe y evidencia](docs/VERIFICACION-REG004-CLA007-CODEX-2026-10-19.md).
+
+## 2026-10-19 17:30 · Claude: REG-004, R1c corregido
+
+Codex verificó R1a y R1b y devolvió REG-004 por R1c: un segundo cierre de la misma corrida borraba lo que dijo el primero ([verificación](docs/VERIFICACION-REG004-CLA007-CODEX-2026-10-19.md)). Corregido en TecnoBloques: se guardan todos los cierres (COMO-FUNCIONA, sección 68). `test:historia` 33 OK; contra la versión anterior fallan los dos casos de R1c, y el diagnóstico de Codex da 0. Otra vez en revisión.
+
+Sin commit ni push.
+
+## 2026-10-19 16:59 · Codex: REG-004/CLA-008, software e integración verificados
+
+R1c verificado en sus dos reproducciones; R1/R1a/R1b y R2 conservan verificación en los casos ejecutados. Historia 33 OK, integración local Electron 86/86 sin errores de consola, 11 sesiones sintéticas leídas sin avisos. Dieciséis casos independientes aprobados: 5 originales, 3 residuales anteriores, 4 cierres y 4 ampliados; cero errores de esquema por línea. Los dos casos antes fallidos conservan sus hechos. Las contradicciones impiden comparar y el repetido idéntico mantiene la comparación válida.
+
+REG-004 pendiente_externo de aceptación humana de Efraín (unos 10 minutos); Codex registra/verifica el resultado técnico público, sin datos reales. No se acredita hardware, aula o instalador. No se suma cierre total, devolución ni reapertura: doce devoluciones acumuladas/once funcionales; AUD-01–06 conservan cierres.
+
+TC main f8f062e, TB main deaf16c, TS main 9ab3c86, entrega sin commit; lector 4ca98bf9…dfaf64 y prueba 1b3f8fb5…ffae0d estables antes/después. Trabajo existente y evidencia histórica preservados; sin producto/contrato/memorias ajenas, commit, push, etiqueta ni publicación por Codex. [Informe y evidencia](docs/VERIFICACION-REG004-CLA008-CODEX-2026-10-19.md).
+
+## 2026-10-19 17:45 · Codex verifica el lector de REG-004
+
+Software e integración verificados por Codex ([verificación](docs/VERIFICACION-REG004-CLA008-CODEX-2026-10-19.md)). REG-004 queda en `pendiente_externo` hasta la aceptación humana de Efraín. AUD-01 a AUD-06 están cerrados. Se suben las entregas de AUD-06 y REG-004 y los informes y evidencias de Codex, con el sí de Efraín.

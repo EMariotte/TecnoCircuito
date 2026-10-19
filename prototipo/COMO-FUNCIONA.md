@@ -1828,3 +1828,55 @@ Con seis SG90 en el USB del Uno, los mismos 3 s daban 8 reinicios en pedazos de 
 - **Uno con seis servos:** un arranque por reinicio y lo mismo en serial, energía y fallas.
 
 El contador de instrucciones se agrega en memoria al núcleo armado, sin escribirlo (técnica del diagnóstico de Codex). El tiempo se compara con una tolerancia de unos ciclos, porque el chip ejecuta instrucciones enteras y cada pedazo puede pasarse un poco, como en el Worker.
+
+
+## 68. La historia de un registro: ¿sirve lo que se guarda? (REG-004, 19 oct 2026, Claude)
+
+El registro de eventos (contrato, sección 6.1) guarda una línea por cada cosa que pasa. Leer un `.jsonl` a mano no dice si sirve para el estudio. La fase 4 responde esa pregunta con un lector que cuenta la historia en español. Vive en TecnoBloques (`herramientas/historia-registro.js`, porque TecnoBloques escribe los registros), no usa dependencias y solo lee.
+
+```
+ .jsonl (uno o varios, o una carpeta)
+        │  leerArchivos: línea por línea; una dañada se anota con su archivo y número y se sigue
+        ▼
+ sesiones (por «sesion», en el orden en que se escribieron)
+        │  contarHistoria
+        ├──► pasos: «Circuito: agregó r1; conectó…» · «Compiló: bien» · «▶ Corrida 2» · «■ Corrida 2 terminó…»
+        ├──► corridas: fallas del cierre y, contra la anterior, qué corrigió, qué sigue y qué es nuevo
+        └──► avisos de integridad (abajo)
+        │  narrar  (o --json, para el análisis)
+        ▼
+ la historia en texto
+```
+
+**Qué cuenta, en orden:**
+- Lo que hace el equipo: los cambios del circuito seguidos se juntan en una frase («agregó r1; conectó placa.D13 → r1.1; movió led1 (2 veces)»), y también los bloques, cada compilación con su resultado y lo que sube a la placa real.
+- Cada corrida, con sus fallas, pausas, pulsos de botón y reinicios.
+- Al cerrar una corrida, la compara con la anterior de la misma sesión. Ahí sale el aprendizaje que busca el estudio: «Corrigió: LED quemado (led1)».
+- Un resumen por sesión: fallas vistas, corregidas al final y sin corregir.
+
+**Qué avisa.** Si el registro está mal, la historia lo dice en vez de callarlo. Son justo los defectos de la auditoría de Codex:
+
+| Aviso | Defecto de origen |
+|---|---|
+| El C++ de `codigo_compilado` tiene comentarios | AUD-01 |
+| Hueco: eventos perdidos cuando el disco falló | AUD-02 |
+| Las fallas del cierre no son las que llegaron una a una | AUD-03 |
+| Una corrida tiene eventos en una sesión donde no empezó | AUD-04 |
+| Corrida sin cierre, sesión sin `sesion_terminada`, eventos después de terminar | App cerrada de golpe o archivo incompleto |
+| Un tipo de evento que no conoce | Se ignora; el contrato lo permite |
+
+Los números de corrida los cuenta TecnoCircuito mientras la página está abierta (sección 66). Por eso una corrida se identifica por su sesión y su número.
+
+**Solo afirma lo que el registro respalda** (R1 y R2 de la verificación de Codex, 19 oct). Los **hechos** de una corrida son la unión de las fallas de todos sus cierres y las que llegaron una a una. Si un registro mal formado trae dos cierres, el segundo no borra lo que dijo el primero, y cada uno conserva su paso en la historia (R1c). Así, una falla que se vio nunca desaparece del resumen, aunque el cierre falte o la haya perdido. Al terminar de leer se revisa cada corrida:
+- **Completa:** tiene cierre.
+- **Coherente:** sus cierres dicen lo mismo entre sí y traen las mismas fallas que llegaron, también las que llegaron después del cierre, que además se avisan. Un cierre repetido idéntico se avisa, pero la corrida sigue siendo coherente.
+
+«Corregidas al final» solo se afirma si la última corrida es completa y coherente. Si no, dice «no se puede asegurar», y lo que se vio en ella queda como «Sin corregir: al menos…». El texto de cada cierre y la comparación con la corrida anterior se escriben al final de la lectura. Así, una falla que llega tarde, a esa corrida o a la anterior, también cuenta. Solo se compara si las dos corridas están completas y coherentes; si no, dice «No se compara con la corrida N» y el motivo (R1a, segunda verificación de Codex). Las fallas de una corrida que no empezó en la sesión tampoco se pierden: entran en las fallas vistas marcadas «[sin atribuir: corrida N]», porque llegaron pero no se sabe si son del montaje del equipo. Mientras haya alguna, el final no se afirma (R1b).
+
+**Uso:** `npm run historia -- %APPDATA%\TecnoBloques\registros` en TecnoBloques, o con la carpeta que sale de «Exportar registros». Con `--json` sale la historia como datos.
+
+**Pruebas:**
+- `npm run test:historia`: una secuencia sintética, armada con el sobre real (`crearRegistroEventos`) y un reloj fijo, tiene que salir renglón por renglón tal como pasó. Un segundo registro con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Seis sesiones más prueban el resumen con registros incompletos o incoherentes: un control válido con pausa y reinicio, la corrida sin cierre, el cierre que perdió la falla, la falla después del cierre, la falla que vuelve en la última corrida y la corrida que sigue a otra sin cierre. Otras cinco cubren la falla que llega tarde a la segunda corrida o a la anterior (con su control de dos corridas coherentes) y las fallas o cierres de corridas sin inicio, solas o junto a una corrida propia. Cuatro más cubren los cierres múltiples: un cierre único sin falla suelta, dos cierres contradictorios, con y sin inicio, y un cierre repetido idéntico. También prueba la línea de comandos: una carpeta, una línea dañada y `--json`.
+- `test:registro-app`: al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas.
+
+**Lo que falta: la prueba de Efraín.** Que el lector funcione no prueba que la historia sirva. Para eso Efraín trabaja unos 10 minutos en la app como un equipo y después contrasta la historia con lo que hizo. Es la aceptación humana de REG-004. En el informe público va solo lo técnico, sin registros de aprendices.

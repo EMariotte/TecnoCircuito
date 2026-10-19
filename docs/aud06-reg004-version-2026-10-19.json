@@ -1,0 +1,61 @@
+{
+  "entregas": [
+    "CLA-20261019-004",
+    "CLA-20261019-005"
+  ],
+  "git_inicial": {
+    "TC": {
+      "HEAD": "f8f062e89340740ab783fe634de6a4936cd6a651",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M prototipo/COMO-FUNCIONA.md"
+    },
+    "TB": {
+      "HEAD": "deaf16cacf92fec21f26877c992a851c0f22e2dd",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M escritorio/main.js\n M package.json\n M test/registro-app.js\n?? herramientas/\n?? test/herramientas-app.js\n?? test/historia-registro.js"
+    },
+    "TS": {
+      "HEAD": "9ab3c863fe89ee6256ce8b8961a7f42f742d530d",
+      "rama": "main",
+      "status": "M TABLERO.md\n M canales/CLAUDE-A-CODEX.md\n M tareas/AUD-06.md\n M tareas/REG-004.md"
+    }
+  },
+  "sha256": {
+    "TC": {
+      "CONTRATO.md": "e370bd8669f89d7eb114629974d8cbc9587eaacf2cf9e9ba68f02f0ac61b7a1e",
+      "contrato/evento.schema.json": "29347289699a9b588e1b232175e90f0bba7ed9a3e9299a1b7d3d4572b4c08962",
+      "prototipo/COMO-FUNCIONA.md": "30f489ec68517705fef229b013ebc6449916274d814a19711261293507610d96"
+    },
+    "TB": {
+      "escritorio/main.js": "8125d6e8bc779e4a5065e653e285c94534bc80c3b29b2af3f264adeb248f6118",
+      "test/herramientas-app.js": "20f9dfa804e6ebfe210ce52388d6706ae3b695884dc66218cc32c5e02a8147fc",
+      "package.json": "41339280da6ad9e837943b794b6c1fe508175b2e4e803351bd9a8fc0dcea8dab",
+      "herramientas/historia-registro.js": "02fcd77a3c94f8660811351755014d815352b29b32f65830a0ca90dc06932afa",
+      "test/historia-registro.js": "6342e5d3ac9d984b361d30d8a9fdcdebe45e287a12fe51130ee916fcd6ddc1f2",
+      "test/registro-app.js": "94d9c2fb06cd3cbbe5f54ba6791c3a305d900b0d5ea4781b87e9f30519c5a9ed",
+      "src/registro.js": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7"
+    }
+  },
+  "final": {
+    "hora": "2026-10-19T14:53:02-05:00",
+    "fuentes_iguales_al_inicio": true,
+    "AUD-06": "verificado funcional, 0/50 por recorrido, 3 recorridos; PIN negativos/positivos aprobados",
+    "REG-004": "pendiente por R1/R2 medios; control completo aprobado, 4 adversos reproducidos, líneas válidas según esquema",
+    "suite_historia": "18 OK, exit 0",
+    "suite_registro_app": "86 OK, exit 0, sin errores de consola",
+    "condiciones": "Dos recorridos de herramientas en batería (BatteryStatus 1, 89 % al inicio); tras confirmación de Efraín, tercero con cargador (BatteryStatus 2, 90 %). Muestras captadas AC 20–65 ms; no máximo universal ni comparación controlada anterior/actual.",
+    "html_TB_sha256": "d8909bbfe95386938d677c7b44debefc66a18d3b3a407f4ab6c6726f6abfca57",
+    "coordinacion": "19 fichas / 44 documentos, 0 errores/avisos; AUD-06 verificado, REG-004 pendiente, reservas liberadas"
+  },
+  "evidencia_sha256": {
+    "CIERRE-AUD06-CODEX-2026-10-19.md": "6eefee92906140009c7fd5531d7419a8d671a701acd3f3d58a4984937bc41f6a",
+    "VERIFICACION-REG004-CODEX-2026-10-19.md": "824f1c163d888fa62f9291be930842448cbffa702ec22878121db6c46c9667c0",
+    "verificar-reg004-2026-10-19.cjs": "d89615062bfd4d64a428fe957a9f3ea8dd83dc0a7793bce60332567e74245bf9",
+    "reg004-evidencia-2026-10-19.json": "554bbc60af2f912fc7b76be1ecc0863a56e2d13aab3d9952cf4f5d5f3fc9b379",
+    "reg004-diagnostico-2026-10-19.log": "9e874046a58d59b08e9ec8ad404a2af3b04c94246582ddc99dea0198f9ede714",
+    "aud06-reg004-registro-app-2026-10-19.log": "bb60001099674bc5d6f0d351c2c8bc65e12cd0f89cc5161837ecf10c95f1967d",
+    "aud06-herramientas-1-2026-10-19.log": "1302ad5ef09702fc0336b02147dcd4d8448c21552adf757c6691c396b262f708",
+    "aud06-herramientas-2-2026-10-19.log": "154694ee201071f19376058f8b2667342e3110eb545dd4724182625d474c0ec8",
+    "aud06-herramientas-cargador-2026-10-19.log": "3b837c2d673d5a37cdbd74d2796c3957df7f3c3569cc32e08a2bf66b31ec69be"
+  }
+}

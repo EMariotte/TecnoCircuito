@@ -1,0 +1,55 @@
+{
+  "entrega": "CLA-20261019-006",
+  "git_inicial": {
+    "TC": {
+      "HEAD": "f8f062e89340740ab783fe634de6a4936cd6a651",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M prototipo/COMO-FUNCIONA.md\n?? docs/CIERRE-AUD06-CODEX-2026-10-19.md\n?? docs/VERIFICACION-REG004-CODEX-2026-10-19.md\n?? docs/aud06-herramientas-1-2026-10-19.log\n?? docs/aud06-herramientas-2-2026-10-19.log\n?? docs/aud06-herramientas-cargador-2026-10-19.log\n?? docs/aud06-reg004-registro-app-2026-10-19.log\n?? docs/aud06-reg004-version-2026-10-19.json\n?? docs/reg004-diagnostico-2026-10-19.log\n?? docs/reg004-evidencia-2026-10-19.json\n?? docs/verificar-reg004-2026-10-19.cjs"
+    },
+    "TB": {
+      "HEAD": "deaf16cacf92fec21f26877c992a851c0f22e2dd",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M escritorio/main.js\n M package.json\n M test/registro-app.js\n?? herramientas/\n?? test/herramientas-app.js\n?? test/historia-registro.js"
+    },
+    "TS": {
+      "HEAD": "9ab3c863fe89ee6256ce8b8961a7f42f742d530d",
+      "rama": "main",
+      "status": "M INVESTIGACION.md\n M TABLERO.md\n M canales/CLAUDE-A-CODEX.md\n M canales/CODEX-A-CLAUDE.md\n M registro/SESIONES.md\n M tareas/AUD-06.md\n M tareas/INV-001.md\n M tareas/REG-004.md"
+    }
+  },
+  "sha256": {
+    "TC": {
+      "prototipo/COMO-FUNCIONA.md": "de9dd3caf375600f1b063ea7df8d377613d70f861501c793bcb2c89d441b545a",
+      "CONTRATO.md": "e370bd8669f89d7eb114629974d8cbc9587eaacf2cf9e9ba68f02f0ac61b7a1e",
+      "contrato/evento.schema.json": "29347289699a9b588e1b232175e90f0bba7ed9a3e9299a1b7d3d4572b4c08962"
+    },
+    "TB": {
+      "herramientas/historia-registro.js": "5004fd12abeadeaa0361297a03545e6a1136f1309a7e1d10b33476e51b4c2e27",
+      "test/historia-registro.js": "9bb70e043d37f43c063abe9d2fefabe8ba6f5bd380a89623f26c58edf817b315",
+      "test/registro-app.js": "94d9c2fb06cd3cbbe5f54ba6791c3a305d900b0d5ea4781b87e9f30519c5a9ed",
+      "src/registro.js": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7",
+      "package.json": "41339280da6ad9e837943b794b6c1fe508175b2e4e803351bd9a8fc0dcea8dab",
+      "escritorio/main.js": "8125d6e8bc779e4a5065e653e285c94534bc80c3b29b2af3f264adeb248f6118"
+    }
+  },
+  "evidencia_sha256": {
+    "VERIFICACION-REG004-CLA006-CODEX-2026-10-19.md": "02280ce4061a7d90355d53102cd9cfd05bd5d08afc3ad06c208369e17f2057e0",
+    "verificar-reg004-cla006-2026-10-19.cjs": "f5897a41b7acf197239d477550daa8d4bce8685515cf74cc27749418cacb07c3",
+    "reg004-cla006-original-2026-10-19.json": "b58e31fa0e990c52fff25ac0dbbb62866d3edd23a5b865e8d5d82f37c69d321c",
+    "reg004-cla006-adversos-2026-10-19.json": "32bcf91f1403cc13bcbdaa634e15d69cc0654e760fa57b00febb9764afe74668",
+    "reg004-cla006-original-2026-10-19.log": "dff4f0dcb1b4a464a48aa2e625ef266f0b226138f514f61a3a1674dc0985aef2",
+    "reg004-cla006-adversos-2026-10-19.log": "0dd24b747d93afb9395794d69de60d29acbe45218a82630c7a754104eebbf5ec",
+    "reg004-cla006-historia-2026-10-19.log": "61cf2517019a5b418d466990d335dd4bb73d50b7686ca49e7c99417477e3e2a6",
+    "reg004-cla006-registro-app-2026-10-19.log": "28bd902a308ccecd192989aa25917fbbfb58586eccfde376348f135f52c8b070"
+  },
+  "final": {
+    "hora": "2026-10-19T16:04:27-05:00",
+    "fuentes_sin_cambios": true,
+    "software": "Historia 24 OK; original 5 casos, 0 residuales; adversos 1 control y 2 residuales R1a/R1b, exit 1; R2 original verificada",
+    "integracion": "registro-app 86/86, exit 0, sin errores consola; 11 sesiones sintéticas",
+    "html_TB_sha256": "d8909bbfe95386938d677c7b44debefc66a18d3b3a407f4ab6c6726f6abfca57",
+    "alcance": "Sin producto implementado por Codex, sin aceptación humana/instalador/hardware/benchmark nuevos.",
+    "coordinacion": "REG-004 pendiente; R2 original verificada, R1a/R1b para Claude. Reservas liberadas; 19 fichas y 44 documentos, 0 errores/avisos.",
+    "hora_entrega": "2026-10-19T16:05:55-05:00"
+  }
+}

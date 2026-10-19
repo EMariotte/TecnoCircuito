@@ -1,0 +1,90 @@
+{
+  "entrega": "CLA-20261019-007",
+  "git_inicial": {
+    "TC": {
+      "HEAD": "f8f062e89340740ab783fe634de6a4936cd6a651",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M prototipo/COMO-FUNCIONA.md\n?? docs/CIERRE-AUD06-CODEX-2026-10-19.md\n?? docs/VERIFICACION-REG004-CLA006-CODEX-2026-10-19.md\n?? docs/VERIFICACION-REG004-CODEX-2026-10-19.md\n?? docs/aud06-herramientas-1-2026-10-19.log\n?? docs/aud06-herramientas-2-2026-10-19.log\n?? docs/aud06-herramientas-cargador-2026-10-19.log\n?? docs/aud06-reg004-registro-app-2026-10-19.log\n?? docs/aud06-reg004-version-2026-10-19.json\n?? docs/reg004-cla006-adversos-2026-10-19.json\n?? docs/reg004-cla006-adversos-2026-10-19.log\n?? docs/reg004-cla006-historia-2026-10-19.log\n?? docs/reg004-cla006-original-2026-10-19.json\n?? docs/reg004-cla006-original-2026-10-19.log\n?? docs/reg004-cla006-registro-app-2026-10-19.log\n?? docs/reg004-cla006-version-2026-10-19.json\n?? docs/reg004-diagnostico-2026-10-19.log\n?? docs/reg004-evidencia-2026-10-19.json\n?? docs/verificar-reg004-2026-10-19.cjs\n?? docs/verificar-reg004-cla006-2026-10-19.cjs"
+    },
+    "TB": {
+      "HEAD": "deaf16cacf92fec21f26877c992a851c0f22e2dd",
+      "rama": "main",
+      "status": "M BITACORA.md\n M CLAUDE.md\n M escritorio/main.js\n M package.json\n M test/registro-app.js\n?? herramientas/\n?? test/herramientas-app.js\n?? test/historia-registro.js"
+    },
+    "TS": {
+      "HEAD": "9ab3c863fe89ee6256ce8b8961a7f42f742d530d",
+      "rama": "main",
+      "status": "M INVESTIGACION.md\n M TABLERO.md\n M canales/CLAUDE-A-CODEX.md\n M canales/CODEX-A-CLAUDE.md\n M registro/SESIONES.md\n M tareas/AUD-06.md\n M tareas/INV-001.md\n M tareas/REG-004.md"
+    }
+  },
+  "sha256": {
+    "TC": {
+      "prototipo/COMO-FUNCIONA.md": "fb3257a3d0c3a947e3e498876f714f7611655380b85c3a131b5639d6416a35e3",
+      "CONTRATO.md": "e370bd8669f89d7eb114629974d8cbc9587eaacf2cf9e9ba68f02f0ac61b7a1e",
+      "contrato/evento.schema.json": "29347289699a9b588e1b232175e90f0bba7ed9a3e9299a1b7d3d4572b4c08962"
+    },
+    "TB": {
+      "herramientas/historia-registro.js": "cbdefdcce84ca07fc1a5b83191f7bc718b721bd05b88a8f68444149fb5fda532",
+      "test/historia-registro.js": "69747b22f9c66bd3c634561b0aba12e6ed38266a345bca56d138a39a9cfa367b",
+      "test/registro-app.js": "94d9c2fb06cd3cbbe5f54ba6791c3a305d900b0d5ea4781b87e9f30519c5a9ed",
+      "src/registro.js": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7",
+      "package.json": "41339280da6ad9e837943b794b6c1fe508175b2e4e803351bd9a8fc0dcea8dab",
+      "escritorio/main.js": "8125d6e8bc779e4a5065e653e285c94534bc80c3b29b2af3f264adeb248f6118"
+    }
+  },
+  "verificacion_final": {
+    "fecha": "2026-10-19T16:46:46-05:00",
+    "fuentes_sin_cambios": true,
+    "historia": {
+      "aprobadas": 29,
+      "salida": 0
+    },
+    "registro_app": {
+      "aprobadas": 86,
+      "salida": 0
+    },
+    "original": {
+      "casos": 5,
+      "residuales": 0,
+      "salida": 0
+    },
+    "residuales_cla006": {
+      "casos": 3,
+      "residuales": 0,
+      "salida": 0
+    },
+    "cierres": {
+      "casos": 4,
+      "controles_aprobados": 2,
+      "perdidas_reproducidas": 2,
+      "salida_diagnostica": 1
+    },
+    "resultado": "R1a y R1b verificados; R1c pendiente; REG-004 pendiente y devuelta a Claude",
+    "aceptacion_humana": "pendiente",
+    "validacion_fisica": "no ejecutada",
+    "coordinacion": {
+      "mensaje": "COD-20261019-005",
+      "reservas": "liberadas",
+      "comprobar": {
+        "fichas": 19,
+        "documentos": 44,
+        "errores": 0,
+        "avisos": 0
+      },
+      "minutos_declarados_sesion": 11
+    }
+  },
+  "evidencia_sha256": {
+    "VERIFICACION-REG004-CLA007-CODEX-2026-10-19.md": "c37e5052c779345125c4d135e06fb906a24d6471414d7495b0ddc546ad6ab9d1",
+    "verificar-reg004-cla007-2026-10-19.cjs": "8e5345c3e8f993d8704e043f6809c9d586f29633e6df1d1ec8cc7c23d8513944",
+    "reg004-cla007-original-2026-10-19.json": "367e8ea25d74cf3529ff4e03b70d286c135510c139040201912d206187c19b31",
+    "reg004-cla007-original-2026-10-19.log": "dff4f0dcb1b4a464a48aa2e625ef266f0b226138f514f61a3a1674dc0985aef2",
+    "reg004-cla007-residuales-2026-10-19.json": "6a1fb60a5bf17d620492e35dec411331b51fa3bbfe4d9b52ede8742b5179f1f4",
+    "reg004-cla007-residuales-2026-10-19.log": "e375fb0110b8f47736a0999ad90d95ba9d68e1f8c982368e0e4c7614d9f04792",
+    "reg004-cla007-cierres-2026-10-19.json": "14455a614b7ba5953789bca6ab10adff888118fe406dcec31a8a4290e8e7206e",
+    "reg004-cla007-cierres-2026-10-19.log": "f8ab44ded469ab1e6a42e87bf59ca8daa88911fd369e24a563eac84772db2c0b",
+    "reg004-cla007-historia-2026-10-19.log": "f3771ee06bac713a16e2d25d2bb27e4e0bdbc02132fbcc2d70e507b720321ebb",
+    "reg004-cla007-registro-app-2026-10-19.log": "b9a64d9546003f401e26710e95747698824ddffb357b034291a27a475fb8a42b"
+  },
+  "html_generado_sha256": "d8909bbfe95386938d677c7b44debefc66a18d3b3a407f4ab6c6726f6abfca57"
+}
