@@ -1,0 +1,122 @@
+{
+  "original": {
+    "intentosFallidos": 2,
+    "estado": {
+      "activo": true,
+      "tienePin": true
+    },
+    "avisos": 0,
+    "archivos": 0
+  },
+  "falloCompleto": {
+    "durante": {
+      "activo": true,
+      "tienePin": true,
+      "falla": {
+        "motivo": "ENOSPC",
+        "desde": 1792353600000,
+        "pendientes": 1,
+        "perdidos": 0
+      }
+    },
+    "despues": {
+      "activo": true,
+      "tienePin": true,
+      "falla": null
+    },
+    "avisos": [
+      {
+        "falla": {
+          "motivo": "ENOSPC",
+          "desde": 1792353600000,
+          "pendientes": 1,
+          "perdidos": 0
+        },
+        "fin": null
+      },
+      {
+        "falla": null,
+        "fin": "escrito"
+      }
+    ],
+    "lineasValidas": 2,
+    "tipos": [
+      "bloques_cambiados",
+      "registro_interrumpido"
+    ]
+  },
+  "escrituraParcial": {
+    "inyeccion": "24 bytes escritos realmente en archivo temporal antes de ENOSPC; no se llenó un disco físico",
+    "durante": {
+      "activo": true,
+      "tienePin": true,
+      "falla": {
+        "motivo": "ENOSPC",
+        "desde": 1792353600000,
+        "pendientes": 1,
+        "perdidos": 0
+      }
+    },
+    "despues": {
+      "activo": true,
+      "tienePin": true,
+      "falla": null
+    },
+    "avisos": [
+      {
+        "falla": {
+          "motivo": "ENOSPC",
+          "desde": 1792353600000,
+          "pendientes": 1,
+          "perdidos": 0
+        },
+        "fin": null
+      },
+      {
+        "falla": null,
+        "fin": "escrito"
+      }
+    ],
+    "lineasInvalidas": 1,
+    "lineas": [
+      {
+        "numero": 1,
+        "error": "Expected ',' or '}' after property value in JSON at position 24 (line 1 column 25)",
+        "texto": "{\"v\":1,\"t\":1792353600000{\"v\":1,\"t\":1792353600000,\"origen\":\"editor\",\"tipo\":\"bloques_cambiados\",\"datos\":{\"bloques\":2,\"tipos\":{}},\"equipo\":\"AUDITORIA\",\"sesion\":\"sintetica\",\"version_tb\":\"0.4.0\",\"version_tc\":\"0.2.0\"}"
+      },
+      {
+        "numero": 2,
+        "evento": {
+          "v": 1,
+          "t": 1792353600000,
+          "origen": "editor",
+          "tipo": "registro_interrumpido",
+          "equipo": "AUDITORIA",
+          "sesion": "sintetica",
+          "version_tb": "0.4.0",
+          "version_tc": "0.2.0",
+          "datos": {
+            "desde": 1792353600000,
+            "hasta": 1792353600000,
+            "recuperados": 1,
+            "perdidos": 0,
+            "motivo": "ENOSPC"
+          }
+        }
+      }
+    ]
+  },
+  "configuracionAlArrancar": {
+    "estado": {
+      "activo": false,
+      "tienePin": false,
+      "falla": null
+    },
+    "reglaRealInterfaz": "registroEncendido = estado.activo; a.hidden = !registroEncendido",
+    "avisoOculto": true,
+    "fallaAusente": true,
+    "puedeSobrescribirPinSinPinAnterior": true
+  },
+  "sha256Disco": "a6e20d8ff1e0b4a1e45147a9bdbd332622c49bb9c47a0021dbc075c8e23db9c1",
+  "fechaUTC": "2026-10-18T20:10:57.969Z"
+}

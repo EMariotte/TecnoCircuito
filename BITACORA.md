@@ -1338,3 +1338,28 @@ Verificada CLA-20261018-006 sobre src/registro.js SHA256 bff77d8ab7307dd498c74b7
 Pruebas propias: Node 89 OK, 66 comprobaciones fijas con 80 variantes, siete programas válidos, 2000 aleatorios sin excepciones y ocho fronteras adicionales. Electron tuvo una falla inicial al cerrar herramientas sin PIN; la repetición completa sin otra suite pasó 36/36, sin cambiar aserciones y sin acreditar una causa. Excepción /**/ vacío de Efraín respetada y remitida a REG-005 para documentarla.
 
 Primer cierre funcional del grupo para el segundo balance; AUD-02/04 siguen sus fichas y Efraín conserva prioridades. Codex no modificó producto, tests ni CLAUDE.md. Sin instalador, hardware, commit, push ni publicación nuevos.
+
+## 2026-10-18 15:00 · Claude: contrato 1, evento `registro_interrumpido` (AUD-02)
+
+Por decisión de Efraín, la sección 6.1 suma el evento del editor `registro_interrumpido`.
+- **Datos:** `desde`, `hasta`, `recuperados`, `perdidos` y `motivo`.
+- **Quién lo escribe:** TecnoBloques, cuando el disco vuelve a funcionar después de una falla, detrás de las líneas que esperaron y uno por sesión afectada. Con `perdidos` mayor que 0, la sesión tiene un hueco.
+- **Es aditivo:** agregar un tipo no rompe el contrato 1, y la tabla de versiones lo registra.
+- **`contrato/evento.schema.json`:** valida los cinco campos y que el origen sea `editor`.
+- **`probar:contrato`:** suma el ejemplo y tres rechazos (sin `perdidos`, con `perdidos` negativo, como evento del simulador), y su revisión de tipos de la sección 6 ahora incluye `registro_`. Da 175 OK. `probar_registro.py` da 18 OK.
+
+Sin cambios en la API, el formato del circuito ni el paquete. El resto de la corrección está en la bitácora de TecnoBloques. Sin commit ni push.
+
+## 2026-10-18 15:14 · Codex: AUD-02 devuelta tras verificación
+
+Revisada CLA-20261018-007 con diez hashes coincidentes. El fallo completo de disco se notifica y recupera; subsisten dos altos: append parcial deja JSON inválido y anuncia recuperados 1/perdidos 0, y CONFIG al arrancar oculta la falla y ofrece crear PIN. Informe y reproducciones propios en TecnoCircuito/docs/VERIFICACION-AUD02-CODEX-2026-10-18.md y verificar-aud02-2026-10-18.cjs; evidencia Electron del arranque en repro-aud02-arranque-electron-2026-10-18.cjs.
+
+Node 106 OK, Electron 47 OK sin errores, contrato aprobado y registro Chromium 18 OK; diagnósticos adversos exit 1. Offline: no se acredita rendimiento. AUD-02 vuelve a pendiente sin cierre; AUD-06 registra por separado la intermitencia anterior de herramientas sin PIN, sin iniciar implementación ni atribuir causa. El evento aditivo autorizado no se objeta. Codex no editó fuentes, tests ni CLAUDE.md. Sin commit, push ni publicación.
+
+2026-10-18 15:38 · Codex: [segunda verificación AUD-02](docs/SEGUNDA-VERIFICACION-AUD02-CODEX-2026-10-18.md), devuelta por V3/V4 en recuperación de disco/configuración de TecnoBloques; V1/V2 originales pasan. Contrato y esquema conservan los hashes aprobados en la primera revisión. Node 121 y Electron 52 OK con consumidor del contrato; diagnóstico sintético UTF-8 pasa el revisor pero reproduce JSONL inválido. Sin producto ni CLAUDE.md editados; evidencia y siguiente paso en ficha AUD-02.
+
+2026-10-18 19:03 · Codex: [tercera revisión AUD-02](docs/TERCERA-VERIFICACION-AUD02-CODEX-2026-10-18.md) trasladada a ficha/canal/registro después de retomar la sesión: V4 residual devuelto, V1/V2/V3 pasan. Dependencias de contrato sin cambios y revisor usado por Node/Electron; no nueva validación de hardware. La cuarta entrega de Claude conserva en_revision sin acreditarle las pruebas de la tercera. Sin producto ni memoria de Claude editados.
+
+2026-10-18 19:09 · Codex: [cuarta verificación AUD-02](docs/CUARTA-VERIFICACION-AUD02-CODEX-2026-10-18.md) devuelta por V4 residual con fallo final y del propio deshacer; consumidores y contrato mantienen hashes y evidencia identificada. Node 133 OK, matriz 6/6; suite Electron fallida por AUD-06 separado. Sin producto ni memoria de Claude editados, validación física nueva ni publicación.
+
+2026-10-18 19:50 · Codex: [cierre AUD-02](docs/CIERRE-AUD02-CODEX-2026-10-18.md), V1–V4 verificados en disco del hermano; [AUD-04 devuelta](docs/VERIFICACION-AUD04-CODEX-2026-10-18.md) por inicio tras desconexión serial pendiente con cambio de turno. Consumidores/contrato identificados, Node 142/Electron 67 OK, reproducción V1 exit 1. Segundo cierre funcional, 2/3. Sin producto/memoria de Claude editados, nueva validación física ni publicación.

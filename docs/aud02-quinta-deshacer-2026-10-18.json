@@ -1,0 +1,80 @@
+{
+  "exit": 0,
+  "resultado": {
+    "fechaUTC": "2026-10-19T00:46:58.320Z",
+    "sha256Disco": "2320f014b90874026131bbf078370311c400b657bc0137231ed03533b2fda843",
+    "casos": [
+      {
+        "fallaDeshacer": false,
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "erroresInyectados": [
+          "rename-final"
+        ],
+        "existePrincipal": true,
+        "evidenciaIntacta": true,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792370818128,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792370818255,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        }
+      },
+      {
+        "fallaDeshacer": true,
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "erroresInyectados": [
+          "rename-final",
+          "deshacer"
+        ],
+        "existePrincipal": false,
+        "evidenciaIntacta": true,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792370818260,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792370818320,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        }
+      }
+    ]
+  }
+}

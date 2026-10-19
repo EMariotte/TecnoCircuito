@@ -264,6 +264,7 @@ console.log('— Los eventos del registro cumplen el contrato');
     'codigo_compilado (con error)': edi('codigo_compilado', { ok: false, error: 'sintaxis', bytes: null, codigo: 'void loop() {' }),
     programa_subido: edi('programa_subido', { ok: true, placa: 'uno' }),
     sesion_terminada: edi('sesion_terminada', { ms: 3600000 }),
+    registro_interrumpido: edi('registro_interrumpido', { desde: t - 120000, hasta: t, recuperados: 7, perdidos: 0, motivo: 'ENOSPC' }),
   };
   const SOBRE = { equipo: 'A7', sesion: '5f2c9a', version_tb: '0.4.0', version_tc: '0.2.0' };
   for (const [nombre, ev] of Object.entries(EVENTOS)) {
@@ -273,7 +274,7 @@ console.log('— Los eventos del registro cumplen el contrato');
   }
   const tiposConEjemplo = new Set(Object.values(EVENTOS).map((ev) => ev.tipo));
   const delContrato6 = [...new Set([...contrato.split('## 6. Eventos')[1].split('## 7.')[0].matchAll(/`([a-z]+_[a-z_]+)`/g)].map((m) => m[1]))]
-    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|bloques|codigo|programa)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
+    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
   const sinEjemplo = delContrato6.filter((x) => !tiposConEjemplo.has(x));
   revisar(!sinEjemplo.length, `cada tipo de evento de la sección 6 tiene su ejemplo aquí (${tiposConEjemplo.size})${sinEjemplo.length ? ': faltan ' + sinEjemplo : ''}`);
 
@@ -286,6 +287,9 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['«v» 2', () => ({ ...EVENTOS.falla, v: 2 }), /\/v/],
     ['la hora como texto', () => ({ ...EVENTOS.falla, t: '2026-10-16' }), /\/t/],
     ['origen «otro»', () => ({ ...EVENTOS.cable_agregado, origen: 'otro' }), /origen/],
+    ['registro_interrumpido sin «perdidos»', () => edi('registro_interrumpido', { desde: 1, hasta: 2, recuperados: 3, motivo: 'EPERM' }), /perdidos/],
+    ['registro_interrumpido con «perdidos» negativo', () => edi('registro_interrumpido', { ...EVENTOS.registro_interrumpido.datos, perdidos: -1 }), /perdidos/],
+    ['registro_interrumpido que dice venir del simulador', () => ({ ...EVENTOS.registro_interrumpido, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
     ['un evento del simulador sin «corrida»', () => { const e = { ...EVENTOS.falla }; delete e.corrida; return e; }, /corrida/],
     ['la corrida 0', () => ({ ...EVENTOS.falla, corrida: 0 }), /corrida/],
     ['una falla con el mensaje en pantalla', () => sim('falla', { ...EVENTOS.falla.datos, mensaje: 'El LED se quemó' }), /mensaje/],

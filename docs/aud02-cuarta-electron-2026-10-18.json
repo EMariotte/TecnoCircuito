@@ -1,0 +1,102 @@
+{
+  "exit": 1,
+  "resultado": [
+    {
+      "clase": "archivo",
+      "fallaDeshacer": false,
+      "antes": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792368453187,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792368454541,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "avisoOculto": false,
+      "tituloPanel": "Registro de eventos: la configuración está dañada",
+      "erroresJS": []
+    },
+    {
+      "clase": "carpeta",
+      "fallaDeshacer": false,
+      "antes": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792368456943,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792368458183,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "avisoOculto": false,
+      "tituloPanel": "Registro de eventos: la configuración está dañada",
+      "erroresJS": []
+    },
+    {
+      "clase": "carpeta",
+      "fallaDeshacer": true,
+      "antes": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792368460392,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": null,
+        "configIlegible": false
+      },
+      "avisoOculto": true,
+      "tituloPanel": "Registro de eventos: crear el PIN del instructor",
+      "erroresJS": []
+    }
+  ]
+}

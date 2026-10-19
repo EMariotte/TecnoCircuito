@@ -1,0 +1,320 @@
+{
+  "exit": 0,
+  "resultado": {
+    "sha256Disco": "c09c7ef87e13ed211e0c14b4dd5d85f656c5195145f6cf81c3bb072f5009143f",
+    "fechaUTC": "2026-10-19T00:06:21.152Z",
+    "erroresContrato": [],
+    "tamanoEvento": {
+      "caracteres": 1400215,
+      "bytesUTF8": 2800215,
+      "limiteCaracteres": 2097152
+    },
+    "controlEntero": {
+      "aceptado": true,
+      "lineasValidas": 2,
+      "lineasInvalidas": [],
+      "tipos": [
+        "bloques_cambiados",
+        "codigo_compilado"
+      ],
+      "bytes": 2800408
+    },
+    "corto": {
+      "bytesParciales": 24,
+      "eventoNuevoAceptado": true,
+      "lineasValidas": 2,
+      "lineasInvalidas": [],
+      "tipos": [
+        "bloques_cambiados",
+        "bloques_cambiados"
+      ],
+      "bytes": 384,
+      "estado": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false
+      },
+      "primeraLineaIntacta": true
+    },
+    "utf8": {
+      "bytesParciales": 2500000,
+      "eventoNuevoAceptado": true,
+      "lineasValidas": 2,
+      "lineasInvalidas": [],
+      "tipos": [
+        "bloques_cambiados",
+        "bloques_cambiados"
+      ],
+      "bytes": 384,
+      "estado": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false
+      },
+      "primeraLineaIntacta": true
+    },
+    "configSinConfirmar": {
+      "ok": false,
+      "motivo": "config-ilegible"
+    },
+    "configReemplazoFallido": {
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792357200000,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "estadoTrasReinicio": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792357200000,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "existeConfig": true,
+      "archivadas": 0,
+      "registros": {
+        "lineasValidas": 1,
+        "lineasInvalidas": [],
+        "tipos": [
+          "bloques_cambiados"
+        ],
+        "bytes": 192
+      }
+    },
+    "matrizConfig": [
+      {
+        "clase": "archivo",
+        "etapa": "temporal",
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "existePrincipal": true,
+        "existeTemporal": false,
+        "evidenciaIntacta": true,
+        "copiasAparte": 0,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "cumple": true
+      },
+      {
+        "clase": "archivo",
+        "etapa": "archivo-aparte",
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "existePrincipal": true,
+        "existeTemporal": false,
+        "evidenciaIntacta": true,
+        "copiasAparte": 0,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "cumple": true
+      },
+      {
+        "clase": "archivo",
+        "etapa": "rename-final",
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "existePrincipal": true,
+        "existeTemporal": false,
+        "evidenciaIntacta": true,
+        "copiasAparte": 0,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "cumple": true
+      },
+      {
+        "clase": "carpeta",
+        "etapa": "temporal",
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "existePrincipal": true,
+        "existeTemporal": false,
+        "evidenciaIntacta": true,
+        "copiasAparte": 0,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "cumple": true
+      },
+      {
+        "clase": "carpeta",
+        "etapa": "archivo-aparte",
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "existePrincipal": true,
+        "existeTemporal": false,
+        "evidenciaIntacta": true,
+        "copiasAparte": 0,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "cumple": true
+      },
+      {
+        "clase": "carpeta",
+        "etapa": "rename-final",
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "existePrincipal": true,
+        "existeTemporal": false,
+        "evidenciaIntacta": true,
+        "copiasAparte": 0,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792357200000,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "cumple": true
+      }
+    ]
+  }
+}

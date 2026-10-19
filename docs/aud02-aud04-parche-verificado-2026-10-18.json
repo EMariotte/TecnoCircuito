@@ -1,0 +1,12 @@
+{
+  "src/app.js": {
+    "raw": "cd1add5fec8cfc00fc1ffa864e6a0d5216b2146a51256c8130d273e9dbf65800",
+    "LF": "8b5c4039eabbedeffc1092e3e3b0ae2a1972b517fb765962b62a635ccf2c9229",
+    "CRLF": "cd1add5fec8cfc00fc1ffa864e6a0d5216b2146a51256c8130d273e9dbf65800"
+  },
+  "test/registro-app.js": {
+    "raw": "ba5b82870d02084cc0746db95f7f0432597aa6e21cdc5a346d3bbfc64724bc81",
+    "LF": "88dff2f3b2a37d8a9955396f6f91a716cd1abcdcdc354c444d582c99b4aa16a4",
+    "CRLF": "ba5b82870d02084cc0746db95f7f0432597aa6e21cdc5a346d3bbfc64724bc81"
+  }
+}

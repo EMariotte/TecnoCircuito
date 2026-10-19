@@ -1,0 +1,119 @@
+{
+  "exit": 1,
+  "resultado": {
+    "original": {
+      "equipo": "B2",
+      "sinSimulacion": true
+    },
+    "controlSerialSinCambio": {
+      "equipo": "B2",
+      "estado": "corriendo"
+    },
+    "esperandoCierreSerialSintetico": {
+      "equipo": "B2",
+      "sinSimulacion": true,
+      "compilando": false
+    },
+    "despues": {
+      "equipo": "C3",
+      "estado": "corriendo",
+      "toast": "La simulación se detuvo porque cambió el equipo. Pulsen «Simular» para empezar la suya."
+    },
+    "historia": [
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "sesion_iniciada"
+      },
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "ejemplo_cargado"
+      },
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "bloques_cambiados"
+      },
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "codigo_compilado"
+      },
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "simulacion_iniciada",
+        "corrida": 1
+      },
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "simulacion_detenida",
+        "corrida": 1
+      },
+      {
+        "equipo": "A7",
+        "sesion": "e1f50f25-0d23-40bf-bf5d-b23003efb800",
+        "tipo": "sesion_terminada"
+      },
+      {
+        "equipo": "B2",
+        "sesion": "4a1203ed-8c62-4b1e-835a-be715b202136",
+        "tipo": "sesion_iniciada"
+      },
+      {
+        "equipo": "B2",
+        "sesion": "4a1203ed-8c62-4b1e-835a-be715b202136",
+        "tipo": "codigo_compilado"
+      },
+      {
+        "equipo": "B2",
+        "sesion": "4a1203ed-8c62-4b1e-835a-be715b202136",
+        "tipo": "simulacion_iniciada",
+        "corrida": 2
+      },
+      {
+        "equipo": "B2",
+        "sesion": "4a1203ed-8c62-4b1e-835a-be715b202136",
+        "tipo": "simulacion_detenida",
+        "corrida": 2
+      },
+      {
+        "equipo": "B2",
+        "sesion": "4a1203ed-8c62-4b1e-835a-be715b202136",
+        "tipo": "codigo_compilado"
+      },
+      {
+        "equipo": "B2",
+        "sesion": "4a1203ed-8c62-4b1e-835a-be715b202136",
+        "tipo": "sesion_terminada"
+      },
+      {
+        "equipo": "C3",
+        "sesion": "db4c8265-a08d-4fe1-b78f-a1ddd771a420",
+        "tipo": "sesion_iniciada"
+      },
+      {
+        "equipo": "C3",
+        "sesion": "db4c8265-a08d-4fe1-b78f-a1ddd771a420",
+        "tipo": "simulacion_iniciada",
+        "corrida": 3
+      },
+      {
+        "equipo": "C3",
+        "sesion": "db4c8265-a08d-4fe1-b78f-a1ddd771a420",
+        "tipo": "simulacion_detenida",
+        "corrida": 3
+      },
+      {
+        "equipo": "C3",
+        "sesion": "db4c8265-a08d-4fe1-b78f-a1ddd771a420",
+        "tipo": "sesion_terminada"
+      }
+    ],
+    "erroresContrato": [],
+    "erroresJS": [],
+    "alcance": "Desconexión serial real con puerto sintético; compilación y simulador reales. No se abrió ni escribió una placa física."
+  }
+}

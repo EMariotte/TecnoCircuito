@@ -1,0 +1,70 @@
+{
+  "exit": 1,
+  "resultado": {
+    "fechaUTC": "2026-10-19T00:07:08.290Z",
+    "sha256Disco": "c09c7ef87e13ed211e0c14b4dd5d85f656c5195145f6cf81c3bb072f5009143f",
+    "casos": [
+      {
+        "fallaDeshacer": false,
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "erroresInyectados": [
+          "rename-final"
+        ],
+        "existePrincipal": true,
+        "evidenciaIntacta": true,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792368428150,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": {
+            "motivo": "CONFIG",
+            "desde": 1792368428206,
+            "pendientes": 0,
+            "perdidos": 0
+          },
+          "configIlegible": true
+        }
+      },
+      {
+        "fallaDeshacer": true,
+        "respuesta": {
+          "ok": false,
+          "motivo": "disco"
+        },
+        "error": null,
+        "erroresInyectados": [
+          "rename-final",
+          "deshacer"
+        ],
+        "existePrincipal": false,
+        "evidenciaIntacta": true,
+        "estado": {
+          "activo": false,
+          "tienePin": false,
+          "falla": null,
+          "configIlegible": false
+        },
+        "estadoTrasReinicio": {
+          "activo": false,
+          "tienePin": false,
+          "falla": null,
+          "configIlegible": false
+        }
+      }
+    ]
+  }
+}

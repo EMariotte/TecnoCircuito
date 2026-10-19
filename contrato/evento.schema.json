@@ -102,7 +102,17 @@
             "codigo": { "type": "string", "description": "El C++ completo sin comentarios. Los textos entre comillas se conservan." }
           } } } } },
         { "if": { "properties": { "tipo": { "const": "programa_subido" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["ok", "placa"], "properties": { "ok": { "type": "boolean" }, "placa": { "$ref": "#/$defs/placa" } } } } } },
-        { "if": { "properties": { "tipo": { "const": "sesion_terminada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["ms"], "properties": { "ms": { "type": "integer", "minimum": 0 } } } } } }
+        { "if": { "properties": { "tipo": { "const": "sesion_terminada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["ms"], "properties": { "ms": { "type": "integer", "minimum": 0 } } } } } },
+        { "if": { "properties": { "tipo": { "const": "registro_interrumpido" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "El disco no dejó escribir y después volvió a funcionar (AUD-02). Va después de las líneas que esperaron, uno por sesión afectada.",
+          "required": ["desde", "hasta", "recuperados", "perdidos", "motivo"],
+          "properties": {
+            "desde": { "type": "integer", "minimum": 0, "description": "Hora real de la primera escritura que falló, en ms desde 1970." },
+            "hasta": { "type": "integer", "minimum": 0, "description": "Hora real en que se volvió a escribir." },
+            "recuperados": { "type": "integer", "minimum": 0, "description": "Líneas de esta sesión escritas después de que empezó la falla." },
+            "perdidos": { "type": "integer", "minimum": 0, "description": "Líneas de esta sesión que no cupieron en la espera: si es más de 0, hay un hueco." },
+            "motivo": { "type": "string", "minLength": 1, "description": "El código del error del disco: ENOSPC, EPERM, EACCES, CONFIG…" }
+          } } } } }
       ]
     },
 

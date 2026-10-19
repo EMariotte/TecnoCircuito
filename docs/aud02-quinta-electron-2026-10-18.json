@@ -1,0 +1,107 @@
+{
+  "exit": 0,
+  "resultado": [
+    {
+      "clase": "archivo",
+      "fallaDeshacer": false,
+      "antes": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792370821478,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792370823173,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "avisoOculto": false,
+      "tituloPanel": "Registro de eventos: la configuración está dañada",
+      "erroresJS": []
+    },
+    {
+      "clase": "carpeta",
+      "fallaDeshacer": false,
+      "antes": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792370825465,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792370826629,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "avisoOculto": false,
+      "tituloPanel": "Registro de eventos: la configuración está dañada",
+      "erroresJS": []
+    },
+    {
+      "clase": "carpeta",
+      "fallaDeshacer": true,
+      "antes": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792370828918,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "respuesta": {
+        "ok": false,
+        "motivo": "disco"
+      },
+      "error": null,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792370830176,
+          "pendientes": 0,
+          "perdidos": 0
+        },
+        "configIlegible": true
+      },
+      "avisoOculto": false,
+      "tituloPanel": "Registro de eventos: la configuración está dañada",
+      "erroresJS": []
+    }
+  ]
+}

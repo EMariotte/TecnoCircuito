@@ -1,0 +1,11 @@
+{
+  "estado": {
+    "activo": false,
+    "tienePin": false,
+    "falla": null
+  },
+  "avisoOculto": true,
+  "textoAviso": "Esta sesión se registra · Falta el código del equipo",
+  "tituloPanel": "Registro de eventos: crear el PIN del instructor",
+  "erroresJS": []
+}
