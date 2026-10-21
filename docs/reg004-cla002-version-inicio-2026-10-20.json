@@ -1,0 +1,43 @@
+{
+  "momento_utc": "2026-10-20T16:38:57.971502+00:00",
+  "repos": {
+    "TecnoCircuito": {
+      "head": "56baf57e38a16e13c95bcc281d90e1bfc578176c",
+      "rama": "main",
+      "status": " M BITACORA.md\n M CLAUDE.md\n M CONTRATO.md\n M contrato/evento.schema.json\n M prototipo/COMO-FUNCIONA.md\n M prototipo/pruebas/probar_contrato.js\n?? docs/auditar-reg004-cla002-2026-10-20.py\n?? validacion/2026-10-20-reg004-aceptacion.md\n",
+      "archivos": {
+        "docs/auditar-reg004-cla002-2026-10-20.py": "efd3d7018193119e3eaba76b7d2e3f011736280a1401fa6d1a5d5ca24979fade",
+        "validacion/2026-10-20-reg004-aceptacion.md": "03ca2127b85ce8c67bcf4412987fd89dd910a1481c0917e0bc3771317af4b132",
+        "BITACORA.md": "8cd0ad93c908bf7116f0ae56e08bd1d15fb8f6a5f1d6687b955e7f5cfe01b6cf",
+        "CLAUDE.md": "f8b92791a3c4ab3c233bb657b75d55f6b3eea8ba2b042e8600a352a13574ada7",
+        "CONTRATO.md": "22b6b9d2f39b862abe8fc1ea20b6b5471ea618699bc9c0d58dd1e0240838269a",
+        "contrato/evento.schema.json": "b875cabf2f447ef02f48ddda7d76ea9ef16ccb4865005305624fca685950cd6e",
+        "prototipo/COMO-FUNCIONA.md": "427e621fc93af8e2b54c02bdb5c3891b6fde201027284dbd333d51acc924c8fa",
+        "prototipo/pruebas/probar_contrato.js": "b4e781ecddd371318a3e6d796fa5177053dc122925e90b6ec05f553b1ef6ff5c"
+      }
+    },
+    "TecnoBloques": {
+      "head": "86433d1341caa86b6d75dc3ab437aaa2cf8f008c",
+      "rama": "main",
+      "status": " M BITACORA.md\n M CLAUDE.md\n M herramientas/historia-registro.js\n M src/app.js\n M test/historia-registro.js\n M test/registro-app.js\n",
+      "archivos": {
+        "BITACORA.md": "eb5349d0137f14d1f5e48a79dff64b4c7bfea4c62e7e7b68c3c5d7a02ad06b52",
+        "CLAUDE.md": "90c31e625f74df6458619f902cd4ada4cf20ee876bc004c47e75167dabaa789c",
+        "herramientas/historia-registro.js": "2a22d0fefd2f7c5c0ae76e2dece475aee82f41df9083c7ca5980c6d54c48f879",
+        "src/app.js": "a7eb9567478e6eafac9e253d4ff92ed8f881b788c5217c6e47d95cc64a2134b1",
+        "test/historia-registro.js": "87c44f785cfa604a3a9eb9fa27896095054ccb47ff92563b51f9f0fd9b8730ee",
+        "test/registro-app.js": "dee9ab8977e2cacdf64e0bb4698a8951444661a0c6f7083bbda210bfccf14ab2"
+      }
+    },
+    "TecnoSuite": {
+      "head": "5665e60fc0635263ace18e4e45ac1e3454f68fb1",
+      "rama": "main",
+      "status": " M TABLERO.md\n M canales/CLAUDE-A-CODEX.md\n M tareas/REG-004.md\n",
+      "archivos": {
+        "TABLERO.md": "0889369818a57fdb7e21876cde17df4b261e3603998c287b93ed43c89bf19571",
+        "canales/CLAUDE-A-CODEX.md": "b808a49791d8f217723276f581c76dd8f88cd54b36024802682616eb8da1a119",
+        "tareas/REG-004.md": "e47cfb0176cad1423139cd7cfb523e698c0da25f7fa91c6af0436637b7a00f90"
+      }
+    }
+  }
+}

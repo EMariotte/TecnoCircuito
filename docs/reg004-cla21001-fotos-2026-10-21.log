@@ -1,0 +1,44 @@
+
+> tecnocircuito-prototipo@0.0.1 probar:fotos
+> esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_fotos.js
+
+npm.cmd : X [ERROR] Cannot read directory "../../../..": Acceso denegado.
+En línea: 2 Carácter: 1
++ npm.cmd --prefix prototipo run probar:fotos > docs\reg004-cla21001-fo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (X [ERROR] Canno...cceso denegado.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+X [ERROR] Could not resolve "./src/nucleo.js"
+
+  Use the relative path "././src/nucleo.js" to reference the file "src/nucleo.js". Without the leading "./", the path 
+"./src/nucleo.js" is being interpreted as a package path instead.
+
+node:child_process:964
+    throw err;
+    ^
+
+Error: Command failed: C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\@esbuild\win32-x64\esbuild.exe src/nucleo.js --bundle --format=cjs 
+--platform=node --outfile=pruebas/nucleo.cjs --log-level=warning
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at Object.execFileSync (node:child_process:961:15)
+    at Object.<anonymous> (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\esbuild\bin\esbuild:222:28)
+    at Module._compile (node:internal/modules/cjs/loader:1830:14)
+    at Object..js (node:internal/modules/cjs/loader:1961:10)
+    at Module.load (node:internal/modules/cjs/loader:1553:32)
+    at Module._load (node:internal/modules/cjs/loader:1355:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 21832,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v24.15.0

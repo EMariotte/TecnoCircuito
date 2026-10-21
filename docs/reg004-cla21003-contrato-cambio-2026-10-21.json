@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-21T15:47:03.016638+00:00",
+  "cambio_desde_CLA21001": "unicamente la propiedad opcional tramo en el esquema",
+  "hash_actual": "6b4fbb6df4c453a5c992979bd50468630532d6b8b5da1e8592ecff14be788722",
+  "hash_al_retirar_linea_tramo": "8f18ef5ce96cea63ee9d509b4720bbb54e96857f7091adf1c8ede22a46e7fccc",
+  "hash_previo_esperado": "8f18ef5ce96cea63ee9d509b4720bbb54e96857f7091adf1c8ede22a46e7fccc",
+  "coinciden": true
+}

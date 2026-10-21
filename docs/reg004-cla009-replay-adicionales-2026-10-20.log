@@ -1,0 +1,18 @@
+OK control-cadena-continua-LF
+OK cadena-continua-CRLF-espacio
+OK cadena-continua-CRLF-tab
+OK control-cadena-escape-comillas
+OK control-raw-vacio
+OK control-raw-prefijo-u8
+OK control-raw-prefijo-u
+OK control-raw-prefijo-U
+OK control-raw-prefijo-L
+OK control-raw-delimitador-16
+OK control-raw-CRLF-dato
+OK control-raw-barra-y-n
+OK control-raw-mismo
+OK control-espacios-internos-fuera-literal
+OK control-linea-larga
+OK control-tres-recreaciones-sin-herencia
+OK control-alta-baja-alta-baja
+17 casos; 0 fallos; cero errores de esquema

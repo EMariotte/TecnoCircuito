@@ -1,0 +1,8 @@
+python herramientas/piloto.py tablero
+TABLERO.md regenerado
+
+exit=0
+python herramientas/piloto.py comprobar
+21 fichas, 46 documentos comprobados; 0 errores, 0 avisos. Estructura comprobada; no acredita pruebas de producto ni acuses.
+
+exit=0

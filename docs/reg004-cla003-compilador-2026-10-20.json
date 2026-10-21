@@ -1,0 +1,36 @@
+[
+  {
+    "caso": "cadena-continua-CRLF-espacio",
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\\r\n B\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000"
+      },
+      {
+        "codigo": "const char *texto = \"A\\\r\nB\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000"
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "cadena-continua-CRLF-tab",
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\\r\n\tB\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "41094200",
+        "rodata_texto": "A\tB\u0000"
+      },
+      {
+        "codigo": "const char *texto = \"A\\\r\nB\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000"
+      }
+    ],
+    "datos_distintos": true
+  }
+]

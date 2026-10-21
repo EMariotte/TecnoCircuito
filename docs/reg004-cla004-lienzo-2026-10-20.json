@@ -1,0 +1,138 @@
+{
+  "casos": [
+    {
+      "caso": "baja-alta-baja-id-reutilizado",
+      "inicial": {
+        "formato": 1,
+        "placa": "uno",
+        "protoboard": null,
+        "componentes": [
+          {
+            "id": "r1",
+            "tipo": "resistencia",
+            "x": 300,
+            "y": 20,
+            "rot": 0,
+            "props": {
+              "ohmios": 220
+            }
+          }
+        ],
+        "cables": []
+      },
+      "eventos": [
+        {
+          "v": 1,
+          "t": 1792516616646,
+          "origen": "circuito",
+          "tipo": "componente_quitado",
+          "datos": {
+            "id": "r1",
+            "tipo": "resistencia"
+          }
+        },
+        {
+          "v": 1,
+          "t": 1792516616658,
+          "origen": "circuito",
+          "tipo": "componente_agregado",
+          "datos": {
+            "id": "r1",
+            "tipo": "resistencia"
+          }
+        },
+        {
+          "v": 1,
+          "t": 1792516616991,
+          "origen": "circuito",
+          "tipo": "componente_quitado",
+          "datos": {
+            "id": "r1",
+            "tipo": "resistencia"
+          }
+        }
+      ],
+      "final": {
+        "formato": 1,
+        "placa": "uno",
+        "protoboard": null,
+        "componentes": [],
+        "cables": []
+      }
+    },
+    {
+      "caso": "propiedad-no-heredada-al-recrear",
+      "inicial": {
+        "formato": 1,
+        "placa": "uno",
+        "protoboard": null,
+        "componentes": [
+          {
+            "id": "r1",
+            "tipo": "resistencia",
+            "x": 300,
+            "y": 20,
+            "rot": 0,
+            "props": {
+              "ohmios": 220
+            }
+          }
+        ],
+        "cables": []
+      },
+      "eventos": [
+        {
+          "v": 1,
+          "t": 1792516617367,
+          "origen": "circuito",
+          "tipo": "componente_cambiado",
+          "datos": {
+            "id": "r1",
+            "props": {
+              "ohmios": 1000
+            }
+          }
+        },
+        {
+          "v": 1,
+          "t": 1792516617377,
+          "origen": "circuito",
+          "tipo": "componente_quitado",
+          "datos": {
+            "id": "r1",
+            "tipo": "resistencia"
+          }
+        },
+        {
+          "v": 1,
+          "t": 1792516617385,
+          "origen": "circuito",
+          "tipo": "componente_agregado",
+          "datos": {
+            "id": "r1",
+            "tipo": "resistencia"
+          }
+        }
+      ],
+      "final": {
+        "formato": 1,
+        "placa": "uno",
+        "protoboard": null,
+        "componentes": [
+          {
+            "id": "r1",
+            "tipo": "resistencia",
+            "x": 160,
+            "y": 81,
+            "rot": 0,
+            "props": {
+              "ohmios": 220
+            }
+          }
+        ],
+        "cables": []
+      }
+    }
+  ],
+  "errores_js": []
+}

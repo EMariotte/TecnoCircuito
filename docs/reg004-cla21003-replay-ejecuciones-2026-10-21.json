@@ -1,0 +1,45 @@
+{
+  "scratch": "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-cla21001-59kh9nui",
+  "resultados": [
+    {
+      "caso": "ampliacion-anterior",
+      "exit": 0
+    },
+    {
+      "caso": "bordes-anteriores",
+      "exit": 0
+    },
+    {
+      "caso": "historico-original",
+      "exit": 0
+    },
+    {
+      "caso": "historico-residuales",
+      "exit": 0
+    },
+    {
+      "caso": "historico-cierres",
+      "exit": 0
+    },
+    {
+      "caso": "historico-ampliacion",
+      "exit": 0
+    },
+    {
+      "caso": "historico-originales",
+      "exit": 0
+    },
+    {
+      "caso": "historico-adicionales",
+      "exit": 0
+    },
+    {
+      "caso": "historico-bordes",
+      "exit": 0
+    },
+    {
+      "caso": "historico-lienzo",
+      "exit": 0
+    }
+  ]
+}

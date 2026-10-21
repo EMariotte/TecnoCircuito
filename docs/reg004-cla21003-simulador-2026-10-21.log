@@ -1,0 +1,64 @@
+COMANDO: npm.cmd --prefix ../TecnoBloques run test:simulador
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+
+> tecnobloques@0.3.0 test:simulador
+> node build.js --simulador-local && node test/simulador.js
+
+Blockly 13.3.0 · local 1606 KB · artefacto 374 KB · simulador: local
+OK    TecnoCircuito embebido (copia local, contrato 1)
+OK    aparecen la pestaña «Circuito» y el botón «Simular»
+OK    el circuito del proyecto aparece en el lienzo (resistencia,led)
+OK    compila con arduino-cli, simula y el monitor muestra «Escribe on u off»
+OK    el chip corre en un Web Worker dentro de la app (worker)
+OK    el monitor dice «Simulación» y se ve la pestaña Circuito
+OK    enviar «on» desde el monitor prende el LED del circuito y el LED «L» de la placa
+OK    el programa simulado responde «Recibí: on», en el monitor de la pestaña Circuito y en el monitor serial
+OK    enviar «off» lo apaga
+OK    los bloques generan analogWrite(9, … analogRead(A0) / 4 …)
+OK    perilla al 50 %: el pin 9 queda con PWM al 50.0 % (esperado 50.2 %)
+OK      y el LED brilla al 42 %
+OK    perilla al 20 %: el pin 9 queda con PWM al 20.0 % (esperado 20.0 %)
+OK      y el LED brilla al 17 %
+OK    agregar un LED en el lienzo se guarda en el proyecto y vuelve al abrirlo (4 → 4 piezas)
+OK    el circuito guardado en el proyecto cumple el contrato de TecnoCircuito (contrato/circuito.schema.json)
+OK    un proyecto nuevo empieza sin circuito
+OK    arrastrar el divisor agranda el panel del circuito (541 → 741 px) y se recuerda
+OK    «Ampliar» deja solo el circuito en toda la ventana y el botón pasa a «Reducir»
+OK    en la vista de solo panel, la pestaña C++ pasa a la vista C++ y el botón «Circuito» vuelve al circuito
+OK    «Reducir» vuelve a la vista dividida y el doble clic en el divisor devuelve el tamaño normal
+OK    «Guardar imagen» muestra la vista previa del SVG («Guardar imagen del circuito»)
+OK    «Llevar a KiCad» muestra la netlist con los conectores del shield y el LED («Llevar el circuito a KiCad»)
+OK    la lista de ejemplos cabe en la ventana y se desplaza hasta el último
+OK    el ejemplo «Validar: servo 0°, 90° y 180°» abre su C++ y su servo, bajo «Validación con la placa real (instructor)»
+OK    y al simularlo el servo sigue al programa (serial «0, 90», ángulo 18)
+OK    con el circuito ampliado, el panel «Mediciones» muestra cada pieza (8 filas: Pin 90,37 V0,00 mA | señal de servo: pulso de 1471 µs | servo1 (SG90)6,27 mA)
+OK    al recogerlos, el circuito gana espacio (1029×423 → 1307×575) y queda guardado; botones «Mostrar ▴» y «◂ Mediciones»
+OK    recogido, el monitor avisa con un punto que llegó texto; al mostrarlos vuelven como estaban
+OK    en la vista dividida el panel de mediciones no aparece (el panel de la derecha es angosto)
+OK    «Gráfico» muestra las variables del programa: min, max, promedio, desviacion (3 líneas, del simulador)
+OK    al quitar la casilla la variable se oculta, y en pausa el gráfico queda quieto
+OK    el registro sigue guardando mientras está en pausa (4 líneas)
+OK    el CSV para Excel en español: t_ms;origen;linea;"min";"max";"promedio";"desviacion" · 464;simulador;"min 511 max 512 promedio 511.45 desviacion 0.50";511;512;511,45;0,5
+OK    un error de C++ se explica en español al simular («El programa tiene un error»)
+OK    nano: el conjunto nuevo se puede simular y se guarda sin editarlo
+OK    nano: Arduino CLI compila con su FQBN y ADC6/7 imprime aproximadamente256,768
+OK    nano: el programa corre en Worker
+OK    nano: guardar y reabrir conserva variante, cables, perilla y campos adicionales
+OK    nano: la perilla guardada cambia A6 y conserva A7
+OK    nano: SVG del conjunto y netlist de módulo/regulación/jack/I2C/SPI disponibles
+OK    nano_old: el conjunto nuevo se puede simular y se guarda sin editarlo
+OK    nano_old: Arduino CLI compila con su FQBN y ADC6/7 imprime aproximadamente256,768
+OK    nano_old: el programa corre en Worker
+OK    nano_old: guardar y reabrir conserva variante, cables, perilla y campos adicionales
+OK    nano_old: la perilla guardada cambia A6 y conserva A7
+OK    nano_old: SVG del conjunto y netlist de módulo/regulación/jack/I2C/SPI disponibles
+OK    cambiar Uno con GND3 a Nano abre el lienzo, quita ese cable, lo avisa y conserva el original («Se quitó lo que no va en Arduino Nano: 1 cable.»)
+OK    volver a Uno recupera su montaje sin pérdida
+OK    proyecto nuevo Nano → Uno: el lienzo del Uno abre vacío y el proyecto no guarda la expansión por defecto sin editar
+OK    LED enchufado en GND3: en el Nano se suelta esa pata y al volver a Uno se recupera ({"anodo":"placa.VIN"} → {"catodo":"placa.GND3","anodo":"placa.VIN"})
+OK    Mega sigue deshabilitada con explicación de las placas disponibles
+OK    sin errores de JavaScript
+
+Todo bien.
+
+exit=0

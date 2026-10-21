@@ -292,6 +292,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | `origen`, `tipo`, `datos` | quien emite | como arriba; `origen` suma `editor` |
 | `corrida` | TecnoCircuito | número de la simulación dentro de la sesión (1, 2, 3…), en los eventos del simulador |
 | `ms_sim` | TecnoCircuito | tiempo simulado de esa corrida, en los eventos del simulador |
+| `tramo` | TecnoCircuito | nuevo (21 oct, opcional): cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho, en los eventos del simulador. Cada RESET pone `ms_sim` en cero, así que `ms_sim` se compara solo dentro de un mismo tramo; un hecho de antes del RESET que llega después conserva el suyo. Un registro sin `tramo` (anterior) se lee por el orden en que se escribió |
 | `equipo`, `sesion`, `version_tb`, `version_tc` | TecnoBloques | el código del equipo, un identificador al azar por cada vez que se abre la app, y las dos versiones |
 
 **Eventos del simulador que cambian o se agregan** (los demás siguen como arriba, con sus campos escritos en el esquema):
@@ -301,7 +302,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | `simulacion_iniciada` | `placa`, `modo`, `activas` (las no idealidades encendidas) y **`circuito` completo** (sección 4): cada corrida se puede analizar sola, sin reconstruirla desde los cambios |
 | `simulacion_pausada` | nuevo, sin datos |
 | `simulacion_reanudada` | nuevo (16 oct), sin datos: la simulación sigue después de una pausa (con Iniciar o con Reiniciar). Con `simulacion_pausada` dice cuánto duró la pausa |
-| `simulacion_detenida` | `ms_sim` y **`fallas`**: `[{ tipo, componente }]` de esa corrida. Si una falla aparece en una corrida y no en la siguiente, se corrigió |
+| `simulacion_detenida` | `ms_sim` y **`fallas`**: `[{ tipo, componente }]` de esa corrida. Que una falla no aparezca en la corrida siguiente es **corrección solo si las dos son comparables**: completas y coherentes, sin huecos del registro entre ellas, con el mismo modo, las mismas no idealidades, la misma placa y la pieza de la falla todavía en el circuito. Si no, la falla solo «ya no se observó» (decisión de Efraín, 20 oct; así lo lee la historia del registro de TecnoBloques, COMO-FUNCIONA 68) |
 
 **Eventos del editor** (`origen: 'editor'`, los emite TecnoBloques):
 
@@ -309,6 +310,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 |---|---|
 | `sesion_iniciada` | `placa`, `nivel` y `condicion` (reservado: el modo asignado, si lo hay) |
 | `proyecto_abierto` / `ejemplo_cargado` | `placa` del proyecto (sin su nombre: decisión del 16 oct) o `id` del ejemplo |
+| `placa_cambiada` | nuevo (20 oct, REG-004): `de` y `a`. La placa elegida cambió durante la sesión, por cualquier camino (el selector, la placa que detectó la subida, un proyecto o un ejemplo). Va antes de lo que provoca, como las piezas que el lienzo quita. Sin él, la placa de `sesion_iniciada` no dice con qué placa se trabajó después |
 | `bloques_cambiados` | resumen: cuántos bloques y cuántos de cada tipo. No el XML entero |
 | `codigo_compilado` | `ok`, `error` (el tipo de error, si lo hay), `bytes` y **`codigo`**: el C++ completo **sin comentarios** |
 | `programa_subido` | `ok` y `placa`: el programa fue a la placa real |
@@ -387,3 +389,6 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 16 oct 2026 | Entra la no idealidad `resistenciaBateria` (agregar una clave no rompe nada: el modo `realista` la enciende y `ideal` la apaga). La resistencia de la LiPo medida en el laboratorio (1,2 Ω) dejó de ser despreciable. `caidaL293D` pasa a 1,3 V + 1 V/A, medida. En `mediciones()`, el voltaje de un motor en la shield es el que marca un multímetro con PWM (suma lo que genera el motor mientras el puente está apagado). Sin cambios en la API ni en el formato del circuito. |
 | 1 (borrador) | 18 oct 2026 | Sección 6.1: entra el evento del editor `registro_interrumpido` (AUD-02, decisión de Efraín). Agregar un tipo no rompe nada. Deja en los datos que el disco falló, cuándo y si se perdieron líneas. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
 | 1 (borrador) | 18 oct 2026 | Sección 2: `sim.detener()` y `sim.destruir()` devuelven una promesa que se cumple cuando sale `simulacion_detenida` (AUD-03, decisión de Efraín). Ese cierre espera a que el Worker confirme que paró, así trae las fallas de las fotos que venían en camino; si no confirma en 500 ms, sale con lo que llegó. `{ sinEsperar: true }` lo saca en el mismo instante (al cerrar la ventana). Aditivo: antes no devolvían nada y se siguen pudiendo llamar sin esperar. Lo que cambia es el momento del cierre: unos ms después de la llamada, no dentro de ella. |
+| 1 (borrador) | 20 oct 2026 | Sección 6.1: entra el evento del editor `placa_cambiada` (`de`, `a`; REG-004, decisión de Efraín). En la prueba humana del registro, la placa cambió de Nano a Uno después de empezar la sesión y nada lo decía. Agregar un tipo no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
+| 1 (borrador) | 20 oct 2026 | Sección 6.1 y descripción de `fallas` en el esquema: solo redacción. Que una falla desaparezca en la corrida siguiente es corrección solo si las dos corridas son comparables; si no, «ya no se observó» (decisión de Efraín; DOC-01 de la verificación de Codex). Sin cambios de formato ni de validación. |
+| 1 (borrador) | 21 oct 2026 | Sección 6.1: los eventos del simulador suman el campo opcional `tramo` (REG-004, INT-RES-03c de la verificación de Codex; decisión de Efraín). El RESET pone el reloj de la corrida en cero, y una foto de antes del RESET que llega después no se podía distinguir de un hecho imposible del reloj nuevo. Agregar un campo opcional no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |

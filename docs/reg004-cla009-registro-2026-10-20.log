@@ -1,0 +1,156 @@
+
+> tecnobloques@0.3.0 test:registro
+> node test/registro.js
+
+— El C++ sin comentarios
+OK    un comentario de línea
+OK    un comentario de bloque en una línea
+OK    un comentario de bloque de varias líneas conserva las líneas
+OK    a/**/b no se pega
+OK    una URL entre comillas no se corta
+OK    /* dentro de un texto
+OK    una comilla escapada dentro del texto
+OK    una barra escapada al final del texto
+OK    un carácter entre comillas simples
+OK    un texto crudo R"(…)"
+OK    un texto crudo con marca
+OK    saltos de línea de Windows (CRLF)
+OK    una barra al final del comentario lo continúa (sin perder la línea)
+OK    /\ y otra línea con / también es un comentario
+OK    /\ y otra línea con / (CRLF)
+OK    \ con espacios antes del salto también une las líneas
+OK    /* y */ partidos por empalmes
+OK    un texto crudo R"(…)" con una comilla adentro
+OK    un texto crudo u8R"(…)" con una comilla adentro
+OK    un texto crudo uR"(…)" con una comilla adentro
+OK    un texto crudo UR"(…)" con una comilla adentro
+OK    un texto crudo LR"(…)" con una comilla adentro
+OK    un nombre que termina en R no abre un texto crudo
+OK    un número 1.R no abre un texto crudo
+OK    el sufijo de un texto ("x"u8R) no abre un texto crudo
+OK    un empalme dentro del prefijo sigue siendo texto crudo
+OK    un empalme dentro de un texto crudo es texto
+OK    una marca con espacio no es texto crudo
+OK    un texto partido por un empalme CRLF
+OK    un carácter partido por un empalme
+OK    un \r solo termina el comentario
+OK    un \r solo, un comentario y un \n no se juntan en un \r\n
+OK    1e\ y otra línea con +R"( es un número, no un texto crudo
+OK    un /* */ de varias líneas no corta un #define
+OK    lo mismo con CRLF
+OK    en #include <avr//io.h> el // es parte del nombre
+OK    un /* */ de varias líneas no vuelve directiva un # del medio
+OK    un /* */ de varias líneas al inicio deja la directiva como estaba
+OK    varios /* */ seguidos antes de un # del medio de la línea
+OK    una \ suelta antes de // queda separada del salto con /**/
+OK    lo mismo en un #define
+OK    en un #define, un texto crudo no pasa de su línea
+OK    fuera de una directiva, sí
+OK    un comentario de bloque sin cerrar
+OK    un texto sin cerrar no se come el resto
+OK    la división no es un comentario
+OK    un programa sin comentarios queda igual
+OK    un programa generado: sin los comentarios, con los textos entre comillas y con el mismo número de líneas
+OK    un programa de 186 KB se limpia en 21 ms
+OK    un programa abusivo de 420 KB se limpia en 31 ms
+— El código del equipo
+OK    para el archivo, "A7" → "A7"
+OK    para el archivo, "  equipo 3  " → "equipo_3"
+OK    para el archivo, "Ñandú-2" → "Nandu-2"
+OK    para el archivo, "..\\..\\Windows" → "______Windows"
+OK    para el archivo, "con:prn?*" → "con_prn__"
+OK    para el archivo, "" → "equipo"
+OK    para el archivo, "../" → "equipo"
+OK    para el archivo, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" → "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+OK    en la línea va como se escribió, sin espacios de sobra
+OK    la fecha del archivo es la local: 2026-10-06
+— El resumen de bloques
+OK    cuenta los bloques de cada tipo
+OK    sin bloques: 0
+— El sobre
+OK    sin equipo no se escribe nada
+OK    un código vacío no empieza la sesión
+OK    cambiar de equipo termina la sesión del anterior; después de terminar no se escribe
+OK    sesion_terminada lleva cuánto duró: 65000 ms
+OK    cada equipo tiene su sesión
+OK    cada línea lleva v y las dos versiones
+OK    si no se puede escribir, el registro no interrumpe el trabajo
+— El disco (escritorio/registro-disco.js)
+OK    recién instalado: apagado, sin PIN, sin falla y con la configuración legible
+OK    apagado: no escribe nada ni crea la carpeta
+OK    sin PIN no se puede entrar
+OK    el PIN es de 4 a 8 dígitos
+OK    el instructor crea su PIN
+OK    el PIN no queda escrito: solo su resumen (scrypt con sal)
+OK    no se puede crear otro PIN encima del que hay
+OK    con el PIN equivocado no se enciende
+OK    cinco PIN equivocados seguidos: espera un minuto (60 s), aunque el siguiente sea el correcto
+OK    pasado el minuto, el instructor enciende el registro
+OK    encendido: escribe
+OK    una línea JSON por evento en registros/A7-2026-10-16.jsonl, en orden
+OK    un código con ..\ no escribe fuera de registros\ (A7-2026-10-16.jsonl, ______x-2026-10-16.jsonl, _________x-2026-10-16.jsonl)
+OK    sin equipo o sin tipo no se escribe
+OK    una línea de más de 2 MB no se escribe
+OK    exportar con el PIN equivocado no copia nada
+OK    exportar copia los 3 archivos a TecnoBloques-registros-2026-10-16_1031
+OK    el instructor cambia el PIN
+OK    apagado otra vez: no escribe
+— El disco cuando falla (AUD-02)
+OK    con el disco bien: escribe y no avisa nada
+OK    disco lleno: escribir no lanza y queda la falla (ENOSPC, 3 esperando)
+OK    la falla se avisa una sola vez, no en cada evento
+OK    mientras falla, el archivo no cambia
+OK    reintentar sin espacio: la falla sigue y no se pierde nada
+OK    reintentar pide el PIN del instructor
+OK    el siguiente evento la recupera y avisa una vez que se escribió
+OK    lo que esperaba se escribe en orden y sin huecos: 0 1 2 3 4
+OK    después, registro_interrumpido de A7: desde, hasta, recuperados 4, perdidos 0, ENOSPC
+OK    y el de B2 en su propio archivo, con su sesión
+OK    archivo de solo lectura (fallo real): falla EPERM, 1 esperando
+— Escrituras a medias y configuración ilegible (AUD-02-V1 y V2)
+OK    una escritura a medias: el archivo vuelve a su tamaño (sin pedazos) y la línea espera
+OK    al reintentar: 0, 1 y la marca, todas legibles y sin duplicados (recuperados 1)
+OK    la marca a medias se corta y queda esperando
+OK    y después sale entera, una sola vez, detrás del evento 2
+OK    una escritura a medias que no se pudo cortar deja el pedazo (por ahora)
+OK    antes del siguiente intento se corta el pedazo y la línea sale entera
+OK    un pedazo que dejó un cierre de golpe se corta al abrir: el archivo sigue legible
+OK    la configuración se guarda entera: no queda el archivo temporal
+OK    al abrir con la configuración dañada: falla CONFIG y configIlegible desde el arranque, sin esperar un evento (no es lo mismo que recién instalado)
+OK    sin la confirmación del instructor no se crea otro PIN encima
+OK    un evento con la configuración dañada no se escribe: espera, con la falla CONFIG visible
+OK    el PIN nuevo deja el registro apagado: lo que esperaba se descarta y la falla se quita
+OK    con la confirmación: PIN nuevo, registro apagado y la dañada guardada aparte (registro-config-ilegible-2026-10-18_153000.json)
+OK    el PIN nuevo funciona y los registros guardados no se tocaron
+OK    si la configuración no se puede ni abrir, también es configIlegible
+OK    y también se reemplaza (la carpeta se mueve aparte)
+OK    archivo: el disco falla al escribir la nueva: «disco», sin lanzar; la dañada sigue en su lugar, sin copias ni marca de más, y al reiniciar sigue visible (CONFIG)
+OK    archivo: el disco falla al guardar aparte la dañada: «disco», sin lanzar; la dañada sigue en su lugar, sin copias ni marca de más, y al reiniciar sigue visible (CONFIG)
+OK    archivo: el disco falla al poner la nueva en su lugar: «disco», sin lanzar; la dañada sigue en su lugar, sin copias ni marca de más, y al reiniciar sigue visible (CONFIG)
+OK    carpeta: el disco falla al escribir la nueva: «disco», sin lanzar; la dañada sigue en su lugar, sin copias ni marca de más, y al reiniciar sigue visible (CONFIG)
+OK    carpeta: el disco falla al guardar aparte la dañada: «disco», sin lanzar; la dañada sigue en su lugar, sin copias ni marca de más, y al reiniciar sigue visible (CONFIG)
+OK    carpeta: el disco falla al poner la nueva en su lugar: «disco», sin lanzar; la dañada sigue en su lugar, sin copias ni marca de más, y al reiniciar sigue visible (CONFIG)
+OK    carpeta: falla el último paso y también devolverla: «disco», sin lanzar; la evidencia sigue aparte (registro-config-ilegible-2026-10-18_153000-3.json) y la marca la nombra
+OK    y al reiniciar no parece recién instalada: falla CONFIG y configIlegible
+OK    un evento con la recuperación a medias espera, con la falla CONFIG visible (no se descarta como apagado)
+OK    sin la confirmación del instructor no se crea el PIN encima
+OK    si el reintento también falla: «disco», la marca se queda y sigue visible al reiniciar
+OK    el reintento confirmado termina la recuperación: PIN nuevo, apagado, sin marca y sin mover otra vez la evidencia
+OK    y al reiniciar el PIN nuevo funciona
+OK    una marca vieja con la configuración en su lugar no cuenta, y el siguiente guardado la quita
+OK    si no se puede escribir la marca: «disco» y no se mueve nada; la dañada sigue en su lugar y visible
+OK    con el disco bien, el reemplazo funciona después
+OK    cada reemplazo guarda su dañada con un nombre propio, aunque sean del mismo segundo (4)
+OK    encender con el disco lleno: «disco» y la configuración no cambia
+OK    una línea de 1400194 caracteres (2800194 bytes) se escribe entera
+OK    un pedazo de 2,5 MB con letras de 2 bytes se corta en su frontera real: las líneas previas siguen y la nueva sale entera
+OK    arreglado el permiso, el reintento automático la recupera solo (sin otro evento)
+OK    la cola guarda 5000 y cuenta las demás como perdidas (5000 y 3)
+OK    registro_interrumpido dice recuperados 5000 y perdidos 3
+OK    el instructor apaga durante la falla: se quita el aviso y dice «apagado»
+OK    la configuración ilegible es una falla visible (CONFIG), no un apagado callado
+OK    con la configuración de vuelta, se escribe lo que esperaba
+— Las líneas cumplen el esquema del contrato
+OK    las 8 líneas cumplen contrato/evento.schema.json
+
+TODO BIEN

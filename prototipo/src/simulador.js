@@ -47,6 +47,11 @@ export function crearSimulador(opciones = {}) {
   let medicion = null;
   let reiniciosVistos = 0; // reinicios por energía ya avisados en esta corrida
   let corrida = 0; // el número de la corrida en el registro de eventos (sube en cada simulacion_iniciada)
+  // El turno de cada RESET con el botón de esta corrida. Cada RESET pone el reloj de la corrida en cero y empieza otro
+  // «tramo»: el de una foto es cuántos RESET hubo con un turno menor o igual al suyo. Así una foto de antes del RESET
+  // que llega después queda en su tramo, con su reloj (INT-RES-03c; contrato 6.1, «tramo»).
+  const turnosReset = [];
+  const tramoDe = (t) => turnosReset.filter((r) => r <= t).length;
   const fallas = [];
 
   const trabajador = crearTrabajador(recibir);
@@ -74,11 +79,12 @@ export function crearSimulador(opciones = {}) {
   }
   function entregarHechos(m) {
     const ms = Math.round(m.msSimulados); // el tiempo simulado de la foto: el de los hechos, aunque llegue tarde
+    const tramo = tramoDe(m.turno); // y el tramo de su reloj
     for (const f of m.fallas) {
       fallas.push(f);
       oyentes.falla.forEach((fn) => avisar(fn, { tipo: f.tipo, componente: f.componente, mensaje: f.mensaje }));
       const { mensaje, ...datos } = f;
-      emitir('falla', datos, ms);
+      emitir('falla', datos, ms, tramo);
     }
     // Reinicios por la energía del USB (no idealidad «limiteUSB»): uno por foto, con cuántos hubo desde la anterior.
     const reinicios = m.energia ? m.energia.reinicios : 0;
@@ -86,7 +92,7 @@ export function crearSimulador(opciones = {}) {
       motivo: m.energia.referencia ? 'energia_nano' : 'energia_usb',
       ...(m.energia.referencia ? { fuente: m.energia.fuente } : {}),
       nuevos: reinicios - reiniciosVistos, total: reinicios,
-    }, ms);
+    }, ms, tramo);
     reiniciosVistos = Math.max(reiniciosVistos, reinicios);
     if (m.serial) oyentes.serial.forEach((fn) => avisar(fn, m.serial));
   }
@@ -115,9 +121,10 @@ export function crearSimulador(opciones = {}) {
     }
   }
 
-  // Contrato, sección 6.1: cada evento del simulador lleva su corrida y el tiempo simulado de esa corrida.
-  function emitir(tipo, datos, msSim = medidas.msSimulados) {
-    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(msSim), datos });
+  // Contrato, sección 6.1: cada evento del simulador lleva su corrida, el tiempo simulado de esa corrida y el tramo de
+  // su reloj (los de la página, el tramo actual; los de una foto, el de su turno).
+  function emitir(tipo, datos, msSim = medidas.msSimulados, tramo = turnosReset.length) {
+    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(msSim), tramo, datos });
   }
 
   function cambiarEstado(nuevo) {
@@ -159,6 +166,7 @@ export function crearSimulador(opciones = {}) {
         medicion = null;
         vista = null;
         reiniciosVistos = 0;
+        turnosReset.length = 0;
         Object.assign(medidas, { msSimulados: 0, msReales: 0, velocidad: 1 });
         corrida = ++corridas;
         // El circuito completo: cada corrida se puede analizar sola, sin reconstruirla desde los cambios.
@@ -183,6 +191,7 @@ export function crearSimulador(opciones = {}) {
       // cero (sigue siendo la misma corrida).
       if (estado === 'pausado') emitir('simulacion_reanudada', {});
       emitir('reinicio_placa', { motivo: 'boton' });
+      turnosReset.push(turno); // desde aquí, otro tramo: las fotos con este turno o uno mayor ya son del reloj nuevo
       medidas.msSimulados = 0; // el chip vuelve a cero ya; la foto del Worker llega un instante después
       // Como apretar el botón RESET: el programa empieza desde setup().
       trabajador.enviar({ tipo: 'reiniciar', turno });

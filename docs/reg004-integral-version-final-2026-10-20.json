@@ -1,0 +1,20 @@
+{
+  "momento_utc": "2026-10-20T17:43:58.238342+00:00",
+  "sin_codigo_modificado": true,
+  "productos_previos_preservados_por_hash": true,
+  "fuentes_relevantes": {
+    "TecnoBloques:herramientas/historia-registro.js": "e65f5ef2471ef6424c679373d4dfebaa7f1af097e41c6ac92a9b1ff3193a8733",
+    "TecnoBloques:src/app.js": "a7eb9567478e6eafac9e253d4ff92ed8f881b788c5217c6e47d95cc64a2134b1",
+    "TecnoBloques:src/registro.js": "bff77d8ab7307dd498c74b726153a1f42e4c2b476b419c27f74366a698b8f4d7",
+    "TecnoBloques:escritorio/registro-disco.js": "2320f014b90874026131bbf078370311c400b657bc0137231ed03533b2fda843",
+    "TecnoBloques:escritorio/main.js": "8125d6e8bc779e4a5065e653e285c94534bc80c3b29b2af3f264adeb248f6118",
+    "TecnoBloques:test/historia-registro.js": "215d4f2b8696b491062375824aa3f6b18eaef15647aa3cac62e85e3d3557b699",
+    "TecnoBloques:test/registro-app.js": "dee9ab8977e2cacdf64e0bb4698a8951444661a0c6f7083bbda210bfccf14ab2"
+  },
+  "diagnosticos_temporales": {
+    "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-integral-2026-10-20.cjs": "57982a3041425385e3872d846a8f02f3adc699d115f45f8a687c280629b32203",
+    "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-integral-ampliacion-2026-10-20.cjs": "fdd07a4040a0e23887651b50b8e78b629de29e7c3b6704923872ed7e7155228d",
+    "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-integral-compilador-2026-10-20.cjs": "9dbc5dd4e0becf1ed4813b7a0cc3692cd3f4843a7af0677b4de115bf053c0f48",
+    "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-integral-realista-ideal-2026-10-20.py": "3a24c4efbd3fc3f0c1239a5185df958b6262dd0a24511de52c20a514f54ad53d"
+  }
+}

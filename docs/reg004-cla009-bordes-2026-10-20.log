@@ -1,0 +1,27 @@
+OK control-correccion-comparable
+OK source-cierre-contradictorio
+OK source-inicio-repetido
+OK source-ms-falla-despues-cierre
+OK source-cierre-sin-falla-individual
+OK source-incompleta
+OK control-falla-reaparece
+OK control-corrige-luego-cambia-placa
+OK control-ideal-sin-correccion
+OK hueco-antes-corridas-control
+OK hueco-entre-corridas-control
+OK hueco-dentro-ultima-control
+OK hueco-tras-ultimo-cierre
+OK hueco-identificado-tras-ultimo-cierre
+OK hueco-identificado-tras-fin
+OK perdida-tras-ultimo-cierre
+OK control-perdida-entre-corridas
+OK corridas-solapadas
+OK inicio-tras-fin-sesion
+OK cierre-tiempo-contradictorio
+OK pausa-estado-imposible
+OK pista-sesion-escapada
+OK hora-fin-fuera-Date
+OK hora-interrupcion-fuera-Date
+OK control-Date-limite-maximo
+OK Date-maximo-mas-un-milisegundo
+26 casos; 0 fallidos.

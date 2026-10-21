@@ -1,0 +1,11 @@
+OK control-LF-cero
+OK control-CRLF-cero
+OK control-LF-98
+OK control-CRLF-97
+OK empalme-LF-99
+OK empalme-CRLF-98
+OK empalme-CRLF-120
+OK empalme-CRLF-98-tabs
+8 casos; 0 fallos; cero errores de esquema
+
+exit=0

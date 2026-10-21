@@ -1,0 +1,850 @@
+[
+  {
+    "caso": "control-LF-cero",
+    "aprobado": true,
+    "antes": "const char *texto = \"A\\\n B\";\nvoid setup() {}\nvoid loop() {}\n",
+    "despues": "const char *texto = \"A\\\nB\";\nvoid setup() {}\nvoid loop() {}\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\\n B\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\\nB\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "control-LF-cero",
+      "archivos": [
+        "control-LF-cero.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `const char *texto = \"A\\\\\\n B\";` → `const char *texto = \"A\\\\\\nB\";`."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión control-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes. Programa: `const char *texto = \"A\\\\\\n B\";` → `const char *texto = \"A\\\\\\nB\";`.\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "control-CRLF-cero",
+    "aprobado": true,
+    "antes": "const char *texto = \"A\\\r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "despues": "const char *texto = \"A\\\r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\\r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\\r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-cero",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "control-CRLF-cero",
+      "archivos": [
+        "control-CRLF-cero.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `const char *texto = \"A\\\\\\r\\n B\";` → `const char *texto = \"A\\\\\\r\\nB\";`."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión control-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes. Programa: `const char *texto = \"A\\\\\\r\\n B\";` → `const char *texto = \"A\\\\\\r\\nB\";`.\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "control-LF-98",
+    "aprobado": true,
+    "antes": "const char *texto = \"A\\                                                                                                  \n B\";\nvoid setup() {}\nvoid loop() {}\n",
+    "despues": "const char *texto = \"A\\                                                                                                  \nB\";\nvoid setup() {}\nvoid loop() {}\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                  \n B\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                  \nB\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-LF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "control-LF-98",
+      "archivos": [
+        "control-LF-98.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `…             \\n B\";` → `…             \\nB\";`."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión control-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes. Programa: `…             \\n B\";` → `…             \\nB\";`.\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "control-CRLF-97",
+    "aprobado": true,
+    "antes": "const char *texto = \"A\\                                                                                                 \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "despues": "const char *texto = \"A\\                                                                                                 \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-97",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-97",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                 \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-97",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                 \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "control-CRLF-97",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "control-CRLF-97",
+      "archivos": [
+        "control-CRLF-97.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `…           \\r\\n B\";` → `…           \\r\\nB\";`."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión control-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes. Programa: `…           \\r\\n B\";` → `…           \\r\\nB\";`.\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "empalme-LF-99",
+    "aprobado": false,
+    "antes": "const char *texto = \"A\\                                                                                                   \n B\";\nvoid setup() {}\nvoid loop() {}\n",
+    "despues": "const char *texto = \"A\\                                                                                                   \nB\";\nvoid setup() {}\nvoid loop() {}\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-LF-99",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-LF-99",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                   \n B\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-LF-99",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                   \nB\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-LF-99",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "empalme-LF-99",
+      "archivos": [
+        "empalme-LF-99.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes (el mismo programa)."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión empalme-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes (el mismo programa).\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "empalme-CRLF-98",
+    "aprobado": false,
+    "antes": "const char *texto = \"A\\                                                                                                  \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "despues": "const char *texto = \"A\\                                                                                                  \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                  \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                  \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "empalme-CRLF-98",
+      "archivos": [
+        "empalme-CRLF-98.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes (el mismo programa)."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión empalme-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes (el mismo programa).\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "empalme-CRLF-120",
+    "aprobado": false,
+    "antes": "const char *texto = \"A\\                                                                                                                        \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "despues": "const char *texto = \"A\\                                                                                                                        \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-120",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-120",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                                        \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-120",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\                                                                                                                        \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-120",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "empalme-CRLF-120",
+      "archivos": [
+        "empalme-CRLF-120.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes (el mismo programa)."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión empalme-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes (el mismo programa).\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  },
+  {
+    "caso": "empalme-CRLF-98-tabs",
+    "aprobado": false,
+    "antes": "const char *texto = \"A\\\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "despues": "const char *texto = \"A\\\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98-tabs",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515600000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98-tabs",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515601000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98-tabs",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515602000,
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = \"A\\\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "empalme-CRLF-98-tabs",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792515603000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 3000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "empalme-CRLF-98-tabs",
+      "archivos": [
+        "empalme-CRLF-98-tabs.jsonl"
+      ],
+      "inicio": 1792515600000,
+      "fin": 1792515603000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792515600000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792515601000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792515602000,
+          "texto": "Compiló: bien, 100 bytes (el mismo programa)."
+        },
+        {
+          "t": 1792515603000,
+          "texto": "Terminó la sesión (3 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 12:00 a 12:00 · uno, nivel 3 · sesión empalme-\n  12:00  Empezó la sesión (uno, nivel 3).\n  12:00  Compiló: bien, 100 bytes.\n  12:00  Compiló: bien, 100 bytes (el mismo programa).\n  12:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "erroresEsquema": []
+  }
+]

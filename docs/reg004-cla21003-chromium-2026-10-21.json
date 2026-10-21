@@ -1,0 +1,16 @@
+{
+  "salida_temporal_reintento": "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-cla21003-chromium-reintento-wfaxtgka",
+  "alimentacion": "PowerOnline=True comprobado; pruebas secuenciales sin otras suites",
+  "resultado_registro_inicial": 0,
+  "resultado_simulacion_inicial": 1,
+  "resultados": [
+    {
+      "caso": "simulacion",
+      "exit": 0
+    },
+    {
+      "caso": "servo",
+      "exit": 0
+    }
+  ]
+}

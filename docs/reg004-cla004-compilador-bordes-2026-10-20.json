@@ -1,0 +1,162 @@
+[
+  {
+    "caso": "control-LF-cero",
+    "lector_aprobado": true,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\\n B\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": ""
+      },
+      {
+        "codigo": "const char *texto = \"A\\\nB\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": ""
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "control-CRLF-cero",
+    "lector_aprobado": true,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\\r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": ""
+      },
+      {
+        "codigo": "const char *texto = \"A\\\r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": ""
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "control-LF-98",
+    "lector_aprobado": true,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                  \n B\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      },
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                  \nB\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "control-CRLF-97",
+    "lector_aprobado": true,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                 \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      },
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                 \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "empalme-LF-99",
+    "lector_aprobado": false,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                   \n B\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      },
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                   \nB\";\nvoid setup() {}\nvoid loop() {}\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "empalme-CRLF-98",
+    "lector_aprobado": false,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                  \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      },
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                  \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "empalme-CRLF-120",
+    "lector_aprobado": false,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                                        \r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      },
+      {
+        "codigo": "const char *texto = \"A\\                                                                                                                        \r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      }
+    ],
+    "datos_distintos": true
+  },
+  {
+    "caso": "empalme-CRLF-98-tabs",
+    "lector_aprobado": false,
+    "compilador": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques\\escritorio\\recursos\\arduino\\datos\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++.exe",
+    "compilaciones": [
+      {
+        "codigo": "const char *texto = \"A\\\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n B\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "41204200",
+        "rodata_texto": "A B\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      },
+      {
+        "codigo": "const char *texto = \"A\\\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\nB\";\r\nvoid setup() {}\r\nvoid loop() {}\r\n",
+        "rodata_hex": "414200",
+        "rodata_texto": "AB\u0000",
+        "diagnosticos_compilador": "<stdin>:1:23: warning: backslash and newline separated by space\r\n"
+      }
+    ],
+    "datos_distintos": true
+  }
+]

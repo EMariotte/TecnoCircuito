@@ -1,0 +1,173 @@
+diff --git a/prototipo/COMO-FUNCIONA.md b/prototipo/COMO-FUNCIONA.md
+index a969325..c770a54 100644
+--- a/prototipo/COMO-FUNCIONA.md
++++ b/prototipo/COMO-FUNCIONA.md
+@@ -1830,53 +1830,137 @@ Con seis SG90 en el USB del Uno, los mismos 3 s daban 8 reinicios en pedazos de
+ El contador de instrucciones se agrega en memoria al núcleo armado, sin escribirlo (técnica del diagnóstico de Codex). El tiempo se compara con una tolerancia de unos ciclos, porque el chip ejecuta instrucciones enteras y cada pedazo puede pasarse un poco, como en el Worker.
+ 
+ 
+-## 68. La historia de un registro: ¿sirve lo que se guarda? (REG-004, 19 oct 2026, Claude)
++## 68. La historia de un registro: ¿sirve lo que se guarda? (REG-004, 19 y 20 oct 2026, Claude)
+ 
+-El registro de eventos (contrato, sección 6.1) guarda una línea por cada cosa que pasa. Leer un `.jsonl` a mano no dice si sirve para el estudio. La fase 4 responde esa pregunta con un lector que cuenta la historia en español. Vive en TecnoBloques (`herramientas/historia-registro.js`, porque TecnoBloques escribe los registros), no usa dependencias y solo lee.
++El registro de eventos (contrato, sección 6.1) guarda una línea por cada cosa que pasa. Leer un `.jsonl` a mano no dice si sirve para el estudio. La fase 4 responde esa pregunta con un lector que cuenta la historia en español. Vive en TecnoBloques (`herramientas/historia-registro.js`, porque TecnoBloques escribe los registros), no usa dependencias propias y solo lee.
++
++El 20 oct se rehízo por capas, después de la auditoría integral de Codex ([informe](../docs/AUDITORIA-INTEGRAL-REG004-CODEX-2026-10-20.md)). Hasta entonces cada verificación encontraba un caso suelto nuevo; la causa era que el lector afirmaba cosas que el registro no respaldaba. Ahora cada capa le entrega a la siguiente solo lo que está acreditado:
+ 
+ ```
+  .jsonl (uno o varios, o una carpeta)
+-        │  leerArchivos: línea por línea; una dañada se anota con su archivo y número y se sigue
+-        ▼
+- sesiones (por «sesion», en el orden en que se escribieron)
+-        │  contarHistoria
+-        ├──► pasos: «Circuito: agregó r1; conectó…» · «Compiló: bien» · «▶ Corrida 2» · «■ Corrida 2 terminó…»
+-        ├──► corridas: fallas del cierre y, contra la anterior, qué corrigió, qué sigue y qué es nuevo
+-        └──► avisos de integridad (abajo)
+-        │  narrar  (o --json, para el análisis)
++        │
++        ▼  1. LECTURA (leerArchivos)
++ cada línea: UTF-8 estricto, BOM solo al inicio, JSON y el esquema del contrato (el revisor de TecnoCircuito)
++        │  la que no sirve se APARTA con su motivo y deja un hueco en su sesión (la sesión sale del JSON ya
++        │  decodificado; si está roto, de su texto con los escapes decodificados; si no se sabe, de sus vecinas)
++        │  una ruta que no existe se dice; la misma ruta dos veces se lee una vez
++        ▼  2. HECHOS (contarHistoria)
++ sesiones por sesión + equipo · archivos de una sesión en el orden de la fecha de su nombre
++ una línea que ya llegó en otro archivo (copias que se pisan) se cuenta una vez
++ corridas con su modo, sus no idealidades, su placa y sus piezas
++        │
++        ▼  3. INTEGRIDAD
++ huecos (líneas apartadas, eventos perdidos) · contradicciones · ciclo de vida · reloj  ──►  «Avisos»
++        │  un hueco impide comparar a través de él; una duda de la sesión impide asegurar el final
++        ▼  4. CONCLUSIONES
++ «corrigió» solo entre corridas comparables · si no, «ya no se observó (motivo)» o «no se compara»
++        │  narrar (o --json, para el análisis)
+         ▼
+- la historia en texto
++ la historia en texto · código de salida: 0 limpio, 1 con avisos o líneas apartadas, 2 sin nada que leer
+ ```
+ 
+ **Qué cuenta, en orden:**
+-- Lo que hace el equipo: los cambios del circuito seguidos se juntan en una frase («agregó r1; conectó placa.D13 → r1.1; movió led1 (2 veces)»), y también los bloques, cada compilación con su resultado y lo que sube a la placa real.
+-- Cada corrida, con sus fallas, pausas, pulsos de botón y reinicios.
+-- Al cerrar una corrida, la compara con la anterior de la misma sesión. Ahí sale el aprendizaje que busca el estudio: «Corrigió: LED quemado (led1)».
+-- Un resumen por sesión: fallas vistas, corregidas al final y sin corregir.
++- Lo que hace el equipo: los cambios del circuito seguidos se juntan en una frase («quitó r1 (resistencia); agregó otra r1 (resistencia); cambió r1: ohmios 330; movió r1»), y lo mismo con los bloques. También cuenta cada cambio de placa, cada compilación con su resultado y qué cambió del programa, y lo que sube a la placa real.
++- Cada corrida, con su placa, su modo, sus fallas, pausas, pulsos de botón y reinicios.
++- Al cerrar una corrida, la compara con la anterior de la misma sesión. Ahí sale lo que busca el estudio: «Corrigió: LED quemado (led1)».
++- Un resumen por sesión: fallas vistas, corregidas al final, las que ya no se observaron (y por qué) y las que siguen sin corregir.
++
++### Las palabras de las conclusiones (decisiones de Efraín, 20 oct)
++
++**«Corrigió»** solo se dice entre dos corridas **comparables**: completas y coherentes, sin un hueco del registro entre ellas, con el mismo modo, las mismas no idealidades encendidas y la misma placa, y la pieza de la falla sigue en el circuito. Si una falla desaparece y algo de eso cambió, la historia dice **«Ya no se observó»** y el motivo, porque desaparecer no es corregir:
++
++| Lo que cambió entre las corridas | La historia dice |
++|---|---|
++| El modo, de realista a ideal | «Ya no se observó: LED quemado (led1) (cambió el modo: realista → ideal).» |
++| Se apagó una no idealidad | «… (cambió lo que se revisa: danoComponentes apagada).» |
++| Otra placa | «… (cambió la placa: uno → nano).» |
++| Quitaron la pieza | «… (quitó led1).» |
++| Hay un hueco o algo incoherente entre las dos | «No se compara con la corrida 1: hay un hueco en el registro entre las dos.» |
+ 
+-**Qué avisa.** Si el registro está mal, la historia lo dice en vez de callarlo. Son justo los defectos de la auditoría de Codex:
++El resumen usa **el mismo criterio que los pasos**, para no contradecirlos (INT-RES-01 y 02, verificación de Codex del 20 oct). Para cada falla que ya no está al final se mira el **tramo** que va desde la última corrida que la vio hasta la última línea de la sesión:
+ 
+-| Aviso | Defecto de origen |
++```
++ corrida que la vio ── corridas siguientes ── … ── última corrida ── fin de la sesión (última línea)
++ └──────────────── todas completas y coherentes, sin huecos en todo el tramo ──────────────────┘
++        └── alguna posterior comparable (mismo modo, no idealidades, placa y la pieza sigue)
++```
++
++- Si alguna corrida del tramo, **la que la vio incluida**, está incompleta o es incoherente: «No se puede asegurar: LED quemado (led1) (la corrida 1 quedó sin cierre)». Esa corrida pudo esconder que la falla volvió.
++- Si hay un hueco en el tramo, también **después del último cierre** (una línea apartada, eventos perdidos): «No se puede asegurar: … (hay un hueco en el registro después de verla)». La corrección que dijo un paso sigue siendo un hecho de ese momento; lo que no se asegura es el final.
++- Si el tramo está acreditado y alguna corrida posterior es comparable: «Corregidas al final». Así, una corrección hecha en las mismas condiciones sigue valiendo aunque después cambien la placa o el modo (lo mostró la prueba final de Efraín).
++- Si ninguna posterior es comparable: «Ya no se observaron al final», con el motivo de la última corrida. Y el final entero queda en «no se puede asegurar, porque…» si la última corrida no está completa y coherente, si llegaron fallas sin atribuir o si la sesión tiene una duda propia: no tiene `sesion_iniciada`, empieza dos veces o comparte su código con otro equipo.
++
++**«El mismo programa»** solo se dice si el C++ registrado es **idéntico, carácter por carácter**. Si solo difiere en espacios o saltos de línea, dice «Programa: cambió solo en espacios o saltos de línea»: es un hecho sobre el texto y no afirma que el programa haga lo mismo. Antes el lector intentaba decidir qué espacios eran datos (dentro de las cadenas) y cuáles no; cada verificación de Codex encontró un borde nuevo (R4, R4a, R4b, INT-08), porque eso exige entender C++. Con la igualdad exacta esa pregunta desaparece. Para mostrar qué cambió, las líneas se comparan sin espacios a los lados (la subsecuencia común más larga); los cambios iguales se juntan con «(2 veces)»; una línea larga se muestra alrededor de lo que cambió, y si el detalle no cabe, lo dice («cambió un tramo de 4 líneas (el detalle no cabe)») en vez de mostrar dos lados iguales.
++
++**La línea de comandos** siempre muestra la historia. Sale con **0** si todo está limpio, con **1** si hay avisos o líneas que no se pudieron leer (para que un análisis automático no tome por limpio un registro con problemas) y con **2** si no se le dio nada que leer.
++
++### Qué avisa
++
++| Aviso | De dónde viene |
+ |---|---|
+ | El C++ de `codigo_compilado` tiene comentarios | AUD-01 |
+-| Hueco: eventos perdidos cuando el disco falló | AUD-02 |
+-| Las fallas del cierre no son las que llegaron una a una | AUD-03 |
++| Hueco: eventos perdidos cuando el disco falló, o una línea apartada (JSON dañado, bytes que no son UTF-8, fuera del esquema, sin hora, de otra versión) | AUD-02 · INT-02, INT-04, INT-07 |
++| Las fallas del cierre no son las que llegaron una a una; cierres que no coinciden entre sí | AUD-03 · R1 |
+ | Una corrida tiene eventos en una sesión donde no empezó | AUD-04 |
+-| Corrida sin cierre, sesión sin `sesion_terminada`, eventos después de terminar | App cerrada de golpe o archivo incompleto |
+-| Un tipo de evento que no conoce | Se ignora; el contrato lo permite |
++| La sesión comparte su código con otro equipo (se cuentan aparte) | INT-03 |
++| Sin `sesion_iniciada`, o no es lo primero (¿archivos en otro orden?); empieza o termina dos veces; corrida sin cierre; eventos después de terminar | INT-05 · app cerrada de golpe |
++| **Contradicciones de una corrida**, que además le impiden compararse: empieza dos veces, se cruza con otra (empezó otra antes de que esta cerrara), empezó con otra abierta que nunca se cerró, empezó después del fin de la sesión, pausa o reanudación imposible, su cierre dice dos tiempos simulados, sus cierres dicen tiempos distintos, una falla, una pausa o un reinicio después del tiempo de su cierre, eventos después de su cierre o después del fin de la sesión, su circuito dice otra placa | INT-05, INT-11 · INT-RES-03, 03a y 03b |
++| Una corrida simula con otra placa que la elegida («falta un `placa_cambiada`») | Prueba de Efraín |
++| El reloj del computador retrocedió (solo se avisa: la historia sigue el orden de escritura) | INT-11 |
++| Una línea con una hora que no es una fecha (más allá de lo que `Date` representa) se aparta | INT-RES-05 |
++| Eventos de un tipo que esta historia no interpreta | INT-10: el contrato los permite, pero en el estudio la versión está congelada, así que un tipo nuevo dice que el análisis quedó incompleto |
++
++Las **notas** no son problemas: un BOM que se quitó, una ruta repetida o líneas que llegaron en dos archivos.
+ 
+-Los números de corrida los cuenta TecnoCircuito mientras la página está abierta (sección 66). Por eso una corrida se identifica por su sesión y su número.
++Los números de corrida los cuenta TecnoCircuito mientras la página está abierta (sección 66). Por eso una corrida se identifica por su sesión y su número. Los **hechos** de una corrida son la unión de las fallas de todos sus cierres y las que llegaron una a una (R1, R1c): una falla que se vio nunca desaparece del resumen. Las fallas de una corrida que no empezó en la sesión entran marcadas «[sin atribuir: corrida N]» (R1b).
+ 
+-**Solo afirma lo que el registro respalda** (R1 y R2 de la verificación de Codex, 19 oct). Los **hechos** de una corrida son la unión de las fallas de todos sus cierres y las que llegaron una a una. Si un registro mal formado trae dos cierres, el segundo no borra lo que dijo el primero, y cada uno conserva su paso en la historia (R1c). Así, una falla que se vio nunca desaparece del resumen, aunque el cierre falte o la haya perdido. Al terminar de leer se revisa cada corrida:
+-- **Completa:** tiene cierre.
+-- **Coherente:** sus cierres dicen lo mismo entre sí y traen las mismas fallas que llegaron, también las que llegaron después del cierre, que además se avisan. Un cierre repetido idéntico se avisa, pero la corrida sigue siendo coherente.
++**El tiempo de una corrida** (INT-RES-03a y 03b, verificación de Codex del 20 oct). Cada falla que llega y cada cierre se guardan con su tiempo simulado, **también las repeticiones** (`ocurrencias` y `tiemposCierre` en `--json`): antes se guardaba solo la primera repetición y el último cierre, y una contradicción podía quedar escondida según el orden. Cada cierre se compara con todo lo que llegó en **su mismo tramo del reloj**. El RESET del botón pone el reloj de la corrida en cero (sección 66), así que empieza un tramo nuevo; un reinicio por energía no lo hace, porque el núcleo conserva el reloj:
+ 
+-«Corregidas al final» solo se afirma si la última corrida es completa y coherente. Si no, dice «no se puede asegurar», y lo que se vio en ella queda como «Sin corregir: al menos…». El texto de cada cierre y la comparación con la corrida anterior se escriben al final de la lectura. Así, una falla que llega tarde, a esa corrida o a la anterior, también cuenta. Solo se compara si las dos corridas están completas y coherentes; si no, dice «No se compara con la corrida N» y el motivo (R1a, segunda verificación de Codex). Las fallas de una corrida que no empezó en la sesión tampoco se pierden: entran en las fallas vistas marcadas «[sin atribuir: corrida N]», porque llegaron pero no se sabe si son del montaje del equipo. Mientras haya alguna, el final no se afirma (R1b).
++```
++ tramo 0:  0 ── falla a 1,5 s ── RESET (sale con 1,6 s)
++ tramo 1:                         0 ── falla a 0,4 s ── cierre a 1,0 s
++                                  └──── el cierre se compara con su tramo ────┘
++ la falla de 1,5 s es del tramo 0: no contradice el cierre de 1,0 s (uso normal)
++ una falla, pausa o reinicio de más de 1,0 s en el tramo 1, sí: la corrida no se compara
++```
+ 
+-**Uso:** `npm run historia -- %APPDATA%\TecnoBloques\registros` en TecnoBloques, o con la carpeta que sale de «Exportar registros». Con `--json` sale la historia como datos.
++Sin los tramos, un equipo que pulsa RESET y detiene pronto quedaba con una corrida «incoherente» sin motivo: el lector anterior ya tenía ese falso positivo con las fallas. Lo demás del ciclo de vida: el cierre es lo último de una corrida (AUD-03), así que cualquier evento de ella después de su cierre es una contradicción, salvo un cierre repetido idéntico (mismas fallas y mismo tiempo); y la app cierra la corrida antes de terminar la sesión, así que un cierre o un hecho que llega después de `sesion_terminada` se conserva, pero no acredita cómo quedó. Una corrida que empieza mientras otra sigue abierta, y esa nunca se cierra, tampoco se compara: no se sabe si se cruzaron.
+ 
+-**Pruebas:**
+-- `npm run test:historia`: una secuencia sintética, armada con el sobre real (`crearRegistroEventos`) y un reloj fijo, tiene que salir renglón por renglón tal como pasó. Un segundo registro con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Seis sesiones más prueban el resumen con registros incompletos o incoherentes: un control válido con pausa y reinicio, la corrida sin cierre, el cierre que perdió la falla, la falla después del cierre, la falla que vuelve en la última corrida y la corrida que sigue a otra sin cierre. Otras cinco cubren la falla que llega tarde a la segunda corrida o a la anterior (con su control de dos corridas coherentes) y las fallas o cierres de corridas sin inicio, solas o junto a una corrida propia. Cuatro más cubren los cierres múltiples: un cierre único sin falla suelta, dos cierres contradictorios, con y sin inicio, y un cierre repetido idéntico. También prueba la línea de comandos: una carpeta, una línea dañada y `--json`.
+-- `test:registro-app`: al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas.
++**Límite conocido:** si el Worker no confirma el cierre en 500 ms (sección 66), el cierre sale con el último tiempo que mostró la página, y una falla que llegó en esa espera puede tener más tiempo. La corrida queda «no se compara»: se pierde una comparación, pero no se afirma nada falso.
++
++**Uso:** `npm run historia -- %APPDATA%\TecnoBloques\registros` en TecnoBloques, o con la carpeta que sale de «Exportar registros». Con `--json` sale la historia como datos (`limpio`, `historias`, `problemas`, `notas`). Para validar con el esquema necesita el repositorio de TecnoCircuito al lado (`..\TecnoCircuito`); si no está, lo dice y sale con 1.
++
++### La prueba de Efraín (20 oct)
++
++Que el lector funcione no prueba que la historia sirva. Por eso Efraín trabajó en la app como equipos de prueba y contrastó la historia con lo que hizo ([informe](../validacion/2026-10-20-reg004-aceptacion.md)). La primera prueba coincidió en las corridas, las fallas, la corrección y el cambio de equipo, y mostró tres defectos:
++
++```
++ lo que hizo Efraín               lo que decía la historia            después
++ ───────────────────────────      ─────────────────────────────       ───────────────────────────────────────
++ eligió el Uno (venía del Nano)   «nano» en el encabezado; nada       «Cambió la placa: nano → uno.»
++                                  decía el cambio                     (evento nuevo placa_cambiada)
++ delay 500 → 200 en los bloques   «Bloques: 8 (5 tipos)», igual       «Programa: `delay(500);` → `delay(200);`
++                                  que antes                            (2 veces).»
++ armó LED y resistencia           «cambió r1: desenchufado; r1:       «cambió r1: giro 90°, enchufado en
++                                  giro 90°; r1: desenchufado; …»       2→placa.GND1»
++```
++
++- **La placa:** TecnoBloques emite `placa_cambiada` `{de, a}` cada vez que cambia la placa elegida, por cualquier camino: el selector, la placa que detectó la subida, un proyecto o un ejemplo (una sola función, `ponerPlaca`, en `src/app.js`). Va antes de lo que provoca. Es un cambio aditivo del contrato 1 (sección 6.1). El encabezado dice todas las placas que pasaron («nano → uno») y cada corrida dice con cuál simuló; si una corrida usa otra placa que la elegida, se avisa que falta un `placa_cambiada`.
++- **Los bloques:** los `bloques_cambiados` seguidos se cuentan en un solo paso: «8 (5 tipos) → 1 (1 tipo)», o «cambió algo dentro de los mismos 8 (misma cantidad y mismos tipos)», que es lo que el resumen acredita.
++- **El circuito:** de cada pieza se dice cómo quedó, no los pasos intermedios. Lo que se hizo y se deshizo en el mismo tramo no se cuenta; si todo se deshizo, «hizo cambios y los deshizo». El lienzo da el primer id libre, así que si el equipo quita `r1` y agrega otra resistencia, la nueva también es `r1` (R3): cada alta empieza una pieza nueva que no hereda nada de la quitada.
++
++```
++ eventos del tramo                       piezas con el id r1                 la historia dice
++ ─────────────────────────────────       ─────────────────────────────       ──────────────────────────────
++ cambia r1 a 1000 Ω                      la que estaba: 1000 Ω
++ quita r1                                la que estaba: quitada        ──►   quitó r1 (resistencia);
++ agrega r1                               otra, nueva: sin valores            agregó otra r1 (resistencia)
++```
++
++La segunda prueba, con la app corregida (`PRUEBA-03`), coincidió sin avisos y **Efraín aceptó la historia**. Las palabras nuevas del rediseño cambian lo que se lee, así que hizo una prueba final (`PRUEBA-04`): quemó el LED, lo corrigió con la resistencia, cambió el programa y después la placa a Nano. La historia coincidió, pero el resumen decía «Corregidas al final: ninguna… ya no se observaron (cambió la placa)», porque comparaba solo con la última corrida y escondía la corrección de la corrida 2. Se corrigió con la regla de arriba, con su regresión. En el informe público va solo lo técnico, sin registros de aprendices.
++
++### Pruebas
+ 
+-**Lo que falta: la prueba de Efraín.** Que el lector funcione no prueba que la historia sirva. Para eso Efraín trabaja unos 10 minutos en la app como un equipo y después contrasta la historia con lo que hizo. Es la aceptación humana de REG-004. En el informe público va solo lo técnico, sin registros de aprendices.
++- `npm run test:historia` (135 OK; 21 por INT-RES-01 a 05 y 19 por INT-RES-03a/03b y el límite de la corrida abierta, que con el lector de CLA-009 fallan 18): una secuencia sintética armada con el sobre real (`crearRegistroEventos`) y un reloj fijo tiene que salir renglón por renglón; otra con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Siguen los casos de R1 a R3 (cierres faltantes, contradictorios, tardíos o sin inicio, y piezas que reutilizan el id), la sesión de Efraín y una regresión por familia de la auditoría: el programa (idéntico, solo espacios, los raw y empalmes de R4/R4a/R4b, INT-08, líneas largas de INT-09), INT-01 (modo, no idealidad, placa y pieza), INT-02 (hueco entre corridas y su control), INT-03, INT-04 (cuatro líneas inválidas y una sesión rota que no tumba la buena), INT-05, INT-10, INT-11 y la línea de comandos (código de salida, INT-06 e INT-07 con archivos de verdad). Los datos sintéticos cumplen el esquema, porque ahora el lector lo valida.
++- `test:registro-app` (88): al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas. Una corrida de E2 pulsa RESET a los 1,5 s y se detiene poco después: el reinicio sale con 1524 ms y el cierre con 201 ms, y la historia lo lee sin avisos.
++- Los instrumentos de Codex pasan, salvo dos controles que esperaban «el mismo programa» con solo otra sangría: por la decisión de Efraín ahora dicen «cambió solo en espacios o saltos de línea».

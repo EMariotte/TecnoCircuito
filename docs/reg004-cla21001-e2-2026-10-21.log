@@ -1,0 +1,11 @@
+CONTROL falta-t-se-inventa-hora
+CONTROL placa-snapshot-no-coincide
+CONTROL tiempo-falla-posterior-a-cierre
+CONTROL cpp-raw-prefijo-u8R-empalmado
+CONTROL cpp-cambios-adyacentes-truncados
+CONTROL utf8-invalido-sustituido-sin-aviso
+REPRODUCIDO limite-linea-rechaza-sin-senal
+REPRODUCIDO exportar-mismo-minuto-sobrescribe-carpeta
+CASOS=8; OBSERVACIONES=2
+
+exit=0

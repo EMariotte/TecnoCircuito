@@ -1,0 +1,13 @@
+COMANDO: node C:\Users\ACER\AppData\Local\Temp\reg004-cla21001-59kh9nui\replay.cjs "C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\docs\verificar-reg004-cla004-2026-10-20.cjs" bordes
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+OK control-LF-cero
+OK control-CRLF-cero
+OK control-LF-98
+OK control-CRLF-97
+OK empalme-LF-99
+OK empalme-CRLF-98
+OK empalme-CRLF-120
+OK empalme-CRLF-98-tabs
+8 casos; 0 fallos; cero errores de esquema
+
+exit=0

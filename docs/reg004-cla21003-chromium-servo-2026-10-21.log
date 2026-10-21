@@ -1,0 +1,25 @@
+COMANDO: C:\Users\ACER\AppData\Local\Programs\Python\Python314\python.exe -I prototipo/pruebas/probar_servo.py prototipo/dist/prototipo.html C:\Users\ACER\AppData\Local\Temp\reg004-cla21003-chromium-reintento-wfaxtgka\servo
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+OK    «+ Agregar → Servo» agrega servo1 con el modelo SG90
+OK    tiene sus 3 pines para cablear: ['servo1.GND', 'servo1.VCC', 'servo1.SIG']
+OK    el dibujo dice SG90
+OK    al elegir MG90S el dibujo cambia y el circuito guarda «mg90s»
+OK    la imagen SVG lleva el servo con su brazo
+OK    la netlist de KiCad lleva el conector de 3 pines del servo
+OK    el ejemplo elige el programa del barrido
+OK    antes de simular, el brazo está a 90° (rotate(-90 55.6 57.6))
+OK    con write(90) el brazo queda a 89.9°
+OK    la tabla muestra el servo: «servo1 (SG90)6,27 mA90° · pulso 1471 µs»
+OK    y lo que entrega el 5V: «5V de la placa (USB)6,27 mAel USB da hasta 500 mA»
+OK    con write(180) el brazo queda a 175.0° (el SG90 del kit llega a 175°)
+OK    al detener, el dibujo vuelve a 90° (lo que se guarda no cambia)
+OK    con los seis arrancando a la vez, el USB llega a un pico de 1717 mA
+OK    en modo realista la placa se reinicia y lo explica: «La placa se reinició: los servos arrancaron a la vez y el 5V bajó a 2,5 V; por debajo de 2,7 V el Arduino se reinicia. A…»
+OK    la tabla cuenta los reinicios: «USB (placa y circuito)4,97 V87,2 mApico 1716,8 mA · fusible 0 % · 137 reinicios»
+OK    los reinicios quedan en los eventos (reinicio_placa, motivo energia_usb)
+OK    servo: los 20 eventos cumplen contrato/evento.schema.json (componente_agregado, componente_cambiado, falla, reinicio_placa, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN
+
+exit=0

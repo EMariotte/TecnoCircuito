@@ -259,6 +259,7 @@ console.log('— Los eventos del registro cumplen el contrato');
     sesion_iniciada: edi('sesion_iniciada', { placa: 'nano', nivel: 2 }),
     proyecto_abierto: edi('proyecto_abierto', { placa: 'uno' }),
     ejemplo_cargado: edi('ejemplo_cargado', { id: 'validar_led' }),
+    placa_cambiada: edi('placa_cambiada', { de: 'nano', a: 'uno' }),
     bloques_cambiados: edi('bloques_cambiados', { bloques: 7, tipos: { arduino_setup: 1, digital_write: 2 } }),
     codigo_compilado: edi('codigo_compilado', { ok: true, error: null, bytes: 924, codigo: 'void setup() {\n  Serial.println("http://x");\n}\nvoid loop() {}\n' }),
     'codigo_compilado (con error)': edi('codigo_compilado', { ok: false, error: 'sintaxis', bytes: null, codigo: 'void loop() {' }),
@@ -274,7 +275,7 @@ console.log('— Los eventos del registro cumplen el contrato');
   }
   const tiposConEjemplo = new Set(Object.values(EVENTOS).map((ev) => ev.tipo));
   const delContrato6 = [...new Set([...contrato.split('## 6. Eventos')[1].split('## 7.')[0].matchAll(/`([a-z]+_[a-z_]+)`/g)].map((m) => m[1]))]
-    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
+    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|placa|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
   const sinEjemplo = delContrato6.filter((x) => !tiposConEjemplo.has(x));
   revisar(!sinEjemplo.length, `cada tipo de evento de la sección 6 tiene su ejemplo aquí (${tiposConEjemplo.size})${sinEjemplo.length ? ': faltan ' + sinEjemplo : ''}`);
 
@@ -292,6 +293,9 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['registro_interrumpido que dice venir del simulador', () => ({ ...EVENTOS.registro_interrumpido, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
     ['un evento del simulador sin «corrida»', () => { const e = { ...EVENTOS.falla }; delete e.corrida; return e; }, /corrida/],
     ['la corrida 0', () => ({ ...EVENTOS.falla, corrida: 0 }), /corrida/],
+    ['una falla con su tramo del reloj (21 oct)', () => ({ ...EVENTOS.falla, tramo: 1 }), null],
+    ['el tramo negativo', () => ({ ...EVENTOS.falla, tramo: -1 }), /tramo/],
+    ['el tramo con decimales', () => ({ ...EVENTOS.falla, tramo: 0.5 }), /tramo/],
     ['una falla con el mensaje en pantalla', () => sim('falla', { ...EVENTOS.falla.datos, mensaje: 'El LED se quemó' }), /mensaje/],
     ['una falla sin componente', () => sim('falla', { tipo: 'led_quemado' }), /componente/],
     ['una falla que dice venir del lienzo', () => ({ ...EVENTOS.falla, origen: 'circuito' }), /origen/],
@@ -306,6 +310,9 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['proyecto_abierto con el nombre que escribió el aprendiz', () => edi('proyecto_abierto', { placa: 'uno', nombre: 'LED de Sofía' }), /nombre/],
     ['codigo_compilado sin el código', () => edi('codigo_compilado', { ok: true }), /codigo/],
     ['sesion_iniciada en la placa «leonardo»', () => edi('sesion_iniciada', { placa: 'leonardo', nivel: 1 }), /placa/],
+    ['placa_cambiada sin «de»', () => edi('placa_cambiada', { a: 'uno' }), /de/],
+    ['placa_cambiada a la placa «leonardo»', () => edi('placa_cambiada', { de: 'uno', a: 'leonardo' }), /\/a/],
+    ['placa_cambiada que dice venir del simulador', () => ({ ...EVENTOS.placa_cambiada, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
     ['bloques_cambiados con el XML en vez del resumen', () => edi('bloques_cambiados', { xml: '<xml/>' }), /bloques/],
   ];
   for (const [texto, armar, espera] of casosEv) {

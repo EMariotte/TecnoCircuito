@@ -1,0 +1,7 @@
+{"caso":"control-cierre-coherente","resumen":"1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Sin corregir: LED quemado (led1).","avisos":[],"pierdeHechoDeCierre":false}
+{"caso":"control-cierre-sin-falla-suelta","resumen":"1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 1 tiene un cierre que no coincide con las fallas que llegaron. Sin corregir: al menos LED quemado (led1).","avisos":["La corrida 1: las fallas del cierre (LED quemado (led1)) no son las que llegaron (ninguna)."],"pierdeHechoDeCierre":false}
+{"caso":"dos-cierres-distintos-sin-falla-suelta","resumen":"1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 1 tiene cierres que no coinciden entre sí. Sin corregir: al menos LED quemado (led1).","avisos":["La corrida 1 tiene eventos después de su cierre (simulacion_detenida).","La corrida 1 se cierra dos veces.","Los cierres de la corrida 1 dicen tiempos simulados distintos (2000 | 3000 ms).","La corrida 1 tiene cierres que no coinciden entre sí (LED quemado (led1) | ninguna)."],"pierdeHechoDeCierre":false}
+{"caso":"dos-cierres-huerfanos-distintos","resumen":"0 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 1].","avisos":["La corrida 1 no empezó en esta sesión y tiene eventos aquí: ¿quedó en el equipo equivocado?"],"pierdeHechoDeCierre":false}
+Casos con hechos de cierre perdidos: 0
+
+exit=0

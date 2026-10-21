@@ -1,0 +1,1030 @@
+[
+  {
+    "caso": "control-alta-y-baja-nueva",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "circuito",
+        "tipo": "componente_agregado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "circuito",
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "control-alta-y-baja-nueva.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: hizo cambios y los deshizo."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: hizo cambios y los deshizo.\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "control-baja-existente",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "circuito",
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "control-baja-existente.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512002000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: quitó r1 (resistencia)."
+        },
+        {
+          "t": 1792512002000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: quitó r1 (resistencia).\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "baja-alta-baja-id-reutilizado",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "circuito",
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "circuito",
+        "tipo": "componente_agregado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "circuito",
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512004000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "baja-alta-baja-id-reutilizado.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512004000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: quitó r1 (resistencia)."
+        },
+        {
+          "t": 1792512004000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: quitó r1 (resistencia).\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "propiedad-no-heredada-al-recrear",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "circuito",
+        "tipo": "componente_cambiado",
+        "datos": {
+          "id": "r1",
+          "props": {
+            "ohmios": 1000
+          }
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "circuito",
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "circuito",
+        "tipo": "componente_agregado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512004000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "propiedad-no-heredada-al-recrear.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512004000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: quitó r1 (resistencia); agregó otra r1 (resistencia)."
+        },
+        {
+          "t": 1792512004000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: quitó r1 (resistencia); agregó otra r1 (resistencia).\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "control-ultimo-valor-misma-pieza",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "circuito",
+        "tipo": "componente_cambiado",
+        "datos": {
+          "id": "r1",
+          "props": {
+            "ohmios": 1000
+          }
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "circuito",
+        "tipo": "componente_cambiado",
+        "datos": {
+          "id": "r1",
+          "props": {
+            "ohmios": 330
+          }
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "control-ultimo-valor-misma-pieza.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: cambió r1: ohmios 330."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: cambió r1: ohmios 330.\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "control-programa-delay",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "void setup() {}\nvoid loop() { delay(500); }\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "void setup() {}\nvoid loop() { delay(200); }\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "control-programa-delay.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792512002000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `void loop() { delay(500); }` → `void loop() { delay(200); }`."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Compiló: bien, 100 bytes.\n  11:00  Compiló: bien, 100 bytes. Programa: `void loop() { delay(500); }` → `void loop() { delay(200); }`.\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "control-programa-indentacion",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "void setup() {}\nvoid loop() {\n delay(500);\n}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "void setup() {}\nvoid loop() {\n    delay(500);\n}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "control-programa-indentacion.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792512002000,
+          "texto": "Compiló: bien, 100 bytes (el mismo programa)."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Compiló: bien, 100 bytes.\n  11:00  Compiló: bien, 100 bytes (el mismo programa).\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "programa-cambio-espacios-en-literal-raw",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = R\"marca(\n A \n)marca\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = R\"marca(\nA\n)marca\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "programa-cambio-espacios-en-literal-raw.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792512002000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `const char *texto = R\"marca(\\n A \\n)marca\";` → `const char *texto = R\"marca(\\nA\\n)marca\";`."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Compiló: bien, 100 bytes.\n  11:00  Compiló: bien, 100 bytes. Programa: `const char *texto = R\"marca(\\n A \\n)marca\";` → `const char *texto = R\"marca(\\nA\\n)marca\";`.\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "programa-cambio-linea-vacia-en-literal-raw",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = R\"marca(\nA\n\nB\n)marca\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "error": null,
+          "bytes": 100,
+          "codigo": "const char *texto = R\"marca(\nA\nB\n)marca\";\nvoid setup() {}\nvoid loop() {}\n"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "programa-cambio-linea-vacia-en-literal-raw.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Compiló: bien, 100 bytes."
+        },
+        {
+          "t": 1792512002000,
+          "texto": "Compiló: bien, 100 bytes. Programa: `const char *texto = R\"marca(\\nA\\n\\nB\\n)marca\";` → `const char *texto = R\"marca(\\nA\\nB\\n)marca\";`."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Compiló: bien, 100 bytes.\n  11:00  Compiló: bien, 100 bytes. Programa: `const char *texto = R\"marca(\\nA\\n\\nB\\n)marca\";` → `const char *texto = R\"marca(\\nA\\nB\\n)marca\";`.\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  },
+  {
+    "caso": "control-cambios-placa",
+    "aprobado": true,
+    "error": null,
+    "erroresEsquema": [],
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512000000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512001000,
+        "origen": "editor",
+        "tipo": "placa_cambiada",
+        "datos": {
+          "de": "uno",
+          "a": "nano"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512002000,
+        "origen": "editor",
+        "tipo": "placa_cambiada",
+        "datos": {
+          "de": "nano",
+          "a": "uno"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "reg004-cla002",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792512003000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 9000
+        }
+      }
+    ],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "reg004-cla002",
+      "archivos": [
+        "control-cambios-placa.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512003000,
+      "placa": "uno",
+      "placas": [
+        "uno",
+        "nano",
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Cambió la placa: uno → nano."
+        },
+        {
+          "t": 1792512002000,
+          "texto": "Cambió la placa: nano → uno."
+        },
+        {
+          "t": 1792512003000,
+          "texto": "Terminó la sesión (9 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "desconocidos": {},
+      "sinAtribuir": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno → nano → uno, nivel 3 · sesión reg004-c\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Cambió la placa: uno → nano.\n  11:00  Cambió la placa: nano → uno.\n  11:00  Terminó la sesión (9 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n"
+  }
+]

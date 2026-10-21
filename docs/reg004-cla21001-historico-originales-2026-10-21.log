@@ -1,0 +1,13 @@
+OK control-alta-y-baja-nueva
+OK control-baja-existente
+OK baja-alta-baja-id-reutilizado
+OK propiedad-no-heredada-al-recrear
+OK control-ultimo-valor-misma-pieza
+OK control-programa-delay
+OK control-programa-indentacion
+OK programa-cambio-espacios-en-literal-raw
+OK programa-cambio-linea-vacia-en-literal-raw
+OK control-cambios-placa
+10 casos; 0 fallos; cero errores de esquema
+
+exit=0

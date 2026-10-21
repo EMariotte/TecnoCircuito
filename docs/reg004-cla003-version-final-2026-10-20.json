@@ -1,0 +1,120 @@
+{
+  "momento_utc": "2026-10-20T17:04:22.191425+00:00",
+  "repos": {
+    "TecnoCircuito": {
+      "head": "56baf57e38a16e13c95bcc281d90e1bfc578176c",
+      "rama": "main",
+      "status": " M BITACORA.md\n M CLAUDE.md\n M CONTRATO.md\n M contrato/evento.schema.json\n M prototipo/COMO-FUNCIONA.md\n M prototipo/pruebas/probar_contrato.js\n?? docs/VERIFICACION-REG004-CLA002-CODEX-2026-10-20.md\n?? docs/VERIFICACION-REG004-CLA003-CODEX-2026-10-20.md\n?? docs/auditar-reg004-cla002-2026-10-20.py\n?? docs/auditar-reg004-cla003-2026-10-20.py\n?? docs/contrastar-reg004-cla002-2026-10-20.py\n?? docs/reg004-cla002-adversos-2026-10-20.json\n?? docs/reg004-cla002-adversos-2026-10-20.log\n?? docs/reg004-cla002-ampliacion-2026-10-20.json\n?? docs/reg004-cla002-ampliacion-2026-10-20.log\n?? docs/reg004-cla002-build-2026-10-20.log\n?? docs/reg004-cla002-cierres-2026-10-20.json\n?? docs/reg004-cla002-cierres-2026-10-20.log\n?? docs/reg004-cla002-compilador-2026-10-20.json\n?? docs/reg004-cla002-compilador-2026-10-20.log\n?? docs/reg004-cla002-contrato-2026-10-20.log\n?? docs/reg004-cla002-contrato-reintento-2026-10-20.log\n?? docs/reg004-cla002-coordinacion-2026-10-20.log\n?? docs/reg004-cla002-historia-2026-10-20.log\n?? docs/reg004-cla002-lienzo-2026-10-20.json\n?? docs/reg004-cla002-lienzo-2026-10-20.log\n?? docs/reg004-cla002-lienzo-historia-2026-10-20.json\n?? docs/reg004-cla002-lienzo-historia-2026-10-20.log\n?? docs/reg004-cla002-original-2026-10-20.json\n?? docs/reg004-cla002-original-2026-10-20.log\n?? docs/reg004-cla002-placas-2026-10-20.log\n?? docs/reg004-cla002-placas-reintento-2026-10-20.log\n?? docs/reg004-cla002-registro-2026-10-20.log\n?? docs/reg004-cla002-registro-app-2026-10-20.log\n?? docs/reg004-cla002-residuales-2026-10-20.json\n?? docs/reg004-cla002-residuales-2026-10-20.log\n?? docs/reg004-cla002-simulador-2026-10-20.log\n?? docs/reg004-cla002-version-final-2026-10-20.json\n?? docs/reg004-cla002-version-inicio-2026-10-20.json\n?? docs/reg004-cla002-version-pruebas-2026-10-20.json\n?? docs/reg004-cla003-adicionales-2026-10-20.json\n?? docs/reg004-cla003-adicionales-2026-10-20.log\n?? docs/reg004-cla003-adversos-2026-10-20.json\n?? docs/reg004-cla003-ampliacion-2026-10-20.json\n?? docs/reg004-cla003-ampliacion-2026-10-20.log\n?? docs/reg004-cla003-cierres-2026-10-20.json\n?? docs/reg004-cla003-cierres-2026-10-20.log\n?? docs/reg004-cla003-compilador-2026-10-20.json\n?? docs/reg004-cla003-compilador-2026-10-20.log\n?? docs/reg004-cla003-coordinacion-2026-10-20.log\n?? docs/reg004-cla003-historia-2026-10-20.log\n?? docs/reg004-cla003-lienzo-2026-10-20.json\n?? docs/reg004-cla003-lienzo-2026-10-20.log\n?? docs/reg004-cla003-lienzo-historia-2026-10-20.json\n?? docs/reg004-cla003-lienzo-historia-2026-10-20.log\n?? docs/reg004-cla003-original-2026-10-20.json\n?? docs/reg004-cla003-original-2026-10-20.log\n?? docs/reg004-cla003-originales-2026-10-20.log\n?? docs/reg004-cla003-registro-2026-10-20.log\n?? docs/reg004-cla003-registro-app-2026-10-20.log\n?? docs/reg004-cla003-residuales-2026-10-20.json\n?? docs/reg004-cla003-residuales-2026-10-20.log\n?? docs/reg004-cla003-version-inicio-2026-10-20.json\n?? docs/reg004-cla003-version-pruebas-2026-10-20.json\n?? docs/verificar-reg004-cla002-2026-10-20.cjs\n?? docs/verificar-reg004-cla003-2026-10-20.cjs\n?? validacion/2026-10-20-reg004-aceptacion.md\n",
+      "archivos": {
+        "docs/VERIFICACION-REG004-CLA002-CODEX-2026-10-20.md": "b2640eb5476841c061ac814168a911966e7ed29c1cff5b45c29388c82c5b8b53",
+        "docs/VERIFICACION-REG004-CLA003-CODEX-2026-10-20.md": "4765334f6034ae1bd739e2d84bf8f0fbe79312395cdfb920e53441f83d8579d6",
+        "docs/auditar-reg004-cla002-2026-10-20.py": "0aa8fba384a21445a6f84a79469a01ea7f07c52273cee2c4c913a77469e54937",
+        "docs/auditar-reg004-cla003-2026-10-20.py": "0f8e1d9fdb64d947763c027972a6cddb4bbf3434cb8b533b112b617af1ca5220",
+        "docs/contrastar-reg004-cla002-2026-10-20.py": "1080be36abdcbc6b44f4a293f93494e85f3c5049f015f53e3c234cf59e270fce",
+        "docs/reg004-cla002-adversos-2026-10-20.json": "55367a93e8b2a6f2964a741f506f537d404d0a09bb17341400edb9af51726a65",
+        "docs/reg004-cla002-adversos-2026-10-20.log": "93f0a8779f93c505c36ca0cf79eef15b16b0701c5b4b179ad4e009b37f823c4a",
+        "docs/reg004-cla002-ampliacion-2026-10-20.json": "000fe18596aa3f12c168bc00404e79377e9ae46419ff507de65b2dfcd561fa90",
+        "docs/reg004-cla002-ampliacion-2026-10-20.log": "4a8c0f80bb77bf217ade67ba29e5bce840f75a60053ae5a25d1b85357d233b5c",
+        "docs/reg004-cla002-build-2026-10-20.log": "0952c2b68a2d6d2b0afd614d6f886c79ab8a5638c6725d7f84862966ce1b7ca2",
+        "docs/reg004-cla002-cierres-2026-10-20.json": "cbff15f1fc5dd2f06ad2c66f8df5d0c4ca0c1a759ff8dd8c00798332aa59d02d",
+        "docs/reg004-cla002-cierres-2026-10-20.log": "631c69e9e8d329567aaa36af21b3ae4a6e4ab256510063f9598e34293996dcd1",
+        "docs/reg004-cla002-compilador-2026-10-20.json": "560779fba920692bed382e7a6fd83b9f01792c4ab78ce4a3fdbda55007053057",
+        "docs/reg004-cla002-compilador-2026-10-20.log": "24108b60431a15e22c3dcd989b1b7e4c3eca4a3e909541fdbb174ce7e4d75125",
+        "docs/reg004-cla002-contrato-2026-10-20.log": "ac9fb64bb641ba666b09272f4cb604dd453e8779617295d820b7efb1efc40b65",
+        "docs/reg004-cla002-contrato-reintento-2026-10-20.log": "fcf334f15d000150e9b9f489c9279a82df86da480f5b98d519c6866b69c90af7",
+        "docs/reg004-cla002-coordinacion-2026-10-20.log": "c2447f72d0a40a85efe474cc1d412b66d5eeac86220c0367534839510a1e0f25",
+        "docs/reg004-cla002-historia-2026-10-20.log": "fa254acacedd6e69bfa9180c21f2bb92f1844fffef9ceec5db846b4465b742f1",
+        "docs/reg004-cla002-lienzo-2026-10-20.json": "a5a6d5d2520313520bd18335a9ff7eaab95cca3570256ab53d1c6db558810971",
+        "docs/reg004-cla002-lienzo-2026-10-20.log": "547bfcdde63553723117b557a7d6c64524f0093b00117c8a01ff3aadc974c839",
+        "docs/reg004-cla002-lienzo-historia-2026-10-20.json": "8abb3ddc215a253806dd866d164d7105f0d9f2a57e06c2b68f2d083c0d0408e6",
+        "docs/reg004-cla002-lienzo-historia-2026-10-20.log": "c133f6f3f68f4fb42a8a01e9331ec8cb3701b67f8ba910a25f00e00186f631e9",
+        "docs/reg004-cla002-original-2026-10-20.json": "377630604d0c1bd4a410596b116cb574f5e49c4f8fa909f2336da2ddc1d50c76",
+        "docs/reg004-cla002-original-2026-10-20.log": "dff4f0dcb1b4a464a48aa2e625ef266f0b226138f514f61a3a1674dc0985aef2",
+        "docs/reg004-cla002-placas-2026-10-20.log": "5e9fc3cc2c5a0b22f65932002ceb91ee380a2db831d4a6b69644ede7689e633d",
+        "docs/reg004-cla002-placas-reintento-2026-10-20.log": "0fd0aa112e82be43ebe9abdcdf6b79fc679e267a4665bda0f71adda91de2f8c1",
+        "docs/reg004-cla002-registro-2026-10-20.log": "78394eaa79793990d3c9bab819b56557b61b013023cf77d1d3911ba4739973b8",
+        "docs/reg004-cla002-registro-app-2026-10-20.log": "6b27d697c56910abb8ed399c880c2b8be41f7e7a937fdca7844804dabff2d129",
+        "docs/reg004-cla002-residuales-2026-10-20.json": "1a07f5fadecf2c679e072df0077db541430c0634e6bd7d1f08ed8dca3a5c76c0",
+        "docs/reg004-cla002-residuales-2026-10-20.log": "e6ec75a7e5666462799342f29416f6c40525279312f6c3454db7c4872770e075",
+        "docs/reg004-cla002-simulador-2026-10-20.log": "993a77b1903ae57df84020c41cd5223383537837d1c2054f31b8ed85879e25cc",
+        "docs/reg004-cla002-version-final-2026-10-20.json": "8c1a3c2a101948818c092fabf7ac316df4f9ebeda69b487730b22917feec5bf1",
+        "docs/reg004-cla002-version-inicio-2026-10-20.json": "95702ffbc0068840a78bdfb2edd74f3d32ba8c30a412069606501d0f1cfaa36b",
+        "docs/reg004-cla002-version-pruebas-2026-10-20.json": "19d0b81d63b59691e283b9e999a198de356d72407e797fb091401a5fd8d24020",
+        "docs/reg004-cla003-adicionales-2026-10-20.json": "e241eec6843bffa3c1591fa6a6075890ac72ecd31d0da862feef1b9fcf2bb75e",
+        "docs/reg004-cla003-adicionales-2026-10-20.log": "e4ffd387cf5e507aba5cddd249e3c882c0b458e420777f397279c2110ba11dec",
+        "docs/reg004-cla003-adversos-2026-10-20.json": "027b8a783e348ba3f57600e2eb7feb85be125a1ffb58472de0aaa69916a489a6",
+        "docs/reg004-cla003-ampliacion-2026-10-20.json": "000fe18596aa3f12c168bc00404e79377e9ae46419ff507de65b2dfcd561fa90",
+        "docs/reg004-cla003-ampliacion-2026-10-20.log": "4a8c0f80bb77bf217ade67ba29e5bce840f75a60053ae5a25d1b85357d233b5c",
+        "docs/reg004-cla003-cierres-2026-10-20.json": "cbff15f1fc5dd2f06ad2c66f8df5d0c4ca0c1a759ff8dd8c00798332aa59d02d",
+        "docs/reg004-cla003-cierres-2026-10-20.log": "631c69e9e8d329567aaa36af21b3ae4a6e4ab256510063f9598e34293996dcd1",
+        "docs/reg004-cla003-compilador-2026-10-20.json": "1d9bdff5ddfa62c700236e86eb6793be22da3103b35461feea054d3810c070ba",
+        "docs/reg004-cla003-compilador-2026-10-20.log": "00b1a2d6078c306ac84b15f1a49642c9bbabd7b5fc672027158438e7469696cf",
+        "docs/reg004-cla003-coordinacion-2026-10-20.log": "c2447f72d0a40a85efe474cc1d412b66d5eeac86220c0367534839510a1e0f25",
+        "docs/reg004-cla003-historia-2026-10-20.log": "0f1c0009fabc134549b4848fe566b916f0aaee16d9142ef75e49e537f45da797",
+        "docs/reg004-cla003-lienzo-2026-10-20.json": "703131d72c3a2dc43d970cb5246c43ca7bca30908b36bee969a1d149356791bd",
+        "docs/reg004-cla003-lienzo-2026-10-20.log": "547bfcdde63553723117b557a7d6c64524f0093b00117c8a01ff3aadc974c839",
+        "docs/reg004-cla003-lienzo-historia-2026-10-20.json": "f176082f5837861bc38fd804169a0aa7addcb02566f8d922950745bbf9c7a616",
+        "docs/reg004-cla003-lienzo-historia-2026-10-20.log": "85d2c4ccdb6e2996ceeefe9b7536c07e7eccaba65fc83f5d030fcd6958e9f9f9",
+        "docs/reg004-cla003-original-2026-10-20.json": "377630604d0c1bd4a410596b116cb574f5e49c4f8fa909f2336da2ddc1d50c76",
+        "docs/reg004-cla003-original-2026-10-20.log": "dff4f0dcb1b4a464a48aa2e625ef266f0b226138f514f61a3a1674dc0985aef2",
+        "docs/reg004-cla003-originales-2026-10-20.log": "3f5f92f0c6e3780696a07ef7aa94e2086b7bc0ea667377dd8202f9814667fecc",
+        "docs/reg004-cla003-registro-2026-10-20.log": "8ca204c9e2d4374363454f47422470a2be1dcb10390a3bac54bc77e972a04374",
+        "docs/reg004-cla003-registro-app-2026-10-20.log": "636dca9124dec4d0edd0058ddabc6e0bc4072388f1caca0d9db2c980ee2954c0",
+        "docs/reg004-cla003-residuales-2026-10-20.json": "1a07f5fadecf2c679e072df0077db541430c0634e6bd7d1f08ed8dca3a5c76c0",
+        "docs/reg004-cla003-residuales-2026-10-20.log": "e6ec75a7e5666462799342f29416f6c40525279312f6c3454db7c4872770e075",
+        "docs/reg004-cla003-version-inicio-2026-10-20.json": "11068e6bb329a9ea3cbe4a0c2a2424bab2e56d49a02cc2c6e82fe07bb2298f15",
+        "docs/reg004-cla003-version-pruebas-2026-10-20.json": "b0d496cb2b41593d1fe116a286fe772e291afc81d1fa2017ae9190e62204ef1d",
+        "docs/verificar-reg004-cla002-2026-10-20.cjs": "4724f996c89f81a098c89dc7d5e480af67c84f4310d4fa09018ebe9764bd3461",
+        "docs/verificar-reg004-cla003-2026-10-20.cjs": "f41c26e5329cee3876c6c6f937983ae7786deed4c8f2d8e17f3aff2efa75fc39",
+        "validacion/2026-10-20-reg004-aceptacion.md": "03ca2127b85ce8c67bcf4412987fd89dd910a1481c0917e0bc3771317af4b132",
+        "BITACORA.md": "522d827e6dac3264055bda0f49d2c340b5f9da2c8b23e643fee752b6c4e783c5",
+        "CLAUDE.md": "3be79c0cb019cac37fdb4c679a684362321b176397c50e9336746227bb19e749",
+        "CONTRATO.md": "22b6b9d2f39b862abe8fc1ea20b6b5471ea618699bc9c0d58dd1e0240838269a",
+        "contrato/evento.schema.json": "b875cabf2f447ef02f48ddda7d76ea9ef16ccb4865005305624fca685950cd6e",
+        "prototipo/COMO-FUNCIONA.md": "aeebdce021f14c4c97c8a3331f324e28e50180e0c2a0f5a65141622d0add4f42",
+        "prototipo/pruebas/probar_contrato.js": "b4e781ecddd371318a3e6d796fa5177053dc122925e90b6ec05f553b1ef6ff5c"
+      }
+    },
+    "TecnoBloques": {
+      "head": "86433d1341caa86b6d75dc3ab437aaa2cf8f008c",
+      "rama": "main",
+      "status": " M BITACORA.md\n M CLAUDE.md\n M herramientas/historia-registro.js\n M src/app.js\n M test/historia-registro.js\n M test/registro-app.js\n",
+      "archivos": {
+        "BITACORA.md": "a7af36855449838b671b574cbe30238e004b55c6f8bf2e7183084c49a717b46c",
+        "CLAUDE.md": "90c31e625f74df6458619f902cd4ada4cf20ee876bc004c47e75167dabaa789c",
+        "herramientas/historia-registro.js": "6bbec190f9cb4847fa70f13cfef33253c7cdd68a69bf006cd3f272412c3b2e78",
+        "src/app.js": "a7eb9567478e6eafac9e253d4ff92ed8f881b788c5217c6e47d95cc64a2134b1",
+        "test/historia-registro.js": "bcefd9243a0659001948599c40889bf46a89e3ec7b1293a8e908a92308a12655",
+        "test/registro-app.js": "dee9ab8977e2cacdf64e0bb4698a8951444661a0c6f7083bbda210bfccf14ab2"
+      }
+    },
+    "TecnoSuite": {
+      "head": "5665e60fc0635263ace18e4e45ac1e3454f68fb1",
+      "rama": "main",
+      "status": " M INVESTIGACION.md\n M TABLERO.md\n M canales/CLAUDE-A-CODEX.md\n M canales/CODEX-A-CLAUDE.md\n M registro/SESIONES.md\n M tareas/INV-001.md\n M tareas/REG-004.md\n",
+      "archivos": {
+        "INVESTIGACION.md": "d4f04b5dccfd2b1492af5f825e44b032f04ee5b180fde64bbc095ff898836a85",
+        "TABLERO.md": "3dd24a0d2e7a1262d055dc58a747954ca15b8b46f553d114b31a7f1ac77f9b8a",
+        "canales/CLAUDE-A-CODEX.md": "65fbf2ec6e4ff8622fd291aeeb53bdac577401e2fa1a6b2e175d21f6e5cfba2d",
+        "canales/CODEX-A-CLAUDE.md": "dd3078f3fe2938b1269436a112745fc762bb4d1e4f02b5385763c3cd96d6cac0",
+        "registro/SESIONES.md": "4362adc6de5ac510cf2953d9403654b173fc998ea597ac77223275d0b52f17eb",
+        "tareas/INV-001.md": "fc7562faad6ff8b92239d8de7da8e272737790ea9f42c2218d589978a13580b7",
+        "tareas/REG-004.md": "7fa9748e452cb6e7a13ba317fe6e104be53f4f3b436f9d0d4fbc9e79530bc8fd"
+      }
+    }
+  },
+  "artefactos": {
+    "TecnoCircuito:prototipo/dist/tecnocircuito.js": {
+      "bytes": 492565,
+      "sha256": "c9dfb1f5065823a65719d37181e56278f2bc9eb76af79742e800811f5aaa747f"
+    },
+    "TecnoCircuito:prototipo/dist/prototipo.html": {
+      "bytes": 632969,
+      "sha256": "415ea35596a00172157a8f41ecadea35a92b268207c45742f8ea29925cb7e4d0"
+    },
+    "TecnoBloques:dist/TecnoBloques.html": {
+      "bytes": 1645784,
+      "sha256": "a8b5759c66fb1cf47fa2eea0dd11154e5b12902c49f97cb2a3769b7058495fde"
+    }
+  }
+}

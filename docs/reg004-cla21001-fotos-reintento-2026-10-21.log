@@ -1,0 +1,37 @@
+
+> tecnocircuito-prototipo@0.0.1 probar:fotos
+> esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_fotos.js
+
+OK    la foto pendiente trae fallas nuevas (corriente_pin,led_quemado)
+OK    pausa: las fallas de la foto que llegó tarde se avisan igual
+OK    pausa: con su corrida y el tiempo simulado de la foto (ms_sim 20, 20)
+OK    pausa: la vista vieja no se dibuja y el tiempo mostrado no cambia
+OK    al reanudar, el LED sigue quemado y el núcleo no repite la falla
+OK    el cierre de la corrida trae las fallas (corriente_pin,led_quemado)
+OK    cada falla se avisa una sola vez
+OK    pausa y detener: el cierre trae las fallas de la foto que llegó en la pausa
+OK    reiniciar: las fallas de la foto de antes del reinicio se avisan
+OK    reiniciar: lo que imprimió el programa antes del reinicio llega al monitor
+OK    reiniciar: y van en el cierre
+OK    pausa: el texto del monitor serial de la foto que llegó tarde se muestra
+OK    recablear: la foto se dibuja y sus fallas se avisan
+OK    otra corrida: las fallas y el texto de la foto de la corrida anterior no entran
+OK    el cierre de la corrida nueva no trae fallas de la anterior
+OK    RESET después de un reinicio por energía: ese reinicio se avisa una sola vez (1)
+OK    detener: se ve detenida al instante, pero el cierre espera al Worker
+OK    detener: la foto en camino entrega sus fallas, el cierre las trae (corriente_pin,led_quemado) con el ms del Worker, y la promesa se cumple
+OK    detener: después del cierre ya no entra nada
+OK    pausa y detener: se ve detenida al instante, pero el cierre espera al Worker
+OK    pausa y detener: la foto en camino entrega sus fallas, el cierre las trae (corriente_pin,led_quemado) con el ms del Worker, y la promesa se cumple
+OK    pausa y detener: después del cierre ya no entra nada
+OK    la última foto del Worker al parar: sus fallas van en el cierre
+OK    destruir: el Worker sigue hasta el cierre
+OK    destruir: el cierre trae las fallas de la foto en camino y después se libera el Worker
+OK    destruir: después ya no acepta órdenes
+OK    sin respuesta del Worker: el cierre sale a los 500 ms, con las fallas que llegaron
+OK    una confirmación tardía no repite el cierre
+OK    sinEsperar: el cierre sale en el mismo instante (límite al cerrar la ventana)
+OK    sinEsperar: una foto que llega después no agrega eventos
+OK    iniciar antes de la confirmación: el cierre de la anterior sale antes del inicio nuevo (simulacion_iniciada,simulacion_detenida,simulacion_iniciada)
+
+TODO BIEN

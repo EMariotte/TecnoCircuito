@@ -315,6 +315,30 @@ const promesaCumplida = async (p) => { let ok = false; p.then(() => { ok = true;
   detenerYConfirmar(s);
 }
 
+// 9. INT-RES-03c (verificación de Codex de REG-004): el RESET pone el reloj de la corrida en cero. Una foto de antes
+// del RESET que llega después conserva su tramo; el reinicio sale con el tramo de antes y lo demás con el nuevo.
+for (const tarde of [false, true]) {
+  const s = armar(LED_DIRECTO);
+  const n = nucleo();
+  s.sim.iniciar();
+  n.avanzar(FRECUENCIA * 0.02);
+  const pendiente = s.foto(n, { energia: { reinicios: 1 } });
+  if (!tarde) s.entregar(pendiente);
+  s.sim.reiniciar();
+  if (tarde) s.entregar(pendiente);
+  n.reiniciarChip();
+  n.avanzar(FRECUENCIA * 0.01);
+  s.entregar(s.foto(n, { fallas: [{ tipo: 'corriente_pin', componente: 'led2' }], energia: { reinicios: 1 } }));
+  s.sim.detener();
+  s.confirmar(10);
+  const tramos = (tipo) => s.eventos.filter((e) => e.tipo === tipo).map((e) => `${e.datos.componente || e.datos.motivo || ''}:${e.tramo}`).join();
+  const deLaFoto = s.eventos.filter((e) => (e.tipo === 'falla' && e.datos.componente !== 'led2') || (e.tipo === 'reinicio_placa' && e.datos.motivo === 'energia_usb'));
+  revisar(deLaFoto.length === pendiente.fallas.length + 1 && deLaFoto.every((e) => e.tramo === 0 && e.ms_sim === Math.round(pendiente.msSimulados)) &&
+    tramos('reinicio_placa').includes('boton:0') && tramos('falla').includes('led2:1') && s.eventos.every((e) => Number.isInteger(e.tramo)) &&
+    deTipo(s.eventos, 'simulacion_iniciada')[0].tramo === 0 && deTipo(s.eventos, 'simulacion_detenida')[0].tramo === 1 && deTipo(s.eventos, 'simulacion_detenida')[0].ms_sim === 10,
+  `la foto de antes del RESET ${tarde ? 'llega después' : 'llega antes'}: sus hechos quedan en el tramo 0 con su tiempo, el RESET en el 0 y lo del reloj nuevo en el 1 (fallas ${tramos('falla')}; reinicios ${tramos('reinicio_placa')})`);
+}
+
 // Los casos del cierre que espera (7) son asíncronos: el resumen sale cuando terminan.
 function terminarPrueba() {
   console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');

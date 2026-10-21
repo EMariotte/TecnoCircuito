@@ -1,0 +1,1131 @@
+[
+  {
+    "caso": "cierres-distintos-y-corrida-siguiente",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432800000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 1
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432801000,
+        "origen": "simulador",
+        "tipo": "simulacion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "modo": "realista",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "circuito": {
+            "formato": 1,
+            "placa": "uno",
+            "protoboard": null,
+            "componentes": [
+              {
+                "id": "led1",
+                "tipo": "led",
+                "x": 0,
+                "y": 0,
+                "rot": 0,
+                "props": {
+                  "color": "rojo"
+                }
+              }
+            ],
+            "cables": [
+              {
+                "de": "placa.D13",
+                "a": "led1.anodo"
+              },
+              {
+                "de": "led1.catodo",
+                "a": "placa.GND1"
+              }
+            ]
+          }
+        },
+        "corrida": 1,
+        "ms_sim": 1000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432802000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 2000,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 2000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432803000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 3000,
+          "fallas": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 3000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432804000,
+        "origen": "simulador",
+        "tipo": "simulacion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "modo": "realista",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "circuito": {
+            "formato": 1,
+            "placa": "uno",
+            "protoboard": null,
+            "componentes": [
+              {
+                "id": "led1",
+                "tipo": "led",
+                "x": 0,
+                "y": 0,
+                "rot": 0,
+                "props": {
+                  "color": "rojo"
+                }
+              }
+            ],
+            "cables": [
+              {
+                "de": "placa.D13",
+                "a": "led1.anodo"
+              },
+              {
+                "de": "led1.catodo",
+                "a": "placa.GND1"
+              }
+            ]
+          }
+        },
+        "corrida": 2,
+        "ms_sim": 1000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432805000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 5000,
+          "fallas": []
+        },
+        "corrida": 2,
+        "ms_sim": 5000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432806000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 6000
+        }
+      }
+    ],
+    "erroresEsquema": [],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "auditoria-reg004",
+      "archivos": [
+        "cierres-distintos-y-corrida-siguiente.jsonl"
+      ],
+      "inicio": 1792432800000,
+      "fin": 1792432806000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 1,
+      "pasos": [
+        {
+          "t": 1792432800000,
+          "texto": "Empezó la sesión (uno, nivel 1)."
+        },
+        {
+          "t": 1792432801000,
+          "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 1
+        },
+        {
+          "t": 1792432802000,
+          "texto": "■ Corrida 1, cierre 1 de 2: LED quemado (led1).",
+          "corrida": 1
+        },
+        {
+          "t": 1792432803000,
+          "texto": "■ Corrida 1 terminó: 3,0 s simulados. Los cierres dicen: LED quemado (led1) | corriente del pin (placa); llegaron: ninguna.",
+          "corrida": 1
+        },
+        {
+          "t": 1792432804000,
+          "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 2
+        },
+        {
+          "t": 1792432805000,
+          "texto": "■ Corrida 2 terminó: 5,0 s simulados. Sin fallas. No se compara con la corrida 1: sus cierres no coinciden entre sí.",
+          "corrida": 2
+        },
+        {
+          "t": 1792432806000,
+          "texto": "Terminó la sesión (6 s)."
+        }
+      ],
+      "corridas": [
+        {
+          "numero": 1,
+          "inicio": 1792432801000,
+          "fin": 1792432803000,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "fallasVistas": [],
+          "cierres": [
+            [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ],
+            [
+              {
+                "tipo": "corriente_pin",
+                "componente": "placa"
+              }
+            ]
+          ],
+          "ms_sim": 3000,
+          "reinicios": 0,
+          "contradicciones": [
+            "sus cierres dicen tiempos simulados distintos"
+          ],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 2000,
+              "tramo": 0
+            },
+            {
+              "ms_sim": 3000,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 1,
+          "hastaPos": 3,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa"
+            }
+          ],
+          "completa": true,
+          "cierre": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa"
+            }
+          ],
+          "coherente": false,
+          "incoherencia": "tiene cierres que no coinciden entre sí",
+          "comparada": null,
+          "nuevas": null,
+          "siguen": null,
+          "yaNoSeObservo": null,
+          "corrigio": null
+        },
+        {
+          "numero": 2,
+          "inicio": 1792432804000,
+          "fin": 1792432805000,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "fallasVistas": [],
+          "cierres": [
+            []
+          ],
+          "ms_sim": 5000,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 5000,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 4,
+          "hastaPos": 5,
+          "fallas": [],
+          "completa": true,
+          "cierre": [],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 1,
+          "nuevas": null,
+          "siguen": null,
+          "yaNoSeObservo": null,
+          "corrigio": null
+        }
+      ],
+      "avisos": [
+        "La corrida 1 tiene eventos después de su cierre (simulacion_detenida).",
+        "La corrida 1 se cierra dos veces.",
+        "Los cierres de la corrida 1 dicen tiempos simulados distintos (2000 | 3000 ms).",
+        "La corrida 1 tiene cierres que no coinciden entre sí (LED quemado (led1) | corriente del pin (placa))."
+      ],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [],
+      "huecos": [],
+      "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1), corriente del pin (placa) (la corrida 1 tiene cierres que no coinciden entre sí). Sin corregir: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 19 de oct de 2026, 13:00 a 13:00 · uno, nivel 1 · sesión auditori\n  13:00  Empezó la sesión (uno, nivel 1).\n  13:00  ▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).\n  13:00  ■ Corrida 1, cierre 1 de 2: LED quemado (led1).\n  13:00  ■ Corrida 1 terminó: 3,0 s simulados. Los cierres dicen: LED quemado (led1) | corriente del pin (placa); llegaron: ninguna.\n  13:00  ▶ Corrida 2 (uno, realista; 1 pieza, 2 cables).\n  13:00  ■ Corrida 2 terminó: 5,0 s simulados. Sin fallas. No se compara con la corrida 1: sus cierres no coinciden entre sí.\n  13:00  Terminó la sesión (6 s).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1), corriente del pin (placa) (la corrida 1 tiene cierres que no coinciden entre sí). Sin corregir: ninguna.\n  Avisos:\n  ⚠ La corrida 1 tiene eventos después de su cierre (simulacion_detenida).\n  ⚠ La corrida 1 se cierra dos veces.\n  ⚠ Los cierres de la corrida 1 dicen tiempos simulados distintos (2000 | 3000 ms).\n  ⚠ La corrida 1 tiene cierres que no coinciden entre sí (LED quemado (led1) | corriente del pin (placa)).\n"
+  },
+  {
+    "caso": "cierres-distintos-orden-inverso",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432800000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 1
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432801000,
+        "origen": "simulador",
+        "tipo": "simulacion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "modo": "realista",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "circuito": {
+            "formato": 1,
+            "placa": "uno",
+            "protoboard": null,
+            "componentes": [
+              {
+                "id": "led1",
+                "tipo": "led",
+                "x": 0,
+                "y": 0,
+                "rot": 0,
+                "props": {
+                  "color": "rojo"
+                }
+              }
+            ],
+            "cables": [
+              {
+                "de": "placa.D13",
+                "a": "led1.anodo"
+              },
+              {
+                "de": "led1.catodo",
+                "a": "placa.GND1"
+              }
+            ]
+          }
+        },
+        "corrida": 1,
+        "ms_sim": 1000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432802000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 2000,
+          "fallas": []
+        },
+        "corrida": 1,
+        "ms_sim": 2000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432803000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 3000,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 3000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432804000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 4000
+        }
+      }
+    ],
+    "erroresEsquema": [],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "auditoria-reg004",
+      "archivos": [
+        "cierres-distintos-orden-inverso.jsonl"
+      ],
+      "inicio": 1792432800000,
+      "fin": 1792432804000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 1,
+      "pasos": [
+        {
+          "t": 1792432800000,
+          "texto": "Empezó la sesión (uno, nivel 1)."
+        },
+        {
+          "t": 1792432801000,
+          "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 1
+        },
+        {
+          "t": 1792432802000,
+          "texto": "■ Corrida 1, cierre 1 de 2: sin fallas.",
+          "corrida": 1
+        },
+        {
+          "t": 1792432803000,
+          "texto": "■ Corrida 1 terminó: 3,0 s simulados. Los cierres dicen: ninguna | LED quemado (led1); llegaron: ninguna.",
+          "corrida": 1
+        },
+        {
+          "t": 1792432804000,
+          "texto": "Terminó la sesión (4 s)."
+        }
+      ],
+      "corridas": [
+        {
+          "numero": 1,
+          "inicio": 1792432801000,
+          "fin": 1792432803000,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "fallasVistas": [],
+          "cierres": [
+            [],
+            [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ]
+          ],
+          "ms_sim": 3000,
+          "reinicios": 0,
+          "contradicciones": [
+            "sus cierres dicen tiempos simulados distintos"
+          ],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 2000,
+              "tramo": 0
+            },
+            {
+              "ms_sim": 3000,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 1,
+          "hastaPos": 3,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ],
+          "completa": true,
+          "cierre": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ],
+          "coherente": false,
+          "incoherencia": "tiene cierres que no coinciden entre sí",
+          "comparada": null,
+          "nuevas": null,
+          "siguen": null,
+          "yaNoSeObservo": null,
+          "corrigio": null
+        }
+      ],
+      "avisos": [
+        "La corrida 1 tiene eventos después de su cierre (simulacion_detenida).",
+        "La corrida 1 se cierra dos veces.",
+        "Los cierres de la corrida 1 dicen tiempos simulados distintos (2000 | 3000 ms).",
+        "La corrida 1 tiene cierres que no coinciden entre sí (ninguna | LED quemado (led1))."
+      ],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [],
+      "huecos": [],
+      "resumen": "1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 1 tiene cierres que no coinciden entre sí. Sin corregir: al menos LED quemado (led1)."
+    },
+    "texto": "Equipo AUD_SINTETICO · 19 de oct de 2026, 13:00 a 13:00 · uno, nivel 1 · sesión auditori\n  13:00  Empezó la sesión (uno, nivel 1).\n  13:00  ▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).\n  13:00  ■ Corrida 1, cierre 1 de 2: sin fallas.\n  13:00  ■ Corrida 1 terminó: 3,0 s simulados. Los cierres dicen: ninguna | LED quemado (led1); llegaron: ninguna.\n  13:00  Terminó la sesión (4 s).\n  Resumen: 1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 1 tiene cierres que no coinciden entre sí. Sin corregir: al menos LED quemado (led1).\n  Avisos:\n  ⚠ La corrida 1 tiene eventos después de su cierre (simulacion_detenida).\n  ⚠ La corrida 1 se cierra dos veces.\n  ⚠ Los cierres de la corrida 1 dicen tiempos simulados distintos (2000 | 3000 ms).\n  ⚠ La corrida 1 tiene cierres que no coinciden entre sí (ninguna | LED quemado (led1)).\n"
+  },
+  {
+    "caso": "tres-cierres-huerfanos",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432800000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 1
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432802000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 2000,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 2000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432803000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 3000,
+          "fallas": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 3000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432804000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 4000,
+          "fallas": []
+        },
+        "corrida": 1,
+        "ms_sim": 4000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432805000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 5000
+        }
+      }
+    ],
+    "erroresEsquema": [],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "auditoria-reg004",
+      "archivos": [
+        "tres-cierres-huerfanos.jsonl"
+      ],
+      "inicio": 1792432800000,
+      "fin": 1792432805000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 1,
+      "pasos": [
+        {
+          "t": 1792432800000,
+          "texto": "Empezó la sesión (uno, nivel 1)."
+        },
+        {
+          "t": 1792432805000,
+          "texto": "Terminó la sesión (5 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [
+        "La corrida 1 no empezó en esta sesión y tiene eventos aquí: ¿quedó en el equipo equivocado?"
+      ],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [
+        {
+          "corrida": 1,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa"
+            }
+          ]
+        }
+      ],
+      "huecos": [],
+      "resumen": "0 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 1], corriente del pin (placa) [sin atribuir: corrida 1]."
+    },
+    "texto": "Equipo AUD_SINTETICO · 19 de oct de 2026, 13:00 a 13:00 · uno, nivel 1 · sesión auditori\n  13:00  Empezó la sesión (uno, nivel 1).\n  13:00  Terminó la sesión (5 s).\n  Resumen: 0 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 1], corriente del pin (placa) [sin atribuir: corrida 1].\n  Avisos:\n  ⚠ La corrida 1 no empezó en esta sesión y tiene eventos aquí: ¿quedó en el equipo equivocado?\n"
+  },
+  {
+    "caso": "control-repetido-identico-y-comparacion",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432800000,
+        "origen": "editor",
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 1
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432801000,
+        "origen": "simulador",
+        "tipo": "simulacion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "modo": "realista",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "circuito": {
+            "formato": 1,
+            "placa": "uno",
+            "protoboard": null,
+            "componentes": [
+              {
+                "id": "led1",
+                "tipo": "led",
+                "x": 0,
+                "y": 0,
+                "rot": 0,
+                "props": {
+                  "color": "rojo"
+                }
+              }
+            ],
+            "cables": [
+              {
+                "de": "placa.D13",
+                "a": "led1.anodo"
+              },
+              {
+                "de": "led1.catodo",
+                "a": "placa.GND1"
+              }
+            ]
+          }
+        },
+        "corrida": 1,
+        "ms_sim": 1000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432802000,
+        "origen": "simulador",
+        "tipo": "falla",
+        "datos": {
+          "tipo": "led_quemado",
+          "componente": "led1"
+        },
+        "corrida": 1,
+        "ms_sim": 2000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432803000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 3000,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 3000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432803000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 3000,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ]
+        },
+        "corrida": 1,
+        "ms_sim": 3000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432805000,
+        "origen": "simulador",
+        "tipo": "simulacion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "modo": "realista",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "circuito": {
+            "formato": 1,
+            "placa": "uno",
+            "protoboard": null,
+            "componentes": [
+              {
+                "id": "led1",
+                "tipo": "led",
+                "x": 0,
+                "y": 0,
+                "rot": 0,
+                "props": {
+                  "color": "rojo"
+                }
+              }
+            ],
+            "cables": [
+              {
+                "de": "placa.D13",
+                "a": "led1.anodo"
+              },
+              {
+                "de": "led1.catodo",
+                "a": "placa.GND1"
+              }
+            ]
+          }
+        },
+        "corrida": 2,
+        "ms_sim": 1000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432806000,
+        "origen": "simulador",
+        "tipo": "simulacion_detenida",
+        "datos": {
+          "ms_sim": 6000,
+          "fallas": []
+        },
+        "corrida": 2,
+        "ms_sim": 6000
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "auditoria-reg004",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "t": 1792432807000,
+        "origen": "editor",
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 7000
+        }
+      }
+    ],
+    "erroresEsquema": [],
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "auditoria-reg004",
+      "archivos": [
+        "control-repetido-identico-y-comparacion.jsonl"
+      ],
+      "inicio": 1792432800000,
+      "fin": 1792432807000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 1,
+      "pasos": [
+        {
+          "t": 1792432800000,
+          "texto": "Empezó la sesión (uno, nivel 1)."
+        },
+        {
+          "t": 1792432801000,
+          "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 1
+        },
+        {
+          "t": 1792432802000,
+          "texto": "   falla: LED quemado (led1), a los 2,0 s simulados.",
+          "corrida": 1
+        },
+        {
+          "t": 1792432803000,
+          "texto": "■ Corrida 1, cierre 1 de 2: LED quemado (led1).",
+          "corrida": 1
+        },
+        {
+          "t": 1792432803000,
+          "texto": "■ Corrida 1 terminó: 3,0 s simulados. Fallas: LED quemado (led1).",
+          "corrida": 1
+        },
+        {
+          "t": 1792432805000,
+          "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 2
+        },
+        {
+          "t": 1792432806000,
+          "texto": "■ Corrida 2 terminó: 6,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).",
+          "corrida": 2
+        },
+        {
+          "t": 1792432807000,
+          "texto": "Terminó la sesión (7 s)."
+        }
+      ],
+      "corridas": [
+        {
+          "numero": 1,
+          "inicio": 1792432801000,
+          "fin": 1792432803000,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "fallasVistas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "ms_sim": 2000
+            }
+          ],
+          "cierres": [
+            [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ],
+            [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ]
+          ],
+          "ms_sim": 3000,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "ms_sim": 2000,
+              "tramo": 0
+            }
+          ],
+          "tiemposCierre": [
+            {
+              "ms_sim": 3000,
+              "tramo": 0
+            },
+            {
+              "ms_sim": 3000,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 1,
+          "hastaPos": 4,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ],
+          "completa": true,
+          "cierre": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": null,
+          "nuevas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": []
+        },
+        {
+          "numero": 2,
+          "inicio": 1792432805000,
+          "fin": 1792432806000,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "fallasVistas": [],
+          "cierres": [
+            []
+          ],
+          "ms_sim": 6000,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 6000,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 5,
+          "hastaPos": 6,
+          "fallas": [],
+          "completa": true,
+          "cierre": [],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 1,
+          "nuevas": [],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            }
+          ]
+        }
+      ],
+      "avisos": [
+        "La corrida 1 tiene eventos después de su cierre (simulacion_detenida).",
+        "La corrida 1 se cierra dos veces."
+      ],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [],
+      "huecos": [],
+      "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 19 de oct de 2026, 13:00 a 13:00 · uno, nivel 1 · sesión auditori\n  13:00  Empezó la sesión (uno, nivel 1).\n  13:00  ▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).\n  13:00     falla: LED quemado (led1), a los 2,0 s simulados.\n  13:00  ■ Corrida 1, cierre 1 de 2: LED quemado (led1).\n  13:00  ■ Corrida 1 terminó: 3,0 s simulados. Fallas: LED quemado (led1).\n  13:00  ▶ Corrida 2 (uno, realista; 1 pieza, 2 cables).\n  13:00  ■ Corrida 2 terminó: 6,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).\n  13:00  Terminó la sesión (7 s).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna.\n  Avisos:\n  ⚠ La corrida 1 tiene eventos después de su cierre (simulacion_detenida).\n  ⚠ La corrida 1 se cierra dos veces.\n"
+  }
+]

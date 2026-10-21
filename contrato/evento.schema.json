@@ -20,6 +20,7 @@
         "datos": { "type": "object" },
         "corrida": { "type": "integer", "minimum": 1, "description": "Número de la simulación mientras la app está abierta (1, 2, 3…). Lo cuenta TecnoCircuito." },
         "ms_sim": { "type": "number", "minimum": 0, "description": "Tiempo simulado de esa corrida, en ms." },
+        "tramo": { "type": "integer", "minimum": 0, "description": "Solo del simulador (desde el 21 oct; opcional): cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho. Cada RESET pone ms_sim en cero, así que ms_sim se compara solo dentro de un mismo tramo. Un hecho de antes del RESET que llega después conserva su tramo." },
         "equipo": { "type": "string", "minLength": 1, "description": "El código del equipo, sin datos de los aprendices. Su formato no es parte del contrato." },
         "sesion": { "type": "string", "minLength": 1, "description": "Un identificador al azar por cada vez que se abre la app." },
         "version_tb": { "type": "string", "minLength": 1 },
@@ -60,7 +61,7 @@
           "properties": {
             "ms_sim": { "type": "number", "minimum": 0 },
             "ms_simulados": { "type": "number", "minimum": 0, "description": "El nombre de antes del 16 oct: se conserva." },
-            "fallas": { "type": "array", "items": { "type": "object", "required": ["tipo", "componente"], "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" } } }, "description": "Las fallas de esa corrida. Si una aparece en una corrida y no en la siguiente, se corrigió." }
+            "fallas": { "type": "array", "items": { "type": "object", "required": ["tipo", "componente"], "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" } } }, "description": "Las fallas de esa corrida. Que una falla no aparezca en la corrida siguiente es corrección solo si las dos son comparables (completas y coherentes, sin huecos entre ellas, mismo modo, mismas no idealidades, misma placa y la pieza sigue); si no, solo «ya no se observó» (decisión de Efraín, 20 oct; CONTRATO 6.1)." }
           } } } } },
         { "if": { "properties": { "tipo": { "const": "falla" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
           "description": "Puede traer medidas de la falla, como corriente_mA o voltios. Nunca el mensaje en pantalla.",
@@ -86,6 +87,10 @@
           "required": ["placa"],
           "properties": { "placa": { "$ref": "#/$defs/placa" }, "nombre": false } } } } },
         { "if": { "properties": { "tipo": { "const": "ejemplo_cargado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } } } } },
+        { "if": { "properties": { "tipo": { "const": "placa_cambiada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "La placa elegida cambió (REG-004, 20 oct): con el selector, al aceptar la que detectó la subida, al abrir un proyecto o al cargar un ejemplo. Va antes de lo que el cambio provoca.",
+          "required": ["de", "a"],
+          "properties": { "de": { "$ref": "#/$defs/placa" }, "a": { "$ref": "#/$defs/placa" } } } } } },
         { "if": { "properties": { "tipo": { "const": "bloques_cambiados" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
           "description": "Un resumen, no el XML.",
           "required": ["bloques", "tipos"],

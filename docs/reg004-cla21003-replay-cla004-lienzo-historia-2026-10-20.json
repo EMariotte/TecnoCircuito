@@ -1,0 +1,287 @@
+[
+  {
+    "caso": "baja-alta-baja-id-reutilizado",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "baja-alta-baja-id-reutilizado",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792512000000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "baja-alta-baja-id-reutilizado",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "circuito",
+        "t": 1792512001000,
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "baja-alta-baja-id-reutilizado",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "circuito",
+        "t": 1792512002000,
+        "tipo": "componente_agregado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "baja-alta-baja-id-reutilizado",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "circuito",
+        "t": 1792512003000,
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "baja-alta-baja-id-reutilizado",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792512010000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 10000
+        }
+      }
+    ],
+    "inicial": {
+      "formato": 1,
+      "placa": "uno",
+      "protoboard": null,
+      "componentes": [
+        {
+          "id": "r1",
+          "tipo": "resistencia",
+          "x": 300,
+          "y": 20,
+          "rot": 0,
+          "props": {
+            "ohmios": 220
+          }
+        }
+      ],
+      "cables": []
+    },
+    "final": {
+      "formato": 1,
+      "placa": "uno",
+      "protoboard": null,
+      "componentes": [],
+      "cables": []
+    },
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "baja-alta-baja-id-reutilizado",
+      "archivos": [
+        "lienzo-real.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512010000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: quitó r1 (resistencia)."
+        },
+        {
+          "t": 1792512010000,
+          "texto": "Terminó la sesión (10 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [],
+      "huecos": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión baja-alt\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: quitó r1 (resistencia).\n  11:00  Terminó la sesión (10 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "resumenContradiceEstado": false
+  },
+  {
+    "caso": "propiedad-no-heredada-al-recrear",
+    "eventos": [
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "propiedad-no-heredada-al-recrear",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792512000000,
+        "tipo": "sesion_iniciada",
+        "datos": {
+          "placa": "uno",
+          "nivel": 3
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "propiedad-no-heredada-al-recrear",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "circuito",
+        "t": 1792512001000,
+        "tipo": "componente_cambiado",
+        "datos": {
+          "id": "r1",
+          "props": {
+            "ohmios": 1000
+          }
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "propiedad-no-heredada-al-recrear",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "circuito",
+        "t": 1792512002000,
+        "tipo": "componente_quitado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "propiedad-no-heredada-al-recrear",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "circuito",
+        "t": 1792512003000,
+        "tipo": "componente_agregado",
+        "datos": {
+          "id": "r1",
+          "tipo": "resistencia"
+        }
+      },
+      {
+        "v": 1,
+        "equipo": "AUD_SINTETICO",
+        "sesion": "propiedad-no-heredada-al-recrear",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev",
+        "origen": "editor",
+        "t": 1792512010000,
+        "tipo": "sesion_terminada",
+        "datos": {
+          "ms": 10000
+        }
+      }
+    ],
+    "inicial": {
+      "formato": 1,
+      "placa": "uno",
+      "protoboard": null,
+      "componentes": [
+        {
+          "id": "r1",
+          "tipo": "resistencia",
+          "x": 300,
+          "y": 20,
+          "rot": 0,
+          "props": {
+            "ohmios": 220
+          }
+        }
+      ],
+      "cables": []
+    },
+    "final": {
+      "formato": 1,
+      "placa": "uno",
+      "protoboard": null,
+      "componentes": [
+        {
+          "id": "r1",
+          "tipo": "resistencia",
+          "x": 160,
+          "y": 81,
+          "rot": 0,
+          "props": {
+            "ohmios": 220
+          }
+        }
+      ],
+      "cables": []
+    },
+    "historia": {
+      "equipo": "AUD_SINTETICO",
+      "sesion": "propiedad-no-heredada-al-recrear",
+      "archivos": [
+        "lienzo-real.jsonl"
+      ],
+      "inicio": 1792512000000,
+      "fin": 1792512010000,
+      "placa": "uno",
+      "placas": [
+        "uno"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1792512000000,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1792512001000,
+          "texto": "Circuito: quitó r1 (resistencia); agregó otra r1 (resistencia)."
+        },
+        {
+          "t": 1792512010000,
+          "texto": "Terminó la sesión (10 s)."
+        }
+      ],
+      "corridas": [],
+      "avisos": [],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [],
+      "huecos": [],
+      "resumen": "0 corrida(s). Fallas vistas: ninguna."
+    },
+    "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 11:00 a 11:00 · uno, nivel 3 · sesión propieda\n  11:00  Empezó la sesión (uno, nivel 3).\n  11:00  Circuito: quitó r1 (resistencia); agregó otra r1 (resistencia).\n  11:00  Terminó la sesión (10 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+    "resumenContradiceEstado": false
+  }
+]

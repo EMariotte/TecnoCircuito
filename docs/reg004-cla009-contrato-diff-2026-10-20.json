@@ -1,0 +1,6 @@
+{
+  "esquema_actual_sha256": "8f18ef5ce96cea63ee9d509b4720bbb54e96857f7091adf1c8ede22a46e7fccc",
+  "esquema_anterior_sha256": "b875cabf2f447ef02f48ddda7d76ea9ef16ccb4865005305624fca685950cd6e",
+  "solo_descripcion_y_fin_de_linea_desde_CLA007": true,
+  "descripcion_actual": "Las fallas de esa corrida. Que una falla no aparezca en la corrida siguiente es corrección solo si las dos son comparables (completas y coherentes, sin huecos entre ellas, mismo modo, mismas no idealidades, misma placa y la pieza sigue); si no, solo «ya no se observó» (decisión de Efraín, 20 oct; CONTRATO 6.1)."
+}

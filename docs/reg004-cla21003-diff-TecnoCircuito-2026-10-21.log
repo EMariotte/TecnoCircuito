@@ -1,0 +1,217 @@
+diff --git a/CONTRATO.md b/CONTRATO.md
+index 96bebc5..a148271 100644
+--- a/CONTRATO.md
++++ b/CONTRATO.md
+@@ -292,6 +292,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
+ | `origen`, `tipo`, `datos` | quien emite | como arriba; `origen` suma `editor` |
+ | `corrida` | TecnoCircuito | número de la simulación dentro de la sesión (1, 2, 3…), en los eventos del simulador |
+ | `ms_sim` | TecnoCircuito | tiempo simulado de esa corrida, en los eventos del simulador |
++| `tramo` | TecnoCircuito | nuevo (21 oct, opcional): cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho, en los eventos del simulador. Cada RESET pone `ms_sim` en cero, así que `ms_sim` se compara solo dentro de un mismo tramo; un hecho de antes del RESET que llega después conserva el suyo. Un registro sin `tramo` (anterior) se lee por el orden en que se escribió |
+ | `equipo`, `sesion`, `version_tb`, `version_tc` | TecnoBloques | el código del equipo, un identificador al azar por cada vez que se abre la app, y las dos versiones |
+ 
+ **Eventos del simulador que cambian o se agregan** (los demás siguen como arriba, con sus campos escritos en el esquema):
+@@ -301,7 +302,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
+ | `simulacion_iniciada` | `placa`, `modo`, `activas` (las no idealidades encendidas) y **`circuito` completo** (sección 4): cada corrida se puede analizar sola, sin reconstruirla desde los cambios |
+ | `simulacion_pausada` | nuevo, sin datos |
+ | `simulacion_reanudada` | nuevo (16 oct), sin datos: la simulación sigue después de una pausa (con Iniciar o con Reiniciar). Con `simulacion_pausada` dice cuánto duró la pausa |
+-| `simulacion_detenida` | `ms_sim` y **`fallas`**: `[{ tipo, componente }]` de esa corrida. Si una falla aparece en una corrida y no en la siguiente, se corrigió |
++| `simulacion_detenida` | `ms_sim` y **`fallas`**: `[{ tipo, componente }]` de esa corrida. Que una falla no aparezca en la corrida siguiente es **corrección solo si las dos son comparables**: completas y coherentes, sin huecos del registro entre ellas, con el mismo modo, las mismas no idealidades, la misma placa y la pieza de la falla todavía en el circuito. Si no, la falla solo «ya no se observó» (decisión de Efraín, 20 oct; así lo lee la historia del registro de TecnoBloques, COMO-FUNCIONA 68) |
+ 
+ **Eventos del editor** (`origen: 'editor'`, los emite TecnoBloques):
+ 
+@@ -309,6 +310,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
+ |---|---|
+ | `sesion_iniciada` | `placa`, `nivel` y `condicion` (reservado: el modo asignado, si lo hay) |
+ | `proyecto_abierto` / `ejemplo_cargado` | `placa` del proyecto (sin su nombre: decisión del 16 oct) o `id` del ejemplo |
++| `placa_cambiada` | nuevo (20 oct, REG-004): `de` y `a`. La placa elegida cambió durante la sesión, por cualquier camino (el selector, la placa que detectó la subida, un proyecto o un ejemplo). Va antes de lo que provoca, como las piezas que el lienzo quita. Sin él, la placa de `sesion_iniciada` no dice con qué placa se trabajó después |
+ | `bloques_cambiados` | resumen: cuántos bloques y cuántos de cada tipo. No el XML entero |
+ | `codigo_compilado` | `ok`, `error` (el tipo de error, si lo hay), `bytes` y **`codigo`**: el C++ completo **sin comentarios** |
+ | `programa_subido` | `ok` y `placa`: el programa fue a la placa real |
+@@ -387,3 +389,6 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
+ | 1 (borrador) | 16 oct 2026 | Entra la no idealidad `resistenciaBateria` (agregar una clave no rompe nada: el modo `realista` la enciende y `ideal` la apaga). La resistencia de la LiPo medida en el laboratorio (1,2 Ω) dejó de ser despreciable. `caidaL293D` pasa a 1,3 V + 1 V/A, medida. En `mediciones()`, el voltaje de un motor en la shield es el que marca un multímetro con PWM (suma lo que genera el motor mientras el puente está apagado). Sin cambios en la API ni en el formato del circuito. |
+ | 1 (borrador) | 18 oct 2026 | Sección 6.1: entra el evento del editor `registro_interrumpido` (AUD-02, decisión de Efraín). Agregar un tipo no rompe nada. Deja en los datos que el disco falló, cuándo y si se perdieron líneas. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
+ | 1 (borrador) | 18 oct 2026 | Sección 2: `sim.detener()` y `sim.destruir()` devuelven una promesa que se cumple cuando sale `simulacion_detenida` (AUD-03, decisión de Efraín). Ese cierre espera a que el Worker confirme que paró, así trae las fallas de las fotos que venían en camino; si no confirma en 500 ms, sale con lo que llegó. `{ sinEsperar: true }` lo saca en el mismo instante (al cerrar la ventana). Aditivo: antes no devolvían nada y se siguen pudiendo llamar sin esperar. Lo que cambia es el momento del cierre: unos ms después de la llamada, no dentro de ella. |
++| 1 (borrador) | 20 oct 2026 | Sección 6.1: entra el evento del editor `placa_cambiada` (`de`, `a`; REG-004, decisión de Efraín). En la prueba humana del registro, la placa cambió de Nano a Uno después de empezar la sesión y nada lo decía. Agregar un tipo no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
++| 1 (borrador) | 20 oct 2026 | Sección 6.1 y descripción de `fallas` en el esquema: solo redacción. Que una falla desaparezca en la corrida siguiente es corrección solo si las dos corridas son comparables; si no, «ya no se observó» (decisión de Efraín; DOC-01 de la verificación de Codex). Sin cambios de formato ni de validación. |
++| 1 (borrador) | 21 oct 2026 | Sección 6.1: los eventos del simulador suman el campo opcional `tramo` (REG-004, INT-RES-03c de la verificación de Codex; decisión de Efraín). El RESET pone el reloj de la corrida en cero, y una foto de antes del RESET que llega después no se podía distinguir de un hecho imposible del reloj nuevo. Agregar un campo opcional no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
+diff --git a/contrato/evento.schema.json b/contrato/evento.schema.json
+index ef383ef..dd9dc3b 100644
+--- a/contrato/evento.schema.json
++++ b/contrato/evento.schema.json
+@@ -20,6 +20,7 @@
+         "datos": { "type": "object" },
+         "corrida": { "type": "integer", "minimum": 1, "description": "Número de la simulación mientras la app está abierta (1, 2, 3…). Lo cuenta TecnoCircuito." },
+         "ms_sim": { "type": "number", "minimum": 0, "description": "Tiempo simulado de esa corrida, en ms." },
++        "tramo": { "type": "integer", "minimum": 0, "description": "Solo del simulador (desde el 21 oct; opcional): cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho. Cada RESET pone ms_sim en cero, así que ms_sim se compara solo dentro de un mismo tramo. Un hecho de antes del RESET que llega después conserva su tramo." },
+         "equipo": { "type": "string", "minLength": 1, "description": "El código del equipo, sin datos de los aprendices. Su formato no es parte del contrato." },
+         "sesion": { "type": "string", "minLength": 1, "description": "Un identificador al azar por cada vez que se abre la app." },
+         "version_tb": { "type": "string", "minLength": 1 },
+@@ -60,7 +61,7 @@
+           "properties": {
+             "ms_sim": { "type": "number", "minimum": 0 },
+             "ms_simulados": { "type": "number", "minimum": 0, "description": "El nombre de antes del 16 oct: se conserva." },
+-            "fallas": { "type": "array", "items": { "type": "object", "required": ["tipo", "componente"], "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" } } }, "description": "Las fallas de esa corrida. Si una aparece en una corrida y no en la siguiente, se corrigió." }
++            "fallas": { "type": "array", "items": { "type": "object", "required": ["tipo", "componente"], "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" } } }, "description": "Las fallas de esa corrida. Que una falla no aparezca en la corrida siguiente es corrección solo si las dos son comparables (completas y coherentes, sin huecos entre ellas, mismo modo, mismas no idealidades, misma placa y la pieza sigue); si no, solo «ya no se observó» (decisión de Efraín, 20 oct; CONTRATO 6.1)." }
+           } } } } },
+         { "if": { "properties": { "tipo": { "const": "falla" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
+           "description": "Puede traer medidas de la falla, como corriente_mA o voltios. Nunca el mensaje en pantalla.",
+@@ -86,6 +87,10 @@
+           "required": ["placa"],
+           "properties": { "placa": { "$ref": "#/$defs/placa" }, "nombre": false } } } } },
+         { "if": { "properties": { "tipo": { "const": "ejemplo_cargado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } } } } },
++        { "if": { "properties": { "tipo": { "const": "placa_cambiada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
++          "description": "La placa elegida cambió (REG-004, 20 oct): con el selector, al aceptar la que detectó la subida, al abrir un proyecto o al cargar un ejemplo. Va antes de lo que el cambio provoca.",
++          "required": ["de", "a"],
++          "properties": { "de": { "$ref": "#/$defs/placa" }, "a": { "$ref": "#/$defs/placa" } } } } } },
+         { "if": { "properties": { "tipo": { "const": "bloques_cambiados" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+           "description": "Un resumen, no el XML.",
+           "required": ["bloques", "tipos"],
+diff --git a/prototipo/pruebas/probar_contrato.js b/prototipo/pruebas/probar_contrato.js
+index 9de515c..8098668 100644
+--- a/prototipo/pruebas/probar_contrato.js
++++ b/prototipo/pruebas/probar_contrato.js
+@@ -259,6 +259,7 @@ console.log('— Los eventos del registro cumplen el contrato');
+     sesion_iniciada: edi('sesion_iniciada', { placa: 'nano', nivel: 2 }),
+     proyecto_abierto: edi('proyecto_abierto', { placa: 'uno' }),
+     ejemplo_cargado: edi('ejemplo_cargado', { id: 'validar_led' }),
++    placa_cambiada: edi('placa_cambiada', { de: 'nano', a: 'uno' }),
+     bloques_cambiados: edi('bloques_cambiados', { bloques: 7, tipos: { arduino_setup: 1, digital_write: 2 } }),
+     codigo_compilado: edi('codigo_compilado', { ok: true, error: null, bytes: 924, codigo: 'void setup() {\n  Serial.println("http://x");\n}\nvoid loop() {}\n' }),
+     'codigo_compilado (con error)': edi('codigo_compilado', { ok: false, error: 'sintaxis', bytes: null, codigo: 'void loop() {' }),
+@@ -274,7 +275,7 @@ console.log('— Los eventos del registro cumplen el contrato');
+   }
+   const tiposConEjemplo = new Set(Object.values(EVENTOS).map((ev) => ev.tipo));
+   const delContrato6 = [...new Set([...contrato.split('## 6. Eventos')[1].split('## 7.')[0].matchAll(/`([a-z]+_[a-z_]+)`/g)].map((m) => m[1]))]
+-    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
++    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|placa|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
+   const sinEjemplo = delContrato6.filter((x) => !tiposConEjemplo.has(x));
+   revisar(!sinEjemplo.length, `cada tipo de evento de la sección 6 tiene su ejemplo aquí (${tiposConEjemplo.size})${sinEjemplo.length ? ': faltan ' + sinEjemplo : ''}`);
+ 
+@@ -292,6 +293,9 @@ console.log('— Los eventos del registro cumplen el contrato');
+     ['registro_interrumpido que dice venir del simulador', () => ({ ...EVENTOS.registro_interrumpido, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
+     ['un evento del simulador sin «corrida»', () => { const e = { ...EVENTOS.falla }; delete e.corrida; return e; }, /corrida/],
+     ['la corrida 0', () => ({ ...EVENTOS.falla, corrida: 0 }), /corrida/],
++    ['una falla con su tramo del reloj (21 oct)', () => ({ ...EVENTOS.falla, tramo: 1 }), null],
++    ['el tramo negativo', () => ({ ...EVENTOS.falla, tramo: -1 }), /tramo/],
++    ['el tramo con decimales', () => ({ ...EVENTOS.falla, tramo: 0.5 }), /tramo/],
+     ['una falla con el mensaje en pantalla', () => sim('falla', { ...EVENTOS.falla.datos, mensaje: 'El LED se quemó' }), /mensaje/],
+     ['una falla sin componente', () => sim('falla', { tipo: 'led_quemado' }), /componente/],
+     ['una falla que dice venir del lienzo', () => ({ ...EVENTOS.falla, origen: 'circuito' }), /origen/],
+@@ -306,6 +310,9 @@ console.log('— Los eventos del registro cumplen el contrato');
+     ['proyecto_abierto con el nombre que escribió el aprendiz', () => edi('proyecto_abierto', { placa: 'uno', nombre: 'LED de Sofía' }), /nombre/],
+     ['codigo_compilado sin el código', () => edi('codigo_compilado', { ok: true }), /codigo/],
+     ['sesion_iniciada en la placa «leonardo»', () => edi('sesion_iniciada', { placa: 'leonardo', nivel: 1 }), /placa/],
++    ['placa_cambiada sin «de»', () => edi('placa_cambiada', { a: 'uno' }), /de/],
++    ['placa_cambiada a la placa «leonardo»', () => edi('placa_cambiada', { de: 'uno', a: 'leonardo' }), /\/a/],
++    ['placa_cambiada que dice venir del simulador', () => ({ ...EVENTOS.placa_cambiada, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
+     ['bloques_cambiados con el XML en vez del resumen', () => edi('bloques_cambiados', { xml: '<xml/>' }), /bloques/],
+   ];
+   for (const [texto, armar, espera] of casosEv) {
+diff --git a/prototipo/pruebas/probar_fotos.js b/prototipo/pruebas/probar_fotos.js
+index edecd84..766b359 100644
+--- a/prototipo/pruebas/probar_fotos.js
++++ b/prototipo/pruebas/probar_fotos.js
+@@ -315,6 +315,30 @@ const promesaCumplida = async (p) => { let ok = false; p.then(() => { ok = true;
+   detenerYConfirmar(s);
+ }
+ 
++// 9. INT-RES-03c (verificación de Codex de REG-004): el RESET pone el reloj de la corrida en cero. Una foto de antes
++// del RESET que llega después conserva su tramo; el reinicio sale con el tramo de antes y lo demás con el nuevo.
++for (const tarde of [false, true]) {
++  const s = armar(LED_DIRECTO);
++  const n = nucleo();
++  s.sim.iniciar();
++  n.avanzar(FRECUENCIA * 0.02);
++  const pendiente = s.foto(n, { energia: { reinicios: 1 } });
++  if (!tarde) s.entregar(pendiente);
++  s.sim.reiniciar();
++  if (tarde) s.entregar(pendiente);
++  n.reiniciarChip();
++  n.avanzar(FRECUENCIA * 0.01);
++  s.entregar(s.foto(n, { fallas: [{ tipo: 'corriente_pin', componente: 'led2' }], energia: { reinicios: 1 } }));
++  s.sim.detener();
++  s.confirmar(10);
++  const tramos = (tipo) => s.eventos.filter((e) => e.tipo === tipo).map((e) => `${e.datos.componente || e.datos.motivo || ''}:${e.tramo}`).join();
++  const deLaFoto = s.eventos.filter((e) => (e.tipo === 'falla' && e.datos.componente !== 'led2') || (e.tipo === 'reinicio_placa' && e.datos.motivo === 'energia_usb'));
++  revisar(deLaFoto.length === pendiente.fallas.length + 1 && deLaFoto.every((e) => e.tramo === 0 && e.ms_sim === Math.round(pendiente.msSimulados)) &&
++    tramos('reinicio_placa').includes('boton:0') && tramos('falla').includes('led2:1') && s.eventos.every((e) => Number.isInteger(e.tramo)) &&
++    deTipo(s.eventos, 'simulacion_iniciada')[0].tramo === 0 && deTipo(s.eventos, 'simulacion_detenida')[0].tramo === 1 && deTipo(s.eventos, 'simulacion_detenida')[0].ms_sim === 10,
++  `la foto de antes del RESET ${tarde ? 'llega después' : 'llega antes'}: sus hechos quedan en el tramo 0 con su tiempo, el RESET en el 0 y lo del reloj nuevo en el 1 (fallas ${tramos('falla')}; reinicios ${tramos('reinicio_placa')})`);
++}
++
+ // Los casos del cierre que espera (7) son asíncronos: el resumen sale cuando terminan.
+ function terminarPrueba() {
+   console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');
+diff --git a/prototipo/src/simulador.js b/prototipo/src/simulador.js
+index 2ffadfd..1d5e207 100644
+--- a/prototipo/src/simulador.js
++++ b/prototipo/src/simulador.js
+@@ -47,6 +47,11 @@ export function crearSimulador(opciones = {}) {
+   let medicion = null;
+   let reiniciosVistos = 0; // reinicios por energía ya avisados en esta corrida
+   let corrida = 0; // el número de la corrida en el registro de eventos (sube en cada simulacion_iniciada)
++  // El turno de cada RESET con el botón de esta corrida. Cada RESET pone el reloj de la corrida en cero y empieza otro
++  // «tramo»: el de una foto es cuántos RESET hubo con un turno menor o igual al suyo. Así una foto de antes del RESET
++  // que llega después queda en su tramo, con su reloj (INT-RES-03c; contrato 6.1, «tramo»).
++  const turnosReset = [];
++  const tramoDe = (t) => turnosReset.filter((r) => r <= t).length;
+   const fallas = [];
+ 
+   const trabajador = crearTrabajador(recibir);
+@@ -74,11 +79,12 @@ export function crearSimulador(opciones = {}) {
+   }
+   function entregarHechos(m) {
+     const ms = Math.round(m.msSimulados); // el tiempo simulado de la foto: el de los hechos, aunque llegue tarde
++    const tramo = tramoDe(m.turno); // y el tramo de su reloj
+     for (const f of m.fallas) {
+       fallas.push(f);
+       oyentes.falla.forEach((fn) => avisar(fn, { tipo: f.tipo, componente: f.componente, mensaje: f.mensaje }));
+       const { mensaje, ...datos } = f;
+-      emitir('falla', datos, ms);
++      emitir('falla', datos, ms, tramo);
+     }
+     // Reinicios por la energía del USB (no idealidad «limiteUSB»): uno por foto, con cuántos hubo desde la anterior.
+     const reinicios = m.energia ? m.energia.reinicios : 0;
+@@ -86,7 +92,7 @@ export function crearSimulador(opciones = {}) {
+       motivo: m.energia.referencia ? 'energia_nano' : 'energia_usb',
+       ...(m.energia.referencia ? { fuente: m.energia.fuente } : {}),
+       nuevos: reinicios - reiniciosVistos, total: reinicios,
+-    }, ms);
++    }, ms, tramo);
+     reiniciosVistos = Math.max(reiniciosVistos, reinicios);
+     if (m.serial) oyentes.serial.forEach((fn) => avisar(fn, m.serial));
+   }
+@@ -115,9 +121,10 @@ export function crearSimulador(opciones = {}) {
+     }
+   }
+ 
+-  // Contrato, sección 6.1: cada evento del simulador lleva su corrida y el tiempo simulado de esa corrida.
+-  function emitir(tipo, datos, msSim = medidas.msSimulados) {
+-    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(msSim), datos });
++  // Contrato, sección 6.1: cada evento del simulador lleva su corrida, el tiempo simulado de esa corrida y el tramo de
++  // su reloj (los de la página, el tramo actual; los de una foto, el de su turno).
++  function emitir(tipo, datos, msSim = medidas.msSimulados, tramo = turnosReset.length) {
++    if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(msSim), tramo, datos });
+   }
+ 
+   function cambiarEstado(nuevo) {
+@@ -159,6 +166,7 @@ export function crearSimulador(opciones = {}) {
+         medicion = null;
+         vista = null;
+         reiniciosVistos = 0;
++        turnosReset.length = 0;
+         Object.assign(medidas, { msSimulados: 0, msReales: 0, velocidad: 1 });
+         corrida = ++corridas;
+         // El circuito completo: cada corrida se puede analizar sola, sin reconstruirla desde los cambios.
+@@ -183,6 +191,7 @@ export function crearSimulador(opciones = {}) {
+       // cero (sigue siendo la misma corrida).
+       if (estado === 'pausado') emitir('simulacion_reanudada', {});
+       emitir('reinicio_placa', { motivo: 'boton' });
++      turnosReset.push(turno); // desde aquí, otro tramo: las fotos con este turno o uno mayor ya son del reloj nuevo
+       medidas.msSimulados = 0; // el chip vuelve a cero ya; la foto del Worker llega un instante después
+       // Como apretar el botón RESET: el programa empieza desde setup().
+       trabajador.enviar({ tipo: 'reiniciar', turno });
+warning: in the working copy of 'contrato/evento.schema.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'prototipo/pruebas/probar_contrato.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'prototipo/pruebas/probar_fotos.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'prototipo/src/simulador.js', LF will be replaced by CRLF the next time Git touches it

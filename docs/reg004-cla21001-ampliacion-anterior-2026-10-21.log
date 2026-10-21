@@ -1,0 +1,21 @@
+OK control-dos-corridas-completas
+OK control-falla-repetida-mismo-tiempo
+OK falla-repetida-ms-mayor-antes-cierre
+OK control-falla-ms-mayor-primero
+OK falla-repetida-ms-mayor-despues-cierre
+OK segundo-cierre-oculta-tiempo-del-primero
+OK control-dos-cierres-identicos
+OK cierre-corrida-tras-fin-sesion
+OK falla-y-cierre-corrida-tras-fin-sesion
+OK control-cierre-corrida-antes-fin
+OK observacion-abierta-anterior-a-origen
+OK observacion-abierta-con-falla-anterior
+OK control-pista-clave-json-escapada
+OK control-pista-raiz-prima-sobre-anidada
+OK control-pista-escapada-json-roto
+OK control-pista-ambigua-vecinos
+OK control-fecha-invalida-tras-correccion
+OK control-fecha-invalida-antes-corridas
+18 casos; 0 fallidos.
+
+exit=0

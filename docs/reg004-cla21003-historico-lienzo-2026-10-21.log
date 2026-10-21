@@ -1,0 +1,6 @@
+COMANDO: node C:\Users\ACER\AppData\Local\Temp\reg004-cla21001-59kh9nui\replay.cjs "C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\docs\verificar-reg004-cla004-2026-10-20.cjs" lienzo
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+OK lector con eventos del lienzo real: baja-alta-baja-id-reutilizado
+OK lector con eventos del lienzo real: propiedad-no-heredada-al-recrear
+
+exit=0

@@ -1,0 +1,27 @@
+COMANDO: C:\Users\ACER\AppData\Local\Programs\Python\Python314\python.exe -I prototipo/pruebas/probar_simulacion.py prototipo/dist/prototipo.html C:\Users\ACER\AppData\Local\Temp\reg004-cla21003-chromium-reintento-wfaxtgka\simulacion
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+OK    API con crearSimulador: {'v': '0.1.0-dev', 's': 'function'}
+   intervalos (ms): [438, 560, 455, 547, 454]
+OK    el LED cambia varias veces en 3 s (6 cambios)
+OK    el LED cambia cada 485 ms (programa: 500 ms, tolerancia ±10 %)
+OK    prendido el 58 % del tiempo
+OK    el LED «L» de la placa sigue al pin 13
+OK    el circuito se evaluó 4 veces en 3.2 s (unos 194 cuadros): solo cuando cambió un pin
+OK    reloj: 3237 ms simulados en 3238 ms reales (velocidad 100 %)
+OK    monitor serial: 'Hola desde el Uno simulado\r\nPrendido\r\nApagado\r\nPrendido\r\nApa'…
+OK    sin cable a GND el LED no prende (cables: ['r1.1', 'led1.anodo'])
+OK    el LED «L» de la placa sigue parpadeando: el programa no se detuvo
+OK    al cambiar de circuito, la simulación vuelve a empezar detenida
+OK    con el programa del pin 8 el LED (cableado al 13) no prende; serial: 'Parpadeo en el pin 8'
+OK    cableado al pin 8: el LED cambia cada 206 ms (programa: 200 ms)
+OK    en pausa, el tiempo simulado no avanza
+OK    reiniciar vuelve el programa al principio
+OK    al detener, todo se apaga (también el LED ON de la placa)
+OK    eventos de la simulación (con la pausa y el reinicio por el botón): ['simulacion_detenida', 'reinicio_placa', 'simulacion_reanudada', 'simulacion_pausada', 'simulacion_iniciada']
+OK    .hex dañado: «El .hex está dañado (línea 1).»
+OK    simulacion: los 9 eventos cumplen contrato/evento.schema.json (cable_quitado, reinicio_placa, simulacion_detenida, simulacion_iniciada, simulacion_pausada, simulacion_reanudada)
+OK    sin errores en la consola
+
+TODO BIEN
+
+exit=0

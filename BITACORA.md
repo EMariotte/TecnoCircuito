@@ -1528,3 +1528,138 @@ TC main f8f062e, TB main deaf16c, TS main 9ab3c86, entrega sin commit; lector 4c
 ## 2026-10-19 17:45 · Codex verifica el lector de REG-004
 
 Software e integración verificados por Codex ([verificación](docs/VERIFICACION-REG004-CLA008-CODEX-2026-10-19.md)). REG-004 queda en `pendiente_externo` hasta la aceptación humana de Efraín. AUD-01 a AUD-06 están cerrados. Se suben las entregas de AUD-06 y REG-004 y los informes y evidencias de Codex, con el sí de Efraín.
+
+## 2026-10-20 · Prueba humana de REG-004 y evento `placa_cambiada`
+
+Efraín trabajó unos 6 minutos en la app como `PRUEBA-01` y `PRUEBA-02` (datos de prueba, sin aprendices) y contrastó la historia del registro con lo que hizo ([informe](validacion/2026-10-20-reg004-aceptacion.md)). Coincidió en las corridas, las fallas (LED quemado y corriente del pin, 64,7 mA), la corrección con 330 Ω y el cambio de equipo durante una corrida, sin avisos. Mostró tres defectos y Efraín decidió corregirlos:
+- **Contrato 1, sección 6.1:** entra el evento del editor `placa_cambiada` (`de`, `a`). Efraín cambió de Nano a Uno después de empezar la sesión y nada lo decía. Agregar un tipo no rompe nada. Esquema (`contrato/evento.schema.json`) y revisor (`probar:contrato`, 179 OK) actualizados. Sin cambios en la API ni en el formato del circuito.
+- **Lector (TecnoBloques):** sigue la placa y avisa si una corrida usa otra que la elegida; muestra la diferencia del C++ entre compilaciones («`delay(500);` → `delay(200);` (2 veces)»); junta los bloques seguidos y dice el estado final de cada pieza del circuito.
+
+COMO-FUNCIONA, sección 68. Pruebas: `test:historia` 36 OK, `test:registro-app` 87/87, `test:simulador` 53, `test:registro` y `npm test` de TecnoBloques sin fallas. Falta una prueba corta de Efraín con la app corregida; REG-004 sigue en curso y después va a Codex.
+
+## 2026-10-20 · Aceptación humana de REG-004
+
+Segunda prueba de Efraín con la app corregida (`PRUEBA-03`): dos cambios de placa contados en su momento, cinco cambios de la resistencia durante una corrida contados como su valor final, el LED quemado y corregido, y «el mismo programa» en las tres compilaciones porque no cambió bloques. Coincide y no hay avisos. **Efraín acepta la historia** ([informe](validacion/2026-10-20-reg004-aceptacion.md)). REG-004 pasa a revisión de Codex (CLA-20261020-002).
+
+## 2026-10-20 11:47 · Codex devuelve REG-004/CLA-20261020-002 por R3/R4
+
+CLA-20261020-002 devuelta por R3/R4 medios. R3: identificadores reutilizados mezclan instancias; baja→alta→baja oculta la eliminación de la pieza inicial, y cambiar a 1000 Ω→borrar→agregar atribuye ese valor a la nueva de 220 Ω. Dos recorridos de lienzo real y sus historias lo confirman, sin errores JS/esquema. R4: trim y eliminación de líneas vacías dentro de literales raw hacen afirmar «el mismo programa» con datos distintos; cuatro programas compilan con avr-g++ y sus pares de .rodata difieren. Diagnóstico independiente: 10 casos, 6 controles aprobados y 4 fallos, exit 1; no regresión aprobada. [Informe](docs/VERIFICACION-REG004-CLA002-CODEX-2026-10-20.md).
+
+Historia 36, contrato 179, registro-app 87, simulador 53 y registro 142 OK; placas sin errores JS. Electron: 11 sesiones sintéticas sin avisos ni errores de consola. Los 16 casos independientes previos pasan: R1/R1a/R1b/R1c/R2 conservan verificación y AUD-01–06 sus cierres. Primeros intentos de contrato/placas fallaron por sandbox; reintentos fuera del sandbox aprobados, logs originales conservados. Sin suite global, KiCad nuevo, hardware, instalador ni aula.
+
+Claude toma/reserva y corrige R3/R4 con regresiones; luego Codex verifica. Aceptación humana del 20 oct conservada en su alcance; REG-004 pendiente, cierre null, reservas liberadas; REG-005 no iniciado. Fuentes de la entrega y memorias de Claude preservadas con hashes; sin implementación, commit, push o publicación de Codex.
+
+## 2026-10-20 · REG-004: R3 y R4 de Codex corregidos
+
+Codex devolvió la entrega del 20 oct ([verificación](docs/VERIFICACION-REG004-CLA002-CODEX-2026-10-20.md)) por dos defectos del lector, los dos reproducidos antes de corregir:
+- **R3:** el lienzo da el primer id libre, así que una resistencia nueva después de quitar `r1` también es `r1`, y el lector las mezclaba: escondía que se quitó la pieza que estaba, o le atribuía a la nueva el valor de la quitada. Ahora cada alta es una pieza nueva, sin nada de la anterior («quitó r1 (resistencia); agregó otra r1 (resistencia)»).
+- **R4:** al comparar programas, los espacios y las líneas vacías se quitaban también dentro de los literales, y un cambio de datos en un raw salía como «el mismo programa». Ahora los espacios se ignoran solo fuera de los literales.
+- **Además:** una línea larga cambiada se muestra alrededor de lo que cambió; antes el corte podía esconder la diferencia.
+
+COMO-FUNCIONA, sección 68. `test:historia` 50 OK (con el lector anterior fallan 8), el instrumento de Codex 10 de 10 y el lienzo real 2 de 2, sus 16 casos históricos sin residuales y `test:registro-app` 87/87. Va otra vez a revisión de Codex.
+
+## 2026-10-20 12:04 · Codex verifica R3/R4 original y devuelve CLA-003 por R4a
+
+CLA-20261020-003 devuelta por R4a medio; R3 y R4 original verificados. Los 10 casos de CLA-002 pasan y los dos recorridos reales del lienzo conservan la baja y evitan herencia. Los 16 casos históricos pasan sin residuales. R4a: una cadena común continuada con barra inversa y CRLF pierde el espacio/tabulador de la siguiente línea al comparar; el lector dice «el mismo programa» aunque los cuatro C++ compilan y .rodata difiere: 41204200/41094200 frente a 414200. Diecisiete casos adicionales: 15 aprobados y dos reproducciones fallidas, exit 1, cero errores de esquema; no regresión aprobada. [Informe](docs/VERIFICACION-REG004-CLA003-CODEX-2026-10-20.md).
+
+Historia 50, registro-app 87 y registro 142 OK; Electron sin errores de consola, 11 sesiones sintéticas sin avisos. Contrastes de lienzo y avr-g++ ejecutados. App, prueba Electron, contrato, esquema y aceptación conservan hashes de CLA-002. Sin nuevas suites globales, contrato, simulador completo, KiCad, benchmark, hardware, instalador ni aceptación humana; no se acreditan como ejecuciones nuevas.
+
+REG-004 pendiente, cierre null y reservas liberadas. Claude debe tomar/reservar R4a y entregar corrección con ambas regresiones y controles; Codex verifica después. Aceptación humana del 20 oct conservada en su alcance; REG-005 no iniciado. R1/R1a/R1b/R1c/R2 y AUD-01–06 conservan sus verificaciones. Fuentes y evidencias anteriores preservadas; sin producto ni memorias ajenas editados por Codex. Sin commit, push, etiqueta ni publicación por Codex.
+
+## 2026-10-20 · REG-004: R4a de Codex corregido
+
+Codex verificó R3 y R4 y devolvió la entrega por R4a ([verificación](docs/VERIFICACION-REG004-CLA003-CODEX-2026-10-20.md)): una cadena común que sigue en la línea siguiente con una `\` al final y un salto de Windows (CRLF) se daba por terminada en el salto, y el espacio o tabulador de la línea siguiente se ignoraba; el lector decía «el mismo programa» aunque avr-g++ guarda otros bytes. Ahora el empalme (la `\`, espacios opcionales, CR opcional y LF) continúa la cadena. También quité un espacio sobrante del diagrama de la sección 68. `test:historia` 56 OK (con el lector anterior fallan 3), el instrumento de Codex 17 de 17 y los anteriores sin fallos, `test:registro-app` 87/87.
+
+## 2026-10-20 12:19 · Codex verifica R4a y devuelve CLA-004 por R4b
+
+CLA-20261020-004 devuelta por R4b medio; R4a original verificado. Pasan los 17 casos de CLA-003, los 10 de CLA-002, los 16 históricos y los dos recorridos reales de R3. R4b: s.slice(j, j + 100) limita la búsqueda de empalmes dentro del literal. LF con 98 espacios y CRLF con 97 conservan el dato; LF con 99, CRLF con 98/120 espacios o 98 tabuladores afirman «el mismo programa» al cambiar A B por AB. Ocho casos de frontera: cuatro controles aprobados/cuatro reproducciones fallidas, exit 1, cero errores de esquema. Los 16 C++ compilan con avr-g++; los ocho pares de .rodata son 41204200 frente a 414200, con los avisos del compilador conservados. Diagnóstico, no regresión aprobada. [Informe](docs/VERIFICACION-REG004-CLA004-CODEX-2026-10-20.md).
+
+Historia 56, registro-app 87 y registro 142 OK; Electron sin errores de consola y 11 sesiones sintéticas sin avisos. Diff --check limpio en TC/TB/TS. App, prueba Electron, contrato, esquema y aceptación conservan hashes; fuentes y evidencias previas preservadas. Sin nueva suite global, contrato, simulador completo, KiCad, benchmark, instalador, hardware ni prueba humana.
+
+REG-004 pendiente, cierre null y reservas liberadas. Claude debe tomar/reservar R4b y entregar corrección con controles a ambos lados de la frontera; luego Codex verifica. El límite no debe generar igualdad injustificada. No se afirma que el editor DOM conserve esta entrada ni frecuencia natural. R1/R1a/R1b/R1c/R2/R3/R4 original/R4a conservan su verificación y AUD-01–06 sus cierres. Aceptación humana del 20 oct conservada en su alcance; REG-005 no iniciado. Sin producto ni memorias ajenas editados por Codex, commit, push, etiqueta o publicación.
+
+## 2026-10-20 12:43 · Auditoría integral de REG-004 por familias, sin tocar código
+
+Por instrucción de Efraín: 42 ejecuciones sintéticas, dos corridas reales del mismo circuito en Chromium (realista→ideal) y contrastes con avr-g++; 13 familias, cada una seguida inmediatamente por sugerencia, con decisiones/riesgos separados. No se tocó código. INT-01–INT-11 quedan en REG-004; nuevas AUD-07/08 pendientes por rechazo silencioso de tamaño y reemplazo de exportaciones del mismo minuto. [Informe](docs/AUDITORIA-INTEGRAL-REG004-CODEX-2026-10-20.md).
+
+Recomendación central: igualdad exacta del C++ registrado y normalización solo visual. Separar hechos, integridad y comparabilidad antes de concluir «corregido». El prototipo confirma que pasar a ideal sin cambiar conexiones hace desaparecer fallas que el lector llama corregidas.
+
+REG-004 sigue pendiente; Efraín decide prioridades y Claude implementa después de tomar/reservar. No inicia REG-005, no hay otra devolución ni reapertura automática. Sin fuentes, pruebas, esquemas o memorias ajenas modificados; diagnósticos nuevos solo en Temp. Sin suite global/hardware/aula/instalador nuevos, commit, push, etiqueta ni publicación por Codex.
+
+## 2026-10-20 · REG-004: el lector de la historia, rehecho por capas
+
+Codex devolvió la corrección de R4a por R4b (el empalme se buscaba solo en 100 caracteres) y, a pedido de Efraín, hizo una auditoría integral del lector ([informe](docs/AUDITORIA-INTEGRAL-REG004-CODEX-2026-10-20.md)): 13 familias, de las que INT-01 a INT-11 son del lector y AUD-07/AUD-08 de la app. En vez de seguir parchando casos sueltos, Efraín decidió:
+- «El mismo programa» solo si el C++ registrado es idéntico; si difiere solo en espacios o saltos, «cambió solo en espacios o saltos de línea». Así R4, R4a, R4b e INT-08 dejan de depender de entender C++.
+- «Corrigió» solo entre corridas comparables (mismo modo, mismas no idealidades, misma placa, la pieza sigue y sin huecos). Si no, «ya no se observó» con el motivo, o «no se compara».
+- La línea de comandos siempre muestra la historia y sale con 1 si hay problemas.
+- Orden: el lector, después AUD-07/08 y luego REG-005. Al final, otra prueba corta de Efraín.
+
+El lector quedó por capas: lectura (UTF-8 estricto, BOM, esquema del contrato con el revisor de TecnoCircuito, líneas apartadas que dejan un hueco), hechos (sesión y equipo, archivos en el orden de su fecha, copias contadas una vez), integridad (huecos, contradicciones, ciclo de vida, reloj) y conclusiones. COMO-FUNCIONA, sección 68, reescrita. `test:historia` 94 OK; la auditoría de Codex, en copia, 33 de 34 en E1 (el caso de archivos sin fecha pasados al revés avisa en vez de reordenarlos) y E2 sin residuales del lector; sus instrumentos anteriores pasan, salvo dos controles que esperaban «el mismo programa» con otra sangría; `test:registro-app` 87/87. Va a revisión de Codex; falta la prueba corta de Efraín.
+
+## 2026-10-20 · REG-004: prueba final de Efraín y el resumen
+
+Efraín probó el lector nuevo en la app (`PRUEBA-04`): quemó el LED, lo corrigió con la resistencia, cambió el programa y al final la placa a Nano. La historia coincidió paso a paso, sin avisos, pero el resumen decía «Corregidas al final: ninguna» y «ya no se observaron (cambió la placa)», porque comparaba solo la corrida que vio la falla con la última. Ahora una falla está corregida al final si alguna corrida posterior comparable dejó de mostrarla, sin huecos hasta el final. `test:historia` 95 OK, con la regresión; `test:registro-app` 87/87. [Informe](validacion/2026-10-20-reg004-aceptacion.md).
+
+## 2026-10-20 · REG-004: aceptación final de Efraín
+
+Con el resumen corregido, Efraín acepta la historia del registro ([informe](validacion/2026-10-20-reg004-aceptacion.md)). Queda la verificación de Codex del lector rehecho (CLA-20261020-006 y -007).
+
+## 2026-10-20 13:41 · Verificación de la respuesta a la auditoría integral de REG-004
+
+Codex revisó CLA-20261020-006/007/008 por pedido de Efraín: lector 216a63f2…58a1c7, prueba ea3bb3a6…61532e, sin commit sobre TB 86433d1 y TC 56baf57. CLA-20261020-006/007 devueltas parcialmente: cinco familias residuales y una alineación documental. INT-RES-01: el resumen acredita corrección con corrida origen incompleta/incoherente (cinco variantes). INT-RES-02: ignora huecos posteriores al último cierre (cuatro). INT-RES-03: solapamiento de corridas sin aviso/exit 0 y otras contradicciones causales solo avisadas (cuatro). INT-RES-04: pistas JSON escapadas crean otra identidad y dejan el grupo original sin su hueco (una). INT-RES-05: horas finitas fuera de Date rompen narración o descartan la historia de una sesión (tres). DOC-01: contrato/esquema todavía equiparan desaparición a corrección sin condiciones. Sugerencia inmediata tras cada hallazgo en el informe; sin tocar código.
+
+Historia 95, Electron registro-app 87 (11 sesiones sintéticas sin avisos, sin errores de consola) y registro 142 OK. 42 ejecuciones integrales: solo observación deliberada de segmentos sin fecha al revés y AUD-07/08 pendientes; 53 casos históricos aprobados con dos expectativas de espacios adaptadas a igualdad exacta. Ampliación nueva: 26 casos, 17 fallidos y 9 con resultado esperado; datos/CLI texto y JSON conservados, diagnóstico exit 1, no regresión aprobada. Caso de corrección comprobada antes de cambiar placa aprobado; aceptación humana final registrada por Claude conservada. Sin nuevo lienzo, compilador, suite global, KiCad, benchmark, hardware, instalador ni aula. [Informe](docs/VERIFICACION-REG004-INTEGRAL-CLA007-CODEX-2026-10-20.md). Claude toma y reserva las familias residuales, corrige comparabilidad compartida, huecos hasta fin, ciclo de vida y pistas decodificadas, además de fechas y documentación; entrega versión identificable y Codex verifica. REG-004 pendiente, cierre null, reservas documentales liberadas. AUD-07/08 y REG-005 mantienen el orden autorizado, sin implementación iniciada. No se reabren los cierres históricos R1–R4a/AUD-01–06 por estos nuevos adversos.
+
+Sin fuentes, pruebas, esquemas ni memorias ajenas modificados. Diagnósticos nuevos solo en Temp; evidencia permanente sintética. Se conserva la aceptación humana final registrada por Claude con Efraín, sin atribuir otra sesión humana al revisor. Sin implementación, commit, push, etiqueta o publicación por Codex.
+
+## 2026-10-20 · REG-004: un solo criterio para los pasos y el resumen (INT-RES-01 a 05)
+
+Codex verificó el lector rehecho y lo devolvió por cinco familias de casos adversos y una de documentación ([verificación](docs/VERIFICACION-REG004-INTEGRAL-CLA007-CODEX-2026-10-20.md)). Todas venían de lo mismo: el resumen no usaba el criterio de los pasos. Ahora, para dar una falla por corregida al final, todo el tramo desde la corrida que la vio hasta la última línea de la sesión tiene que estar acreditado: corridas completas y coherentes (la de origen incluida) y sin huecos, también después del último cierre. Además:
+- Las corridas que se cruzan, una corrida después del fin de la sesión, un cierre con dos tiempos y una pausa o reanudación imposible son contradicciones de la corrida, que le impiden compararse.
+- La sesión de una línea apartada sale del JSON ya decodificado: un escape no crea otra sesión.
+- Una hora que no es una fecha se aparta y la narración no se cae.
+- **Contrato 6.1 y descripción de `fallas` en el esquema (solo redacción):** que una falla desaparezca es corrección solo entre corridas comparables. `probar:contrato` 179 OK.
+
+COMO-FUNCIONA 68 actualizada. `test:historia` 116 OK (con el lector anterior fallan 18), los diagnósticos de Codex 26/26 y 17/17, `test:registro-app` 87/87. Las cuatro sesiones de prueba de Efraín conservan sus conclusiones.
+
+## 2026-10-20 17:31 · Verificación de REG-004/CLA-20261020-009
+
+Codex revisó la entrega por pedido de Efraín: lector 63d4551f…bcfeff, prueba 94df9e2b…f52bf7, esquema 8f18ef5c…e7fccc; sin commit sobre TC 56baf57 y TB 86433d1. CLA-20261020-009 devuelta parcialmente por INT-RES-03a/03b medios: tres variantes de evidencia temporal descartada por deduplicar fallas o reemplazar el tiempo de un cierre, y un cierre posterior al fin de sesión que sigue acreditando corrección. En la mínima de falla repetida a 500/1500 ms y cierre a 1000 ms, texto/JSON salen 0 y sin avisos; al invertir las ocurrencias sí detecta el tiempo imposible. No se cierra REG-004; sugerencia inmediata tras cada hallazgo en el informe, sin tocar código.
+
+Los 26 casos anteriores pasan (17 fallos previos eliminados), al igual que 53 diagnósticos históricos. Historia 116, Electron registro-app 87 (11 sesiones sintéticas leídas sin avisos y consola sin errores), registro 142 y contrato 179 OK. E1/E2: 42 ejecuciones con solo la observación deliberada de segmentos sin fecha al revés y AUD-07/08 pendientes. Nueva ampliación: 18 casos, 4 fallidos, 12 con resultado esperado y 2 observaciones del límite declarado de corrida anterior sin cierre; 36 salidas CLI conservadas, diagnóstico exit 1, no regresión aprobada. INT-RES-01/02/04/05 y DOC-01 comprobados en los originales; los originales de INT-RES-03 pasan pero su familia conserva estos dos residuales. El cambio del esquema frente a CLA-007 se limita a descripción/finales de línea, verificado por reconstrucción de hash. Sin nuevo lienzo, compilador AVR, suite global, simulador completo, KiCad, benchmark, hardware, instalador o aula. [Informe](docs/VERIFICACION-REG004-CLA009-CODEX-2026-10-20.md). Claude toma/reserva INT-RES-03a/03b y entrega corrección por familia, preservando todas las evidencias temporales y aplicando el fin de sesión a los cierres tardíos; Codex verifica. REG-004 pendiente, cierre null, reservas del revisor liberadas. AUD-07/08 y REG-005 conservan el orden y no se inician por esta revisión. Aceptación humana final registrada por Claude conservada en su alcance; no hubo otra sesión humana del revisor.
+
+Fuentes/evidencia previa preservadas por hash. Sin código, pruebas, esquemas o memorias ajenas editados; diagnósticos nuevos solo en Temp, evidencia permanente sintética. Sin implementación, commit, push, etiqueta o publicación por Codex.
+
+## 2026-10-21 · REG-004: el tiempo de cada falla y de cada cierre (INT-RES-03a/03b)
+
+Codex devolvió la entrega anterior por dos casos que todavía daban una corrección por acreditada ([verificación](docs/VERIFICACION-REG004-CLA009-CODEX-2026-10-20.md)): el lector se quedaba con la primera repetición de una falla y con el tiempo del último cierre, y un cierre que llegaba después de `sesion_terminada` seguía contando. Ahora:
+- Cada falla que llega y cada cierre se guardan con su tiempo, también las repeticiones (`ocurrencias` y `tiemposCierre` en `--json`). Cada cierre se compara con las fallas, pausas y reinicios de **su mismo tramo del reloj**: el RESET del botón pone el reloj de la corrida en cero y empieza otro tramo. El lector anterior ya daba un falso positivo con un RESET seguido de un cierre pronto; ahora no. Lo comprueba una corrida real en Electron (reinicio a 1524 ms, cierre a 201 ms, sin avisos).
+- Son contradicciones de la corrida, que le impiden compararse: dos cierres con tiempos distintos, cualquier evento después de su cierre (salvo un cierre repetido idéntico), cualquier evento después del fin de la sesión y empezar mientras otra corrida seguía abierta sin que esa se cerrara nunca (el límite que Codex dejó en observación).
+- Límite conocido: si el Worker no confirma el cierre en 500 ms, una falla de esa espera puede tener más tiempo que el cierre; la corrida no se compara (se pierde una comparación, no se afirma nada falso).
+
+COMO-FUNCIONA 68 con el diagrama de los tramos. `test:historia` 135 OK (con el lector anterior fallan 18), `test:registro-app` 88/88, `test:registro` 142, `probar:contrato` 179; los diagnósticos de Codex pasan, salvo un control de CLA-008 cuyos dos cierres «idénticos» dicen 3000 y 4000 ms, que ahora no es coherente.
+
+## 2026-10-21 10:08 · Verificación de REG-004/CLA-20261021-001
+
+Codex revisó por pedido de Efraín la entrega sin commit: lector 45bfba07…43a3b, prueba 2d6fe78e…a63f4 y Electron f50836ea…630eb, bases TC 56baf57/TB 86433d1/TS 5665e60. CLA-20261021-001 devuelta parcialmente por INT-RES-03c medio: una foto anterior al RESET que llega después se asigna al tramo nuevo; falla a 20 ms del reloj anterior y cierre confirmado a 10 ms del nuevo producen coherente=false y CLI 1 en una corrida válida. Núcleo y controlador reales con entrega de Worker controlada; tres casos, dos controles aprobados y un falso positivo, diagnóstico exit 1. INT-RES-03a/03b originales comprobados; REG-004 no se cierra.
+
+Historia 135, Electron registro-app 88 (11 sesiones sintéticas sin avisos), registro 142, contrato 179 y fotos 31 OK. Ampliaciones anteriores 18/18 y 26/26; 53 casos históricos conformes, con dos expectativas de espacios y un control de cierre duplicado adaptados en memoria. El control original 3000/4000 falla y su log se conserva; con 3000/3000 pasan los cuatro casos. E1/E2: 42 ejecuciones, solo observación deliberada de segmentos sin fecha al revés y AUD-07/08. El primer intento de fotos fue bloqueado por el sandbox; reintento autorizado aprobado. Sin consola de error reportada en Electron. Sin suite global, simulador completo, AVR, KiCad, benchmark, instalador, hardware ni aula nuevos. [Informe](docs/VERIFICACION-REG004-CLA21001-CODEX-2026-10-21.md). Claude toma/reserva INT-RES-03c y entrega la atribución temporal del RESET con hechos pendientes, conservando las comprobaciones de tiempos imposibles genuinos; Codex verifica. REG-004 pendiente, cierre null y reservas liberadas; AUD-07/08 pendientes y REG-005 sin iniciar. Aceptación humana final registrada previamente conservada, sin nueva prueba humana de Codex.
+
+Reproducción mínima conservada con datos sintéticos: núcleo/controlador reales y Worker controlado; sin afirmar frecuencia en aula ni una nueva validación humana. Fuentes y evidencias anteriores preservadas por hash. Sin implementación de producto, memorias de Claude editadas, commit, push, etiquetas o publicación por Codex.
+
+## 2026-10-21 · Contrato 1: el tramo del reloj en los eventos del simulador (REG-004, INT-RES-03c)
+
+Codex comprobó la entrega anterior y la devolvió por un falso positivo ([verificación](docs/VERIFICACION-REG004-CLA21001-CODEX-2026-10-21.md)): una foto tomada antes del RESET que llega después quedaba en el reloj nuevo, y una corrida válida salía «incoherente». Por el orden de escritura no se puede saber. Decisión de Efraín: identidad temporal explícita.
+- **Contrato 6.1 (aditivo):** los eventos del simulador suman el campo opcional `tramo`, cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho. Esquema actualizado; `probar:contrato` 182 OK (se acepta y se rechazan el negativo y el decimal).
+- **`simulador.js`:** guarda el turno de cada RESET de la corrida; el tramo de una foto es cuántos RESET tienen un turno menor o igual al suyo (el Worker marca cada foto con el turno de su última orden). Los eventos de la página llevan el tramo del momento.
+- **Lector de TecnoBloques:** usa `tramo` cuando viene; un registro anterior se lee por el orden de escritura.
+
+Por pedido de Efraín, Codex verifica solo este caso, sin buscar casos nuevos. `probar:fotos` 33 (la foto de antes del RESET, entregada antes y después, queda en el tramo 0), Chromium registro 18, simulación 20 y servo 19; la reproducción de Codex 3/3 con salida 0. En TecnoBloques, `test:historia` 142 (con el lector anterior fallan 2), `test:registro-app` 88/88, `test:registro` 142 y `test:simulador` 53. COMO-FUNCIONA 68 con el diagrama.
+
+## 2026-10-21 10:49 · Cierre de REG-004/CLA-20261021-003
+
+CLA-20261021-003 verificada en el alcance limitado pedido por Efraín: INT-RES-03c corregido mediante el campo opcional tramo, tres variantes originales con seis CLI 0, sin avisos ni errores de esquema; se conservan las fallas de la foto anterior. Los tiempos imposibles genuinos del reloj nuevo siguen impidiendo comparar. REG-004 pasa a verificado, reservas liberadas, aceptación humana final del 20 oct conservada. Verificación limitada por pedido de Efraín a 03c, controles y regresiones, sin buscar casos nuevos. Emisor 21ff8e07…e432d0, lector c4914ca6…f354d1, esquema 6b4fbb6d…788722 y bundle local 3cf0e35f…2905f5, sin commit sobre TC 56baf57/TB 86433d1.
+
+Fotos 33, contrato 182, historia 142, Electron registro-app 88 (11 sesiones sintéticas sin avisos y consola sin errores), registro 142 e integración simulador 53 OK. Chromium registro 18, simulación 20 en reintento y servo 19 OK; primera simulación: 19 OK y un fallo de parpadeo D8 a 265 ms frente a 200 ms. Repetición sin cambios ni umbrales relajados, con cargador y sin suites concurrentes; ambos logs conservados. Ampliaciones anteriores 18/18 y 26/26, más 53 comprobaciones históricas conformes con las adaptaciones ya acordadas en memoria. Diff de fuentes limpio; el diff completo marca únicamente espacios finales en los dos generados, iguales a HEAD. Contrato, esquema, dos bitácoras y Proyecto hermano coherentes; hashes preservados. Sin casos nuevos buscados, E1/E2 nuevos, suite global TC, KiCad, instalador, hardware, aula ni nueva aceptación humana. [Informe](docs/VERIFICACION-REG004-CLA21003-CODEX-2026-10-21.md). Claude conserva los documentos de Codex y gestiona commit/push de TC, TB y TS conforme a la autorización de Efraín; Codex no los ejecuta. AUD-07/08 siguen pendientes y REG-005 no se inicia por este cierre. Registros anteriores sin tramo conservan su límite temporal documentado; no se declara corrección retroactiva.
+
+Fuentes y evidencias anteriores preservadas por hash; sin producto ni memorias de Claude editados por Codex. Sin commit, push, etiquetas o publicación del revisor.

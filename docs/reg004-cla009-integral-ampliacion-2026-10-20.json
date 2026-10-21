@@ -1,0 +1,839 @@
+{
+  "momento_utc": "2026-10-20T22:26:19.095Z",
+  "script_temporal": "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg004-cla009-integral-e2-2026-10-20.cjs",
+  "carpeta_sintetica": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx",
+  "resultados": [
+    {
+      "caso": "falta-t-se-inventa-hora",
+      "problema": false,
+      "nota": "",
+      "eventos": [
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519201000,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 10000
+          }
+        }
+      ],
+      "erroresEsquema": [
+        "esquema: (raíz) must have required property 't'"
+      ],
+      "historias": [
+        {
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "archivos": [
+            "falta-t-se-inventa-hora.jsonl"
+          ],
+          "inicio": 1792519201000,
+          "fin": 1792519201000,
+          "placa": null,
+          "placas": [],
+          "nivel": null,
+          "pasos": [
+            {
+              "t": 1792519201000,
+              "texto": "Terminó la sesión (10 s)."
+            }
+          ],
+          "corridas": [],
+          "avisos": [
+            "Se apartó una línea (falta-t-se-inventa-hora.jsonl, línea 1): le falta la hora («t»). Ahí hay un hueco.",
+            "La sesión no tiene sesion_iniciada: puede faltarle el comienzo."
+          ],
+          "notas": [],
+          "dudas": [
+            "la sesión no tiene sesion_iniciada: puede faltarle el comienzo"
+          ],
+          "sinAtribuir": [],
+          "huecos": [
+            {
+              "desdePos": 0,
+              "hastaPos": 0
+            }
+          ],
+          "resumen": "0 corrida(s). Fallas vistas: ninguna."
+        }
+      ],
+      "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 13:00 a 13:00 · ?, nivel ? · sesión integral\n  13:00  Terminó la sesión (10 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos:\n  ⚠ Se apartó una línea (falta-t-se-inventa-hora.jsonl, línea 1): le falta la hora («t»). Ahí hay un hueco.\n  ⚠ La sesión no tiene sesion_iniciada: puede faltarle el comienzo.\n",
+      "error": null
+    },
+    {
+      "caso": "placa-snapshot-no-coincide",
+      "problema": false,
+      "nota": "",
+      "eventos": [
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519200000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "nano",
+            "nivel": 3
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519201000,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "nano",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "corrida": 1,
+          "ms_sim": 1000
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519202000,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": []
+          },
+          "corrida": 1,
+          "ms_sim": 1000
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519203000,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 10000
+          }
+        }
+      ],
+      "erroresEsquema": [],
+      "historias": [
+        {
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "archivos": [
+            "placa-snapshot-no-coincide.jsonl"
+          ],
+          "inicio": 1792519200000,
+          "fin": 1792519203000,
+          "placa": "nano",
+          "placas": [
+            "nano"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792519200000,
+              "texto": "Empezó la sesión (nano, nivel 3)."
+            },
+            {
+              "t": 1792519201000,
+              "texto": "▶ Corrida 1 (nano, realista; 1 pieza, 0 cables).",
+              "corrida": 1
+            },
+            {
+              "t": 1792519202000,
+              "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: ninguna.",
+              "corrida": 1
+            },
+            {
+              "t": 1792519203000,
+              "texto": "Terminó la sesión (10 s)."
+            }
+          ],
+          "corridas": [
+            {
+              "numero": 1,
+              "inicio": 1792519201000,
+              "fin": 1792519202000,
+              "modo": "realista",
+              "placa": "nano",
+              "activas": {
+                "danoComponentes": true
+              },
+              "piezas": {
+                "led1": "led"
+              },
+              "fallasVistas": [],
+              "cierres": [
+                []
+              ],
+              "ms_sim": 1000,
+              "reinicios": 0,
+              "contradicciones": [
+                "dice nano y su circuito uno"
+              ],
+              "desdePos": 1,
+              "hastaPos": 2,
+              "fallas": [],
+              "completa": true,
+              "cierre": [],
+              "coherente": false,
+              "incoherencia": "dice nano y su circuito uno",
+              "comparada": null,
+              "nuevas": null,
+              "siguen": null,
+              "yaNoSeObservo": null,
+              "corrigio": null
+            }
+          ],
+          "avisos": [
+            "La corrida 1 dice nano, pero su circuito dice uno."
+          ],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [],
+          "resumen": "1 corrida(s). Fallas vistas: ninguna. Corregidas al final: no se puede asegurar, porque la corrida 1 dice nano y su circuito uno. Sin corregir: no se puede asegurar."
+        }
+      ],
+      "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 13:00 a 13:00 · nano, nivel 3 · sesión integral\n  13:00  Empezó la sesión (nano, nivel 3).\n  13:00  ▶ Corrida 1 (nano, realista; 1 pieza, 0 cables).\n  13:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: ninguna.\n  13:00  Terminó la sesión (10 s).\n  Resumen: 1 corrida(s). Fallas vistas: ninguna. Corregidas al final: no se puede asegurar, porque la corrida 1 dice nano y su circuito uno. Sin corregir: no se puede asegurar.\n  Avisos:\n  ⚠ La corrida 1 dice nano, pero su circuito dice uno.\n",
+      "error": null
+    },
+    {
+      "caso": "tiempo-falla-posterior-a-cierre",
+      "problema": false,
+      "nota": "",
+      "eventos": [
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519200000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519201000,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "corrida": 1,
+          "ms_sim": 1000
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519202000,
+          "origen": "simulador",
+          "tipo": "falla",
+          "datos": {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          "corrida": 1,
+          "ms_sim": 2000
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519203000,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": []
+          },
+          "corrida": 1,
+          "ms_sim": 1000
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519204000,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 10000
+          }
+        }
+      ],
+      "erroresEsquema": [],
+      "historias": [
+        {
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "archivos": [
+            "tiempo-falla-posterior-a-cierre.jsonl"
+          ],
+          "inicio": 1792519200000,
+          "fin": 1792519204000,
+          "placa": "uno",
+          "placas": [
+            "uno"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792519200000,
+              "texto": "Empezó la sesión (uno, nivel 3)."
+            },
+            {
+              "t": 1792519201000,
+              "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+              "corrida": 1
+            },
+            {
+              "t": 1792519202000,
+              "texto": "   falla: LED quemado (led1), a los 2,0 s simulados.",
+              "corrida": 1
+            },
+            {
+              "t": 1792519203000,
+              "texto": "■ Corrida 1 terminó: 1,0 s simulados. El cierre dice: ninguna; llegaron: LED quemado (led1).",
+              "corrida": 1
+            },
+            {
+              "t": 1792519204000,
+              "texto": "Terminó la sesión (10 s)."
+            }
+          ],
+          "corridas": [
+            {
+              "numero": 1,
+              "inicio": 1792519201000,
+              "fin": 1792519203000,
+              "modo": "realista",
+              "placa": "uno",
+              "activas": {
+                "danoComponentes": true
+              },
+              "piezas": {
+                "led1": "led"
+              },
+              "fallasVistas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1",
+                  "ms_sim": 2000
+                }
+              ],
+              "cierres": [
+                []
+              ],
+              "ms_sim": 1000,
+              "reinicios": 0,
+              "contradicciones": [
+                "tiene una falla después del tiempo simulado de su cierre"
+              ],
+              "desdePos": 1,
+              "hastaPos": 3,
+              "fallas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "completa": true,
+              "cierre": [],
+              "coherente": false,
+              "incoherencia": "tiene un cierre que no coincide con las fallas que llegaron",
+              "comparada": null,
+              "nuevas": null,
+              "siguen": null,
+              "yaNoSeObservo": null,
+              "corrigio": null
+            }
+          ],
+          "avisos": [
+            "La corrida 1 tiene una falla después del tiempo simulado de su cierre.",
+            "La corrida 1: las fallas del cierre (ninguna) no son las que llegaron (LED quemado (led1))."
+          ],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [],
+          "resumen": "1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 1 tiene un cierre que no coincide con las fallas que llegaron. Sin corregir: al menos LED quemado (led1)."
+        }
+      ],
+      "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 13:00 a 13:00 · uno, nivel 3 · sesión integral\n  13:00  Empezó la sesión (uno, nivel 3).\n  13:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  13:00     falla: LED quemado (led1), a los 2,0 s simulados.\n  13:00  ■ Corrida 1 terminó: 1,0 s simulados. El cierre dice: ninguna; llegaron: LED quemado (led1).\n  13:00  Terminó la sesión (10 s).\n  Resumen: 1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 1 tiene un cierre que no coincide con las fallas que llegaron. Sin corregir: al menos LED quemado (led1).\n  Avisos:\n  ⚠ La corrida 1 tiene una falla después del tiempo simulado de su cierre.\n  ⚠ La corrida 1: las fallas del cierre (ninguna) no son las que llegaron (LED quemado (led1)).\n",
+      "error": null
+    },
+    {
+      "caso": "cpp-raw-prefijo-u8R-empalmado",
+      "problema": false,
+      "nota": "",
+      "eventos": [
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519200000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519201000,
+          "origen": "editor",
+          "tipo": "codigo_compilado",
+          "datos": {
+            "ok": true,
+            "error": null,
+            "bytes": 100,
+            "codigo": "const auto texto = u8R\\\n\"d(\n A \n)d\";\nvoid setup() {}\nvoid loop() {}\n"
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519202000,
+          "origen": "editor",
+          "tipo": "codigo_compilado",
+          "datos": {
+            "ok": true,
+            "error": null,
+            "bytes": 100,
+            "codigo": "const auto texto = u8R\\\n\"d(\nA\n)d\";\nvoid setup() {}\nvoid loop() {}\n"
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519203000,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 10000
+          }
+        }
+      ],
+      "erroresEsquema": [],
+      "historias": [
+        {
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "archivos": [
+            "cpp-raw-prefijo-u8R-empalmado.jsonl"
+          ],
+          "inicio": 1792519200000,
+          "fin": 1792519203000,
+          "placa": "uno",
+          "placas": [
+            "uno"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792519200000,
+              "texto": "Empezó la sesión (uno, nivel 3)."
+            },
+            {
+              "t": 1792519201000,
+              "texto": "Compiló: bien, 100 bytes."
+            },
+            {
+              "t": 1792519202000,
+              "texto": "Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea."
+            },
+            {
+              "t": 1792519203000,
+              "texto": "Terminó la sesión (10 s)."
+            }
+          ],
+          "corridas": [],
+          "avisos": [],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [],
+          "resumen": "0 corrida(s). Fallas vistas: ninguna."
+        }
+      ],
+      "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 13:00 a 13:00 · uno, nivel 3 · sesión integral\n  13:00  Empezó la sesión (uno, nivel 3).\n  13:00  Compiló: bien, 100 bytes.\n  13:00  Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.\n  13:00  Terminó la sesión (10 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+      "error": null
+    },
+    {
+      "caso": "cpp-cambios-adyacentes-truncados",
+      "problema": false,
+      "nota": "",
+      "eventos": [
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519200000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519201000,
+          "origen": "editor",
+          "tipo": "codigo_compilado",
+          "datos": {
+            "ok": true,
+            "error": null,
+            "bytes": 100,
+            "codigo": "const char *texto=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxA\";\nconst char *otro=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxB\";\nvoid setup(){}\nvoid loop(){}\n"
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519202000,
+          "origen": "editor",
+          "tipo": "codigo_compilado",
+          "datos": {
+            "ok": true,
+            "error": null,
+            "bytes": 100,
+            "codigo": "const char *texto=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxC\";\nconst char *otro=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxD\";\nvoid setup(){}\nvoid loop(){}\n"
+          }
+        },
+        {
+          "v": 1,
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "t": 1792519203000,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 10000
+          }
+        }
+      ],
+      "erroresEsquema": [],
+      "historias": [
+        {
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "archivos": [
+            "cpp-cambios-adyacentes-truncados.jsonl"
+          ],
+          "inicio": 1792519200000,
+          "fin": 1792519203000,
+          "placa": "uno",
+          "placas": [
+            "uno"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792519200000,
+              "texto": "Empezó la sesión (uno, nivel 3)."
+            },
+            {
+              "t": 1792519201000,
+              "texto": "Compiló: bien, 100 bytes."
+            },
+            {
+              "t": 1792519202000,
+              "texto": "Compiló: bien, 100 bytes. Programa: `…xxxxxxxxxxxxxxxA\";` → `…xxxxxxxxxxxxxxxC\";` y `…xxxxxxxxxxxxxxxB\";` → `…xxxxxxxxxxxxxxxD\";`."
+            },
+            {
+              "t": 1792519203000,
+              "texto": "Terminó la sesión (10 s)."
+            }
+          ],
+          "corridas": [],
+          "avisos": [],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [],
+          "resumen": "0 corrida(s). Fallas vistas: ninguna."
+        }
+      ],
+      "texto": "Equipo AUD_SINTETICO · 20 de oct de 2026, 13:00 a 13:00 · uno, nivel 3 · sesión integral\n  13:00  Empezó la sesión (uno, nivel 3).\n  13:00  Compiló: bien, 100 bytes.\n  13:00  Compiló: bien, 100 bytes. Programa: `…xxxxxxxxxxxxxxxA\";` → `…xxxxxxxxxxxxxxxC\";` y `…xxxxxxxxxxxxxxxB\";` → `…xxxxxxxxxxxxxxxD\";`.\n  13:00  Terminó la sesión (10 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+      "error": null
+    },
+    {
+      "caso": "utf8-invalido-sustituido-sin-aviso",
+      "problema": false,
+      "leidos": {
+        "lineas": [
+          {
+            "archivo": "utf8-roto.jsonl",
+            "ruta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\utf8-roto.jsonl",
+            "linea": 1,
+            "texto": "{\"v\":1,\"equipo\":\"AUD_SINTETICO\",\"sesion\":\"integral\",\"version_tb\":\"0.3.0\",\"version_tc\":\"0.1.0-dev\",\"t\":1792519200000,\"origen\":\"editor\",\"tipo\":\"sesion_iniciada\",\"datos\":{\"placa\":\"uno\",\"nivel\":3}}",
+            "ev": {
+              "v": 1,
+              "equipo": "AUD_SINTETICO",
+              "sesion": "integral",
+              "version_tb": "0.3.0",
+              "version_tc": "0.1.0-dev",
+              "t": 1792519200000,
+              "origen": "editor",
+              "tipo": "sesion_iniciada",
+              "datos": {
+                "placa": "uno",
+                "nivel": 3
+              }
+            }
+          },
+          {
+            "archivo": "utf8-roto.jsonl",
+            "ruta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\utf8-roto.jsonl",
+            "linea": 2,
+            "texto": "{\"v\":1,\"equipo\":\"AUD_SINTETICO\",\"sesion\":\"integral\",\"version_tb\":\"0.3.0\",\"version_tc\":\"0.1.0-dev\",\"t\":1792519200000,\"origen\":\"editor\",\"tipo\":\"codigo_compilado\",\"datos\":{\"ok\":true,\"bytes\":100,\"codigo\":\"const char *s=\\\"�NVALIDO\\\";\"}}",
+            "apartada": "tiene bytes que no son UTF-8 válido",
+            "pistaSesion": "integral",
+            "pistaEquipo": "AUD_SINTETICO"
+          },
+          {
+            "archivo": "utf8-roto.jsonl",
+            "ruta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\utf8-roto.jsonl",
+            "linea": 3,
+            "texto": "{\"v\":1,\"equipo\":\"AUD_SINTETICO\",\"sesion\":\"integral\",\"version_tb\":\"0.3.0\",\"version_tc\":\"0.1.0-dev\",\"t\":1792519200000,\"origen\":\"editor\",\"tipo\":\"sesion_terminada\",\"datos\":{\"ms\":10000}}",
+            "ev": {
+              "v": 1,
+              "equipo": "AUD_SINTETICO",
+              "sesion": "integral",
+              "version_tb": "0.3.0",
+              "version_tc": "0.1.0-dev",
+              "t": 1792519200000,
+              "origen": "editor",
+              "tipo": "sesion_terminada",
+              "datos": {
+                "ms": 10000
+              }
+            }
+          }
+        ],
+        "problemas": [
+          "utf8-roto.jsonl, línea 2: tiene bytes que no son UTF-8 válido."
+        ],
+        "notas": []
+      },
+      "historias": [
+        {
+          "equipo": "AUD_SINTETICO",
+          "sesion": "integral",
+          "archivos": [
+            "utf8-roto.jsonl"
+          ],
+          "inicio": 1792519200000,
+          "fin": 1792519200000,
+          "placa": "uno",
+          "placas": [
+            "uno"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792519200000,
+              "texto": "Empezó la sesión (uno, nivel 3)."
+            },
+            {
+              "t": 1792519200000,
+              "texto": "Terminó la sesión (10 s)."
+            }
+          ],
+          "corridas": [],
+          "avisos": [
+            "Se apartó una línea (utf8-roto.jsonl, línea 2): tiene bytes que no son UTF-8 válido. Ahí hay un hueco."
+          ],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [
+            {
+              "desdePos": 1,
+              "hastaPos": 1
+            }
+          ],
+          "resumen": "0 corrida(s). Fallas vistas: ninguna."
+        }
+      ],
+      "archivo": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\utf8-roto.jsonl",
+      "byte_corrupto": 255
+    },
+    {
+      "caso": "limite-linea-rechaza-sin-senal",
+      "problema": true,
+      "pin_ok": true,
+      "activar_ok": true,
+      "limites": [
+        {
+          "longitud": 2097151,
+          "erroresEsquema": [],
+          "aceptado": true,
+          "estado": {
+            "activo": true,
+            "tienePin": true,
+            "falla": null,
+            "configIlegible": false
+          }
+        },
+        {
+          "longitud": 2097152,
+          "erroresEsquema": [],
+          "aceptado": true,
+          "estado": {
+            "activo": true,
+            "tienePin": true,
+            "falla": null,
+            "configIlegible": false
+          }
+        },
+        {
+          "longitud": 2097153,
+          "erroresEsquema": [],
+          "aceptado": false,
+          "estado": {
+            "activo": true,
+            "tienePin": true,
+            "falla": null,
+            "configIlegible": false
+          }
+        }
+      ],
+      "avisos": [],
+      "filasGuardadas": 2,
+      "carpeta_sintetica": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\disco"
+    },
+    {
+      "caso": "exportar-mismo-minuto-sobrescribe-carpeta",
+      "problema": true,
+      "export1": {
+        "ok": true,
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\exports\\TecnoBloques-registros-2026-10-20_1300",
+        "archivos": 1,
+        "pendientes": 0
+      },
+      "export2": {
+        "ok": true,
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\tc-reg004-integral-SYvOmx\\exports\\TecnoBloques-registros-2026-10-20_1300",
+        "archivos": 1,
+        "pendientes": 0
+      },
+      "bytesAntes": 4194305,
+      "bytesDespues": 4194487
+    }
+  ]
+}
