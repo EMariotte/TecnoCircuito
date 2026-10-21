@@ -1,0 +1,22 @@
+COMANDO: node docs/diagnosticar-aud0708-profunda-2026-10-21.cjs docs/aud0708-profunda-diagnosticos-node-2026-10-21.json
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+OK control-activo-y-apagado
+OK frontera-x
+OK frontera-ñ
+OK frontera-😀
+FALLA descarte-con-cola-saturada
+OK exportaciones-mismo-reloj
+FALLA copia-incompleta-leida-como-limpia
+FALLA archivo-alterado-y-hash-ignorado
+FALLA archivo-omitido-oculta-hueco
+FALLA dos-exportaciones-pierden-repeticion-legitima
+FALLA listar-origen-sin-permiso
+FALLA configuracion-null
+FALLA configuracion-array
+FALLA configuracion-sin-pin
+FALLA configuracion-pin-roto
+FALLA utf8-invalido-aparta-texto-valido-con-UFFFD
+FALLA serializacion-omite-contenido-no-JSON
+17 casos; 12 incumplimientos de criterios diagnósticos. Evidencia: docs/aud0708-profunda-diagnosticos-node-2026-10-21.json
+
+exit=1

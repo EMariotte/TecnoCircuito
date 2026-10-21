@@ -1,0 +1,137 @@
+UTC: 2026-10-21T22:12:39.884300+00:00
+COMANDO: npm.cmd --prefix ../TecnoBloques run test:registro-app
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+
+> tecnobloques@0.3.0 test:registro-app
+> node build.js --simulador-local && node test/registro-app.js
+
+Blockly 13.3.0 · local 1613 KB · artefacto 382 KB · simulador: local
+OK    apagado por defecto: no pide código ni muestra el aviso
+OK    con el registro apagado no se crea la carpeta registros
+OK    sin el PIN del instructor, F12 no abre las herramientas de desarrollo
+OK    y si se abren por otro camino, se cierran solas
+OK    Ctrl+Alt+Mayús+R abre la opción del instructor: «Registro de eventos: crear el PIN del instructor»
+OK    dos PIN distintos: lo avisa
+OK    el panel del instructor dice que está apagado
+OK    al encenderlo, pide el código del equipo
+OK    sin código: lo pide
+OK    pide confirmar: «¿Son el equipo B9?»
+OK    Corregir vuelve al código escrito
+OK    el aviso discreto: «Esta sesión se registra · Equipo A7»
+OK    después del PIN del instructor, F12 sí abre las herramientas (hasta cerrar la app)
+OK    compila y simula
+OK    un archivo por equipo y día: A7-2026-10-21.jsonl
+      tipos: sesion_iniciada, placa_cambiada, placa_cambiada, ejemplo_cargado, bloques_cambiados, codigo_compilado, simulacion_iniciada, simulacion_detenida, sesion_terminada
+OK    el registro tiene sesion_iniciada
+OK    el registro tiene ejemplo_cargado
+OK    el registro tiene bloques_cambiados
+OK    el registro tiene codigo_compilado
+OK    el registro tiene simulacion_iniciada
+OK    el registro tiene simulacion_detenida
+OK    empieza con sesion_iniciada (placa y nivel)
+OK    REG-004: placa_cambiada con el selector y con el ejemplo, antes de ejemplo_cargado (uno→nano, nano→uno)
+OK    al cerrar la app sale sesion_terminada (último: sesion_terminada)
+OK    cada línea con el equipo A7, la misma sesión y las dos versiones
+OK    codigo_compilado: el C++ sin comentarios (32 líneas, 4162 bytes)
+OK    simulacion_iniciada con su corrida y el circuito completo
+OK    el nombre del proyecto que escribió el aprendiz no está en el registro
+OK    las 9 líneas cumplen contrato/evento.schema.json
+OK    al abrir otra vez, pide el código (el registro sigue encendido en este PC)
+OK    sin código, el aviso lo dice y no se registra
+OK    sin código del equipo no se escribe nada
+OK    E1: el disco no deja escribir y la esquina lo dice: «El registro no se está guardando · Avisen al instructor»
+OK    E1: con la falla, compilar y simular siguen funcionando
+OK    E2: el aviso explica qué pasó, sin detener el trabajo
+OK    E3: el panel del instructor lo detalla: «No se guarda desde las 17:13 · sin permiso para escribir · 5 eventos esperando»
+OK    mientras falla, el archivo no cambia (solo sesion_iniciada)
+OK    E4: «Reintentar ahora» escribe lo que esperaba
+OK    E4: y la app lo dice: «El registro volvió a guardarse.»
+OK    E4: la esquina vuelve a «Esta sesión se registra · Equipo C3»
+      C3: sesion_iniciada, ejemplo_cargado, codigo_compilado, simulacion_iniciada, simulacion_detenida, bloques_cambiados, registro_interrumpido
+OK    E4: los 5 eventos que esperaban quedaron en orden y con su sesión original
+OK    E5: al final, registro_interrumpido (recuperados 5, perdidos 0, EPERM)
+OK    las 7 líneas de C3 cumplen contrato/evento.schema.json
+OK    AUD-04: C3 simula
+OK    AUD-04 corriendo: al cambiar a D1 la simulación se detiene y la app lo dice
+OK    AUD-04 corriendo: la corrida queda entera en C3 (inicio, circuito, cierre con fallas, antes de sesion_terminada) y D1 no tiene ninguna (C3 termina: bloques_cambiados, simulacion_detenida, sesion_terminada)
+OK    AUD-04: D1 simula
+OK    AUD-04 en pausa: D1 cierra su corrida pausada antes de terminar y E2 no hereda nada (bloques_cambiados, simulacion_detenida, sesion_terminada)
+OK    AUD-04: E2 simula
+OK    AUD-04 mismo código: E2 sigue en su sesión y su simulación sigue corriendo
+OK    REG-004: el RESET pone el reloj de la corrida en cero (reinicio a 1678 ms, cierre a 206 ms)
+OK    AUD-04 compilando: la compilación se descarta, no empieza la simulación y la app lo dice («Cambió el equipo mientras se preparaba el programa. Pulsen «Simular» otra vez.»)
+OK    AUD-04 compilando: ni E2 ni F3 registran esa compilación ni una corrida
+OK    AUD-04 bloques: el resumen que esperaba queda en F3, antes de su sesion_terminada, y no pasa a G4 (F3 termina: bloques_cambiados, sesion_terminada)
+OK    AUD-04: G4 simula
+OK    AUD-04 cerrar: al cerrar la app, la corrida de G4 se cierra antes de su sesion_terminada (simulacion_detenida, sesion_terminada)
+OK    AUD-04-V1: H5 pulsa Simular y el puerto serial queda cerrándose
+OK    AUD-04-V1 sin cambio: al cerrarse el puerto, la simulación de H5 empieza en su sesión
+OK    AUD-04-V1: H5 pulsa Simular otra vez y el puerto queda cerrándose
+OK    AUD-04-V1 con cambio: la simulación preparada por H5 no empieza para I6 y la app pide pulsar «Simular»
+OK    AUD-04-V1 con cambio: la compilación queda en H5 (la hizo H5), sin corrida nueva; I6 no tiene ninguna (H5: sesion_iniciada, codigo_compilado, simulacion_iniciada, simulacion_detenida, codigo_compilado, bloques_cambiados, sesion_terminada)
+OK    AUD-03-V2: I6 simula el LED sin resistencia (Worker retenido con la foto de las dos fallas)
+OK    AUD-03-V2 equipo: con el cierre de I6 pendiente, la sesión de I6 sigue abierta (37 ms después de Detener, antes del tope de 500)
+OK    AUD-03-V2 equipo: la corrida 2 queda en I6 con sus dos fallas y su cierre antes de sesion_terminada; J7 no hereda nada (I6 termina: falla,simulacion_detenida,sesion_terminada)
+OK    AUD-03-V2: J7 simula (Worker retenido)
+OK    AUD-03-V2 simular: con el cierre pendiente, una segunda llamada a detenerSimulacion() espera ese mismo cierre (no responde al instante)
+OK    AUD-03-V2 simular: la corrida 3 cierra con sus dos fallas antes de que empiece la 4
+OK    AUD-04: las 50 líneas de C3 a I6 cumplen contrato/evento.schema.json
+OK    con el PIN equivocado no entra
+OK    el panel dice que está encendido
+OK    apagado: el aviso desaparece
+OK    AUD-04 apagar: la corrida de J7 se cierra antes de su sesion_terminada (simulacion_detenida, sesion_terminada)
+OK    AUD-03-V2: K8 simula (Worker retenido)
+OK    AUD-03-V2 cerrar: con el cierre de K8 pendiente, cerrar la ventana lo saca antes de sesion_terminada (K8 termina: simulacion_iniciada,simulacion_detenida,sesion_terminada)
+OK    al abrir otra vez, pide el código
+OK    AUD-03-V2: L9 simula (Worker retenido)
+OK    AUD-03-V2 apagar: con el cierre pendiente, la sesión de L9 sigue abierta hasta que sale; después se apaga
+OK    AUD-03-V2 apagar: la corrida 1 queda en L9 con sus dos fallas y su cierre antes de sesion_terminada (L9 termina: falla,simulacion_detenida,sesion_terminada)
+OK    AUD-03-V2: las 35 líneas de I6 a L9 cumplen contrato/evento.schema.json
+OK    apagado: al abrir ya no pide el código
+OK    V2: con la configuración dañada, la esquina lo dice desde el arranque y no pide el código: «El registro no está funcionando · Avisen al instructor»
+OK    V2: el aviso explica que no se registra nada
+OK    V2: el instructor ve que está dañada (no «crear el PIN» como si fuera nueva)
+OK    V2: con el PIN nuevo, el registro queda apagado y la configuración dañada se guarda aparte
+OK    V2: el aviso se quita y los registros guardados siguen ahí
+OK    sin errores en la consola
+OK    REG-004: 11 sesiones reales leídas, sin avisos
+OK    REG-004: la historia de I6, J7 y L9 cuenta el LED quemado y la corriente del pin
+
+Equipo J7 · 21 de oct de 2026, 17:13 a 17:13 · uno, nivel 2 · sesión 64220e36
+  17:13  Empezó la sesión (uno, nivel 2).
+  17:13  Compiló: bien, 712 bytes.
+  17:13  ▶ Corrida 3 (uno, realista; 1 pieza, 2 cables).
+  17:13     falla: LED quemado (led1), a los 0,0 s simulados.
+  17:13     falla: corriente del pin (placa.D13), a los 0,0 s simulados.
+  17:13  ■ Corrida 3 terminó: 0,2 s simulados. Fallas: LED quemado (led1), corriente del pin (placa.D13).
+  17:13  Bloques: 23 (14 tipos).
+  17:13  Compiló: bien, 712 bytes (el mismo programa).
+  17:13  ▶ Corrida 4 (uno, realista; 1 pieza, 2 cables).
+  17:13     falla: LED quemado (led1), a los 0,0 s simulados.
+  17:13     falla: corriente del pin (placa.D13), a los 0,0 s simulados.
+  17:13  ■ Corrida 4 terminó: 1,1 s simulados. Fallas: LED quemado (led1), corriente del pin (placa.D13). Siguen: LED quemado (led1), corriente del pin (placa.D13).
+  17:13  Terminó la sesión (4 s).
+  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa.D13). Corregidas al final: ninguna. Sin corregir: LED quemado (led1), corriente del pin (placa.D13).
+  Avisos: ninguno.
+
+OK    AUD-07: control, la esquina normal antes de perder nada
+OK    AUD-07: un evento demasiado grande: la esquina dice «Equipo M1 · El registro perdió un evento · Avisen al instructor»
+OK    AUD-07: un evento que no se puede copiar también se cuenta: «Equipo M1 · El registro perdió 2 eventos · Avisen al instructor»
+OK    AUD-07: la esquina explica qué pasó, sin detener el trabajo
+OK    AUD-07: el panel del instructor lo detalla: «2 eventos no se guardaron desde que se abrió la app (el último: ejemplo_cargado, no se pudo convertir a texto, a las 17:14). Quedaron anotados en el registro.»
+OK    AUD-07 (F06): con el panel abierto, otra pérdida lo actualiza: «3 eventos no se guardaron desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 17:14). Quedaron anotados en el registro.»
+OK    AUD-08: dos exportaciones desde el panel, las dos con sufijo por los señuelos: TecnoBloques-registros-2026-10-21_1714-2 y TecnoBloques-registros-2026-10-21_1714-3; la primera intacta y cada una con su exportacion.json
+OK    A-05: el equipo siguiente ve su esquina normal: «Esta sesión se registra · Equipo M2»
+OK    A-05: el panel del instructor sigue con la cuenta de toda la app
+OK    A-05: con el registro apagado la esquina se oculta, pero la cuenta se conserva
+OK    A-05: apagado, el panel del instructor la muestra
+OK    A-05: sin equipo, la esquina dice que falta el código: «Esta sesión se registra · Falta el código del equipo»
+OK    AUD-07: el archivo tiene los tres evento_descartado en su lugar, con la sesión de M1 (sesion_iniciada, evento_descartado, evento_descartado, ejemplo_cargado, evento_descartado, ejemplo_cargado, bloques_cambiados, sesion_terminada)
+OK    AUD-07: las 10 líneas de M1 y M2 cumplen contrato/evento.schema.json
+OK    AUD-07: la historia cuenta los tres huecos (Hay un hueco: no se guardó un evento (codigo_compilado) porque era demasiado grande (M1-2026-10-21.jsonl línea 2). | Hay un hueco: no se guardó un evento (ejemplo_cargado) porque no se pudo convertir a texto (M1-2026-10-21.jsonl línea 3). | Hay un hueco: no se guardó un evento (codigo_compilado) porque era demasiado grande (M1-2026-10-21.jsonl línea 5).)
+OK    AUD-07: al abrir otra vez, la cuenta empieza de cero (es desde que se abrió la app)
+OK    sin errores en la consola, también en la sección 9
+
+TODO BIEN
+
+exit=0

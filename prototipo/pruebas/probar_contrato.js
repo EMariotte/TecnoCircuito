@@ -266,6 +266,8 @@ console.log('— Los eventos del registro cumplen el contrato');
     programa_subido: edi('programa_subido', { ok: true, placa: 'uno' }),
     sesion_terminada: edi('sesion_terminada', { ms: 3600000 }),
     registro_interrumpido: edi('registro_interrumpido', { desde: t - 120000, hasta: t, recuperados: 7, perdidos: 0, motivo: 'ENOSPC' }),
+    evento_descartado: edi('evento_descartado', { motivo: 'tamano', tipo: 'simulacion_iniciada', origen: 'simulador', corrida: 3, largo: 2097153, limite: 2097152 }),
+    'evento_descartado (de la página, solo el motivo)': edi('evento_descartado', { motivo: 'no_serializable' }),
   };
   const SOBRE = { equipo: 'A7', sesion: '5f2c9a', version_tb: '0.4.0', version_tc: '0.2.0' };
   for (const [nombre, ev] of Object.entries(EVENTOS)) {
@@ -313,6 +315,11 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['placa_cambiada sin «de»', () => edi('placa_cambiada', { a: 'uno' }), /de/],
     ['placa_cambiada a la placa «leonardo»', () => edi('placa_cambiada', { de: 'uno', a: 'leonardo' }), /\/a/],
     ['placa_cambiada que dice venir del simulador', () => ({ ...EVENTOS.placa_cambiada, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
+    ['evento_descartado sin motivo', () => edi('evento_descartado', { tipo: 'falla' }), /motivo/],
+    ['evento_descartado que dice venir del simulador', () => ({ ...EVENTOS.evento_descartado, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
+    ['evento_descartado con la corrida 0', () => edi('evento_descartado', { motivo: 'tamano', corrida: 0 }), /corrida/],
+    ['evento_descartado con un tipo de más de 64 caracteres', () => edi('evento_descartado', { motivo: 'tamano', tipo: 'x'.repeat(65) }), /tipo/],
+    ['evento_descartado con el largo negativo', () => edi('evento_descartado', { motivo: 'tamano', largo: -1 }), /largo/],
     ['bloques_cambiados con el XML en vez del resumen', () => edi('bloques_cambiados', { xml: '<xml/>' }), /bloques/],
   ];
   for (const [texto, armar, espera] of casosEv) {

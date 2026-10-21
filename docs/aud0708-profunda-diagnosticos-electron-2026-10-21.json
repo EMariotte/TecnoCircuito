@@ -1,0 +1,28 @@
+{
+  "utc": "2026-10-21T20:22:49.431Z",
+  "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-electron-VTShkH",
+  "resultados": [
+    {
+      "caso": "panel-abierto-no-se-actualiza",
+      "aprobado": false,
+      "antes": "1 evento no se guardó desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 15:22). Quedó anotado en el registro.",
+      "durante": {
+        "cantidad": 2,
+        "panel": "1 evento no se guardó desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 15:22). Quedó anotado en el registro.",
+        "esquina": "El registro perdió 2 eventos · Avisen al instructor",
+        "visible": true
+      }
+    },
+    {
+      "caso": "aviso-se-oculta-antes-de-cerrar-app",
+      "aprobado": false,
+      "apagado": {
+        "cantidad": 2,
+        "visible": false,
+        "texto": "El registro perdió 2 eventos · Avisen al instructor",
+        "activo": false
+      }
+    }
+  ],
+  "errores": []
+}

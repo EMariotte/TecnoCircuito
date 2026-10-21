@@ -1,0 +1,85 @@
+{
+  "utc": "2026-10-21T20:26:52.234Z",
+  "script": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\diagnosticar-aud0708-profunda-2026-10-21.cjs",
+  "scratch": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-GedT5S",
+  "resultados": [
+    {
+      "caso": "exportacion-con-pendientes-leida-como-limpia",
+      "criterio": "El consumidor debe informar los eventos que el manifiesto declara fuera de la copia",
+      "aprobado": false,
+      "exportacion": {
+        "ok": true,
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-GedT5S\\caso-1\\usb\\TecnoBloques-registros-2026-10-21_1000",
+        "archivos": 1,
+        "pendientes": 1
+      },
+      "manifiesto": {
+        "formato": 1,
+        "app": "TecnoBloques",
+        "version_tb": "0.3.0",
+        "t": 1792594800000,
+        "completa": true,
+        "total": 1,
+        "archivos": [
+          {
+            "archivo": "A-2026-10-21.jsonl",
+            "bytes": 351,
+            "sha256": "4f1a254f1453c5e69392be8edad921ac5bc4c1df49477cff752ad6ecfb3a32cd"
+          }
+        ],
+        "pendientes": 1
+      },
+      "lectura": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "A",
+            "sesion": "anterior",
+            "archivos": [
+              "A-2026-10-21.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800000,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800000,
+                "texto": "Terminó la sesión (3 s)."
+              }
+            ],
+            "corridas": [],
+            "avisos": [],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "0 corrida(s). Fallas vistas: ninguna."
+          }
+        ],
+        "texto": "Equipo A · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión anterior\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  Terminó la sesión (3 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"A\",\n      \"sesion\": \"anterior\",\n      \"archivos\": [\n        \"A-2026-10-21.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800000,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Terminó la sesión (3 s).\"\n        }\n      ],\n      \"corridas\": [],\n      \"avisos\": [],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"0 corrida(s). Fallas vistas: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "frontera-UTF8-tres-bytes",
+      "criterio": "El límite en unidades UTF-16 admite su tamaño UTF-8 real sin truncar",
+      "aprobado": true,
+      "largo": 2097152,
+      "bytes": 6291078,
+      "retorno": true
+    }
+  ]
+}

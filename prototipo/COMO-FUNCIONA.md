@@ -1900,6 +1900,8 @@ El resumen usa **el mismo criterio que los pasos**, para no contradecirlos (INT-
 |---|---|
 | El C++ de `codigo_compilado` tiene comentarios | AUD-01 |
 | Hueco: eventos perdidos cuando el disco falló, o una línea apartada (JSON dañado, bytes que no son UTF-8, fuera del esquema, sin hora, de otra versión) | AUD-02 · INT-02, INT-04, INT-07 |
+| Hueco: un evento que no se pudo guardar (`evento_descartado`: demasiado grande, no se pudo convertir a texto o sin tipo). Si era de una corrida, esa corrida no se compara; si era su inicio, sus eventos quedan sin atribuir (sección 69) | AUD-07 |
+| Una exportación que no se pudo admitir (incompleta, alterada, con archivos de más o de menos, sin manifiesto) o con eventos pendientes; copias del mismo archivo que no coinciden; un tramo del reloj que no existe o una corrida que mezcla eventos con y sin tramo (sección 69) | AUD-09, AUD-10, AUD-12 |
 | Las fallas del cierre no son las que llegaron una a una; cierres que no coinciden entre sí | AUD-03 · R1 |
 | Una corrida tiene eventos en una sesión donde no empezó | AUD-04 |
 | La sesión comparte su código con otro equipo (se cuentan aparte) | INT-03 |
@@ -1973,7 +1975,64 @@ La segunda prueba, con la app corregida (`PRUEBA-03`), coincidió sin avisos y *
 
 ### Pruebas
 
-- `npm run test:historia` (142 OK; 21 por INT-RES-01 a 05, 19 por INT-RES-03a/03b y el límite de la corrida abierta, y 7 por INT-RES-03c con `tramo`: la foto de antes del RESET que llega después, el reinicio por energía de esa foto, el RESET en pausa, sus controles y dos tiempos imposibles del reloj nuevo): una secuencia sintética armada con el sobre real (`crearRegistroEventos`) y un reloj fijo tiene que salir renglón por renglón; otra con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Siguen los casos de R1 a R3 (cierres faltantes, contradictorios, tardíos o sin inicio, y piezas que reutilizan el id), la sesión de Efraín y una regresión por familia de la auditoría: el programa (idéntico, solo espacios, los raw y empalmes de R4/R4a/R4b, INT-08, líneas largas de INT-09), INT-01 (modo, no idealidad, placa y pieza), INT-02 (hueco entre corridas y su control), INT-03, INT-04 (cuatro líneas inválidas y una sesión rota que no tumba la buena), INT-05, INT-10, INT-11 y la línea de comandos (código de salida, INT-06 e INT-07 con archivos de verdad). Los datos sintéticos cumplen el esquema, porque ahora el lector lo valida.
-- `test:registro-app` (88): al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas. Una corrida de E2 pulsa RESET a los 1,5 s y se detiene poco después: el reinicio sale con 1524 ms y el cierre con 201 ms, y la historia lo lee sin avisos.
+- `npm run test:historia` (175 OK; 21 por INT-RES-01 a 05, 19 por INT-RES-03a/03b y el límite de la corrida abierta, 4 por `evento_descartado`, 7 por INT-RES-03c con `tramo` y 29 por el lote de la sección 69: la foto de antes del RESET que llega después, el reinicio por energía de esa foto, el RESET en pausa, sus controles y dos tiempos imposibles del reloj nuevo): una secuencia sintética armada con el sobre real (`crearRegistroEventos`) y un reloj fijo tiene que salir renglón por renglón; otra con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Siguen los casos de R1 a R3 (cierres faltantes, contradictorios, tardíos o sin inicio, y piezas que reutilizan el id), la sesión de Efraín y una regresión por familia de la auditoría: el programa (idéntico, solo espacios, los raw y empalmes de R4/R4a/R4b, INT-08, líneas largas de INT-09), INT-01 (modo, no idealidad, placa y pieza), INT-02 (hueco entre corridas y su control), INT-03, INT-04 (cuatro líneas inválidas y una sesión rota que no tumba la buena), INT-05, INT-10, INT-11 y la línea de comandos (código de salida, INT-06 e INT-07 con archivos de verdad). Los datos sintéticos cumplen el esquema, porque ahora el lector lo valida.
+- `test:registro-app` (con la sección 9 de AUD-07/08 en otra carpeta de datos): al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas. Una corrida de E2 pulsa RESET a los 1,5 s y se detiene poco después: el reinicio sale con 1524 ms y el cierre con 201 ms, y la historia lo lee sin avisos.
 - `probar:fotos` de TecnoCircuito (33): la misma foto de antes del RESET, entregada antes y después del RESET con el `simulador.js` real, deja sus hechos en el tramo 0 con su tiempo, el RESET en el 0 y lo del reloj nuevo, con el cierre, en el 1.
 - Los instrumentos de Codex pasan, salvo dos controles que esperaban «el mismo programa» con solo otra sangría: por la decisión de Efraín ahora dicen «cambió solo en espacios o saltos de línea».
+
+## 69. Lo que no se puede guardar, las exportaciones y su lectura (AUD-07 a AUD-14, 21 oct 2026, Claude)
+
+La auditoría integral de Codex (20 oct) encontró dos pérdidas silenciosas en el escritor del registro de TecnoBloques (`escritorio/registro-disco.js`). Su corrección pasó después por dos auditorías más, el mismo día: una de un auditor aparte que pidió Efraín (A-01 a A-10) y la auditoría profunda de Codex (F01 a F08, fichas AUD-09 a AUD-14). Todo se corrigió en un solo lote.
+
+### Un evento que no se puede guardar (AUD-07)
+
+Una línea se guarda si su JSON mide como mucho **2 097 152 caracteres** (unidades de texto de JavaScript, sin el salto de línea, como cuenta también la cola). En bytes UTF-8 una «ñ» o un emoji pesan el doble, y un carácter como «€», «…» o «漢» el triple: en el límite, una línea de «漢» pesa unos 6,3 MB. Antes, la línea más larga se perdía en silencio. Ahora, por decisión de Efraín, en su lugar va un evento nuevo del contrato, **`evento_descartado`**:
+
+```
+ la página                      el proceso principal (registro-disco.js)          el archivo .jsonl
+ ─────────────────────          ───────────────────────────────────────────        ─────────────────────────
+ registrar(ev) ── IPC ──►  escribir(línea):
+                             ¿registro apagado? ─────────────── sí ──► nada (como antes)
+                             ¿configuración que no sirve? ───── sí ──► espera, falla CONFIG (AUD-11)
+                             ¿sin tipo? ────────────────────── sí ──┐
+                             ¿no se puede convertir a texto? ─ sí ──┤
+                             ¿más de 2 097 152 caracteres? ─── sí ──┴► evento_descartado ──► {motivo, tipo, origen,
+                             si no ────────────────────────────────► la línea, como siempre    corrida, largo, limite},
+ si el evento no cruza el IPC                                                          con la hora del perdido
+ (no se puede copiar) ─────────────────────────────────────────────► evento_descartado (motivo: no_serializable)
+                             la cuenta sube ──► la esquina, solo para el equipo que está trabajando
+                                             └► el panel del instructor: la cuenta de toda la app
+```
+
+- **La hora:** el `evento_descartado` lleva la `t` del evento perdido, si la traía. Así queda en su lugar, no después del evento siguiente (antes aparecía un aviso falso de «reloj que retrocede»), y cerca de medianoche va al archivo de su día (A-02).
+- **Anotado, pendiente o sin anotar (F05):** el marcador va por el mismo camino que las demás líneas. Con el disco fallando espera en la cola (pendiente) y solo se cuenta como **anotado** cuando queda escrito. Si no cabe en la cola, si el instructor apaga el registro antes de escribirlo o si su sobre no sirve, queda **sin anotar**. El panel lo dice así: «2 quedaron anotados en el registro; 1 espera a que el disco funcione para anotarse».
+- **La esquina por equipo (A-05, decisión de Efraín):** «Equipo B2 · El registro perdió un evento · Avisen al instructor», solo con las pérdidas de la sesión del equipo que está trabajando. Al cambiar de equipo vuelve a la normal, y sin equipo dice «Falta el código del equipo». Con el registro apagado no hay equipo y la esquina se oculta; la cuenta de toda la app queda en el panel del instructor, que es quien lo apaga. El panel se actualiza en vivo si está abierto (F06).
+- **Nada lanza:** la página manda su aviso aunque el evento traiga un getter que falla (A-07), y los manejadores del IPC del proceso principal no dejan escapar una excepción del registro.
+
+### La configuración (AUD-11)
+
+`estado()`, `escribir()` y las acciones del instructor usan un solo validador: `registro-config.json` tiene que ser un objeto con `activo` booleano y, si hay PIN, su sal (32 hexadecimales) y su resumen (64). **Encendido exige PIN**, porque sin él nadie podría apagarlo. `null`, `[]`, un número, `{ "activo": true }` o un PIN roto son una configuración ilegible, como un JSON roto: falla CONFIG visible, nada se escribe, nadie entra con el PIN, el archivo no se toca y se arregla creando un PIN nuevo, que guarda aparte la dañada (como en AUD-02-V2).
+
+### Las exportaciones (AUD-08 y AUD-14)
+
+```
+ exportar ──► listar los .jsonl de este PC ── ¿no se pueden leer (EACCES, EIO)? ──► «disco», donde: origen (AUD-14)
+          ──► mkdir «…_1205» sin recursive ── ¿ya existe? ── mkdir «…_1205-2» … hasta 1000 (código TOPE)
+          ──► cada .jsonl: copiar sin pisar (COPYFILE_EXCL), comprobar que tenga los bytes del original y su sha256
+              si una copia falla: se borra el pedazo copiado y se detiene («copia-incompleta», con su código y su lado)
+          ──► exportacion.json: {formato, version_tb, t, completa, total, archivos: [{archivo, bytes, sha256}],
+                                 pendientes, y si quedó incompleta: faltan, error}
+```
+
+El nombre de la carpeta y el `t` del manifiesto salen de una sola hora. La app dice el error en palabras («la memoria USB está llena», «no hay permiso para leer los registros de este computador», «la carpeta ya no está (¿se sacó la memoria USB?)»), no el mensaje de Node.
+
+### Lo que la historia hace con todo esto (AUD-09, AUD-10, AUD-12, AUD-13, A-01 y A-03)
+
+- **Admisión de una exportación (AUD-09).** Si una carpeta tiene `exportacion.json` o se llama como una exportación, la historia la admite antes de leerla: el manifiesto se lee, es del formato 1 y tiene la estructura que escribe TecnoBloques (`app`, `version_tb`, `t`, `completa`, `total`, `archivos` y `pendientes` obligatorios, con sus tipos y sin convertir nada: un `pendientes` que falta o es «1» no es cero; con `completa: false`, `faltan` y `error`; AUD-09-R1), dice `completa: true`, cada archivo listado está con sus bytes y su sha256, no hay `.jsonl` de más y los nombres no salen de la carpeta. Si algo falla, se dice como problema (la línea de comandos sale con 1) y sus sesiones **no comparan corridas ni aseguran el final**. `pendientes > 0` también se dice y no deja asegurar el final. Un archivo suelto se lee crudo, sin verificar, y la carpeta de la app no es una exportación.
+- **Copias del mismo archivo (AUD-10).** Dos exportaciones traen el mismo archivo en dos momentos. La más larga contiene a la otra desde el principio y es la que se lee, con todas sus repeticiones (una pieza agregada, quitada y agregada otra vez no se pierde). Si una copia no es el comienzo de la otra, se avisa y no se asegura el final.
+- **El tramo tiene que existir (AUD-12).** Una corrida empieza en el tramo 0 y cada RESET del botón abre el siguiente. Un evento con un tramo mayor que los RESET que hubo, un evento de la página (pausa, reanudar, el RESET o el cierre) que no es del tramo actual, una corrida que empieza en otro tramo o que mezcla eventos con tramo y sin él: la corrida no se compara.
+- **UTF-8 por línea (AUD-13).** Cada línea se decodifica sola: un byte roto aparta solo su línea, y un «�» escrito a propósito en otra línea se conserva. El BOM se quita solo al comienzo del archivo.
+- **El cierre perdido (A-01).** Si el `evento_descartado` era el cierre de una corrida, se sabe que existió: las corridas siguientes no se acusan de haber empezado con ella abierta, y su aviso dice «perdió su cierre (no se guardó)».
+- **Nada se compara a través de un hueco (A-03).** En un hueco (una línea apartada, un `evento_descartado` o eventos perdidos en `registro_interrumpido`) pudo perderse una compilación, un resumen de bloques o un cambio de placa. Después de él, la compilación siguiente no se compara con la anterior («después de un hueco: no se compara con la compilación anterior»), los bloques empiezan de nuevo y no se acusa un `placa_cambiada` que falta.
+
+**Pruebas:** `test:registro` de TecnoBloques (202): las fronteras con «x», «ñ», emojis y «漢»; los motivos; la configuración (doce formas mal formadas, el reemplazo y el control); anotado, pendiente y sin anotar con la cola llena por número y por tamaño; la cuenta por sesión; la hora y el día del marcador; la carpeta de origen sin permiso; la copia que escribe la mitad y falla, la que termina con otro tamaño y el tope de 1000. `test:historia` (192): los tramos imposibles, el cierre perdido, los huecos, las copias y la admisión (una exportación entera, nueve dañadas y trece manifiestos mal formados, con `pendientes` 0 y 2 como controles y un evento de verdad en la cola), UTF-8 con BOM y CRLF. `test:registro-app`, en Electron, en una carpeta de datos aparte: la esquina por equipo, el panel que se actualiza abierto, el registro apagado y dos exportaciones obligadas a usar el sufijo con carpetas señuelo. Los diagnósticos de Codex (23 casos) y del auditor (r01 a r08) no reproducen ninguno de sus fallos.

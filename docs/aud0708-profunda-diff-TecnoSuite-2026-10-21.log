@@ -1,0 +1,71 @@
+diff --git a/tareas/AUD-07.md b/tareas/AUD-07.md
+index 421ae63..b9969bf 100644
+--- a/tareas/AUD-07.md
++++ b/tareas/AUD-07.md
+@@ -5,15 +5,16 @@
+   "id": "AUD-07",
+   "titulo": "Hacer visible el rechazo de eventos de registro por tamaño",
+   "proyectos": [
+-    "TecnoBloques"
++    "TecnoBloques",
++    "TecnoCircuito"
+   ],
+   "tipo": "codigo",
+-  "estado": "pendiente",
++  "estado": "en_revision",
+   "prioridad": "media",
+   "responsable": "Claude",
+   "revisor": "Codex",
+   "creada": "2026-10-20",
+-  "actualizada": "2026-10-20",
++  "actualizada": "2026-10-21",
+   "archivos_reservados": [],
+   "cierre": null
+ }
+@@ -29,6 +30,14 @@
+ 
+ Dimensiones: reproducido en módulo Node con datos sintéticos, diagnóstico de defecto y no regresión aprobada. Integración: lectura de la conexión afectada; falta nueva prueba de interfaz Electron. Físico: no aplica. Uso humano: no ejecutado.
+ 
+-Siguiente: Efraín decide prioridad; Claude toma y reserva cuando corresponda; Codex verifica. Sin implementación iniciada ni autorización de publicación.
++Siguiente: Codex verifica AUD-07 y AUD-08 en una sola revisión (pedido de Efraín). Con su visto bueno, commit y push con el sí de Efraín. [Entrega](../canales/CLAUDE-A-CODEX.md).
+ 
+ 2026-10-20 12:43 · Codex: hallazgo documentado por encargo de auditoría amplia de Efraín, sin tocar código. Base TB main 86433d1; archivos afectados sin cambios respecto de HEAD. Evidencia en reg004-integral-ampliacion-2026-10-20.json de TC/docs. [Informe](../../TecnoCircuito/docs/AUDITORIA-INTEGRAL-REG004-CODEX-2026-10-20.md).
++
++2026-10-21 11:20 · Claude: **tomo AUD-07** (`en_curso`) por pedido de Efraín, que pidió anticipar todo lo posible para que sea una sola revisión. Decisiones de Efraín (21 oct): (1) la pérdida queda anotada con un **evento nuevo del editor `evento_descartado`** (contrato 1, 6.1, aditivo) en el lugar del que se perdió; (2) el aviso va **en la esquina** («El registro perdió un evento · Avisen al instructor», hasta cerrar la app) y **en el panel del instructor**. Plan: el límite sigue en caracteres del JSON (unidades de texto de JavaScript, como la cola; documentado), revisado después de saber si el registro está encendido; también se anota el evento que no se puede convertir a texto (en el proceso principal y, si no cruza el IPC, en la página); el lector lo cuenta como hueco. AUD-08 la tomo al entregar esta (el mismo archivo) y las entrego para una sola revisión.
++
++2026-10-21 11:22 · Claude: sumo TecnoCircuito a los proyectos de la ficha: el evento nuevo cambia el contrato y su esquema (decisión de Efraín).
++
++2026-10-21 12:15 · Claude: **AUD-07 implementada** (`en_revision`; reservas liberadas). La entrega a Codex va junto con AUD-08, que tomo ahora (los mismos archivos), para una sola revisión. Detalle en la entrega.
++
++2026-10-21 12:45 · Claude: **entregadas AUD-07 y AUD-08 para una sola revisión** (`en_revision`; reservas liberadas; las dos a la vez por pedido de Efraín). Entrega: [CLA-20261021-005](../canales/CLAUDE-A-CODEX.md). `test:registro` 174, `test:registro-app` 99/99 (Electron), `test:historia` 146, `probar:contrato` 189, `test:simulador` 53; los diagnósticos de Codex no reproducen INT-12 (con la condición de la señal nueva) ni INT-13. Base TC `0894750`, TB `720b908`, TS `f6ccd45`, sin commit.
+diff --git a/tareas/AUD-08.md b/tareas/AUD-08.md
+index 085b2ed..c32e3f7 100644
+--- a/tareas/AUD-08.md
++++ b/tareas/AUD-08.md
+@@ -8,12 +8,12 @@
+     "TecnoBloques"
+   ],
+   "tipo": "codigo",
+-  "estado": "pendiente",
++  "estado": "en_revision",
+   "prioridad": "media",
+   "responsable": "Claude",
+   "revisor": "Codex",
+   "creada": "2026-10-20",
+-  "actualizada": "2026-10-20",
++  "actualizada": "2026-10-21",
+   "archivos_reservados": [],
+   "cierre": null
+ }
+@@ -29,6 +29,10 @@
+ 
+ Dimensiones: reproducido en módulo Node con datos sintéticos, diagnóstico de defecto y no regresión aprobada. Integración: lectura de la conexión afectada; falta nueva prueba de interfaz Electron. Físico: no aplica. Uso humano: no ejecutado.
+ 
+-Siguiente: Efraín decide prioridad; Claude toma y reserva cuando corresponda; Codex verifica. Sin implementación iniciada ni autorización de publicación.
++Siguiente: Codex verifica AUD-07 y AUD-08 en una sola revisión (pedido de Efraín). Con su visto bueno, commit y push con el sí de Efraín. [Entrega](../canales/CLAUDE-A-CODEX.md).
+ 
+ 2026-10-20 12:43 · Codex: hallazgo documentado por encargo de auditoría amplia de Efraín, sin tocar código. Base TB main 86433d1; archivos afectados sin cambios respecto de HEAD. Evidencia en reg004-integral-ampliacion-2026-10-20.json de TC/docs. [Informe](../../TecnoCircuito/docs/AUDITORIA-INTEGRAL-REG004-CODEX-2026-10-20.md).
++
++2026-10-21 12:15 · Claude: **tomo AUD-08** (`en_curso`) por pedido de Efraín. Reproducido hoy con tu diagnóstico E2 (`exportar-mismo-minuto-sobrescribe-carpeta`). Plan: la carpeta de cada exportación se reserva con `mkdir` sin `recursive` (falla si ya existe) y sufijo -2, -3…; cada archivo se copia sin pisar (COPYFILE_EXCL); al final, `exportacion.json` con el nombre, bytes y sha256 de cada archivo y `completa: true`. Si una copia falla a mitad, `completa: false` y la app dice cuántos se copiaron. Sin cambio de contrato (el lector lee solo los .jsonl).
++
++2026-10-21 12:45 · Claude: **entregadas AUD-07 y AUD-08 para una sola revisión** (`en_revision`; reservas liberadas; las dos a la vez por pedido de Efraín). Entrega: [CLA-20261021-005](../canales/CLAUDE-A-CODEX.md). `test:registro` 174, `test:registro-app` 99/99 (Electron), `test:historia` 146, `probar:contrato` 189, `test:simulador` 53; los diagnósticos de Codex no reproducen INT-12 (con la condición de la señal nueva) ni INT-13. Base TC `0894750`, TB `720b908`, TS `f6ccd45`, sin commit.

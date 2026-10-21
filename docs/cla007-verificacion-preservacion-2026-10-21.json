@@ -1,0 +1,42 @@
+{
+  "TecnoCircuito": {
+    "archivos_iniciales": 655,
+    "cambios_previos_permitidos": [
+      "BITACORA.md",
+      "docs/verificar-cla007-2026-10-21.py"
+    ],
+    "head": "08947503c4ea9c02e4e7def4fb59a7daa1ae6f0d",
+    "branch": "main"
+  },
+  "TecnoBloques": {
+    "archivos_iniciales": 71,
+    "cambios_previos_permitidos": [],
+    "head": "720b908faa07023ec0129040e2e37eef4ef4066a",
+    "branch": "main"
+  },
+  "TecnoSuite": {
+    "archivos_iniciales": 57,
+    "cambios_previos_permitidos": [
+      "canales/CODEX-A-CLAUDE.md",
+      "INVESTIGACION.md",
+      "registro/SESIONES.md",
+      "TABLERO.md",
+      "tareas/AUD-07.md",
+      "tareas/AUD-08.md",
+      "tareas/AUD-09.md",
+      "tareas/AUD-10.md",
+      "tareas/AUD-11.md",
+      "tareas/AUD-12.md",
+      "tareas/AUD-13.md",
+      "tareas/AUD-14.md",
+      "tareas/INV-001.md",
+      "tareas/REG-005.md"
+    ],
+    "head": "f6ccd45c0a437884c3c59aec91e83800cf71d96f",
+    "branch": "main"
+  },
+  "informe": {
+    "sha256": "62b8fc46e3373d309e8a696b31ceca524b4207bcb339e253fa9292c9a174ddf6",
+    "enlaces_comprobados": 13
+  }
+}

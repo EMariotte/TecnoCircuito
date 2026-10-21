@@ -1,0 +1,2680 @@
+{
+  "utc": "2026-10-21T22:15:11.896Z",
+  "script": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\diagnosticar-aud0708-profunda-2026-10-21.cjs",
+  "instrumentoSHA256": "39d58f80c9b2f5c59beb95e1034b3f2dcbc6227e55433726bc524c598d43a537",
+  "scratch": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ",
+  "resultados": [
+    {
+      "caso": "control-activo-y-apagado",
+      "criterio": "Evento pequeño guardado; apagado no cuenta descartes",
+      "aprobado": true,
+      "estado": {
+        "activo": false,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false,
+        "descartados": null
+      }
+    },
+    {
+      "caso": "frontera-x",
+      "criterio": "Límite inferior y exacto aceptados; superior anotado",
+      "aprobado": true,
+      "fronteras": [
+        {
+          "largo": 2097151,
+          "retorno": true
+        },
+        {
+          "largo": 2097152,
+          "retorno": true
+        },
+        {
+          "largo": 2097153,
+          "retorno": false
+        }
+      ],
+      "marcadores": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "evento_descartado",
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "datos": {
+            "motivo": "tamano",
+            "limite": 2097152,
+            "tipo": "codigo_compilado",
+            "origen": "editor",
+            "largo": 2097153
+          }
+        }
+      ],
+      "estado": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false,
+        "descartados": {
+          "cantidad": 1,
+          "anotados": 1,
+          "sinAnotar": 0,
+          "pendientes": 0,
+          "ultimo": {
+            "tipo": "codigo_compilado",
+            "motivo": "tamano",
+            "t": 1792594800000
+          },
+          "sesiones": {
+            "sintetica": {
+              "cantidad": 1,
+              "anotados": 1,
+              "sinAnotar": 0,
+              "pendientes": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "caso": "frontera-ñ",
+      "criterio": "Límite inferior y exacto aceptados; superior anotado",
+      "aprobado": true,
+      "fronteras": [
+        {
+          "largo": 2097151,
+          "retorno": true
+        },
+        {
+          "largo": 2097152,
+          "retorno": true
+        },
+        {
+          "largo": 2097153,
+          "retorno": false
+        }
+      ],
+      "marcadores": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "evento_descartado",
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "datos": {
+            "motivo": "tamano",
+            "limite": 2097152,
+            "tipo": "codigo_compilado",
+            "origen": "editor",
+            "largo": 2097153
+          }
+        }
+      ],
+      "estado": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false,
+        "descartados": {
+          "cantidad": 1,
+          "anotados": 1,
+          "sinAnotar": 0,
+          "pendientes": 0,
+          "ultimo": {
+            "tipo": "codigo_compilado",
+            "motivo": "tamano",
+            "t": 1792594800000
+          },
+          "sesiones": {
+            "sintetica": {
+              "cantidad": 1,
+              "anotados": 1,
+              "sinAnotar": 0,
+              "pendientes": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "caso": "frontera-😀",
+      "criterio": "Límite inferior y exacto aceptados; superior anotado",
+      "aprobado": true,
+      "fronteras": [
+        {
+          "largo": 2097151,
+          "retorno": true
+        },
+        {
+          "largo": 2097152,
+          "retorno": true
+        },
+        {
+          "largo": 2097153,
+          "retorno": false
+        }
+      ],
+      "marcadores": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "evento_descartado",
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "datos": {
+            "motivo": "tamano",
+            "limite": 2097152,
+            "tipo": "codigo_compilado",
+            "origen": "editor",
+            "largo": 2097153
+          }
+        }
+      ],
+      "estado": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false,
+        "descartados": {
+          "cantidad": 1,
+          "anotados": 1,
+          "sinAnotar": 0,
+          "pendientes": 0,
+          "ultimo": {
+            "tipo": "codigo_compilado",
+            "motivo": "tamano",
+            "t": 1792594800000
+          },
+          "sesiones": {
+            "sintetica": {
+              "cantidad": 1,
+              "anotados": 1,
+              "sinAnotar": 0,
+              "pendientes": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "caso": "descarte-con-cola-saturada",
+      "criterio": "La cuenta no debe afirmar anotación de un marcador que no entró en la cola",
+      "aprobado": true,
+      "antes": {
+        "activo": true,
+        "tienePin": true,
+        "falla": {
+          "motivo": "ENOSPC",
+          "desde": 1792594800000,
+          "pendientes": 5000,
+          "perdidos": 1
+        },
+        "configIlegible": false,
+        "descartados": {
+          "cantidad": 1,
+          "anotados": 0,
+          "sinAnotar": 1,
+          "pendientes": 0,
+          "ultimo": {
+            "tipo": "codigo_compilado",
+            "motivo": "tamano",
+            "t": 1792594800000
+          },
+          "sesiones": {
+            "sintetica": {
+              "cantidad": 1,
+              "anotados": 0,
+              "sinAnotar": 1,
+              "pendientes": 0
+            }
+          }
+        }
+      },
+      "despues": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false,
+        "descartados": {
+          "cantidad": 1,
+          "anotados": 0,
+          "sinAnotar": 1,
+          "pendientes": 0,
+          "ultimo": {
+            "tipo": "codigo_compilado",
+            "motivo": "tamano",
+            "t": 1792594800000
+          },
+          "sesiones": {
+            "sintetica": {
+              "cantidad": 1,
+              "anotados": 0,
+              "sinAnotar": 1,
+              "pendientes": 0
+            }
+          }
+        }
+      },
+      "marcadores": [],
+      "interrupciones": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "registro_interrumpido",
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "datos": {
+            "desde": 1792594800000,
+            "hasta": 1792594800000,
+            "recuperados": 5000,
+            "perdidos": 1,
+            "motivo": "ENOSPC"
+          }
+        }
+      ],
+      "total": 5001
+    },
+    {
+      "caso": "exportaciones-mismo-reloj",
+      "criterio": "Destinos distintos y primera copia intacta",
+      "aprobado": true,
+      "a": {
+        "ok": true,
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-6\\usb\\TecnoBloques-registros-2026-10-21_1000",
+        "archivos": 1,
+        "pendientes": 0
+      },
+      "b": {
+        "ok": true,
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-6\\usb\\TecnoBloques-registros-2026-10-21_1000-2",
+        "archivos": 1,
+        "pendientes": 0
+      },
+      "hashPrimera": "3563217539b4a836887d6ff5de1522d14ec53efa2d2a36391983646da60d1520"
+    },
+    {
+      "caso": "copia-incompleta-leida-como-limpia",
+      "criterio": "El consumidor debe reconocer completa:false de su exportación",
+      "aprobado": true,
+      "exportacion": {
+        "ok": false,
+        "motivo": "copia-incompleta",
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-7\\usb\\TecnoBloques-registros-2026-10-21_1000",
+        "copiados": 1,
+        "total": 2,
+        "archivo": "B-2026-10-21.jsonl",
+        "codigo": "ENOSPC",
+        "donde": "destino",
+        "mensaje": "B-2026-10-21.jsonl: ENOSPC sintetico"
+      },
+      "manifiesto": {
+        "formato": 1,
+        "app": "TecnoBloques",
+        "version_tb": "0.3.0",
+        "t": 1792594800000,
+        "completa": false,
+        "total": 2,
+        "archivos": [
+          {
+            "archivo": "A-2026-10-21.jsonl",
+            "bytes": 338,
+            "sha256": "33c4955e0c96f832cca6b2b03f1b6c16b700ae3dff71d722d548a382d5291470"
+          }
+        ],
+        "pendientes": 0,
+        "faltan": [
+          "B-2026-10-21.jsonl"
+        ],
+        "error": {
+          "archivo": "B-2026-10-21.jsonl",
+          "codigo": "ENOSPC",
+          "donde": "destino"
+        }
+      },
+      "lectura": {
+        "problemas": [
+          "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-7\\usb\\TecnoBloques-registros-2026-10-21_1000: la exportación quedó incompleta (completa: false)."
+        ],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "A",
+            "sesion": "s-A",
+            "archivos": [
+              "A-2026-10-21.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800000,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800000,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [],
+            "avisos": [
+              "La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (la exportación quedó incompleta (completa: false)): no se comparan sus corridas ni se asegura el final."
+            ],
+            "notas": [],
+            "dudas": [
+              "la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (la exportación quedó incompleta (completa: false)): no se comparan sus corridas ni se asegura el final"
+            ],
+            "sinAtribuir": [],
+            "huecos": [
+              {
+                "desdePos": 0,
+                "hastaPos": 1
+              }
+            ],
+            "resumen": "0 corrida(s). Fallas vistas: ninguna."
+          }
+        ],
+        "texto": "Equipo A · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión s-A\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  Terminó la sesión (0 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos:\n  ⚠ La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (la exportación quedó incompleta (completa: false)): no se comparan sus corridas ni se asegura el final.\n\nLo que no se pudo leer:\n  ⚠ C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-7\\usb\\TecnoBloques-registros-2026-10-21_1000: la exportación quedó incompleta (completa: false).",
+        "cli": {
+          "exit": 1,
+          "stdout": "{\n  \"limpio\": false,\n  \"historias\": [\n    {\n      \"equipo\": \"A\",\n      \"sesion\": \"s-A\",\n      \"archivos\": [\n        \"A-2026-10-21.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800000,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [],\n      \"avisos\": [\n        \"La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (la exportación quedó incompleta (completa: false)): no se comparan sus corridas ni se asegura el final.\"\n      ],\n      \"notas\": [],\n      \"dudas\": [\n        \"la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (la exportación quedó incompleta (completa: false)): no se comparan sus corridas ni se asegura el final\"\n      ],\n      \"sinAtribuir\": [],\n      \"huecos\": [\n        {\n          \"desdePos\": 0,\n          \"hastaPos\": 1\n        }\n      ],\n      \"resumen\": \"0 corrida(s). Fallas vistas: ninguna.\"\n    }\n  ],\n  \"problemas\": [\n    \"C:\\\\Users\\\\ACER\\\\AppData\\\\Local\\\\Temp\\\\aud0708-profunda-huzcMZ\\\\caso-7\\\\usb\\\\TecnoBloques-registros-2026-10-21_1000: la exportación quedó incompleta (completa: false).\"\n  ],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "archivo-alterado-y-hash-ignorado",
+      "criterio": "El consumidor debe avisar si una copia difiere de su sha256",
+      "aprobado": true,
+      "hashEsperado": "544e0f1edda8a10d2a15c13938574bce061ec8219e7177fd5c5a1a15109b97a0",
+      "hashActual": "b4c9ccc543cc9e5d4086aedcdd84410a574fdb029e31fe087b8e58482e1681e8",
+      "lectura": {
+        "problemas": [
+          "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-8\\usb\\TecnoBloques-registros-2026-10-21_1000: SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse."
+        ],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "SINTETICO-2026-10-21.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800000,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800000,
+                "texto": "Compiló: bien, 10 bytes."
+              },
+              {
+                "t": 1792594800000,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [],
+            "avisos": [
+              "La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse): no se comparan sus corridas ni se asegura el final."
+            ],
+            "notas": [],
+            "dudas": [
+              "la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse): no se comparan sus corridas ni se asegura el final"
+            ],
+            "sinAtribuir": [],
+            "huecos": [
+              {
+                "desdePos": 0,
+                "hastaPos": 2
+              }
+            ],
+            "resumen": "0 corrida(s). Fallas vistas: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  Compiló: bien, 10 bytes.\n  10:00  Terminó la sesión (0 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos:\n  ⚠ La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse): no se comparan sus corridas ni se asegura el final.\n\nLo que no se pudo leer:\n  ⚠ C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-8\\usb\\TecnoBloques-registros-2026-10-21_1000: SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse.",
+        "cli": {
+          "exit": 1,
+          "stdout": "{\n  \"limpio\": false,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"SINTETICO-2026-10-21.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800000,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Compiló: bien, 10 bytes.\"\n        },\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [],\n      \"avisos\": [\n        \"La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse): no se comparan sus corridas ni se asegura el final.\"\n      ],\n      \"notas\": [],\n      \"dudas\": [\n        \"la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse): no se comparan sus corridas ni se asegura el final\"\n      ],\n      \"sinAtribuir\": [],\n      \"huecos\": [\n        {\n          \"desdePos\": 0,\n          \"hastaPos\": 2\n        }\n      ],\n      \"resumen\": \"0 corrida(s). Fallas vistas: ninguna.\"\n    }\n  ],\n  \"problemas\": [\n    \"C:\\\\Users\\\\ACER\\\\AppData\\\\Local\\\\Temp\\\\aud0708-profunda-huzcMZ\\\\caso-8\\\\usb\\\\TecnoBloques-registros-2026-10-21_1000: SINTETICO-2026-10-21.jsonl no coincide con su huella en exportacion.json (bytes o sha256): cambió después de exportarse.\"\n  ],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "archivo-omitido-oculta-hueco",
+      "criterio": "Una copia que pierde un segmento no debe acreditar corrección ni salir limpia",
+      "aprobado": true,
+      "erroresEsquema": [],
+      "omitido": "SINTETICO-2026-10-22.jsonl",
+      "manifiesto": {
+        "formato": 1,
+        "app": "TecnoBloques",
+        "version_tb": "0.3.0",
+        "t": 1792594800000,
+        "completa": true,
+        "total": 3,
+        "archivos": [
+          {
+            "archivo": "SINTETICO-2026-10-21.jsonl",
+            "bytes": 1136,
+            "sha256": "3005951044f4c3ab59280bd840a01f4701d2a13ada7386fdbd28ed72539f3ecb"
+          },
+          {
+            "archivo": "SINTETICO-2026-10-22.jsonl",
+            "bytes": 264,
+            "sha256": "37daee877ee24fe813bc672b25c05f6cbbc5191565c9c6653fdf50f2d422c5b2"
+          },
+          {
+            "archivo": "SINTETICO-2026-10-23.jsonl",
+            "bytes": 850,
+            "sha256": "72e824dd9467727eaae91b489dd47aecdada920bdd928c2fb464598ae716e922"
+          }
+        ],
+        "pendientes": 0
+      },
+      "completa": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "SINTETICO-2026-10-21.jsonl",
+              "SINTETICO-2026-10-22.jsonl",
+              "SINTETICO-2026-10-23.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792767600200,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800200,
+                "texto": "   falla: LED quemado (led1), a los 0,5 s simulados.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800300,
+                "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).",
+                "corrida": 1
+              },
+              {
+                "t": 1792681200000,
+                "texto": "El disco no dejó guardar de 10:00 a 10:00 (ENOSPC); se recuperaron 0 eventos."
+              },
+              {
+                "t": 1792767600000,
+                "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 2
+              },
+              {
+                "t": 1792767600100,
+                "texto": "■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: hay un hueco en el registro entre las dos.",
+                "corrida": 2
+              },
+              {
+                "t": 1792767600200,
+                "texto": "Terminó la sesión (2880 min)."
+              }
+            ],
+            "corridas": [
+              {
+                "numero": 1,
+                "inicio": 1792594800100,
+                "fin": 1792594800300,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 500
+                  }
+                ],
+                "cierres": [
+                  [
+                    {
+                      "tipo": "led_quemado",
+                      "componente": "led1"
+                    }
+                  ]
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 500,
+                    "tramo": 0
+                  }
+                ],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 1,
+                "hastaPos": 3,
+                "fallas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "completa": true,
+                "cierre": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": null,
+                "nuevas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "siguen": [],
+                "yaNoSeObservo": [],
+                "corrigio": []
+              },
+              {
+                "numero": 2,
+                "inicio": 1792767600000,
+                "fin": 1792767600100,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [],
+                "cierres": [
+                  []
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 5,
+                "hastaPos": 6,
+                "fallas": [],
+                "completa": true,
+                "cierre": [],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": 1,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              }
+            ],
+            "avisos": [
+              "Hay un hueco: 1 eventos se perdieron cuando el disco falló (10:00 a 10:00)."
+            ],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [
+              {
+                "desdePos": 4,
+                "hastaPos": 4
+              }
+            ],
+            "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  10:00     falla: LED quemado (led1), a los 0,5 s simulados.\n  10:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\n  10:00  El disco no dejó guardar de 10:00 a 10:00 (ENOSPC); se recuperaron 0 eventos.\n  10:00  ▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\n  10:00  ■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: hay un hueco en el registro entre las dos.\n  10:00  Terminó la sesión (2880 min).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna.\n  Avisos:\n  ⚠ Hay un hueco: 1 eventos se perdieron cuando el disco falló (10:00 a 10:00).\n",
+        "cli": {
+          "exit": 1,
+          "stdout": "{\n  \"limpio\": false,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"SINTETICO-2026-10-21.jsonl\",\n        \"SINTETICO-2026-10-22.jsonl\",\n        \"SINTETICO-2026-10-23.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792767600200,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800200,\n          \"texto\": \"   falla: LED quemado (led1), a los 0,5 s simulados.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800300,\n          \"texto\": \"■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792681200000,\n          \"texto\": \"El disco no dejó guardar de 10:00 a 10:00 (ENOSPC); se recuperaron 0 eventos.\"\n        },\n        {\n          \"t\": 1792767600000,\n          \"texto\": \"▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792767600100,\n          \"texto\": \"■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: hay un hueco en el registro entre las dos.\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792767600200,\n          \"texto\": \"Terminó la sesión (2880 min).\"\n        }\n      ],\n      \"corridas\": [\n        {\n          \"numero\": 1,\n          \"inicio\": 1792594800100,\n          \"fin\": 1792594800300,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 500\n            }\n          ],\n          \"cierres\": [\n            [\n              {\n                \"tipo\": \"led_quemado\",\n                \"componente\": \"led1\"\n              }\n            ]\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 500,\n              \"tramo\": 0\n            }\n          ],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 1,\n          \"hastaPos\": 3,\n          \"fallas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"completa\": true,\n          \"cierre\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": null,\n          \"nuevas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"siguen\": [],\n          \"yaNoSeObservo\": [],\n          \"corrigio\": []\n        },\n        {\n          \"numero\": 2,\n          \"inicio\": 1792767600000,\n          \"fin\": 1792767600100,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [],\n          \"cierres\": [\n            []\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 5,\n          \"hastaPos\": 6,\n          \"fallas\": [],\n          \"completa\": true,\n          \"cierre\": [],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": 1,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        }\n      ],\n      \"avisos\": [\n        \"Hay un hueco: 1 eventos se perdieron cuando el disco falló (10:00 a 10:00).\"\n      ],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [\n        {\n          \"desdePos\": 4,\n          \"hastaPos\": 4\n        }\n      ],\n      \"resumen\": \"2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      },
+      "incompleta": {
+        "problemas": [
+          "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-9\\usb\\TecnoBloques-registros-2026-10-21_1000: falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json."
+        ],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "SINTETICO-2026-10-21.jsonl",
+              "SINTETICO-2026-10-23.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792767600200,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800200,
+                "texto": "   falla: LED quemado (led1), a los 0,5 s simulados.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800300,
+                "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).",
+                "corrida": 1
+              },
+              {
+                "t": 1792767600000,
+                "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 2
+              },
+              {
+                "t": 1792767600100,
+                "texto": "■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: hay un hueco en el registro entre las dos.",
+                "corrida": 2
+              },
+              {
+                "t": 1792767600200,
+                "texto": "Terminó la sesión (2880 min)."
+              }
+            ],
+            "corridas": [
+              {
+                "numero": 1,
+                "inicio": 1792594800100,
+                "fin": 1792594800300,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 500
+                  }
+                ],
+                "cierres": [
+                  [
+                    {
+                      "tipo": "led_quemado",
+                      "componente": "led1"
+                    }
+                  ]
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 500,
+                    "tramo": 0
+                  }
+                ],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 1,
+                "hastaPos": 3,
+                "fallas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "completa": true,
+                "cierre": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": null,
+                "nuevas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "siguen": [],
+                "yaNoSeObservo": [],
+                "corrigio": []
+              },
+              {
+                "numero": 2,
+                "inicio": 1792767600000,
+                "fin": 1792767600100,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [],
+                "cierres": [
+                  []
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 4,
+                "hastaPos": 5,
+                "fallas": [],
+                "completa": true,
+                "cierre": [],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": 1,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              }
+            ],
+            "avisos": [
+              "La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final.",
+              "Falta el archivo SINTETICO-2026-10-22.jsonl de la exportación TecnoBloques-registros-2026-10-21_1000: no se comparan sus corridas ni se asegura el final."
+            ],
+            "notas": [],
+            "dudas": [
+              "la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final",
+              "falta el archivo SINTETICO-2026-10-22.jsonl de la exportación TecnoBloques-registros-2026-10-21_1000: no se comparan sus corridas ni se asegura el final"
+            ],
+            "sinAtribuir": [],
+            "huecos": [
+              {
+                "desdePos": 0,
+                "hastaPos": 6
+              }
+            ],
+            "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final. Sin corregir: no se puede asegurar."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  10:00     falla: LED quemado (led1), a los 0,5 s simulados.\n  10:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\n  10:00  ▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\n  10:00  ■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: hay un hueco en el registro entre las dos.\n  10:00  Terminó la sesión (2880 min).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final. Sin corregir: no se puede asegurar.\n  Avisos:\n  ⚠ La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final.\n  ⚠ Falta el archivo SINTETICO-2026-10-22.jsonl de la exportación TecnoBloques-registros-2026-10-21_1000: no se comparan sus corridas ni se asegura el final.\n\nLo que no se pudo leer:\n  ⚠ C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-9\\usb\\TecnoBloques-registros-2026-10-21_1000: falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json.",
+        "cli": {
+          "exit": 1,
+          "stdout": "{\n  \"limpio\": false,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"SINTETICO-2026-10-21.jsonl\",\n        \"SINTETICO-2026-10-23.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792767600200,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800200,\n          \"texto\": \"   falla: LED quemado (led1), a los 0,5 s simulados.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800300,\n          \"texto\": \"■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792767600000,\n          \"texto\": \"▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792767600100,\n          \"texto\": \"■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: hay un hueco en el registro entre las dos.\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792767600200,\n          \"texto\": \"Terminó la sesión (2880 min).\"\n        }\n      ],\n      \"corridas\": [\n        {\n          \"numero\": 1,\n          \"inicio\": 1792594800100,\n          \"fin\": 1792594800300,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 500\n            }\n          ],\n          \"cierres\": [\n            [\n              {\n                \"tipo\": \"led_quemado\",\n                \"componente\": \"led1\"\n              }\n            ]\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 500,\n              \"tramo\": 0\n            }\n          ],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 1,\n          \"hastaPos\": 3,\n          \"fallas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"completa\": true,\n          \"cierre\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": null,\n          \"nuevas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"siguen\": [],\n          \"yaNoSeObservo\": [],\n          \"corrigio\": []\n        },\n        {\n          \"numero\": 2,\n          \"inicio\": 1792767600000,\n          \"fin\": 1792767600100,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [],\n          \"cierres\": [\n            []\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 4,\n          \"hastaPos\": 5,\n          \"fallas\": [],\n          \"completa\": true,\n          \"cierre\": [],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": 1,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        }\n      ],\n      \"avisos\": [\n        \"La exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final.\",\n        \"Falta el archivo SINTETICO-2026-10-22.jsonl de la exportación TecnoBloques-registros-2026-10-21_1000: no se comparan sus corridas ni se asegura el final.\"\n      ],\n      \"notas\": [],\n      \"dudas\": [\n        \"la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final\",\n        \"falta el archivo SINTETICO-2026-10-22.jsonl de la exportación TecnoBloques-registros-2026-10-21_1000: no se comparan sus corridas ni se asegura el final\"\n      ],\n      \"sinAtribuir\": [],\n      \"huecos\": [\n        {\n          \"desdePos\": 0,\n          \"hastaPos\": 6\n        }\n      ],\n      \"resumen\": \"2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportación TecnoBloques-registros-2026-10-21_1000 no se pudo verificar (falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json): no se comparan sus corridas ni se asegura el final. Sin corregir: no se puede asegurar.\"\n    }\n  ],\n  \"problemas\": [\n    \"C:\\\\Users\\\\ACER\\\\AppData\\\\Local\\\\Temp\\\\aud0708-profunda-huzcMZ\\\\caso-9\\\\usb\\\\TecnoBloques-registros-2026-10-21_1000: falta SINTETICO-2026-10-22.jsonl, que está en exportacion.json.\"\n  ],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "dos-exportaciones-pierden-repeticion-legitima",
+      "criterio": "Combinar snapshots debe conservar la multiplicidad y el estado del último",
+      "aprobado": true,
+      "erroresEsquema": [],
+      "sola": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "SINTETICO-2026-10-21.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594801000,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "Circuito: agregó r1 (resistencia)."
+              },
+              {
+                "t": 1792594801000,
+                "texto": "Terminó la sesión (1 s)."
+              }
+            ],
+            "corridas": [],
+            "avisos": [],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "0 corrida(s). Fallas vistas: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  Circuito: agregó r1 (resistencia).\n  10:00  Terminó la sesión (1 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"SINTETICO-2026-10-21.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594801000,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"Circuito: agregó r1 (resistencia).\"\n        },\n        {\n          \"t\": 1792594801000,\n          \"texto\": \"Terminó la sesión (1 s).\"\n        }\n      ],\n      \"corridas\": [],\n      \"avisos\": [],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"0 corrida(s). Fallas vistas: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      },
+      "juntas": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "SINTETICO-2026-10-21.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594801000,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "Circuito: agregó r1 (resistencia)."
+              },
+              {
+                "t": 1792594801000,
+                "texto": "Terminó la sesión (1 s)."
+              }
+            ],
+            "corridas": [],
+            "avisos": [],
+            "notas": [
+              "2 líneas ya había llegado en otro archivo (copias o exportaciones que se pisan): se contaron una vez."
+            ],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "0 corrida(s). Fallas vistas: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  Circuito: agregó r1 (resistencia).\n  10:00  Terminó la sesión (1 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos: ninguno.\n  · 2 líneas ya había llegado en otro archivo (copias o exportaciones que se pisan): se contaron una vez.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"SINTETICO-2026-10-21.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594801000,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"Circuito: agregó r1 (resistencia).\"\n        },\n        {\n          \"t\": 1792594801000,\n          \"texto\": \"Terminó la sesión (1 s).\"\n        }\n      ],\n      \"corridas\": [],\n      \"avisos\": [],\n      \"notas\": [\n        \"2 líneas ya había llegado en otro archivo (copias o exportaciones que se pisan): se contaron una vez.\"\n      ],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"0 corrida(s). Fallas vistas: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "listar-origen-sin-permiso",
+      "criterio": "Error de lectura debe diferenciarse de ausencia de registros",
+      "aprobado": true,
+      "exportacion": {
+        "ok": false,
+        "motivo": "disco",
+        "donde": "origen",
+        "codigo": "EACCES",
+        "mensaje": "EACCES sintetico"
+      },
+      "hayArchivo": [
+        "SINTETICO-2026-10-21.jsonl"
+      ]
+    },
+    {
+      "caso": "configuracion-null",
+      "criterio": "Configuración mal formada debe fallar cerrada y no lanzar al registrar",
+      "aprobado": true,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792594800000,
+          "pendientes": 1,
+          "perdidos": 0
+        },
+        "configIlegible": true,
+        "descartados": null
+      },
+      "retorno": true,
+      "excepcion": null,
+      "instructor": {
+        "ok": false,
+        "motivo": "config-ilegible"
+      },
+      "archivos": []
+    },
+    {
+      "caso": "configuracion-array",
+      "criterio": "Configuración mal formada debe fallar cerrada y no lanzar al registrar",
+      "aprobado": true,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792594800000,
+          "pendientes": 1,
+          "perdidos": 0
+        },
+        "configIlegible": true,
+        "descartados": null
+      },
+      "retorno": true,
+      "excepcion": null,
+      "instructor": {
+        "ok": false,
+        "motivo": "config-ilegible"
+      },
+      "archivos": []
+    },
+    {
+      "caso": "configuracion-sin-pin",
+      "criterio": "Configuración mal formada debe fallar cerrada y no lanzar al registrar",
+      "aprobado": true,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792594800000,
+          "pendientes": 1,
+          "perdidos": 0
+        },
+        "configIlegible": true,
+        "descartados": null
+      },
+      "retorno": true,
+      "excepcion": null,
+      "instructor": {
+        "ok": false,
+        "motivo": "config-ilegible"
+      },
+      "archivos": []
+    },
+    {
+      "caso": "configuracion-pin-roto",
+      "criterio": "Configuración mal formada debe fallar cerrada y no lanzar al registrar",
+      "aprobado": true,
+      "estado": {
+        "activo": false,
+        "tienePin": false,
+        "falla": {
+          "motivo": "CONFIG",
+          "desde": 1792594800000,
+          "pendientes": 1,
+          "perdidos": 0
+        },
+        "configIlegible": true,
+        "descartados": null
+      },
+      "retorno": true,
+      "excepcion": null,
+      "instructor": {
+        "ok": false,
+        "motivo": "config-ilegible"
+      },
+      "archivos": []
+    },
+    {
+      "caso": "utf8-invalido-aparta-texto-valido-con-UFFFD",
+      "criterio": "Un byte roto no debe invalidar otra línea con el carácter U+FFFD legítimo",
+      "aprobado": true,
+      "apartadas": [
+        {
+          "archivo": "utf8-mixto.jsonl",
+          "ruta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\utf8-mixto.jsonl",
+          "linea": 3,
+          "texto": "{\"v\":1,\"t\":1792594800000,\"origen\":\"editor\",\"tipo\":\"ejemplo_cargado\",\"datos\":{\"id\":\"�NVALIDO\"},\"equipo\":\"SINTETICO\",\"sesion\":\"sintetica\",\"version_tb\":\"0.3.0\",\"version_tc\":\"0.1.0-dev\"}",
+          "apartada": "tiene bytes que no son UTF-8 válido",
+          "pistaSesion": "sintetica",
+          "pistaEquipo": "SINTETICO"
+        }
+      ],
+      "buenas": [
+        "sesion_iniciada",
+        "codigo_compilado",
+        "sesion_terminada"
+      ],
+      "problemas": [
+        "utf8-mixto.jsonl, línea 3: tiene bytes que no son UTF-8 válido."
+      ]
+    },
+    {
+      "caso": "control-entrada-fuera-contrato-JSON",
+      "criterio": "NaN/undefined no son datos JSON: observación de frontera, no defecto acreditado del emisor normal",
+      "aprobado": true,
+      "retorno": true,
+      "salida": {
+        "v": 1,
+        "t": 1792594800000,
+        "origen": "editor",
+        "tipo": "codigo_compilado",
+        "datos": {
+          "ok": true,
+          "codigo": "x",
+          "noFinito": null
+        },
+        "equipo": "SINTETICO",
+        "sesion": "sintetica",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev"
+      },
+      "estado": {
+        "activo": true,
+        "tienePin": true,
+        "falla": null,
+        "configIlegible": false,
+        "descartados": null
+      },
+      "nota": "Hipótesis excluida de fallos: entrada fuera del contrato JSON; el emisor normal no produce este campo."
+    },
+    {
+      "caso": "falla-tramo-sin-reset",
+      "criterio": "El tramo explícito debe ser compatible con los RESET observados, sin perder fotos previas",
+      "aprobado": true,
+      "erroresEsquema": [],
+      "eventos": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        },
+        {
+          "v": 1,
+          "t": 1792594800100,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800200,
+          "origen": "simulador",
+          "tipo": "falla",
+          "datos": {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1500,
+          "tramo": 1
+        },
+        {
+          "v": 1,
+          "t": 1792594800300,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ]
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1000,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800400,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800500,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": []
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 1000,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800600,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 0
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        }
+      ],
+      "lectura": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "falla-tramo-sin-reset.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800600,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800200,
+                "texto": "   falla: LED quemado (led1), a los 1,5 s simulados.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800300,
+                "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800400,
+                "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800500,
+                "texto": "■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800600,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [
+              {
+                "numero": 1,
+                "inicio": 1792594800100,
+                "fin": 1792594800300,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 1500
+                  }
+                ],
+                "cierres": [
+                  [
+                    {
+                      "tipo": "led_quemado",
+                      "componente": "led1"
+                    }
+                  ]
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [
+                  "trae un tramo del reloj que todavía no existía (no hubo tantos RESET)"
+                ],
+                "ocurrencias": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 1500,
+                    "tramo": 1
+                  }
+                ],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 1,
+                "hastaPos": 3,
+                "fallas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "completa": true,
+                "cierre": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "coherente": false,
+                "incoherencia": "trae un tramo del reloj que todavía no existía (no hubo tantos RESET)",
+                "comparada": null,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              },
+              {
+                "numero": 2,
+                "inicio": 1792594800400,
+                "fin": 1792594800500,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [],
+                "cierres": [
+                  []
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 4,
+                "hastaPos": 5,
+                "fallas": [],
+                "completa": true,
+                "cierre": [],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": 1,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              }
+            ],
+            "avisos": [],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  10:00     falla: LED quemado (led1), a los 1,5 s simulados.\n  10:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\n  10:00  ▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\n  10:00  ■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).\n  10:00  Terminó la sesión (0 s).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna.\n  Avisos: ninguno.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"falla-tramo-sin-reset.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800600,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800200,\n          \"texto\": \"   falla: LED quemado (led1), a los 1,5 s simulados.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800300,\n          \"texto\": \"■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800400,\n          \"texto\": \"▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800500,\n          \"texto\": \"■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800600,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [\n        {\n          \"numero\": 1,\n          \"inicio\": 1792594800100,\n          \"fin\": 1792594800300,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 1500\n            }\n          ],\n          \"cierres\": [\n            [\n              {\n                \"tipo\": \"led_quemado\",\n                \"componente\": \"led1\"\n              }\n            ]\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [\n            \"trae un tramo del reloj que todavía no existía (no hubo tantos RESET)\"\n          ],\n          \"ocurrencias\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 1500,\n              \"tramo\": 1\n            }\n          ],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 1,\n          \"hastaPos\": 3,\n          \"fallas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"completa\": true,\n          \"cierre\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"coherente\": false,\n          \"incoherencia\": \"trae un tramo del reloj que todavía no existía (no hubo tantos RESET)\",\n          \"comparada\": null,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        },\n        {\n          \"numero\": 2,\n          \"inicio\": 1792594800400,\n          \"fin\": 1792594800500,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [],\n          \"cierres\": [\n            []\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 4,\n          \"hastaPos\": 5,\n          \"fallas\": [],\n          \"completa\": true,\n          \"cierre\": [],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": 1,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        }\n      ],\n      \"avisos\": [],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "cierre-tramo-inexistente",
+      "criterio": "El tramo explícito debe ser compatible con los RESET observados, sin perder fotos previas",
+      "aprobado": true,
+      "erroresEsquema": [],
+      "eventos": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        },
+        {
+          "v": 1,
+          "t": 1792594800100,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800200,
+          "origen": "simulador",
+          "tipo": "falla",
+          "datos": {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1500,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800300,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ]
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1000,
+          "tramo": 9
+        },
+        {
+          "v": 1,
+          "t": 1792594800400,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800500,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": []
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 1000,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800600,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 0
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        }
+      ],
+      "lectura": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "cierre-tramo-inexistente.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800600,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800200,
+                "texto": "   falla: LED quemado (led1), a los 1,5 s simulados.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800300,
+                "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800400,
+                "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800500,
+                "texto": "■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800600,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [
+              {
+                "numero": 1,
+                "inicio": 1792594800100,
+                "fin": 1792594800300,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 1500
+                  }
+                ],
+                "cierres": [
+                  [
+                    {
+                      "tipo": "led_quemado",
+                      "componente": "led1"
+                    }
+                  ]
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [
+                  "trae un tramo del reloj que todavía no existía (no hubo tantos RESET)"
+                ],
+                "ocurrencias": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 1500,
+                    "tramo": 0
+                  }
+                ],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 9
+                  }
+                ],
+                "desdePos": 1,
+                "hastaPos": 3,
+                "fallas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "completa": true,
+                "cierre": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "coherente": false,
+                "incoherencia": "trae un tramo del reloj que todavía no existía (no hubo tantos RESET)",
+                "comparada": null,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              },
+              {
+                "numero": 2,
+                "inicio": 1792594800400,
+                "fin": 1792594800500,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [],
+                "cierres": [
+                  []
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 4,
+                "hastaPos": 5,
+                "fallas": [],
+                "completa": true,
+                "cierre": [],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": 1,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              }
+            ],
+            "avisos": [],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  10:00     falla: LED quemado (led1), a los 1,5 s simulados.\n  10:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\n  10:00  ▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\n  10:00  ■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).\n  10:00  Terminó la sesión (0 s).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna.\n  Avisos: ninguno.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"cierre-tramo-inexistente.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800600,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800200,\n          \"texto\": \"   falla: LED quemado (led1), a los 1,5 s simulados.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800300,\n          \"texto\": \"■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800400,\n          \"texto\": \"▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800500,\n          \"texto\": \"■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800600,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [\n        {\n          \"numero\": 1,\n          \"inicio\": 1792594800100,\n          \"fin\": 1792594800300,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 1500\n            }\n          ],\n          \"cierres\": [\n            [\n              {\n                \"tipo\": \"led_quemado\",\n                \"componente\": \"led1\"\n              }\n            ]\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [\n            \"trae un tramo del reloj que todavía no existía (no hubo tantos RESET)\"\n          ],\n          \"ocurrencias\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 1500,\n              \"tramo\": 0\n            }\n          ],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 9\n            }\n          ],\n          \"desdePos\": 1,\n          \"hastaPos\": 3,\n          \"fallas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"completa\": true,\n          \"cierre\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"coherente\": false,\n          \"incoherencia\": \"trae un tramo del reloj que todavía no existía (no hubo tantos RESET)\",\n          \"comparada\": null,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        },\n        {\n          \"numero\": 2,\n          \"inicio\": 1792594800400,\n          \"fin\": 1792594800500,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [],\n          \"cierres\": [\n            []\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 4,\n          \"hastaPos\": 5,\n          \"fallas\": [],\n          \"completa\": true,\n          \"cierre\": [],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": 1,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        }\n      ],\n      \"avisos\": [],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "pausa-tramo-inexistente",
+      "criterio": "El tramo explícito debe ser compatible con los RESET observados, sin perder fotos previas",
+      "aprobado": true,
+      "erroresEsquema": [],
+      "eventos": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        },
+        {
+          "v": 1,
+          "t": 1792594800100,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800200,
+          "origen": "simulador",
+          "tipo": "falla",
+          "datos": {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 500,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800300,
+          "origen": "simulador",
+          "tipo": "simulacion_pausada",
+          "datos": {},
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1500,
+          "tramo": 9
+        },
+        {
+          "v": 1,
+          "t": 1792594800400,
+          "origen": "simulador",
+          "tipo": "simulacion_reanudada",
+          "datos": {},
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1500,
+          "tramo": 9
+        },
+        {
+          "v": 1,
+          "t": 1792594800500,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ]
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1000,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800600,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800700,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": []
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 1000,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800800,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 0
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        }
+      ],
+      "lectura": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "pausa-tramo-inexistente.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800800,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800200,
+                "texto": "   falla: LED quemado (led1), a los 0,5 s simulados.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800300,
+                "texto": "   pausó.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800400,
+                "texto": "   siguió.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800500,
+                "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800600,
+                "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800700,
+                "texto": "■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800800,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [
+              {
+                "numero": 1,
+                "inicio": 1792594800100,
+                "fin": 1792594800500,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 500
+                  }
+                ],
+                "cierres": [
+                  [
+                    {
+                      "tipo": "led_quemado",
+                      "componente": "led1"
+                    }
+                  ]
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [
+                  "trae un tramo del reloj que todavía no existía (no hubo tantos RESET)"
+                ],
+                "ocurrencias": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 500,
+                    "tramo": 0
+                  }
+                ],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 1,
+                "hastaPos": 5,
+                "fallas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "completa": true,
+                "cierre": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "coherente": false,
+                "incoherencia": "trae un tramo del reloj que todavía no existía (no hubo tantos RESET)",
+                "comparada": null,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              },
+              {
+                "numero": 2,
+                "inicio": 1792594800600,
+                "fin": 1792594800700,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [],
+                "cierres": [
+                  []
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 6,
+                "hastaPos": 7,
+                "fallas": [],
+                "completa": true,
+                "cierre": [],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": 1,
+                "nuevas": null,
+                "siguen": null,
+                "yaNoSeObservo": null,
+                "corrigio": null
+              }
+            ],
+            "avisos": [],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  10:00     falla: LED quemado (led1), a los 0,5 s simulados.\n  10:00     pausó.\n  10:00     siguió.\n  10:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\n  10:00  ▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\n  10:00  ■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).\n  10:00  Terminó la sesión (0 s).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna.\n  Avisos: ninguno.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"pausa-tramo-inexistente.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800800,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800200,\n          \"texto\": \"   falla: LED quemado (led1), a los 0,5 s simulados.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800300,\n          \"texto\": \"   pausó.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800400,\n          \"texto\": \"   siguió.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800500,\n          \"texto\": \"■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800600,\n          \"texto\": \"▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800700,\n          \"texto\": \"■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 1: trae un tramo del reloj que todavía no existía (no hubo tantos RESET).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800800,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [\n        {\n          \"numero\": 1,\n          \"inicio\": 1792594800100,\n          \"fin\": 1792594800500,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 500\n            }\n          ],\n          \"cierres\": [\n            [\n              {\n                \"tipo\": \"led_quemado\",\n                \"componente\": \"led1\"\n              }\n            ]\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [\n            \"trae un tramo del reloj que todavía no existía (no hubo tantos RESET)\"\n          ],\n          \"ocurrencias\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 500,\n              \"tramo\": 0\n            }\n          ],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 1,\n          \"hastaPos\": 5,\n          \"fallas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"completa\": true,\n          \"cierre\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"coherente\": false,\n          \"incoherencia\": \"trae un tramo del reloj que todavía no existía (no hubo tantos RESET)\",\n          \"comparada\": null,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        },\n        {\n          \"numero\": 2,\n          \"inicio\": 1792594800600,\n          \"fin\": 1792594800700,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [],\n          \"cierres\": [\n            []\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 6,\n          \"hastaPos\": 7,\n          \"fallas\": [],\n          \"completa\": true,\n          \"cierre\": [],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": 1,\n          \"nuevas\": null,\n          \"siguen\": null,\n          \"yaNoSeObservo\": null,\n          \"corrigio\": null\n        }\n      ],\n      \"avisos\": [],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 1 trae un tramo del reloj que todavía no existía (no hubo tantos RESET)). Sin corregir: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "control-foto-previa-tras-reset",
+      "criterio": "El tramo explícito debe ser compatible con los RESET observados, sin perder fotos previas",
+      "aprobado": true,
+      "erroresEsquema": [],
+      "eventos": [
+        {
+          "v": 1,
+          "t": 1792594800000,
+          "origen": "editor",
+          "tipo": "sesion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "nivel": 3
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        },
+        {
+          "v": 1,
+          "t": 1792594800100,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800200,
+          "origen": "simulador",
+          "tipo": "reinicio_placa",
+          "datos": {
+            "motivo": "boton"
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800300,
+          "origen": "simulador",
+          "tipo": "falla",
+          "datos": {
+            "tipo": "led_quemado",
+            "componente": "led1"
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1500,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800400,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              }
+            ]
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 1,
+          "ms_sim": 1000,
+          "tramo": 1
+        },
+        {
+          "v": 1,
+          "t": 1792594800500,
+          "origen": "simulador",
+          "tipo": "simulacion_iniciada",
+          "datos": {
+            "placa": "uno",
+            "modo": "realista",
+            "activas": {
+              "danoComponentes": true
+            },
+            "circuito": {
+              "formato": 1,
+              "placa": "uno",
+              "protoboard": null,
+              "componentes": [
+                {
+                  "id": "led1",
+                  "tipo": "led",
+                  "x": 0,
+                  "y": 0,
+                  "rot": 0,
+                  "props": {
+                    "color": "rojo"
+                  }
+                }
+              ],
+              "cables": []
+            }
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 0,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800600,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "datos": {
+            "ms_sim": 1000,
+            "fallas": []
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev",
+          "corrida": 2,
+          "ms_sim": 1000,
+          "tramo": 0
+        },
+        {
+          "v": 1,
+          "t": 1792594800700,
+          "origen": "editor",
+          "tipo": "sesion_terminada",
+          "datos": {
+            "ms": 0
+          },
+          "equipo": "SINTETICO",
+          "sesion": "sintetica",
+          "version_tb": "0.3.0",
+          "version_tc": "0.1.0-dev"
+        }
+      ],
+      "lectura": {
+        "problemas": [],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "SINTETICO",
+            "sesion": "sintetica",
+            "archivos": [
+              "control-foto-previa-tras-reset.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800700,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800100,
+                "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800200,
+                "texto": "   la placa se reinició (botón RESET).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800300,
+                "texto": "   falla: LED quemado (led1), a los 1,5 s simulados.",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800400,
+                "texto": "■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).",
+                "corrida": 1
+              },
+              {
+                "t": 1792594800500,
+                "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800600,
+                "texto": "■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).",
+                "corrida": 2
+              },
+              {
+                "t": 1792594800700,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [
+              {
+                "numero": 1,
+                "inicio": 1792594800100,
+                "fin": 1792594800400,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 1500
+                  }
+                ],
+                "cierres": [
+                  [
+                    {
+                      "tipo": "led_quemado",
+                      "componente": "led1"
+                    }
+                  ]
+                ],
+                "ms_sim": 1000,
+                "reinicios": 1,
+                "contradicciones": [],
+                "ocurrencias": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1",
+                    "ms_sim": 1500,
+                    "tramo": 0
+                  }
+                ],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 1
+                  }
+                ],
+                "desdePos": 1,
+                "hastaPos": 4,
+                "fallas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "completa": true,
+                "cierre": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": null,
+                "nuevas": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ],
+                "siguen": [],
+                "yaNoSeObservo": [],
+                "corrigio": []
+              },
+              {
+                "numero": 2,
+                "inicio": 1792594800500,
+                "fin": 1792594800600,
+                "modo": "realista",
+                "placa": "uno",
+                "activas": {
+                  "danoComponentes": true
+                },
+                "piezas": {
+                  "led1": "led"
+                },
+                "fallasVistas": [],
+                "cierres": [
+                  []
+                ],
+                "ms_sim": 1000,
+                "reinicios": 0,
+                "contradicciones": [],
+                "ocurrencias": [],
+                "tiemposCierre": [
+                  {
+                    "ms_sim": 1000,
+                    "tramo": 0
+                  }
+                ],
+                "desdePos": 5,
+                "hastaPos": 6,
+                "fallas": [],
+                "completa": true,
+                "cierre": [],
+                "coherente": true,
+                "incoherencia": null,
+                "comparada": 1,
+                "nuevas": [],
+                "siguen": [],
+                "yaNoSeObservo": [],
+                "corrigio": [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ]
+              }
+            ],
+            "avisos": [],
+            "notas": [],
+            "dudas": [],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna."
+          }
+        ],
+        "texto": "Equipo SINTETICO · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión sintetic\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  ▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\n  10:00     la placa se reinició (botón RESET).\n  10:00     falla: LED quemado (led1), a los 1,5 s simulados.\n  10:00  ■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\n  10:00  ▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\n  10:00  ■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).\n  10:00  Terminó la sesión (0 s).\n  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna.\n  Avisos: ninguno.\n",
+        "cli": {
+          "exit": 0,
+          "stdout": "{\n  \"limpio\": true,\n  \"historias\": [\n    {\n      \"equipo\": \"SINTETICO\",\n      \"sesion\": \"sintetica\",\n      \"archivos\": [\n        \"control-foto-previa-tras-reset.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800700,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800100,\n          \"texto\": \"▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800200,\n          \"texto\": \"   la placa se reinició (botón RESET).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800300,\n          \"texto\": \"   falla: LED quemado (led1), a los 1,5 s simulados.\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800400,\n          \"texto\": \"■ Corrida 1 terminó: 1,0 s simulados. Fallas: LED quemado (led1).\",\n          \"corrida\": 1\n        },\n        {\n          \"t\": 1792594800500,\n          \"texto\": \"▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800600,\n          \"texto\": \"■ Corrida 2 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).\",\n          \"corrida\": 2\n        },\n        {\n          \"t\": 1792594800700,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [\n        {\n          \"numero\": 1,\n          \"inicio\": 1792594800100,\n          \"fin\": 1792594800400,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 1500\n            }\n          ],\n          \"cierres\": [\n            [\n              {\n                \"tipo\": \"led_quemado\",\n                \"componente\": \"led1\"\n              }\n            ]\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 1,\n          \"contradicciones\": [],\n          \"ocurrencias\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\",\n              \"ms_sim\": 1500,\n              \"tramo\": 0\n            }\n          ],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 1\n            }\n          ],\n          \"desdePos\": 1,\n          \"hastaPos\": 4,\n          \"fallas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"completa\": true,\n          \"cierre\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": null,\n          \"nuevas\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ],\n          \"siguen\": [],\n          \"yaNoSeObservo\": [],\n          \"corrigio\": []\n        },\n        {\n          \"numero\": 2,\n          \"inicio\": 1792594800500,\n          \"fin\": 1792594800600,\n          \"modo\": \"realista\",\n          \"placa\": \"uno\",\n          \"activas\": {\n            \"danoComponentes\": true\n          },\n          \"piezas\": {\n            \"led1\": \"led\"\n          },\n          \"fallasVistas\": [],\n          \"cierres\": [\n            []\n          ],\n          \"ms_sim\": 1000,\n          \"reinicios\": 0,\n          \"contradicciones\": [],\n          \"ocurrencias\": [],\n          \"tiemposCierre\": [\n            {\n              \"ms_sim\": 1000,\n              \"tramo\": 0\n            }\n          ],\n          \"desdePos\": 5,\n          \"hastaPos\": 6,\n          \"fallas\": [],\n          \"completa\": true,\n          \"cierre\": [],\n          \"coherente\": true,\n          \"incoherencia\": null,\n          \"comparada\": 1,\n          \"nuevas\": [],\n          \"siguen\": [],\n          \"yaNoSeObservo\": [],\n          \"corrigio\": [\n            {\n              \"tipo\": \"led_quemado\",\n              \"componente\": \"led1\"\n            }\n          ]\n        }\n      ],\n      \"avisos\": [],\n      \"notas\": [],\n      \"dudas\": [],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna.\"\n    }\n  ],\n  \"problemas\": [],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "exportacion-con-pendientes-leida-como-limpia",
+      "criterio": "El consumidor debe informar los eventos que el manifiesto declara fuera de la copia",
+      "aprobado": true,
+      "exportacion": {
+        "ok": true,
+        "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-17\\usb\\TecnoBloques-registros-2026-10-21_1000",
+        "archivos": 1,
+        "pendientes": 1
+      },
+      "manifiesto": {
+        "formato": 1,
+        "app": "TecnoBloques",
+        "version_tb": "0.3.0",
+        "t": 1792594800000,
+        "completa": true,
+        "total": 1,
+        "archivos": [
+          {
+            "archivo": "A-2026-10-21.jsonl",
+            "bytes": 348,
+            "sha256": "16dd3bc1b181effc488e14e96835a696065fc83ef9673cb2bc953bb057c5e52e"
+          }
+        ],
+        "pendientes": 1
+      },
+      "lectura": {
+        "problemas": [
+          "C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-17\\usb\\TecnoBloques-registros-2026-10-21_1000: al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia."
+        ],
+        "notas": [],
+        "historias": [
+          {
+            "equipo": "A",
+            "sesion": "anterior",
+            "archivos": [
+              "A-2026-10-21.jsonl"
+            ],
+            "inicio": 1792594800000,
+            "fin": 1792594800000,
+            "placa": "uno",
+            "placas": [
+              "uno"
+            ],
+            "nivel": 3,
+            "pasos": [
+              {
+                "t": 1792594800000,
+                "texto": "Empezó la sesión (uno, nivel 3)."
+              },
+              {
+                "t": 1792594800000,
+                "texto": "Terminó la sesión (0 s)."
+              }
+            ],
+            "corridas": [],
+            "avisos": [
+              "En la exportación TecnoBloques-registros-2026-10-21_1000, al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia: no se asegura el final."
+            ],
+            "notas": [],
+            "dudas": [
+              "en la exportación TecnoBloques-registros-2026-10-21_1000, al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia: no se asegura el final"
+            ],
+            "sinAtribuir": [],
+            "huecos": [],
+            "resumen": "0 corrida(s). Fallas vistas: ninguna."
+          }
+        ],
+        "texto": "Equipo A · 21 de oct de 2026, 10:00 a 10:00 · uno, nivel 3 · sesión anterior\n  10:00  Empezó la sesión (uno, nivel 3).\n  10:00  Terminó la sesión (0 s).\n  Resumen: 0 corrida(s). Fallas vistas: ninguna.\n  Avisos:\n  ⚠ En la exportación TecnoBloques-registros-2026-10-21_1000, al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia: no se asegura el final.\n\nLo que no se pudo leer:\n  ⚠ C:\\Users\\ACER\\AppData\\Local\\Temp\\aud0708-profunda-huzcMZ\\caso-17\\usb\\TecnoBloques-registros-2026-10-21_1000: al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia.",
+        "cli": {
+          "exit": 1,
+          "stdout": "{\n  \"limpio\": false,\n  \"historias\": [\n    {\n      \"equipo\": \"A\",\n      \"sesion\": \"anterior\",\n      \"archivos\": [\n        \"A-2026-10-21.jsonl\"\n      ],\n      \"inicio\": 1792594800000,\n      \"fin\": 1792594800000,\n      \"placa\": \"uno\",\n      \"placas\": [\n        \"uno\"\n      ],\n      \"nivel\": 3,\n      \"pasos\": [\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Empezó la sesión (uno, nivel 3).\"\n        },\n        {\n          \"t\": 1792594800000,\n          \"texto\": \"Terminó la sesión (0 s).\"\n        }\n      ],\n      \"corridas\": [],\n      \"avisos\": [\n        \"En la exportación TecnoBloques-registros-2026-10-21_1000, al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia: no se asegura el final.\"\n      ],\n      \"notas\": [],\n      \"dudas\": [\n        \"en la exportación TecnoBloques-registros-2026-10-21_1000, al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia: no se asegura el final\"\n      ],\n      \"sinAtribuir\": [],\n      \"huecos\": [],\n      \"resumen\": \"0 corrida(s). Fallas vistas: ninguna.\"\n    }\n  ],\n  \"problemas\": [\n    \"C:\\\\Users\\\\ACER\\\\AppData\\\\Local\\\\Temp\\\\aud0708-profunda-huzcMZ\\\\caso-17\\\\usb\\\\TecnoBloques-registros-2026-10-21_1000: al exportar, 1 evento esperaban a que el disco funcionara y no están en la copia.\"\n  ],\n  \"notas\": []\n}\n",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "caso": "frontera-UTF8-tres-bytes",
+      "criterio": "El límite en unidades UTF-16 admite su tamaño UTF-8 real sin truncar",
+      "aprobado": true,
+      "largo": 2097152,
+      "bytes": 6291078,
+      "retorno": true
+    }
+  ]
+}

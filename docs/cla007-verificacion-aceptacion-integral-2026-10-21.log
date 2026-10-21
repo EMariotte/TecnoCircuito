@@ -1,0 +1,20 @@
+UTC: 2026-10-21T22:16:31.912619+00:00
+COMANDO: node docs/diagnosticar-cla007-aceptacion-2026-10-21.cjs docs/cla007-verificacion-aceptacion-integral-2026-10-21.json
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+OK control-exportacion-integra
+FALLA manifiesto-pendientes-texto
+FALLA manifiesto-pendientes-ausente
+FALLA manifiesto-pendientes-null
+FALLA manifiesto-pendientes-negativo
+FALLA manifiesto-pendientes-fraccion
+FALLA manifiesto-pendientes-objeto
+FALLA pendiente-real-tipo-texto-oculta-incertidumbre
+OK origen-EACCES
+OK origen-EIO
+OK snapshots-repetidos-y-orden-inverso
+OK utf8-bom-crlf-linea-mayor-64KiB
+OK observacion-mezcla-solo-inicio-true
+OK observacion-mezcla-solo-inicio-false
+14 escenarios; 7 incumplimientos; docs/cla007-verificacion-aceptacion-integral-2026-10-21.json
+
+exit=1

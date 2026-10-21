@@ -1,0 +1,35 @@
+{
+  "TecnoCircuito": {
+    "archivos_iniciales": 697,
+    "cambios_permitidos": [
+      "BITACORA.md",
+      "docs/verificar-cla008-aud09-2026-10-21.py"
+    ],
+    "head": "08947503c4ea9c02e4e7def4fb59a7daa1ae6f0d",
+    "branch": "main"
+  },
+  "TecnoBloques": {
+    "archivos_iniciales": 72,
+    "cambios_permitidos": [],
+    "head": "720b908faa07023ec0129040e2e37eef4ef4066a",
+    "branch": "main"
+  },
+  "TecnoSuite": {
+    "archivos_iniciales": 57,
+    "cambios_permitidos": [
+      "canales/CODEX-A-CLAUDE.md",
+      "INVESTIGACION.md",
+      "registro/SESIONES.md",
+      "TABLERO.md",
+      "tareas/AUD-09.md",
+      "tareas/INV-001.md",
+      "tareas/REG-005.md"
+    ],
+    "head": "f6ccd45c0a437884c3c59aec91e83800cf71d96f",
+    "branch": "main"
+  },
+  "informe": {
+    "sha256": "aa355f80bbc7655aeacd50004428f11d7eb51d2df9a00ce43b4ecbbfe5b572b1",
+    "enlaces": 9
+  }
+}

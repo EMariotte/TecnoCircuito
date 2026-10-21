@@ -1,0 +1,8 @@
+COMANDO: node docs/diagnosticar-aud0708-electron-2026-10-21.cjs docs/aud0708-profunda-diagnosticos-electron-2026-10-21.json
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+FALLA panel-abierto-no-se-actualiza {"caso":"panel-abierto-no-se-actualiza","aprobado":false,"antes":"1 evento no se guardó desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 15:22). Quedó anotado en el registro.","durante":{"cantidad":2,"panel":"1 evento no se guardó desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 15:22). Quedó anotado en el registro.","esquina":"El registro perdió 2 eventos · Avisen al instructor","visible":true}}
+FALLA aviso-se-oculta-antes-de-cerrar-app {"caso":"aviso-se-oculta-antes-de-cerrar-app","aprobado":false,"apagado":{"cantidad":2,"visible":false,"texto":"El registro perdió 2 eventos · Avisen al instructor","activo":false}}
+Consola: []
+Evidencia: docs/aud0708-profunda-diagnosticos-electron-2026-10-21.json
+
+exit=1

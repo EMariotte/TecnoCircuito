@@ -1,0 +1,7 @@
+COMANDO: node docs/diagnosticar-aud0708-profunda-2026-10-21.cjs docs/aud0708-profunda-diagnosticos-complementarios-2026-10-21.json
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+FALLA exportacion-con-pendientes-leida-como-limpia
+OK frontera-UTF8-tres-bytes
+2 casos; 1 incumplimientos de criterios diagnósticos. Evidencia: docs/aud0708-profunda-diagnosticos-complementarios-2026-10-21.json
+
+exit=1

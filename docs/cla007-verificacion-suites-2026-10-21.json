@@ -1,0 +1,34 @@
+[
+  {
+    "label": "registro",
+    "exit": 0
+  },
+  {
+    "label": "historia",
+    "exit": 0
+  },
+  {
+    "label": "contrato",
+    "exit": 0
+  },
+  {
+    "label": "registro-app",
+    "exit": 0
+  },
+  {
+    "label": "preprocesador",
+    "exit": 0
+  },
+  {
+    "label": "herramientas",
+    "exit": 0
+  },
+  {
+    "label": "simulador",
+    "exit": 0
+  },
+  {
+    "label": "generales",
+    "exit": 0
+  }
+]

@@ -1,0 +1,89 @@
+UTC: 2026-10-21T22:14:15.995173+00:00
+COMANDO: npm.cmd --prefix ../TecnoBloques run test:registro-preprocesador
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+
+> tecnobloques@0.3.0 test:registro-preprocesador
+> node test/registro-preprocesador.js
+
+Compilador: avr-g++ 7.3.0 (-E -P -dD -undef -x c++ -std=gnu++11)
+— Los casos del informe de auditoría (AUD-01) y sus vecinos
+OK    informe: /\ y otra línea con / (LF)
+OK    informe: u8R"(…)" con una comilla adentro
+OK    /\ y otra línea con / (CRLF)
+OK    /\, espacios y otra línea con /
+OK    /* y */ partidos por empalmes
+OK    *\ y otra línea con / cierra el bloque
+OK    // con empalmes al final de dos líneas
+OK    un \r solo termina el comentario
+OK    R"(…)" con comilla, // y /* adentro
+OK    u8R"(…)" con comilla, // y /* adentro
+OK    uR"(…)" con comilla, // y /* adentro
+OK    UR"(…)" con comilla, // y /* adentro
+OK    LR"(…)" con comilla, // y /* adentro
+OK    LR con marca y )" adentro
+OK    un empalme dentro de un texto crudo es texto
+OK    un nombre que termina en R no abre un texto crudo
+OK    xx\ y otra línea con R" es el nombre xxR
+OK    un número 1.R no abre un texto crudo
+OK    $ no es parte de un nombre: a$R"(…)" es un texto crudo
+OK    a$xR no abre un texto crudo
+OK    un empalme dentro del prefijo: sigue siendo texto crudo
+OK    un empalme entre R y la comilla: sigue siendo texto crudo
+OK    un empalme después de la comilla: no es texto crudo
+OK    empalmes con \f y \v antes del salto
+OK    el sufijo de un texto ("x"u8R) no abre un texto crudo
+OK    el sufijo después de un empalme
+OK    el sufijo de un carácter y de un texto crudo
+OK    un texto sin cerrar no tiene sufijo
+OK    un \r solo antes de un comentario y un \n después
+OK    una marca con espacio vuelve al texto común
+OK    una marca de 17 vuelve al texto común
+OK    una marca con tilde, $ o @ vuelve al texto común
+OK    una marca con los signos que sí valen
+OK    una marca de 16 es un texto crudo
+OK    un texto partido por un empalme CRLF
+OK    un carácter partido por un empalme
+OK    un escape partido por un empalme (\ y \" juntos)
+OK    \\ y un empalme: el texto se cierra antes
+OK    textos con tildes
+OK    V1: #define con 1e\ y otra línea con +R"(…" (LF)
+OK    V1: lo mismo con CRLF
+OK    V1: fuera de una directiva
+OK    V2: /* */ de varias líneas dentro de un #define
+OK    V2: lo mismo con CRLF y dos saltos
+OK    V2: #include <avr//io.h>
+OK    #include con espacios, un comentario antes y otro después
+OK    #include "a//b.h" y %:include <a//b.h>
+OK    #include_next e #import
+OK    < sin cerrar en un #include se lee como siempre
+OK    en un #define, < no es el nombre de un archivo
+OK    textos dentro de una macro: no son comentarios
+OK    un // con empalme dentro de un #define
+OK    un # en medio de la línea no se vuelve directiva
+OK    un /* */ de varias líneas antes del # sigue siendo directiva
+OK    varios /* */ seguidos antes de un # del medio de la línea
+OK    un /* */ con un empalme, otro con CRLF y un #
+OK    un texto crudo de varias líneas en un #define
+OK    lo mismo con CRLF y sin cerrar
+OK    un texto crudo con empalme en un #define
+OK    cerrado después del empalme, y un comentario
+OK    fuera de una directiva sí pasa de línea
+OK    una \ suelta antes de //
+OK    una \ suelta antes de un /* */ con salto
+OK    una \ y un \f antes de //
+OK    una \ suelta en un #define
+OK    V1: las 80 variantes (40 con LF y 40 con CRLF) sin el comentario
+— Programas válidos: compilan antes y después de limpiarlos (cabeceras reales, Uno)
+OK    V1: #define con 1e\ y otra línea (LF)
+OK    V1: lo mismo con CRLF
+OK    V2: /* */ de varias líneas dentro de un #define
+OK    V2: #include <avr//io.h>
+OK    textos dentro de una macro
+OK    una \ suelta en un #define que no se usa
+OK    un programa como los de TecnoBloques
+— Programas al azar contra el compilador
+OK    2000 programas al azar (semilla 20261018): el compilador ve lo mismo, sin comentarios y con las mismas líneas (172.9 s)
+
+Todo OK
+
+exit=0

@@ -117,6 +117,17 @@
             "recuperados": { "type": "integer", "minimum": 0, "description": "Líneas de esta sesión escritas después de que empezó la falla." },
             "perdidos": { "type": "integer", "minimum": 0, "description": "Líneas de esta sesión que no cupieron en la espera: si es más de 0, hay un hueco." },
             "motivo": { "type": "string", "minLength": 1, "description": "El código del error del disco: ENOSPC, EPERM, EACCES, CONFIG…" }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "evento_descartado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "Un evento de la sesión no se pudo guardar y va este en su lugar (AUD-07, 21 oct), con la hora (t) del perdido si la traía: en el registro hay un hueco aquí.",
+          "required": ["motivo"],
+          "properties": {
+            "motivo": { "type": "string", "minLength": 1, "description": "tamano (más largo que el límite), no_serializable (no se pudo convertir a texto) o sin_tipo (no decía qué evento era). Puede haber otros." },
+            "tipo": { "type": "string", "minLength": 1, "maxLength": 64, "description": "El tipo del evento perdido, si lo tenía." },
+            "origen": { "type": "string", "minLength": 1, "maxLength": 64, "description": "El origen del evento perdido, si lo tenía." },
+            "corrida": { "type": "integer", "minimum": 1, "description": "La corrida del evento perdido, si era del simulador." },
+            "largo": { "type": "integer", "minimum": 0, "description": "El largo del evento perdido, en caracteres de su JSON (unidades de texto de JavaScript)." },
+            "limite": { "type": "integer", "minimum": 1, "description": "El largo máximo de una línea, en las mismas unidades." }
           } } } } }
       ]
     },

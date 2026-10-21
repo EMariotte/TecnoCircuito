@@ -1,0 +1,104 @@
+UTC: 2026-10-21T22:19:06.567744+00:00
+COMANDO: npm.cmd --prefix ../TecnoBloques test
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+
+> tecnobloques@0.3.0 test
+> python test/prueba.py && python test/prueba_todo.py
+
+{
+ "carro": {
+  "placa": "uno",
+  "avisos": []
+ },
+ "otto": {
+  "placa": "nano",
+  "avisos": []
+ },
+ "eco": {
+  "placa": "uno",
+  "avisos": []
+ },
+ "carro_mega": {
+  "placa": "mega",
+  "avisos": [
+   "En Arduino Mega 2560 el RX de Bluetooth por software solo funciona en 10, 11, 12, 13, 14, 15, 50, 51, 52, 53, A8, A9, A10, A11, A12, A13, A14, A15. Mejor usa Serial1: RX 19 y TX 18."
+  ]
+ },
+ "carro_nano_old": {
+  "placa": "nano_old",
+  "avisos": []
+ },
+ "t1_protoboard": {
+  "placa": "uno",
+  "avisos": [
+   "circuito con 4 piezas"
+  ]
+ }
+}
+ERRORES:
+Bloques sin nivel asignado (debe estar vac�o): []
+uno omitidos: ['controls_flow_statements', 'lista_crear', 'lista_vacia', 'matriz_crear', 'pin_nombre', 'pca_calibracion', 'otto_calibracion', 'cpp_global']
+ avisos:
+  Hay 1 bloque(s) suelto(s) fuera del programa; no se incluyen en el c�digo.
+  Con servos conectados, el PWM del pin 9 deja de funcionar (la librer�a Servo usa ese temporizador). Usa otro pin PWM.
+  El pin 13 lo usan a la vez: E/S digital, Otto zumbador.
+  El pin 2 lo usan a la vez: E/S digital, Otto pierna izquierda.
+  El pin 9 lo usan a la vez: E/S digital, Ultrasonido.
+  El pin A0 lo usan a la vez: Entrada anal�gica, Sensor DHT11.
+  El pin 8 lo usan a la vez: Zumbador, Shield de motores, Ultrasonido.
+  El pin A1 lo usan a la vez: Bluetooth, Boca de Otto (CLK).
+  El pin A2 lo usan a la vez: Bluetooth, Boca de Otto (CS).
+  El pin 4 lo usan a la vez: Shield de motores, Otto pie izquierdo.
+  El pin 7 lo usan a la vez: Shield de motores, Otto brazo derecho.
+  El pin 12 lo usan a la vez: Shield de motores, Matriz LED (DIN).
+  El pin 11 lo usan a la vez: Shield de motores, Matriz LED (CLK).
+  El pin 3 lo usan a la vez: Shield de motores, Otto pierna derecha.
+  El pin 10 lo usan a la vez: Servo, Matriz LED (CS).
+  Este programa usa bloques del nivel 3 (Inventor). Funcionan igual; para verlos en la caja de bloques, cambia al nivel 3.
+mega omitidos: ['controls_flow_statements', 'lista_crear', 'lista_vacia', 'matriz_crear', 'pin_nombre', 'pca_calibracion', 'otto_calibracion', 'cpp_global']
+ avisos:
+  En Arduino Mega 2560 el RX de Bluetooth por software solo funciona en 10, 11, 12, 13, 14, 15, 50, 51, 52, 53, A8, A9, A10, A11, A12, A13, A14, A15. Mejor usa Serial1: RX 19 y TX 18.
+  Hay 1 bloque(s) suelto(s) fuera del programa; no se incluyen en el c�digo.
+  El pin 13 lo usan a la vez: E/S digital, Otto zumbador.
+  El pin 2 lo usan a la vez: E/S digital, Otto pierna izquierda.
+  El pin 9 lo usan a la vez: E/S digital, Ultrasonido.
+  El pin A0 lo usan a la vez: Entrada anal�gica, Sensor DHT11.
+  El pin 8 lo usan a la vez: Zumbador, Shield de motores, Ultrasonido.
+  El pin A1 lo usan a la vez: Bluetooth, Boca de Otto (CLK).
+  El pin A2 lo usan a la vez: Bluetooth, Boca de Otto (CS).
+  El pin 4 lo usan a la vez: Shield de motores, Otto pie izquierdo.
+  El pin 7 lo usan a la vez: Shield de motores, Otto brazo derecho.
+  El pin 12 lo usan a la vez: Shield de motores, Matriz LED (DIN).
+  El pin 11 lo usan a la vez: Shield de motores, Matriz LED (CLK).
+  El pin 3 lo usan a la vez: Shield de motores, Otto pierna derecha.
+  El pin 10 lo usan a la vez: Servo, Matriz LED (CS).
+  Este programa usa bloques del nivel 3 (Inventor). Funcionan igual; para verlos en la caja de bloques, cambia al nivel 3.
+MIS BLOQUES lib: ['se�al_lista', 'parpadear'] embebidos: ['se�al_lista', 'parpadear'] mismo codigo tras reabrir: True
+ avisos: ['Usas el monitor serial sin el bloque "iniciar monitor serial". Se agreg� a 9600 baudios.']
+PINES opciones: ['LedRojo (13)', 'Boton (2)', 'Pinza (10)', 'Clima (A0)', 'LedAzul (9)', '0']
+ avisos: ['Usas el monitor serial sin el bloque "iniciar monitor serial". Se agreg� a 9600 baudios.', 'Con servos conectados, el PWM del pin LedAzul (9) deja de funcionar (la librer�a Servo usa ese temporizador). Usa otro pin PWM.', 'Este programa usa bloques del nivel 3 (Inventor). Funcionan igual; para verlos en la caja de bloques, cambia al nivel 3.']
+ renombrar LedRojo->LedVerde: ['LedVerde', '13'] | deshacer: [['LedRojo', '13'], ['LedRojo', 'Boton', 'Pinza', 'Clima', 'LedAzul']]
+LISTAS avisos: ['Usas el monitor serial sin el bloque "iniciar monitor serial". Se agreg� a 9600 baudios.'] | igual tras reabrir: True
+ avisos de error:
+   "hola" no es un valor de tipo entero en "notas". Se us� 0.
+   La lista "notas" tiene 3 elementos: usa posiciones de 0 a 2.
+   No hay una lista llamada "fantasma". Cr�ala con el bloque "lista".
+   La matriz "m" tiene 2 filas y 2 columnas: columnas de 0 a 1.
+   Usas el monitor serial sin el bloque "iniciar monitor serial". Se agreg� a 9600 baudios.
+   "notas" es el nombre de una lista y tambi�n de una variable. Cambia uno de los dos.
+I2C uno avisos: []
+I2C mega avisos: []
+otto_calibrar avisos: ['Usas bloques de Otto sin "iniciar Otto". Se asumieron los pines 2, 3, 4, 5 y zumbador 13.', 'Usas los brazos de Otto sin "iniciar brazos". Se asumieron los pines 6 y 7.']
+otto_calibrado avisos: ['Usas bloques de Otto sin "iniciar Otto". Se asumieron los pines 2, 3, 4, 5 y zumbador 13.', 'Usas los brazos de Otto sin "iniciar brazos". Se asumieron los pines 6 y 7.']
+MATRIZ avisos:
+   La matriz no tiene tildes, � ni algunos s�mbolos: se cambiaron por letras simples o espacios.
+   La boca de Otto no tiene tildes, � ni algunos s�mbolos: se cambiaron.
+   La boca de Otto muestra m�ximo 9 caracteres: se mostrar� "HOLA OTTO".
+OTTO TODO avisos:
+   La coreograf�a necesita una matriz de 4 columnas (piernas y pies) o de 6 (con brazos); "mala" tiene 5.
+   Usas la boca de Otto sin "iniciar boca". Se asumieron los pines de Otto (DIN A3, CS A2, CLK A1), orientaci�n 1 y brillo 4.
+CAMPOS DEL PROYECTO: {'ok': True, 'conserva': True, 'limpioAlNuevo': True, 'limpioAlEjemplo': True, 'creadoCon': '0.3.0', 'version': 1, 'tb': '0.3.0', 'comparar': [1, 0, -1, 1]}
+PROYECTO MAS NUEVO: {'ok': True, 'titulo': 'Este proyecto es de una versi�n m�s nueva', 'error': 'Este proyecto se hizo con TecnoBloques 9.0.0 y usa bloques que esta versi�n (0.3.0) no conoce. Actualiza TecnoBloques para abrirlo.', 'bloquesAntes': 21, 'bloquesDespues': 21, 'nombre': 'Eco serial y LED'}
+ERRORES:
+
+exit=0

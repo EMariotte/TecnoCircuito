@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-21T22:20:04.892Z",
+  "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\cla007-electron-p4wBG2",
+  "resultados": [
+    {
+      "caso": "F06-panel-abierto-en-vivo",
+      "aprobado": true,
+      "antes": "1 evento no se guardó desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 17:20). Quedó anotado en el registro.",
+      "durante": {
+        "cantidad": 2,
+        "panel": "2 eventos no se guardaron desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 17:20). Quedaron anotados en el registro.",
+        "esquina": "Equipo SINTETICO · El registro perdió 2 eventos · Avisen al instructor",
+        "visible": true
+      }
+    },
+    {
+      "caso": "F06-A05-apagado-conserva-total-instructor",
+      "aprobado": true,
+      "apagado": {
+        "cantidad": 2,
+        "visible": false,
+        "activo": false
+      },
+      "panelApagado": "2 eventos no se guardaron desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 17:20). Quedaron anotados en el registro."
+    },
+    {
+      "caso": "F06-A05-otro-equipo-no-hereda-aviso",
+      "aprobado": true,
+      "nuevo": {
+        "total": 2,
+        "texto": "Esta sesión se registra · Equipo OTRO",
+        "clase": ""
+      }
+    },
+    {
+      "caso": "F06-A05-total-persiste-con-otro-equipo",
+      "aprobado": true,
+      "totalOtro": "2 eventos no se guardaron desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 17:20). Quedaron anotados en el registro."
+    }
+  ],
+  "errores": []
+}

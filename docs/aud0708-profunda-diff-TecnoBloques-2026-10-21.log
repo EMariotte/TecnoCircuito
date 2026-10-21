@@ -1,0 +1,809 @@
+diff --git a/escritorio/main.js b/escritorio/main.js
+index dbcf4a6..377e326 100644
+--- a/escritorio/main.js
++++ b/escritorio/main.js
+@@ -10,10 +10,13 @@ const { crearRegistroDisco } = require('./registro-disco');
+ const recursos = app.isPackaged ? process.resourcesPath : path.join(__dirname, 'recursos');
+ const arduino = new Arduino({ recursos, trabajo: path.join(app.getPath('userData'), 'arduino') });
+ // Registro de eventos por equipo: %APPDATA%\TecnoBloques\registros\ (contrato con TecnoCircuito, sección 6.1). Si el
+-// disco falla, la página lo sabe por tb:registro-falla y lo muestra (AUD-02).
++// disco falla, la página lo sabe por tb:registro-falla y lo muestra (AUD-02); si un evento no se puede guardar, por
++// tb:registro-descartado (AUD-07).
+ const registroEventos = crearRegistroDisco({
+   carpeta: app.getPath('userData'),
+-  alCambiar: (falla, fin) => { if (ventana && !ventana.isDestroyed()) ventana.webContents.send('tb:registro-falla', { falla, fin }); }
++  version: app.getVersion(),
++  alCambiar: (falla, fin) => { if (ventana && !ventana.isDestroyed()) ventana.webContents.send('tb:registro-falla', { falla, fin }); },
++  alDescartar: (descartados) => { if (ventana && !ventana.isDestroyed()) ventana.webContents.send('tb:registro-descartado', descartados); }
+ });
+ let ventana = null;
+ let puertoPreferido = null; // lo elige el aprendiz en el editor; lo usa el monitor serial (Web Serial)
+@@ -106,7 +109,8 @@ ipcMain.handle('tb:registro-exportar', async (_e, { pin } = {}) => {
+   try { return registroEventos.exportar({ pin, destino: r.filePaths[0] }); } catch (e) { return { ok: false, motivo: 'disco', mensaje: e.message }; }
+ });
+ // Una línea por evento, en orden: send (no invoke) para que el último evento salga aunque la ventana se esté cerrando.
+-// escribir() no lanza: si el disco falla, la línea espera y la página recibe tb:registro-falla.
++// escribir() no lanza: si el disco falla, la línea espera y la página recibe tb:registro-falla; si la línea no se puede
++// guardar, queda su evento_descartado y la página recibe tb:registro-descartado (AUD-07).
+ ipcMain.on('tb:registrar', (_e, linea) => registroEventos.escribir(linea));
+ 
+ /* ---------- Actualización automática desde GitHub Releases ---------- */
+diff --git a/escritorio/preload.js b/escritorio/preload.js
+index 543830a..e5213bb 100644
+--- a/escritorio/preload.js
++++ b/escritorio/preload.js
+@@ -21,6 +21,8 @@ contextBridge.exposeInMainWorld('tbEscritorio', {
+     escribir: (linea) => ipcRenderer.send('tb:registrar', linea),
+     /** fn({falla, fin}): falla = {motivo, desde, pendientes, perdidos} o null; fin = 'escrito' | 'apagado' al terminar */
+     alFalla: (fn) => { ipcRenderer.on('tb:registro-falla', (_e, d) => fn(d)); },
++    /** fn({cantidad, sinAnotar, ultimo: {tipo, motivo, t}}): un evento no se pudo guardar y quedó anotado (AUD-07) */
++    alDescarte: (fn) => { ipcRenderer.on('tb:registro-descartado', (_e, d) => fn(d)); },
+   },
+   alProgreso: (fn) => {
+     const h = (_e, m) => fn(m);
+diff --git a/escritorio/registro-disco.js b/escritorio/registro-disco.js
+index 3e3810f..8634595 100644
+--- a/escritorio/registro-disco.js
++++ b/escritorio/registro-disco.js
+@@ -7,13 +7,18 @@
+ // nuevo, cada `reintentoMs` y cuando el instructor lo pide. Al recuperarse escribe lo que esperaba y, por cada sesión
+ // afectada, el evento registro_interrumpido (desde, hasta, recuperados, perdidos, motivo): así el análisis sabe que
+ // hubo una falla. Lo que no cabe en la cola, o lo que espera cuando se cierra la app, se pierde; el aviso lo mostró.
++//
++// Un evento que no se puede guardar (más largo que LINEA_MAX, o que no se puede convertir a texto) tampoco se pierde en
++// silencio (AUD-07): en su lugar va el evento evento_descartado, la cuenta sube y la app lo avisa (alDescartar).
+ 'use strict';
+ const fs = require('fs');
+ const path = require('path');
+ const crypto = require('crypto');
+ const { codigoParaArchivo, fechaArchivo } = require('../src/registro.js');
+ 
+-const LINEA_MAX = 2 * 1024 * 1024; // una línea con el circuito y el código completos cabe de sobra
++// Una línea con el circuito y el código completos cabe de sobra. Se cuenta en caracteres del JSON (unidades de texto de
++// JavaScript, como la cola), sin el salto de línea; en bytes UTF-8 puede ser hasta tres veces más.
++const LINEA_MAX = 2 * 1024 * 1024;
+ const INTENTOS = 5; // PIN equivocado: después de 5 seguidos, espera un minuto
+ const ESPERA_MS = 60000;
+ const COLA_LINEAS = 5000; // lo que puede esperar mientras el disco falla
+@@ -22,8 +27,10 @@ const COLA_BYTES = 20 * 1024 * 1024;
+ /**
+  * `alCambiar(falla, fin)` avisa cuando el registro entra en falla (con su resumen) o cuando la falla termina (null),
+  * con `fin`: 'escrito' si lo que esperaba quedó en el disco, 'apagado' si el instructor apagó el registro.
++ * `alDescartar(descartados)` avisa cada vez que un evento no se pudo guardar (AUD-07), con la cuenta desde que se abrió.
++ * `version`: la de TecnoBloques, para el exportacion.json de cada exportación (AUD-08).
+  */
+-function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = () => {}, reintentoMs = 30000 }) {
++function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = () => {}, alDescartar = () => {}, reintentoMs = 30000, version = null }) {
+   const archivoConfig = path.join(carpeta, 'registro-config.json');
+   // Mientras la carpeta dañada está movida aparte y la nueva todavía no quedó en su lugar, existe esta marca: si el
+   // reemplazo no termina ni se puede deshacer, la app sabe al abrir que la recuperación quedó a medias (AUD-02-V4).
+@@ -40,6 +47,9 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+   const pendientesDeCortar = new Map(); // archivo → tamaño: una escritura falló a medias y no se pudo cortar todavía
+   const revisados = new Set(); // archivos que ya se revisó que terminan en una línea completa
+   let ilegibleDesde = null; // cuándo se vio por primera vez la configuración ilegible
++  // Los eventos que no se pudieron guardar desde que se abrió la app (AUD-07): cuántos, cuántos no se pudieron ni anotar
++  // (sin equipo y sesión válidos para el evento_descartado) y el último, para el aviso y el panel del instructor.
++  const descartados = { cantidad: 0, sinAnotar: 0, ultimo: null };
+ 
+   /** Sin configuración y con la marca, un reemplazo quedó a medias: es ilegible, no recién instalado. */
+   const sinConfigPorRecuperar = () => fs.existsSync(marcaRecuperando);
+@@ -198,6 +208,34 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+     cola.push(item);
+     bytesCola += item.texto.length;
+   }
++  /**
++   * Un evento que no se puede guardar (AUD-07): en su lugar, y con su mismo sobre, va evento_descartado (contrato 6.1),
++   * por el camino de siempre (si el disco falla, espera como cualquier línea). Si el sobre no sirve para armarlo, solo
++   * se cuenta. Nunca lanza: guardar el registro no debe detener el trabajo.
++   */
++  function descartar(linea, motivo, largo) {
++    try {
++      const t = Math.round(ahora());
++      descartados.cantidad++;
++      // El tipo del perdido, si lo tiene, y corto aunque el del perdido no lo sea
++      const tipo = typeof linea.tipo === 'string' && linea.tipo ? linea.tipo.slice(0, 64) : null;
++      descartados.ultimo = { tipo, motivo, t };
++      const sobre = sobreDe(linea);
++      if (['equipo', 'sesion', 'version_tb', 'version_tc'].every((k) => typeof sobre[k] === 'string' && sobre[k].length > 0 && sobre[k].length <= 1000)) {
++        const datos = { motivo, limite: LINEA_MAX };
++        if (tipo) datos.tipo = tipo;
++        if (typeof linea.origen === 'string' && linea.origen) datos.origen = linea.origen.slice(0, 64);
++        if (Number.isInteger(linea.corrida) && linea.corrida >= 1) datos.corrida = linea.corrida;
++        if (Number.isInteger(largo)) datos.largo = largo;
++        const aviso = { v: 1, t, origen: 'editor', tipo: 'evento_descartado', ...sobre, datos };
++        encolar({ nombre: nombreDe(aviso), texto: JSON.stringify(aviso), sobre });
++        vaciar();
++      } else descartados.sinAnotar++;
++      avisarSiCambio();
++    } catch (e) { /* ya se contó */ }
++    try { alDescartar(resumenDescartados()); } catch (e) { /* avisar nunca debe impedir escribir */ }
++  }
++  const resumenDescartados = () => (descartados.cantidad ? { cantidad: descartados.cantidad, sinAnotar: descartados.sinAnotar, ultimo: { ...descartados.ultimo } } : null);
+   /**
+    * Escribe lo que espera, en orden. Si el disco falla, la línea se queda primera en la cola. Cuando todo lo de una falla
+    * quedó escrito, agrega el registro_interrumpido de cada sesión afectada y la falla termina.
+@@ -247,7 +285,7 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+       else if (ilegibleDesde === null) ilegibleDesde = ahora();
+       // La configuración ilegible es una falla aunque todavía no haya llegado ningún evento (AUD-02-V2).
+       const falla = resumenFalla() || (c.ilegible ? { motivo: 'CONFIG', desde: ilegibleDesde, pendientes: cola.length, perdidos: 0 } : null);
+-      return { activo: !!c.activo, tienePin: !!c.pin, falla, configIlegible: !!c.ilegible };
++      return { activo: !!c.activo, tienePin: !!c.pin, falla, configIlegible: !!c.ilegible, descartados: resumenDescartados() };
+     },
+     /**
+      * Lo que pide el instructor. accion: 'crear-pin' (solo si no hay), 'entrar', 'activar' ({activo}),
+@@ -303,19 +341,30 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+     },
+     /**
+      * Escribe una línea; si el disco falla, la deja esperando. Nunca lanza: devuelve false si no es para escribir
+-     * (registro apagado, o una línea que no es un evento con equipo) y true si se escribió o quedó esperando.
++     * (registro apagado, o una línea que no es un evento con equipo) y true si se escribió o quedó esperando. Una línea
++     * del registro encendido que no se puede guardar (demasiado larga o que no se puede convertir a texto) devuelve false,
++     * pero no en silencio: queda su evento_descartado y la app lo avisa (AUD-07).
+      */
+     escribir(linea) {
+-      if (!linea || typeof linea !== 'object' || typeof linea.equipo !== 'string' || !linea.equipo.trim() || typeof linea.tipo !== 'string') return false;
+-      let texto;
+-      try { texto = JSON.stringify(linea); } catch (e) { return false; }
+-      if (texto.length > LINEA_MAX) return false;
++      if (!linea || typeof linea !== 'object' || typeof linea.equipo !== 'string' || !linea.equipo.trim()) return false;
+       let config = null;
+       try { config = leerParaEscribir(); } catch (e) { /* lo resuelve vaciar(): la línea espera y queda la falla */ }
+       if (config && !config.activo) return false;
++      if (typeof linea.tipo !== 'string' || !linea.tipo) { descartar(linea, 'sin_tipo', null); return false; }
++      let texto;
++      try { texto = JSON.stringify(linea); } catch (e) { texto = undefined; } // un ciclo o un BigInt
++      if (typeof texto !== 'string') { descartar(linea, 'no_serializable', null); return false; }
++      if (texto.length > LINEA_MAX) { descartar(linea, 'tamano', texto.length); return false; }
+       encolar({ nombre: nombreDe(linea), texto, sobre: sobreDe(linea) });
+       vaciar();
+       avisarSiCambio();
++      // El evento_descartado de la página (uno que no llegó hasta aquí): también se cuenta y se avisa
++      if (linea.tipo === 'evento_descartado') {
++        const d = linea.datos && typeof linea.datos === 'object' ? linea.datos : {};
++        descartados.cantidad++;
++        descartados.ultimo = { tipo: typeof d.tipo === 'string' ? d.tipo.slice(0, 64) : null, motivo: typeof d.motivo === 'string' ? d.motivo.slice(0, 32) : 'no_serializable', t: Math.round(ahora()) };
++        try { alDescartar(resumenDescartados()); } catch (e) { /* avisar nunca debe impedir escribir */ }
++      }
+       return true;
+     },
+     /** Intenta escribir ya lo que espera (el botón del instructor, y al cerrar la app). Devuelve la falla o null. */
+@@ -324,10 +373,17 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+       avisarSiCambio();
+       return resumenFalla();
+     },
++    /** Los .jsonl de la carpeta de registros (solo archivos: una carpeta con ese nombre no se copia). */
+     archivos() {
+-      try { return fs.readdirSync(registros).filter((f) => f.endsWith('.jsonl')); } catch (e) { return []; }
++      try { return fs.readdirSync(registros, { withFileTypes: true }).filter((d) => d.isFile() && d.name.endsWith('.jsonl')).map((d) => d.name).sort(); } catch (e) { return []; }
+     },
+-    /** Copia los .jsonl a una carpeta nueva dentro de `destino`. Pide el PIN. Lo que espera en la cola no va. */
++    /**
++     * Copia los .jsonl a una carpeta nueva dentro de `destino`. Pide el PIN. Lo que espera en la cola no va.
++     * Cada exportación tiene su propia carpeta, aunque haya otra del mismo minuto (AUD-08): se reserva con mkdir sin
++     * `recursive`, que falla si ya existe, y se prueba con -2, -3… Ningún archivo se copia encima de otro. Al final va
++     * exportacion.json, con el nombre, los bytes y el sha256 de cada archivo copiado y `completa: true`; si una copia
++     * falla a mitad, `completa: false` y el error. Una carpeta sin exportacion.json completa no es una exportación entera.
++     */
+     exportar({ pin, destino }) {
+       const r = comprobar(pin);
+       if (!r.ok) return r;
+@@ -335,9 +391,30 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+       if (!archivos.length) return { ok: false, motivo: 'sin-archivos' };
+       const d = new Date(ahora());
+       const sello = `${fechaArchivo(ahora())}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+-      const carpetaDestino = path.join(destino, `TecnoBloques-registros-${sello}`);
+-      fs.mkdirSync(carpetaDestino, { recursive: true });
+-      for (const f of archivos) fs.copyFileSync(path.join(registros, f), path.join(carpetaDestino, f));
++      let carpetaDestino = null;
++      for (let n = 1; n <= 1000 && !carpetaDestino; n++) {
++        const c = path.join(destino, `TecnoBloques-registros-${sello}${n > 1 ? `-${n}` : ''}`);
++        try { fs.mkdirSync(c); carpetaDestino = c; } catch (e) {
++          if (e.code !== 'EEXIST') return { ok: false, motivo: 'disco', mensaje: e.message };
++        }
++      }
++      if (!carpetaDestino) return { ok: false, motivo: 'disco', mensaje: 'ya hay 1000 exportaciones de ese minuto en esa carpeta' };
++      const copiados = [];
++      let error = null;
++      for (const f of archivos) {
++        try {
++          const destinoArchivo = path.join(carpetaDestino, f);
++          fs.copyFileSync(path.join(registros, f), destinoArchivo, fs.constants.COPYFILE_EXCL);
++          const contenido = fs.readFileSync(destinoArchivo); // lo que quedó en la copia
++          copiados.push({ archivo: f, bytes: contenido.length, sha256: crypto.createHash('sha256').update(contenido).digest('hex') });
++        } catch (e) { error = { archivo: f, codigo: String(e.code || 'DESCONOCIDO'), mensaje: e.message }; break; }
++      }
++      const manifiesto = { formato: 1, app: 'TecnoBloques', version_tb: version || null, t: Math.round(ahora()), completa: !error,
++        total: archivos.length, archivos: copiados, pendientes: cola.length, ...(error ? { error: { archivo: error.archivo, codigo: error.codigo } } : {}) };
++      try { fs.writeFileSync(path.join(carpetaDestino, 'exportacion.json'), JSON.stringify(manifiesto, null, 1), { flag: 'wx' }); } catch (e) {
++        if (!error) error = { archivo: 'exportacion.json', codigo: String(e.code || 'DESCONOCIDO'), mensaje: e.message };
++      }
++      if (error) return { ok: false, motivo: 'copia-incompleta', carpeta: carpetaDestino, copiados: copiados.length, total: archivos.length, mensaje: `${error.archivo}: ${error.mensaje}` };
+       return { ok: true, carpeta: carpetaDestino, archivos: archivos.length, pendientes: cola.length };
+     },
+   };
+diff --git a/herramientas/historia-registro.js b/herramientas/historia-registro.js
+index 4e4f782..2494c46 100644
+--- a/herramientas/historia-registro.js
++++ b/herramientas/historia-registro.js
+@@ -32,6 +32,7 @@ const FALLAS = {
+   bateria_corto: 'batería en corto', bateria_en_5v: 'batería en el 5V', motores_sin_energia: 'motores sin energía',
+ };
+ const MOTIVOS_REINICIO = { boton: 'botón RESET', energia_usb: 'energía del USB', energia_nano: 'energía del Nano' };
++const MOTIVOS_DESCARTE = { tamano: 'era demasiado grande', no_serializable: 'no se pudo convertir a texto', sin_tipo: 'no decía qué evento era' };
+ const propio = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // las claves vienen de afuera: «__proto__» no es una falla
+ 
+ const nombreFalla = (f) => `${propio(FALLAS, f.tipo) ? FALLAS[f.tipo] : f.tipo} (${f.componente})`;
+@@ -59,7 +60,7 @@ const NECESITA = {
+   sesion_iniciada: { placa: 'string' }, sesion_terminada: { ms: 'number' }, placa_cambiada: { de: 'string', a: 'string' },
+   proyecto_abierto: { placa: 'string' }, ejemplo_cargado: { id: 'string' }, bloques_cambiados: { bloques: 'number', tipos: 'object' },
+   codigo_compilado: { ok: 'boolean', codigo: 'string' }, programa_subido: { ok: 'boolean' },
+-  registro_interrumpido: { desde: 'number', hasta: 'number', recuperados: 'number', perdidos: 'number' },
++  registro_interrumpido: { desde: 'number', hasta: 'number', recuperados: 'number', perdidos: 'number' }, evento_descartado: { motivo: 'string' },
+   simulacion_iniciada: { placa: 'string', modo: 'string', circuito: 'object' }, simulacion_detenida: { fallas: 'array' },
+   simulacion_pausada: {}, simulacion_reanudada: {}, falla: { tipo: 'string', componente: 'string' }, reinicio_placa: { motivo: 'string' },
+   componente_agregado: { id: 'string', tipo: 'string' }, componente_quitado: { id: 'string' }, componente_cambiado: { id: 'string' },
+@@ -479,6 +480,7 @@ function contarSesion({ sesion, equipo, segmentos, dudas: dudasDelGrupo }) {
+   let bloques = null; // resúmenes de bloques seguidos: { t, desde, hasta }
+   const corridas = new Map(); // número → la corrida
+   const huerfanas = new Map(); // corridas que no empezaron en la sesión pero tienen eventos aquí: sus fallas no se pierden
++  const iniciosPerdidos = new Set(); // corridas cuyo simulacion_iniciada no se guardó (evento_descartado, AUD-07)
+   const huecos = []; // { desdePos, hastaPos }: tramos de la sesión donde faltan líneas
+   const huecosPorHora = []; // { desde, hasta, pos }: los de registro_interrumpido, que se ubican al final por la hora
+   const horas = []; // { pos, t } de cada evento, para ubicarlos
+@@ -547,7 +549,8 @@ function contarSesion({ sesion, equipo, segmentos, dudas: dudasDelGrupo }) {
+     cerrarGrupos();
+ 
+     if (origen === 'simulador' && tipo !== 'simulacion_iniciada' && !corridas.has(n)) {
+-      aviso(`La corrida ${n} no empezó en esta sesión y tiene eventos aquí: ¿quedó en el equipo equivocado?`);
++      aviso(iniciosPerdidos.has(n) ? `La corrida ${n} perdió su inicio (no se guardó): sus eventos quedan sin atribuir.`
++        : `La corrida ${n} no empezó en esta sesión y tiene eventos aquí: ¿quedó en el equipo equivocado?`);
+       const x = huerfanas.get(n) || { numero: n, fallasVistas: [], cierres: [] };
+       huerfanas.set(n, x);
+       if (tipo === 'falla') x.fallasVistas.push({ tipo: datos.tipo, componente: datos.componente });
+@@ -609,6 +612,17 @@ function contarSesion({ sesion, equipo, segmentos, dudas: dudasDelGrupo }) {
+           huecosPorHora.push({ desde: datos.desde, hasta: datos.hasta, pos });
+         }
+         break;
++      case 'evento_descartado': { // AUD-07: un evento no se pudo guardar y este va en su lugar: ahí hay un hueco
++        const cual = [datos.tipo, Number.isInteger(datos.corrida) ? `corrida ${datos.corrida}` : null].filter(Boolean).join(', ');
++        const porque = propio(MOTIVOS_DESCARTE, datos.motivo) ? MOTIVOS_DESCARTE[datos.motivo] : datos.motivo;
++        paso(t, `No se guardó un evento${cual ? ` (${cual})` : ''}: ${porque}. Ahí hay un hueco.`);
++        aviso(`Hay un hueco: no se guardó un evento${cual ? ` (${cual})` : ''} porque ${porque} (${archivo} línea ${linea}).`);
++        huecos.push({ desdePos: pos, hastaPos: pos });
++        if (datos.tipo === 'simulacion_iniciada' && Number.isInteger(datos.corrida)) iniciosPerdidos.add(datos.corrida);
++        // Si era de una corrida de la sesión, a esa corrida le falta algo: no se compara
++        if (Number.isInteger(datos.corrida) && corridas.has(datos.corrida)) contradice(corridas.get(datos.corrida), `perdió un evento del registro${datos.tipo ? ` (${datos.tipo})` : ''}`);
++        break;
++      }
+       case 'simulacion_iniciada': {
+         if (corridas.has(n)) { // una sola corrida con ese número: el segundo inicio no la reemplaza
+           aviso(`La corrida ${n} empieza dos veces.`);
+diff --git a/src/app.js b/src/app.js
+index 8a0c45c..6599ca3 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1494,6 +1494,9 @@ let registroFalla = null;
+ // La configuración del registro existe pero no se puede leer: no se sabe si estaba encendido, así que no se registra
+ // nada y la esquina lo avisa hasta que el instructor cree un PIN nuevo (AUD-02-V2).
+ let registroConfigIlegible = false;
++// Eventos que no se pudieron guardar desde que se abrió la app (demasiado grandes, por ejemplo): quedaron anotados con
++// evento_descartado y la esquina lo dice hasta cerrar la app (AUD-07). {cantidad, sinAnotar, ultimo: {tipo, motivo, t}}
++let registroDescartados = null;
+ let tResumenBloques = null;
+ // AUD-04: lo que hace un equipo queda en su sesión. turnoEquipo sube cada vez que cambia el equipo (o termina su
+ // sesión): una compilación que empezó con otro turno ya no es de nadie y se descarta (decisión de Efraín, 18 oct).
+@@ -1502,13 +1505,15 @@ let cambiandoEquipo = false; // mientras se espera el cierre de la corrida del e
+ 
+ function pintarAvisoRegistro() {
+   const a = $('avisoRegistro');
+-  const falla = !!registroFalla || registroConfigIlegible;
++  const falla = !!registroFalla || registroConfigIlegible || !!registroDescartados;
+   a.hidden = !registroEncendido && !registroConfigIlegible;
+   a.classList.toggle('falla', falla);
+   a.title = falla ? 'Qué pasó con el registro' : 'Cambiar el código del equipo';
++  const n = registroDescartados ? registroDescartados.cantidad : 0;
+   a.textContent = registroConfigIlegible ? 'El registro no está funcionando · Avisen al instructor'
+     : registroFalla ? 'El registro no se está guardando · Avisen al instructor'
+-      : registroEventos.activo() ? `Esta sesión se registra · Equipo ${registroEventos.equipo()}` : 'Esta sesión se registra · Falta el código del equipo';
++      : n ? `El registro perdió ${n === 1 ? 'un evento' : `${n} eventos`} · Avisen al instructor`
++        : registroEventos.activo() ? `Esta sesión se registra · Equipo ${registroEventos.equipo()}` : 'Esta sesión se registra · Falta el código del equipo';
+ }
+ async function iniciarRegistro() {
+   if (!registroDisponible) return;
+@@ -1517,6 +1522,7 @@ async function iniciarRegistro() {
+     registroEncendido = estado.activo;
+     registroFalla = estado.falla || null;
+     registroConfigIlegible = !!estado.configIlegible;
++    registroDescartados = estado.descartados || null;
+   } catch (e) { registroEncendido = false; }
+   if (escritorio.registro.alFalla) escritorio.registro.alFalla(({ falla, fin }) => {
+     const habiaFalla = !!registroFalla;
+@@ -1524,6 +1530,10 @@ async function iniciarRegistro() {
+     pintarAvisoRegistro();
+     if (habiaFalla && !registroFalla && fin === 'escrito') mostrarToast('El registro volvió a guardarse.');
+   });
++  if (escritorio.registro.alDescarte) escritorio.registro.alDescarte((d) => {
++    registroDescartados = d || null;
++    pintarAvisoRegistro();
++  });
+   pintarAvisoRegistro();
+   if (registroEncendido) pedirEquipo();
+ }
+@@ -1546,6 +1556,29 @@ function explicarFallaRegistro() {
+     ]
+   });
+ }
++/** El aviso de la esquina cuando un evento no se pudo guardar (AUD-07): qué pasó, sin detener el trabajo. */
++function explicarDescartados() {
++  modal({
++    titulo: 'El registro perdió un evento',
++    cuerpo: 'Algo de lo que hicieron no se pudo guardar en el registro (por ejemplo, era demasiado grande). Quedó anotado que falta. Pueden seguir trabajando; avisen al instructor.',
++    botones: [
++      { texto: 'Cambiar el código del equipo', accion: () => { setTimeout(() => pedirEquipo(registroEventos.equipo() || ''), 50); } },
++      { texto: 'Entendido', primario: true }
++    ]
++  });
++}
++const MOTIVOS_DESCARTE = { tamano: 'era demasiado grande', no_serializable: 'no se pudo convertir a texto', sin_tipo: 'no decía qué evento era' };
++/** Para el instructor: «1 evento no se guardó desde que se abrió la app (el último: codigo_compilado, era demasiado grande, a las 14:32). Quedó anotado en el registro.» */
++function textoDescartados(d) {
++  const u = d.ultimo || {};
++  const hora = new Date(u.t).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false });
++  const anotados = d.cantidad - (d.sinAnotar || 0);
++  const anotacion = !d.sinAnotar ? (d.cantidad === 1 ? 'Quedó anotado en el registro.' : 'Quedaron anotados en el registro.')
++    : !anotados ? (d.cantidad === 1 ? 'No se pudo anotar en el registro.' : 'No se pudieron anotar en el registro.')
++      : `${anotados} ${anotados === 1 ? 'quedó anotado' : 'quedaron anotados'} en el registro y ${d.sinAnotar} no.`;
++  return `${d.cantidad} ${d.cantidad === 1 ? 'evento no se guardó' : 'eventos no se guardaron'} desde que se abrió la app ` +
++    `(el último: ${u.tipo || 'sin tipo'}, ${MOTIVOS_DESCARTE[u.motivo] || u.motivo}, a las ${hora}). ${anotacion}`;
++}
+ const MOTIVOS_DISCO = {
+   ENOSPC: 'el disco está lleno', EPERM: 'sin permiso para escribir', EACCES: 'sin permiso para escribir',
+   EROFS: 'el disco es de solo lectura', EBUSY: 'el archivo está ocupado', CONFIG: 'no se pudo leer la configuración del registro'
+@@ -1716,6 +1749,9 @@ function panelInstructor(pin, estado) {
+   // Si el disco falla: qué pasa, desde cuándo y cuánto espera, con «Reintentar ahora» (AUD-02)
+   const lineaFalla = el('p', { class: 'error', id: 'fallaRegistro' }, estado.falla ? textoFallaRegistro(estado.falla) : null);
+   lineaFalla.hidden = !estado.falla;
++  // Los eventos que no se pudieron guardar (AUD-07)
++  const lineaDescartados = el('p', { class: 'error', id: 'descartadosRegistro' }, estado.descartados ? textoDescartados(estado.descartados) : null);
++  lineaDescartados.hidden = !estado.descartados;
+   modal({
+     titulo: 'Registro de eventos (instructor)',
+     cuerpo: [
+@@ -1723,6 +1759,7 @@ function panelInstructor(pin, estado) {
+         ? el('b', null, 'El registro está encendido en este computador.')
+         : el('b', null, 'El registro está apagado en este computador.')),
+       lineaFalla,
++      lineaDescartados,
+       el('p', null, 'Enciéndelo solo con el consentimiento de los acudientes y el asentimiento de los aprendices. Con el registro encendido, cada equipo escribe su código al abrir y la app lo avisa en pantalla.'),
+       el('p', { class: 'muted' }, `Archivos guardados: ${estado.archivos || 0} (en %APPDATA%\\TecnoBloques\\registros).`), nota
+     ],
+@@ -1748,11 +1785,13 @@ function panelInstructor(pin, estado) {
+       { texto: 'Exportar registros', accion: async () => {
+         const r = await escritorio.registro.exportar(pin);
+         if (r.ok) {
+-          nota.textContent = `Se copiaron ${r.archivos} archivos a ${r.carpeta}.` +
++          nota.textContent = `Se ${r.archivos === 1 ? 'copió 1 archivo' : `copiaron ${r.archivos} archivos`} a ${r.carpeta}.` +
+             (r.pendientes ? ` Hay ${r.pendientes} eventos esperando que no están en la copia.` : '');
+           return false;
+         }
+-        if (r.motivo !== 'cancelado') nota.textContent = r.motivo === 'sin-archivos' ? 'Todavía no hay registros en este computador.' : (MOTIVOS_PIN[r.motivo] || 'No se pudo copiar: ' + (r.mensaje || r.motivo));
++        // AUD-08: la copia falló a mitad; la carpeta queda marcada como incompleta en su exportacion.json
++        if (r.motivo === 'copia-incompleta') nota.textContent = `La copia quedó incompleta en ${r.carpeta}: se copiaron ${r.copiados} de ${r.total} archivos (${r.mensaje}). Revisa el espacio de la memoria USB y vuelve a exportar.`;
++        else if (r.motivo !== 'cancelado') nota.textContent = r.motivo === 'sin-archivos' ? 'Todavía no hay registros en este computador.' : (MOTIVOS_PIN[r.motivo] || 'No se pudo copiar: ' + (r.mensaje || r.motivo));
+         return false;
+       } },
+       { texto: 'Cambiar el PIN', accion: () => { setTimeout(() => cambiarPin(pin), 50); } },
+@@ -2207,6 +2246,7 @@ function iniciar() {
+     if (registroConfigIlegible) { explicarConfigIlegible(); return; }
+     if (!registroEncendido) return;
+     if (registroFalla) explicarFallaRegistro();
++    else if (registroDescartados) explicarDescartados();
+     else pedirEquipo(registroEventos.equipo() || '');
+   });
+   window.addEventListener('pagehide', () => {
+diff --git a/src/registro.js b/src/registro.js
+index 3a506c9..e254d45 100644
+--- a/src/registro.js
++++ b/src/registro.js
+@@ -316,10 +316,19 @@ function crearRegistroEventos({ escribir, versionTB, versionTC, ahora = () => Da
+     editor(tipo, datos) {
+       this.registrar({ t: Math.round(ahora()), origen: 'editor', tipo, datos: datos || {} });
+     },
+-    /** Un evento ya armado (del lienzo, del simulador o del editor). */
++    /**
++     * Un evento ya armado (del lienzo, del simulador o del editor). Si no llega a la app (no se puede copiar: una
++     * función, un nodo de la página…), no se pierde en silencio: va su evento_descartado (AUD-07, contrato 6.1).
++     */
+     registrar(ev) {
+       if (equipo === null || !ev || typeof ev !== 'object') return;
+-      try { escribir(completar(ev)); } catch (e) { /* el registro nunca interrumpe el trabajo */ }
++      try { escribir(completar(ev)); } catch (e) {
++        const datos = { motivo: 'no_serializable' };
++        if (typeof ev.tipo === 'string' && ev.tipo) datos.tipo = ev.tipo.slice(0, 64);
++        if (typeof ev.origen === 'string' && ev.origen) datos.origen = ev.origen.slice(0, 64);
++        if (Number.isInteger(ev.corrida) && ev.corrida >= 1) datos.corrida = ev.corrida;
++        try { escribir(completar({ t: Math.round(ahora()), origen: 'editor', tipo: 'evento_descartado', datos })); } catch (e2) { /* el registro nunca interrumpe el trabajo */ }
++      }
+     },
+   };
+ }
+diff --git a/test/historia-registro.js b/test/historia-registro.js
+index 081730b..6634493 100644
+--- a/test/historia-registro.js
++++ b/test/historia-registro.js
+@@ -724,6 +724,25 @@ for (const [nombre, valor, campo, motivo] of [['t = 8,64e15 + 1', 86400000000000
+ const limite = fueraDeDate(8640000000000000, 't');
+ revisar(!limite.texto.startsWith('ERROR') && !limite.h.avisos.some((a) => a.includes('no es una fecha')), 'control, t = 8,64e15 (el límite de Date) se lee');
+ 
++// ---- AUD-07: un evento que no se pudo guardar deja evento_descartado en su lugar (contrato 6.1): ahí hay un hueco
++const descartado = (datos) => { pasar(1); registro.editor('evento_descartado', datos); };
++const GRANDE = { motivo: 'tamano', tipo: 'codigo_compilado', origen: 'editor', largo: 2097153, limite: 2097152 };
++const entreCorridas = sesionCon(() => { iniciar(140, 'realista', [LED], [{}, {}]); quemado(140); cerrar(140, ['led_quemado']); descartado(GRANDE); iniciar(141, 'realista', [LED, R1], [{}, {}, {}]); cerrar(141, []); });
++revisar(entreCorridas.corridas[1].corrigio === null && pasoDe(entreCorridas, 141).endsWith('No se compara con la corrida 140: hay un hueco en el registro entre las dos.') &&
++  entreCorridas.pasos.some((p) => p.texto === 'No se guardó un evento (codigo_compilado): era demasiado grande. Ahí hay un hueco.') &&
++  con(entreCorridas, 'Hay un hueco: no se guardó un evento (codigo_compilado) porque era demasiado grande') && !entreCorridas.resumen.includes(CORREGIDA),
++`AUD-07, un evento descartado entre dos corridas: se cuenta, es un hueco y no se compara a través de él («${pasoDe(entreCorridas, 141)}»)`);
++const dentroDeCorrida = sesionCon(() => { iniciar(142, 'realista', [LED], [{}, {}]); quemado(142); descartado({ motivo: 'tamano', tipo: 'falla', origen: 'simulador', corrida: 142 }); cerrar(142, ['led_quemado']); iniciar(143, 'realista', [LED, R1], [{}, {}, {}]); cerrar(143, []); });
++revisar(dentroDeCorrida.corridas[0].contradicciones.includes('perdió un evento del registro (falla)') && dentroDeCorrida.corridas[1].corrigio === null && !dentroDeCorrida.resumen.includes(CORREGIDA),
++  `AUD-07, un evento descartado de una corrida: esa corrida no se compara («${pasoDe(dentroDeCorrida, 143)}»)`);
++const inicioPerdido = sesionCon(() => { descartado({ motivo: 'tamano', tipo: 'simulacion_iniciada', origen: 'simulador', corrida: 144 }); quemado(144); cerrar(144, ['led_quemado']); });
++revisar(con(inicioPerdido, 'La corrida 144 perdió su inicio (no se guardó)') && !con(inicioPerdido, 'equipo equivocado') && inicioPerdido.resumen.includes('LED quemado (led1) [sin atribuir: corrida 144]'),
++  `AUD-07, se perdió el inicio de una corrida: sus fallas quedan sin atribuir y el aviso dice por qué («${inicioPerdido.resumen}»)`);
++const descarteAntes = sesionCon(() => { descartado({ motivo: 'no_serializable', tipo: 'bloques_cambiados', origen: 'editor' }); iniciar(145, 'realista', [LED], [{}, {}]); quemado(145); cerrar(145, ['led_quemado']); iniciar(146, 'realista', [LED, R1], [{}, {}, {}]); cerrar(146, []); });
++revisar(descarteAntes.corridas[1].corrigio.length === 1 && descarteAntes.resumen.endsWith(CORREGIDA) && descarteAntes.avisos.length === 1 &&
++  descarteAntes.pasos.some((p) => p.texto === 'No se guardó un evento (bloques_cambiados): no se pudo convertir a texto. Ahí hay un hueco.'),
++`control, un evento descartado antes de las corridas: se avisa, pero no impide comparar después (${descarteAntes.avisos.join(' | ')})`);
++
+ // ---- La línea de comandos (INT-06, INT-07 y la decisión 3): siempre muestra la historia y sale con 1 si hay problemas
+ const cli = path.join(__dirname, '..', 'herramientas', 'historia-registro.js');
+ const correr = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8' });
+diff --git a/test/registro-app.js b/test/registro-app.js
+index f1854ba..33250b9 100644
+--- a/test/registro-app.js
++++ b/test/registro-app.js
+@@ -38,8 +38,8 @@ const LED = {
+   const registros = path.join(datos, 'registros');
+   const errores = [];
+ 
+-  async function abrir() {
+-    const app = await electron.launch({ args: [RAIZ, `--user-data-dir=${datos}`], cwd: RAIZ, env });
++  async function abrir(carpetaDatos = datos) {
++    const app = await electron.launch({ args: [RAIZ, `--user-data-dir=${carpetaDatos}`], cwd: RAIZ, env });
+     const win = await app.firstWindow();
+     win.on('pageerror', (e) => errores.push(String(e)));
+     win.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errores.push(m.text()); });
+@@ -602,6 +602,107 @@ const LED = {
+   revisar(quemadas('I6') && quemadas('J7') && quemadas('L9'), 'REG-004: la historia de I6, J7 y L9 cuenta el LED quemado y la corriente del pin');
+   console.log('\n' + narrar(historias.filter((h) => h.equipo === 'J7')));
+   fs.rmSync(datos, { recursive: true, force: true });
++
++  // 9. AUD-07: un evento que no se puede guardar deja evento_descartado en su lugar, la esquina lo dice y el instructor lo
++  // ve. En otra carpeta de datos, para que las sesiones de arriba sigan sin avisos.
++  const datos2 = path.join(os.tmpdir(), 'tecnobloques-prueba-registro-app-2');
++  if (path.dirname(path.resolve(datos2)) !== path.resolve(os.tmpdir())) throw new Error('Ruta temporal inesperada');
++  fs.rmSync(datos2, { recursive: true, force: true });
++  const registros2 = path.join(datos2, 'registros');
++  const leerRegistro2 = () => (fs.existsSync(registros2) ? fs.readdirSync(registros2).filter((f) => f.endsWith('.jsonl')) : [])
++    .flatMap((f) => fs.readFileSync(path.join(registros2, f), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)));
++  ({ app, win } = await abrir(datos2));
++  await win.keyboard.press('Control+Alt+Shift+KeyR');
++  await win.waitForTimeout(300);
++  await win.locator('#pinNuevo').fill('1357');
++  await win.locator('#pinRepetido').fill('1357');
++  await boton(win, 'Crear PIN');
++  await win.waitForTimeout(300);
++  await boton(win, 'Encender el registro');
++  await win.waitForTimeout(400);
++  await win.locator('#codigoEquipo').fill('M1');
++  await win.locator('#codigoEquipo').press('Enter');
++  await win.waitForTimeout(200);
++  await boton(win, 'Sí, somos ese equipo');
++  await win.waitForTimeout(300);
++  const esquina = () => win.evaluate(() => ({ texto: $('avisoRegistro').textContent, falla: $('avisoRegistro').classList.contains('falla') }));
++  revisar((await esquina()).texto === 'Esta sesión se registra · Equipo M1', 'AUD-07: control, la esquina normal antes de perder nada');
++  // Un C++ de más de 2 097 152 caracteres: el proceso principal no lo guarda
++  await win.evaluate(() => registroEventos.editor('codigo_compilado', { ok: true, error: null, bytes: 1, codigo: 'x'.repeat(2 * 1024 * 1024) }));
++  revisar(await esperar(win, () => $('avisoRegistro').textContent === 'El registro perdió un evento · Avisen al instructor' && $('avisoRegistro').classList.contains('falla'), 5000),
++    `AUD-07: un evento demasiado grande: la esquina dice «${(await esquina()).texto}»`);
++  await win.screenshot({ path: path.join(SALIDA, 'registro_7_descartado.png') });
++  // Uno que ni siquiera llega a la app: trae algo que no se puede copiar
++  await win.evaluate(() => registroEventos.editor('ejemplo_cargado', { id: 'x', f: () => 1 }));
++  revisar(await esperar(win, () => $('avisoRegistro').textContent === 'El registro perdió 2 eventos · Avisen al instructor', 5000),
++    `AUD-07: un evento que no se puede copiar también se cuenta: «${(await esquina()).texto}»`);
++  await win.evaluate(() => cargarEjemplo(EJEMPLOS.find((e) => e.id === 'eco')));
++  await win.waitForTimeout(400);
++  await win.locator('#avisoRegistro').click();
++  await win.waitForTimeout(200);
++  revisar(await titulo(win) === 'El registro perdió un evento' && /Pueden seguir trabajando; avisen al instructor/.test(await win.locator('#modalCuerpo').textContent()),
++    'AUD-07: la esquina explica qué pasó, sin detener el trabajo');
++  await boton(win, 'Entendido');
++  await win.waitForTimeout(200);
++  await win.keyboard.press('Control+Alt+Shift+KeyR');
++  await win.waitForTimeout(300);
++  await win.locator('#pinInstructor').fill('1357');
++  await boton(win, 'Entrar');
++  await win.waitForTimeout(300);
++  const lineaDescartados = await win.evaluate(() => ($('descartadosRegistro') && !$('descartadosRegistro').hidden ? $('descartadosRegistro').textContent : ''));
++  revisar(/^2 eventos no se guardaron desde que se abrió la app \(el último: ejemplo_cargado, no se pudo convertir a texto, a las \d{2}:\d{2}\)\. Quedaron anotados en el registro\.$/.test(lineaDescartados),
++    `AUD-07: el panel del instructor lo detalla: «${lineaDescartados}»`);
++  await win.screenshot({ path: path.join(SALIDA, 'registro_8_descartado_instructor.png') });
++  // AUD-08: dos exportaciones seguidas desde el panel (la carpeta la «elige» la prueba): dos carpetas, la primera intacta
++  const usb2 = path.join(datos2, 'usb');
++  fs.mkdirSync(usb2, { recursive: true });
++  await app.evaluate(({ dialog }, dir) => { dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [dir] }); }, usb2);
++  const notaPanel = () => win.evaluate(() => [...document.querySelectorAll('#modalCuerpo p.muted')].pop().textContent);
++  const sha = (archivo) => require('crypto').createHash('sha256').update(fs.readFileSync(archivo)).digest('hex');
++  await boton(win, 'Exportar registros');
++  await win.waitForTimeout(500);
++  const nota1 = await notaPanel();
++  const [exp1] = fs.readdirSync(usb2);
++  const copia1 = path.join(usb2, exp1, fs.readdirSync(path.join(usb2, exp1)).find((f) => f.startsWith('M1-')));
++  const sha1 = sha(copia1);
++  await win.evaluate(() => registroEventos.editor('ejemplo_cargado', { id: 'eco' })); // M1 cambia entre las dos
++  await win.waitForTimeout(200);
++  await boton(win, 'Exportar registros');
++  await win.waitForTimeout(500);
++  const nota2 = await notaPanel();
++  const exportaciones = fs.readdirSync(usb2).sort();
++  const exp2 = exportaciones.find((f) => f !== exp1);
++  const manifiestoDe = (c) => JSON.parse(fs.readFileSync(path.join(usb2, c, 'exportacion.json'), 'utf8'));
++  revisar(exportaciones.length === 2 && /^TecnoBloques-registros-\d{4}-\d{2}-\d{2}_\d{4}(-2)?$/.test(exp2) && sha(copia1) === sha1 &&
++    fs.statSync(path.join(usb2, exp2, path.basename(copia1))).size > fs.statSync(copia1).size &&
++    manifiestoDe(exp1).completa === true && manifiestoDe(exp2).completa === true && manifiestoDe(exp1).archivos.every((a) => sha(path.join(usb2, exp1, a.archivo)) === a.sha256) &&
++    nota1.includes(exp1) && nota2.includes(exp2) && /^Se copió 1 archivo a /.test(nota1),
++  `AUD-08: dos exportaciones desde el panel: ${exportaciones.join(' y ')}; la primera intacta y cada una con su exportacion.json («${nota2}»)`);
++  await boton(win, 'Cerrar');
++  await win.waitForTimeout(200);
++  await app.close();
++  await new Promise((r) => setTimeout(r, 300));
++  const m1 = leerRegistro2().filter((l) => l.equipo === 'M1');
++  const iGrande = m1.findIndex((l) => l.tipo === 'evento_descartado' && l.datos.motivo === 'tamano');
++  revisar(m1.filter((l) => l.tipo === 'evento_descartado').length === 2 && iGrande > 0 && m1[iGrande].datos.tipo === 'codigo_compilado' && m1[iGrande].datos.largo > m1[iGrande].datos.limite &&
++    m1[iGrande + 1].tipo === 'evento_descartado' && m1[iGrande + 1].datos.motivo === 'no_serializable' && m1[iGrande + 1].datos.tipo === 'ejemplo_cargado' &&
++    !m1.some((l) => l.tipo === 'codigo_compilado') && m1.every((l) => l.sesion === m1[0].sesion) && m1[m1.length - 1].tipo === 'sesion_terminada',
++  `AUD-07: el archivo tiene los dos evento_descartado en su lugar, con la sesión de M1 (${m1.map((l) => l.tipo).join(', ')})`);
++  if (fs.existsSync(REVISOR)) {
++    const { revisarEvento } = require(REVISOR);
++    const problemas = m1.flatMap((l, i) => revisarEvento(l).map((p) => `${i + 1} (${l.tipo}): ${p}`));
++    revisar(!problemas.length, `AUD-07: las ${m1.length} líneas de M1 cumplen contrato/evento.schema.json` + (problemas.length ? ':\n  ' + problemas.slice(0, 10).join('\n  ') : ''));
++  }
++  const [historiaM1] = contarHistoria(leerArchivos([registros2]).lineas);
++  revisar(historiaM1 && historiaM1.avisos.filter((a) => /^Hay un hueco: no se guardó un evento/.test(a)).length === 2 && historiaM1.huecos.length === 2,
++    `AUD-07: la historia cuenta los dos huecos (${historiaM1 ? historiaM1.avisos.join(' | ') : 'sin historia'})`);
++  ({ app, win } = await abrir(datos2));
++  await win.keyboard.press('Escape');
++  await win.waitForTimeout(200);
++  revisar((await esquina()).texto === 'Esta sesión se registra · Falta el código del equipo', 'AUD-07: al abrir otra vez, la cuenta empieza de cero (es desde que se abrió la app)');
++  await app.close();
++  fs.rmSync(datos2, { recursive: true, force: true });
++  revisar(!errores.length, 'sin errores en la consola, también en la sección 9' + (errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''));
+   console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');
+   process.exit(fallos ? 1 : 0);
+ })().catch((e) => { console.error(e); process.exit(1); });
+diff --git a/test/registro.js b/test/registro.js
+index 494b1b8..cb3b0ef 100644
+--- a/test/registro.js
++++ b/test/registro.js
+@@ -137,7 +137,7 @@ console.log('— El disco (escritorio/registro-disco.js)');
+   const disco = crearRegistroDisco({ carpeta, ahora: () => reloj2 });
+   const linea = (equipo, extra) => ({ v: 1, t: reloj2, origen: 'editor', tipo: 'ejemplo_cargado', datos: { id: 'x' }, equipo, sesion: 's1', version_tb: '0.4.0', version_tc: '0.2.0', ...extra });
+ 
+-  revisar(igual(disco.estado(), { activo: false, tienePin: false, falla: null, configIlegible: false }), 'recién instalado: apagado, sin PIN, sin falla y con la configuración legible');
++  revisar(igual(disco.estado(), { activo: false, tienePin: false, falla: null, configIlegible: false, descartados: null }), 'recién instalado: apagado, sin PIN, sin falla y con la configuración legible');
+   revisar(disco.escribir(linea('A7')) === false && !fs.existsSync(path.join(carpeta, 'registros')), 'apagado: no escribe nada ni crea la carpeta');
+   revisar(disco.instructor({ accion: 'entrar', pin: '1234' }).motivo === 'sin-pin', 'sin PIN no se puede entrar');
+   revisar(disco.instructor({ accion: 'crear-pin', pin: '12a4' }).motivo === 'pin-invalido' && disco.instructor({ accion: 'crear-pin', pin: '123' }).motivo === 'pin-invalido',
+@@ -169,7 +169,8 @@ console.log('— El disco (escritorio/registro-disco.js)');
+   fs.mkdirSync(usb);
+   revisar(disco.exportar({ pin: '1357', destino: usb }).motivo === 'pin' && !fs.readdirSync(usb).length, 'exportar con el PIN equivocado no copia nada');
+   const exp = disco.exportar({ pin: '2468', destino: usb });
+-  revisar(exp.ok && exp.archivos === disco.archivos().length && fs.readdirSync(exp.carpeta).length === exp.archivos && /TecnoBloques-registros-2026-10-16_1031$/.test(exp.carpeta),
++  revisar(exp.ok && exp.archivos === disco.archivos().length && fs.readdirSync(exp.carpeta).filter((f) => f.endsWith('.jsonl')).length === exp.archivos &&
++    JSON.parse(fs.readFileSync(path.join(exp.carpeta, 'exportacion.json'), 'utf8')).completa === true && /TecnoBloques-registros-2026-10-16_1031$/.test(exp.carpeta),
+     `exportar copia los ${exp.archivos} archivos a ${exp.carpeta && path.basename(exp.carpeta)}`);
+   revisar(disco.instructor({ accion: 'cambiar-pin', pin: '2468', nuevoPin: '13579' }).ok && disco.instructor({ accion: 'entrar', pin: '13579' }).ok && !disco.instructor({ accion: 'entrar', pin: '2468' }).ok,
+     'el instructor cambia el PIN');
+@@ -370,7 +371,7 @@ console.log('— Escrituras a medias y configuración ilegible (AUD-02-V1 y V2)'
+   revisar(!fs.existsSync(config + '.tmp'), 'la configuración se guarda entera: no queda el archivo temporal');
+   fs.writeFileSync(config, '{ roto');
+   disco = nuevoDisco();
+-  revisar(igual(disco.estado(), { activo: false, tienePin: false, falla: { motivo: 'CONFIG', desde: reloj4, pendientes: 0, perdidos: 0 }, configIlegible: true }),
++  revisar(igual(disco.estado(), { activo: false, tienePin: false, falla: { motivo: 'CONFIG', desde: reloj4, pendientes: 0, perdidos: 0 }, configIlegible: true, descartados: null }),
+     'al abrir con la configuración dañada: falla CONFIG y configIlegible desde el arranque, sin esperar un evento (no es lo mismo que recién instalado)');
+   revisar(disco.instructor({ accion: 'crear-pin', pin: '1357' }).motivo === 'config-ilegible' && fs.readFileSync(config, 'utf8') === '{ roto',
+     'sin la confirmación del instructor no se crea otro PIN encima');
+@@ -512,6 +513,193 @@ console.log('— Escrituras a medias y configuración ilegible (AUD-02-V1 y V2)'
+   fs.rmSync(base, { recursive: true, force: true });
+ }
+ 
++console.log('— Un evento que no se puede guardar (AUD-07)');
++{
++  const os = require('os');
++  const { crearRegistroDisco } = require('../escritorio/registro-disco.js');
++  const REVISOR = path.join(__dirname, '..', '..', 'TecnoCircuito', 'prototipo', 'pruebas', 'contrato_eventos.js');
++  const revisarEvento = fs.existsSync(REVISOR) ? require(REVISOR).revisarEvento : null;
++  const base = path.join(os.tmpdir(), 'tecnobloques-prueba-registro-descarte');
++  if (path.dirname(path.resolve(base)) !== path.resolve(os.tmpdir())) throw new Error('Ruta temporal inesperada');
++  fs.rmSync(base, { recursive: true, force: true });
++  const carpeta = path.join(base, 'appdata');
++  const reloj5 = new Date(2026, 9, 21, 11, 30).getTime();
++  const avisos = [];
++  const disco = crearRegistroDisco({ carpeta, ahora: () => reloj5, alDescartar: (d) => avisos.push(d), reintentoMs: 60000 });
++  disco.instructor({ accion: 'crear-pin', pin: '2468' });
++  const SOBRE = { equipo: 'D7', sesion: 's7', version_tb: '0.4.0', version_tc: '0.2.0' };
++  const compilado = (relleno, extra) => ({ v: 1, t: reloj5, origen: 'editor', tipo: 'codigo_compilado', datos: { ok: true, error: null, bytes: 1, codigo: relleno }, ...SOBRE, ...extra });
++  const archivo = path.join(carpeta, 'registros', 'D7-2026-10-21.jsonl');
++  const leer = () => (fs.existsSync(archivo) ? fs.readFileSync(archivo, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)) : []);
++  const LIMITE = 2 * 1024 * 1024;
++  // Un codigo_compilado cuyo JSON mide exactamente `largo` caracteres, con letras de `ancho` unidades (ñ: 1 unidad y 2
++  // bytes; 😀: 2 unidades y 4 bytes)
++  const deLargo = (largo, letra = 'x') => {
++    const vacio = JSON.stringify(compilado('')).length;
++    const ancho = letra.length;
++    const falta = largo - vacio;
++    return compilado(letra.repeat(Math.floor(falta / ancho)) + 'x'.repeat(falta % ancho));
++  };
++
++  revisar(disco.escribir(deLargo(LIMITE + 1)) === false && !leer().length && !avisos.length && disco.estado().descartados === null,
++    'control, registro apagado: una línea de más del límite no se escribe ni se cuenta');
++  disco.instructor({ accion: 'activar', pin: '2468', activo: true });
++  revisar(disco.escribir(compilado('void loop() {}')) && leer().length === 1 && !avisos.length, 'control, un evento pequeño se escribe sin aviso');
++
++  const fronteras = [['x', LIMITE - 1, true], ['x', LIMITE, true], ['x', LIMITE + 1, false], ['ñ', LIMITE, true], ['ñ', LIMITE + 1, false], ['😀', LIMITE, true], ['😀', LIMITE + 1, false]];
++  for (const [letra, largo, cabe] of fronteras) {
++    const antes = leer().length;
++    const avisosAntes = avisos.length;
++    const l = deLargo(largo, letra);
++    const medida = JSON.stringify(l).length;
++    const r = disco.escribir(l);
++    const nuevas = leer().slice(antes);
++    const descarte = nuevas[0] || {};
++    revisar(medida === largo && (cabe ? r === true && nuevas.length === 1 && nuevas[0].tipo === 'codigo_compilado' && avisos.length === avisosAntes
++      : r === false && nuevas.length === 1 && descarte.tipo === 'evento_descartado' && descarte.sesion === 's7' && descarte.datos.motivo === 'tamano' &&
++        descarte.datos.tipo === 'codigo_compilado' && descarte.datos.origen === 'editor' && descarte.datos.largo === largo && descarte.datos.limite === LIMITE && avisos.length === avisosAntes + 1),
++    `${largo === LIMITE ? 'justo en el límite' : largo < LIMITE ? 'un carácter antes del límite' : 'un carácter después del límite'} con «${letra}» (${Buffer.byteLength(JSON.stringify(l))} bytes): ${cabe ? 'se escribe' : 'evento_descartado en su lugar y aviso'}`);
++  }
++  const estado = disco.estado();
++  revisar(estado.descartados && estado.descartados.cantidad === 3 && estado.descartados.sinAnotar === 0 && igual(estado.descartados.ultimo, { tipo: 'codigo_compilado', motivo: 'tamano', t: reloj5 }) &&
++    igual(avisos[avisos.length - 1], estado.descartados), `el estado cuenta los descartados y el aviso trae lo mismo (${JSON.stringify(estado.descartados)})`);
++
++  // Lo que no se puede convertir a texto: un ciclo, un BigInt y un toJSON que no devuelve nada; y un evento sin tipo
++  const ciclo = compilado('x');
++  ciclo.datos.yo = ciclo.datos;
++  const raros = [['un ciclo', ciclo, 'no_serializable'], ['un BigInt', compilado('x', { datos: { n: 10n } }), 'no_serializable'],
++    ['un toJSON que no devuelve nada', { ...compilado('x'), toJSON: () => undefined }, 'no_serializable'], ['sin tipo', { ...compilado('x'), tipo: undefined }, 'sin_tipo'],
++    ['un evento del simulador de una corrida', { ...compilado('x'.repeat(LIMITE)), origen: 'simulador', tipo: 'simulacion_iniciada', corrida: 4, ms_sim: 0 }, 'tamano']];
++  for (const [nombre, l, motivo] of raros) {
++    const antes = leer().length;
++    const r = disco.escribir(l);
++    const d = leer().slice(antes);
++    revisar(r === false && d.length === 1 && d[0].tipo === 'evento_descartado' && d[0].datos.motivo === motivo &&
++      (motivo === 'sin_tipo' ? !('tipo' in d[0].datos) : true) && (nombre.includes('corrida') ? d[0].datos.corrida === 4 && d[0].datos.origen === 'simulador' : true),
++    `${nombre}: evento_descartado (${motivo}) en su lugar`);
++  }
++  const antesSinSesion = leer().length;
++  const sinSesion = disco.escribir(compilado('x'.repeat(LIMITE + 100), { sesion: undefined }));
++  revisar(sinSesion === false && leer().length === antesSinSesion && disco.estado().descartados.sinAnotar === 1 && disco.estado().descartados.cantidad === 9 && avisos.length === 9,
++    'sin sesión no se puede anotar: se cuenta como «sin anotar» y se avisa igual');
++  const descartes = leer().filter((l) => l.tipo === 'evento_descartado');
++  if (revisarEvento) {
++    const problemas = descartes.flatMap((l, i) => revisarEvento(l).map((p) => `${i + 1}: ${p}`));
++    revisar(!problemas.length && descartes.length === 8, `los ${descartes.length} evento_descartado cumplen contrato/evento.schema.json` + (problemas.length ? ': ' + problemas.join(' | ') : ''));
++  } else revisar(false, 'no encuentro el revisor de TecnoCircuito en ' + REVISOR);
++  revisar(descartes.every((l) => JSON.stringify(l).length < 1000), 'cada evento_descartado es corto');
++
++  // Con el disco lleno, el evento_descartado espera como cualquier línea y sale en su lugar al recuperarse
++  const anexar = fs.appendFileSync;
++  fs.appendFileSync = function (a, ...resto) {
++    if (String(a).startsWith(carpeta)) throw Object.assign(new Error('ENOSPC sintético'), { code: 'ENOSPC' });
++    return anexar.call(this, a, ...resto);
++  };
++  const antesLleno = leer().length;
++  try {
++    disco.escribir(compilado('antes'));
++    disco.escribir(deLargo(LIMITE + 1));
++    disco.escribir(compilado('después'));
++  } finally { fs.appendFileSync = anexar; }
++  revisar(leer().length === antesLleno && disco.estado().falla && disco.estado().falla.pendientes === 3, 'con el disco lleno, el evento_descartado espera en la cola con los demás');
++  disco.reintentar();
++  const recuperadas = leer().slice(antesLleno);
++  revisar(recuperadas.map((l) => (l.tipo === 'codigo_compilado' ? l.datos.codigo : l.tipo)).join() === 'antes,evento_descartado,después,registro_interrumpido' &&
++    recuperadas[3].datos.recuperados === 3, `al recuperarse sale en su lugar, y registro_interrumpido lo cuenta (${recuperadas.map((l) => l.tipo).join(', ')})`);
++
++  // La página: un evento que no cruza a la app (no se puede copiar) deja su evento_descartado, y la app lo cuenta
++  const avisosPagina = avisos.length;
++  const pagina = crearRegistroEventos({
++    escribir: (l) => { if (l.datos && typeof l.datos.f === 'function') throw new Error('An object could not be cloned.'); disco.escribir(l); },
++    versionTB: '0.4.0', versionTC: '0.2.0', ahora: () => reloj5, nuevaSesion: () => 's8',
++  });
++  pagina.empezar('D7', { placa: 'uno', nivel: 1 });
++  const antesPagina = leer().length;
++  pagina.registrar({ v: 1, t: reloj5, origen: 'simulador', tipo: 'falla', corrida: 5, ms_sim: 10, datos: { tipo: 'led_quemado', componente: 'led1', f: () => 1 } });
++  pagina.editor('ejemplo_cargado', { id: 'eco' });
++  const dePagina = leer().slice(antesPagina);
++  revisar(dePagina.map((l) => l.tipo).join() === 'evento_descartado,ejemplo_cargado' && dePagina[0].sesion === 's8' && igual(dePagina[0].datos, { motivo: 'no_serializable', tipo: 'falla', origen: 'simulador', corrida: 5 }) &&
++    avisos.length === avisosPagina + 1 && disco.estado().descartados.ultimo.tipo === 'falla' && (!revisarEvento || !revisarEvento(dePagina[0]).length),
++  'la página: un evento que no se puede copiar deja evento_descartado con su sesión, y la app lo cuenta y lo avisa');
++  fs.rmSync(base, { recursive: true, force: true });
++}
++
++console.log('— Cada exportación en su propia carpeta (AUD-08)');
++{
++  const os = require('os');
++  const crypto = require('crypto');
++  const { crearRegistroDisco } = require('../escritorio/registro-disco.js');
++  const base = path.join(os.tmpdir(), 'tecnobloques-prueba-registro-exportar');
++  if (path.dirname(path.resolve(base)) !== path.resolve(os.tmpdir())) throw new Error('Ruta temporal inesperada');
++  fs.rmSync(base, { recursive: true, force: true });
++  const carpeta = path.join(base, 'appdata');
++  const reloj6 = new Date(2026, 9, 21, 12, 5).getTime(); // el mismo minuto en todas las exportaciones
++  const disco = crearRegistroDisco({ carpeta, ahora: () => reloj6, version: '0.4.0' });
++  disco.instructor({ accion: 'crear-pin', pin: '2468' });
++  disco.instructor({ accion: 'activar', pin: '2468', activo: true });
++  const ev = (equipo, n) => ({ v: 1, t: reloj6, origen: 'editor', tipo: 'bloques_cambiados', datos: { bloques: n, tipos: {} }, equipo, sesion: 's-' + equipo, version_tb: '0.4.0', version_tc: '0.2.0' });
++  disco.escribir(ev('E1', 1));
++  disco.escribir(ev('E2', 1));
++  fs.mkdirSync(path.join(carpeta, 'registros', 'una-carpeta.jsonl')); // una carpeta con nombre de registro: no se copia
++  const usb = path.join(base, 'usb');
++  fs.mkdirSync(usb);
++  const sha = (archivo) => crypto.createHash('sha256').update(fs.readFileSync(archivo)).digest('hex');
++  const manifiesto = (c) => JSON.parse(fs.readFileSync(path.join(c, 'exportacion.json'), 'utf8'));
++  /** Lo que dice exportacion.json coincide con los archivos de la carpeta, byte a byte */
++  const cuadra = (c) => { const m = manifiesto(c); return m.archivos.every((a) => sha(path.join(c, a.archivo)) === a.sha256 && fs.statSync(path.join(c, a.archivo)).size === a.bytes); };
++
++  revisar(igual(disco.archivos(), ['E1-2026-10-21.jsonl', 'E2-2026-10-21.jsonl']), 'archivos(): solo los .jsonl que son archivos (una carpeta con ese nombre no cuenta)');
++  revisar(disco.exportar({ pin: '0000', destino: usb }).motivo === 'pin' && !fs.readdirSync(usb).length, 'control, con el PIN equivocado no se crea nada');
++  const e1 = disco.exportar({ pin: '2468', destino: usb });
++  const copiaE1 = path.join(e1.carpeta, 'E1-2026-10-21.jsonl');
++  const antes = { bytes: fs.statSync(copiaE1).size, sha: sha(copiaE1) };
++  disco.escribir(ev('E1', 2)); // entre las dos exportaciones, E1 cambia
++  const e2 = disco.exportar({ pin: '2468', destino: usb });
++  revisar(e1.ok && e2.ok && path.basename(e1.carpeta) === 'TecnoBloques-registros-2026-10-21_1205' && path.basename(e2.carpeta) === 'TecnoBloques-registros-2026-10-21_1205-2',
++    `dos exportaciones del mismo minuto: dos carpetas (${path.basename(e1.carpeta)} y ${path.basename(e2.carpeta)})`);
++  revisar(fs.statSync(copiaE1).size === antes.bytes && sha(copiaE1) === antes.sha && fs.statSync(path.join(e2.carpeta, 'E1-2026-10-21.jsonl')).size > antes.bytes,
++    'la primera exportación no cambia (mismos bytes y sha256) y la segunda trae lo nuevo');
++  const m1 = manifiesto(e1.carpeta);
++  revisar(m1.completa === true && m1.total === 2 && m1.archivos.length === 2 && m1.version_tb === '0.4.0' && m1.t === reloj6 && cuadra(e1.carpeta) && cuadra(e2.carpeta) &&
++    !fs.existsSync(path.join(e1.carpeta, 'una-carpeta.jsonl')), 'exportacion.json: completa, con el nombre, los bytes y el sha256 de cada archivo, y cuadra con lo copiado');
++  // Lo que ya había en el destino no se toca: una carpeta y un archivo con los nombres siguientes
++  fs.mkdirSync(path.join(usb, 'TecnoBloques-registros-2026-10-21_1205-3'));
++  fs.writeFileSync(path.join(usb, 'TecnoBloques-registros-2026-10-21_1205-3', 'nota.txt'), 'de otra persona');
++  fs.writeFileSync(path.join(usb, 'TecnoBloques-registros-2026-10-21_1205-4'), 'un archivo');
++  const e3 = disco.exportar({ pin: '2468', destino: usb });
++  revisar(e3.ok && path.basename(e3.carpeta) === 'TecnoBloques-registros-2026-10-21_1205-5' && fs.readdirSync(path.join(usb, 'TecnoBloques-registros-2026-10-21_1205-3')).join() === 'nota.txt' &&
++    fs.readFileSync(path.join(usb, 'TecnoBloques-registros-2026-10-21_1205-4'), 'utf8') === 'un archivo', `con nombres ya ocupados (una carpeta y un archivo), usa el siguiente libre: ${path.basename(e3.carpeta)}`);
++
++  // Una copia que falla a mitad: la carpeta queda, exportacion.json dice que está incompleta y la app lo sabe
++  const copiar = fs.copyFileSync;
++  let copias = 0;
++  fs.copyFileSync = function (de, a, ...resto) {
++    if (String(a).startsWith(usb) && ++copias === 2) throw Object.assign(new Error('ENOSPC sintético'), { code: 'ENOSPC' });
++    return copiar.call(this, de, a, ...resto);
++  };
++  let e4;
++  try { e4 = disco.exportar({ pin: '2468', destino: usb }); } finally { fs.copyFileSync = copiar; }
++  const m4 = e4.carpeta && manifiesto(e4.carpeta);
++  revisar(e4.ok === false && e4.motivo === 'copia-incompleta' && e4.copiados === 1 && e4.total === 2 && /E2-2026-10-21\.jsonl: ENOSPC/.test(e4.mensaje) &&
++    m4.completa === false && m4.archivos.length === 1 && igual(m4.error, { archivo: 'E2-2026-10-21.jsonl', codigo: 'ENOSPC' }) && cuadra(e4.carpeta) && !fs.existsSync(path.join(e4.carpeta, 'E2-2026-10-21.jsonl')),
++  `una copia que falla a mitad: «copia-incompleta» (${e4.copiados} de ${e4.total}) y exportacion.json con completa: false y el error`);
++  // Si no se puede escribir exportacion.json, tampoco cuenta como completa
++  const escribirArchivo = fs.writeFileSync;
++  fs.writeFileSync = function (a, ...resto) { if (String(a).endsWith('exportacion.json')) throw Object.assign(new Error('EIO sintético'), { code: 'EIO' }); return escribirArchivo.call(this, a, ...resto); };
++  let e5;
++  try { e5 = disco.exportar({ pin: '2468', destino: usb }); } finally { fs.writeFileSync = escribirArchivo; }
++  revisar(e5.ok === false && e5.motivo === 'copia-incompleta' && e5.copiados === 2 && /exportacion\.json: EIO/.test(e5.mensaje) && !fs.existsSync(path.join(e5.carpeta, 'exportacion.json')),
++    'sin exportacion.json, la exportación no se da por completa');
++  const e6 = disco.exportar({ pin: '2468', destino: path.join(base, 'usb-que-no-existe') });
++  revisar(e6.ok === false && e6.motivo === 'disco' && !fs.existsSync(path.join(base, 'usb-que-no-existe')), 'un destino que ya no existe (se sacó la USB): «disco», sin crear nada');
++  revisar(manifiesto(e1.carpeta).archivos.every((a) => sha(path.join(e1.carpeta, a.archivo)) === a.sha256) && sha(copiaE1) === antes.sha, 'después de todo, la primera exportación sigue igual');
++  // La historia de dos exportaciones de lo mismo: cada línea se cuenta una vez (INT-06)
++  const { leerArchivos, contarHistoria } = require('../herramientas/historia-registro.js');
++  const hs = contarHistoria(leerArchivos([e1.carpeta, e2.carpeta]).lineas);
++  revisar(hs.length === 2 && hs.find((h) => h.equipo === 'E1').notas.some((n) => /ya había llegado en otro archivo/.test(n)), 'la historia de las dos exportaciones cuenta cada línea una vez');
++  fs.rmSync(base, { recursive: true, force: true });
++}
++
+ Promise.all(esperas).then(() => {
+   console.log('— Las líneas cumplen el esquema del contrato');
+   const REVISOR = path.join(__dirname, '..', '..', 'TecnoCircuito', 'prototipo', 'pruebas', 'contrato_eventos.js');
+warning: in the working copy of 'src/app.js', CRLF will be replaced by LF the next time Git touches it

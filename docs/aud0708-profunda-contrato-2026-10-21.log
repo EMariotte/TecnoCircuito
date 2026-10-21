@@ -1,0 +1,203 @@
+COMANDO: npm.cmd --prefix prototipo run probar:contrato
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+
+> tecnocircuito-prototipo@0.0.1 probar:contrato
+> esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_contrato.js
+
+— El código y el contrato dicen lo mismo
+OK    los 31 contactos del dibujo de Arduino Uno son los del esquema
+OK    los 30 contactos del dibujo de Arduino Nano son los del esquema
+OK    los 30 contactos del dibujo de Arduino Nano (bootloader antiguo) son los del esquema
+OK    resistencia: los pines del catálogo (1, 2) son los del esquema
+OK    led: los pines del catálogo (anodo, catodo) son los del esquema
+OK    potenciometro: los pines del catálogo (GND, SIG, VCC) son los del esquema
+OK    pulsador: los pines del catálogo (1i, 1d, 2i, 2d) son los del esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"azul","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"jack","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"apagada","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":0}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":5}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":7}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":12}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    servo (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_l293d (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"eje","lado":"izquierdo"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"rueda","lado":"izquierdo"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"eje","lado":"izquierdo"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"eje","lado":"derecho"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    bateria_lipo (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    probador_lipo (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    biblioteca: cada pieza está en una sola categoría (Básicas: 3, Entradas: 2, Actuadores: 2, Potencia y energía: 4)
+OK    biblioteca: cada pieza tiene su ficha (descripción, pines, palabras y datos sin «undefined»)
+OK    biblioteca: el nombre de la ficha es el del catálogo
+OK    ficha del LED: validado solo el rojo (el único medido); los otros colores, por validar
+OK    ficha del LED rojo: 11 de 12 dentro del criterio (el porcentaje va respecto de la medida)
+OK    ficha del SG90: la corriente quieto se midió como «menos de 10 mA»; los 6 mA son de la hoja de datos
+OK    ficha del potenciómetro: el ruido del ADC (0,1 pasos) dice que es una estimación
+OK    un .hex correcto se lee (fijo13 y una línea de 2 bytes)
+OK    una línea que dice 2 bytes y trae 1 (con la suma correcta) se rechaza
+OK    una línea que dice 1 byte y trae 2 (con la suma correcta) se rechaza
+OK    una dirección de segmento de 1 byte, un fin con datos y un tipo que no existe se rechazan
+OK    shield_nano_io.variante: los valores del catálogo (roja, azul) son los del esquema
+OK    shield_nano_io.alimentacion: los valores del catálogo (usb, jack, apagada) son los del esquema
+OK    shield_nano_io.voltajeJack: los valores del catálogo (0, 5, 7, 9, 12) son los del esquema
+OK    shield_l293d.puentePWR: los valores del catálogo (true, false) son los del esquema
+OK    motor_tt.vista: los valores del catálogo (eje, rueda) son los del esquema
+OK    motor_tt.lado: los valores del catálogo (izquierdo, derecho) son los del esquema
+OK    bateria_lipo.carga: los valores del catálogo (llena, nominal, descargada, desbalanceada) son los del esquema
+OK    probador_lipo.umbral: los valores del catálogo (0, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8) son los del esquema
+OK    servo: los modelos del catálogo (sg90, mg90s) son los del esquema
+OK    cada tipo del catálogo tiene sus pines en el esquema (shield_nano_io, resistencia, led, pulsador, servo, shield_l293d, motor_tt, bateria_lipo, probador_lipo, potenciometro)
+OK    los 10 colores de cable, en el mismo orden del código de colores
+OK    led: los colores del catálogo son los del esquema
+OK    pulsador: los colores del catálogo son los del esquema
+OK    los 400 huecos de protoboard.js cumplen el patrón del esquema, y a0, a31, k1, s+1, s-7, i+13, i-19, s+25, x+3, a, s+ no
+OK    KiCad: la tabla de pads de resistencia tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de led tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de pulsador tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de servo tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de potenciometro tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: los conectores J1 a J4 del shield tienen cada pin del Uno una sola vez (31)
+— Los ejemplos cumplen el contrato
+OK    el ejemplo de CONTRATO.md, sección 4
+OK    INICIAL de la página de prueba
+OK    EJEMPLO de la página de prueba
+OK    EJEMPLO_T1 de la página de prueba
+OK    EJEMPLO_T2 de la página de prueba
+OK    EJEMPLO_PB de la página de prueba
+OK    EJEMPLO_SERVO de la página de prueba
+OK    EJEMPLO_SERVOS de la página de prueba
+OK    EJEMPLO_SEIS de la página de prueba
+OK    EJEMPLO_CARRO de la página de prueba
+OK    EJEMPLO_PROBADOR de la página de prueba
+OK    nano + expansión roja: el ejemplo A6/A7 cumple el contrato
+OK    nano + expansión azul: el ejemplo A6/A7 cumple el contrato
+OK    nano_old + expansión roja: el ejemplo A6/A7 cumple el contrato
+OK    nano_old + expansión azul: el ejemplo A6/A7 cumple el contrato
+OK    se rechaza dos expansiones montadas
+OK    se rechaza expansión del Nano sobre Uno
+OK    se rechaza shield L293D del Uno sobre Nano
+OK    se rechaza expansión encajada en protoboard
+OK    se rechaza tercer GND del Uno en Nano
+OK    se rechaza GPIO D20 inexistente en Nano
+OK    se rechaza una pata enchufada en SDA, otro nombre de A4 del Nano
+OK    se rechaza una pata enchufada en SPI_MOSI, alias de la expansión
+OK    aliases de I2C y SPI del Nano aceptados como conexiones de los pines físicos
+— Lo que está mal se rechaza con su motivo
+OK    se acepta un tipo de pieza que esta versión no conoce
+OK    se acepta un campo que esta versión no conoce
+OK    se acepta un cable sin color ni dobleces
+OK    se rechaza formato 2: esquema: /formato must be equal to constant
+OK    se rechaza placa «leonardo»: esquema: /placa must be equal to one of the allowed values ["uno","nano","nano_old","mega"]
+OK    se rechaza giro de 45°: esquema: /componentes/0/rot must be equal to one of the allowed values [0,90,180,270]
+OK    se rechaza cable «fucsia»: esquema: /cables/0/color must be equal to one of the allowed values ["negro","marron","rojo","naranja","amarillo","verde","azul","morado","gris","blanco"]
+OK    se rechaza LED «morado»: esquema: /componentes/1/props/color must be equal to one of the allowed values ["rojo","verde","amarillo","azul","blanco"]
+OK    se rechaza un servo de un modelo que no existe: esquema: /componentes/4/props/modelo must be equal to one of the allowed values ["sg90","mg90s"]
+OK    se rechaza un cable a la pata «PWM» del servo (se llama SIG): cable 6 (placa.D9 → s1.PWM): la pieza «s1» (servo) no tiene el pin «PWM»
+OK    se rechaza potenciómetro con la perilla en 1,5: esquema: /componentes/4/props/posicion must be <= 1
+OK    se rechaza resistencia de 0 Ω: esquema: /componentes/0/props/ohmios must be > 0
+OK    se rechaza una pieza llamada «placa»: esquema: /componentes/0/id must NOT be valid
+OK    se rechaza un id con punto: esquema: /componentes/0/id must match pattern "^[^.\s]+$"
+OK    se rechaza un doblez con tres números: esquema: /cables/0/puntos/0 must NOT have more than 2 items
+OK    se rechaza la pata «pata» en el «en» del LED: esquema: /componentes/1/en must be equal to one of the allowed values ["anodo","catodo"]
+OK    se rechaza dos piezas con el mismo id: la pieza «r1» está repetida
+OK    se rechaza un cable a una pieza que no existe: cable 0 (placa.D13 → led9.anodo): no hay ninguna pieza «led9»
+OK    se rechaza un cable a un pin que la pieza no tiene: cable 0 (placa.D13 → r1.3): la pieza «r1» (resistencia) no tiene el pin «3»
+OK    se rechaza un cable a un pin que el Uno no tiene: cable 0 (placa.D14 → protoboard.a19): la placa uno no tiene el pin «D14»
+OK    se rechaza un cable al hueco a31: cable 0 (placa.D13 → protoboard.a31): la protoboard no tiene el hueco «a31»
+OK    se rechaza una pata en el hueco s+7 (no existe en el riel): «en» de «r1», pata 1: la protoboard no tiene el hueco «s+7»
+OK    se rechaza «en» sin protoboard: la pieza «r1» tiene «en» en la protoboard, pero no hay protoboard
+OK    se acepta un LED enchufado directo en D13 y GND1 de la placa
+OK    se acepta una pata enchufada en el pin de otra pieza
+OK    se rechaza una pata enchufada en una pieza que no existe: «en» de «led1», pata anodo: no hay ninguna pieza «led9»
+OK    se rechaza una pata enchufada en un pin que el Uno no tiene: «en» de «led1», pata anodo: la placa uno no tiene el pin «D14»
+OK    se rechaza una pieza enchufada en sí misma: «en» de «led1», pata anodo: una pieza no se enchufa en sí misma
+OK    se rechaza una pata enchufada en «placa.D13.x» (un punto de más): esquema: /componentes/1/en/anodo must match pattern "^[^.\s]+\.[^.\s]+$"
+OK    se rechaza dos patas en el mismo pin: «placa.D13» recibe dos patas: r1.1 y led1.anodo
+OK    se rechaza un cable que empieza y termina en el mismo pin: el cable 6 empieza y termina en placa.D4
+— Los eventos del registro cumplen el contrato
+OK    las 22 fallas que avisa el código están en el esquema
+OK    cada falla conocida está explicada en CONTRATO.md, sección 6
+OK    las 7 claves de «activas» son las del simulador
+OK    las placas de los eventos son las del circuito
+OK    los 2 ejemplos de CONTRATO.md, sección 6
+OK    el ejemplo del sobre de CONTRATO.md, sección 6.1
+OK    evento componente_agregado: emitido y en el archivo
+OK    evento componente_quitado: emitido y en el archivo
+OK    evento componente_cambiado: emitido y en el archivo
+OK    evento componente_cambiado (giro): emitido y en el archivo
+OK    evento componente_cambiado (props): emitido y en el archivo
+OK    evento cable_agregado: emitido y en el archivo
+OK    evento cable_quitado: emitido y en el archivo
+OK    evento boton_pulsado: emitido y en el archivo
+OK    evento simulacion_iniciada: emitido y en el archivo
+OK    evento simulacion_pausada: emitido y en el archivo
+OK    evento simulacion_reanudada: emitido y en el archivo
+OK    evento simulacion_detenida: emitido y en el archivo
+OK    evento simulacion_detenida (sin fallas): emitido y en el archivo
+OK    evento falla: emitido y en el archivo
+OK    evento reinicio_placa: emitido y en el archivo
+OK    evento reinicio_placa (botón): emitido y en el archivo
+OK    evento sesion_iniciada: emitido y en el archivo
+OK    evento proyecto_abierto: emitido y en el archivo
+OK    evento ejemplo_cargado: emitido y en el archivo
+OK    evento placa_cambiada: emitido y en el archivo
+OK    evento bloques_cambiados: emitido y en el archivo
+OK    evento codigo_compilado: emitido y en el archivo
+OK    evento codigo_compilado (con error): emitido y en el archivo
+OK    evento programa_subido: emitido y en el archivo
+OK    evento sesion_terminada: emitido y en el archivo
+OK    evento registro_interrumpido: emitido y en el archivo
+OK    evento evento_descartado: emitido y en el archivo
+OK    evento evento_descartado (de la página, solo el motivo): emitido y en el archivo
+OK    cada tipo de evento de la sección 6 tiene su ejemplo aquí (22)
+OK    se acepta un tipo de evento que esta versión no conoce
+OK    se acepta un campo que esta versión no conoce
+OK    se acepta una falla que esta versión no conoce
+OK    se rechaza sin «v»: esquema: (raíz) must have required property 'v'
+OK    se rechaza «v» 2: esquema: /v must be equal to constant
+OK    se rechaza la hora como texto: esquema: /t must be integer
+OK    se rechaza origen «otro»: esquema: /origen must be equal to constant
+OK    se rechaza registro_interrumpido sin «perdidos»: esquema: /datos must have required property 'perdidos'
+OK    se rechaza registro_interrumpido con «perdidos» negativo: esquema: /datos/perdidos must be >= 0
+OK    se rechaza registro_interrumpido que dice venir del simulador: esquema: /origen must be equal to constant
+OK    se rechaza un evento del simulador sin «corrida»: esquema: (raíz) must have required property 'corrida'
+OK    se rechaza la corrida 0: esquema: /corrida must be >= 1
+OK    se acepta una falla con su tramo del reloj (21 oct)
+OK    se rechaza el tramo negativo: esquema: /tramo must be >= 0
+OK    se rechaza el tramo con decimales: esquema: /tramo must be integer
+OK    se rechaza una falla con el mensaje en pantalla: esquema: /datos/mensaje boolean schema is false
+OK    se rechaza una falla sin componente: esquema: /datos must have required property 'componente'
+OK    se rechaza una falla que dice venir del lienzo: esquema: /origen must be equal to constant
+OK    se rechaza simulacion_detenida sin la lista de fallas: esquema: /datos must have required property 'fallas'
+OK    se rechaza simulacion_iniciada sin el circuito: esquema: /datos must have required property 'circuito'
+OK    se rechaza simulacion_iniciada en modo «medio»: esquema: /datos/modo must be equal to one of the allowed values ["realista","ideal"]
+OK    se rechaza simulacion_iniciada con un cable a una pieza que no existe: circuito: cable 0 (placa.D13 → led9.anodo): no hay ninguna pieza «led9»
+OK    se rechaza una no idealidad «a medias»: esquema: /datos/activas/limiteUSB must be boolean
+OK    se rechaza un cable sin su punta «a»: esquema: /datos must have required property 'a'
+OK    se rechaza un cable a «D13» sin la pieza: esquema: /datos/de must match pattern "^[^.\s]+\.[^.\s]+$"
+OK    se rechaza un giro de 45°: esquema: /datos/rot must be equal to one of the allowed values [0,90,180,270]
+OK    se rechaza proyecto_abierto con el nombre que escribió el aprendiz: esquema: /datos/nombre boolean schema is false
+OK    se rechaza codigo_compilado sin el código: esquema: /datos must have required property 'codigo'
+OK    se rechaza sesion_iniciada en la placa «leonardo»: esquema: /datos/placa must be equal to one of the allowed values ["uno","nano","nano_old","mega"]
+OK    se rechaza placa_cambiada sin «de»: esquema: /datos must have required property 'de'
+OK    se rechaza placa_cambiada a la placa «leonardo»: esquema: /datos/a must be equal to one of the allowed values ["uno","nano","nano_old","mega"]
+OK    se rechaza placa_cambiada que dice venir del simulador: esquema: /origen must be equal to constant
+OK    se rechaza evento_descartado sin motivo: esquema: /datos must have required property 'motivo'
+OK    se rechaza evento_descartado que dice venir del simulador: esquema: /origen must be equal to constant
+OK    se rechaza evento_descartado con la corrida 0: esquema: /datos/corrida must be >= 1
+OK    se rechaza evento_descartado con un tipo de más de 64 caracteres: esquema: /datos/tipo must NOT have more than 64 characters
+OK    se rechaza evento_descartado con el largo negativo: esquema: /datos/largo must be >= 0
+OK    se rechaza bloques_cambiados con el XML en vez del resumen: esquema: /datos must have required property 'bloques'
+OK    se rechaza una línea del archivo sin «equipo»: esquema: (raíz) must have required property 'equipo'
+OK    se rechaza una línea del archivo sin «sesion»: esquema: (raíz) must have required property 'sesion'
+OK    se rechaza una línea del archivo sin «version_tb»: esquema: (raíz) must have required property 'version_tb'
+OK    se rechaza una línea del archivo sin «version_tc»: esquema: (raíz) must have required property 'version_tc'
+OK    se rechaza una línea con el código de equipo vacío
+
+TODO BIEN
+
+exit=0

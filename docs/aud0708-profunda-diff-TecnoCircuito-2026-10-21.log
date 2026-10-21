@@ -1,0 +1,127 @@
+diff --git a/CONTRATO.md b/CONTRATO.md
+index a148271..d32e2f9 100644
+--- a/CONTRATO.md
++++ b/CONTRATO.md
+@@ -316,6 +316,7 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
+ | `programa_subido` | `ok` y `placa`: el programa fue a la placa real |
+ | `sesion_terminada` | `ms` de la sesión |
+ | `registro_interrumpido` | nuevo (18 oct, AUD-02): `desde` y `hasta` (hora real, en ms), `recuperados`, `perdidos` y `motivo` (el código del error del disco: `ENOSPC`, `EPERM`, `CONFIG`…). Si el disco no deja escribir, las líneas esperan en orden; cuando vuelve a funcionar, TecnoBloques las escribe y después pone un `registro_interrumpido` por cada sesión afectada. `recuperados`: líneas de la sesión escritas después de que empezó la falla. `perdidos` > 0 (no cupieron en la espera) quiere decir que en esa sesión hay un hueco |
++| `evento_descartado` | nuevo (21 oct, AUD-07): un evento de la sesión no se pudo guardar y va este en su lugar, en el mismo orden. `motivo` (`tamano`: su JSON pasa del límite de una línea; `no_serializable`: no se pudo convertir a texto o no llegó a la app; `sin_tipo`), y si se saben: `tipo`, `origen` y `corrida` del perdido, `largo` y `limite` (en caracteres del JSON, unidades de texto de JavaScript; el límite es 2 097 152). Lo escribe TecnoBloques y la app lo avisa en la esquina y al instructor. Quiere decir que en esa sesión hay un hueco |
+ 
+ **El código sin comentarios.** Se quitan los `//` y los `/* */`, respetando los textos entre comillas y los caracteres escapados (un `"http://…"` no se corta). Los textos entre comillas se conservan porque son parte del programa. Al exportar los datos para el análisis se revisan aparte.
+ 
+@@ -392,3 +393,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
+ | 1 (borrador) | 20 oct 2026 | Sección 6.1: entra el evento del editor `placa_cambiada` (`de`, `a`; REG-004, decisión de Efraín). En la prueba humana del registro, la placa cambió de Nano a Uno después de empezar la sesión y nada lo decía. Agregar un tipo no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
+ | 1 (borrador) | 20 oct 2026 | Sección 6.1 y descripción de `fallas` en el esquema: solo redacción. Que una falla desaparezca en la corrida siguiente es corrección solo si las dos corridas son comparables; si no, «ya no se observó» (decisión de Efraín; DOC-01 de la verificación de Codex). Sin cambios de formato ni de validación. |
+ | 1 (borrador) | 21 oct 2026 | Sección 6.1: los eventos del simulador suman el campo opcional `tramo` (REG-004, INT-RES-03c de la verificación de Codex; decisión de Efraín). El RESET pone el reloj de la corrida en cero, y una foto de antes del RESET que llega después no se podía distinguir de un hecho imposible del reloj nuevo. Agregar un campo opcional no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
++| 1 (borrador) | 21 oct 2026 | Sección 6.1: entra el evento del editor `evento_descartado` (AUD-07, decisión de Efraín). Un evento que no se podía guardar (más largo que el límite de una línea o que no se podía convertir a texto) se perdía sin dejar rastro; ahora queda este en su lugar. Agregar un tipo no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
+diff --git a/contrato/evento.schema.json b/contrato/evento.schema.json
+index dd9dc3b..e52110c 100644
+--- a/contrato/evento.schema.json
++++ b/contrato/evento.schema.json
+@@ -117,6 +117,17 @@
+             "recuperados": { "type": "integer", "minimum": 0, "description": "Líneas de esta sesión escritas después de que empezó la falla." },
+             "perdidos": { "type": "integer", "minimum": 0, "description": "Líneas de esta sesión que no cupieron en la espera: si es más de 0, hay un hueco." },
+             "motivo": { "type": "string", "minLength": 1, "description": "El código del error del disco: ENOSPC, EPERM, EACCES, CONFIG…" }
++          } } } } },
++        { "if": { "properties": { "tipo": { "const": "evento_descartado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
++          "description": "Un evento de la sesión no se pudo guardar y va este en su lugar (AUD-07, 21 oct): en el registro hay un hueco aquí.",
++          "required": ["motivo"],
++          "properties": {
++            "motivo": { "type": "string", "minLength": 1, "description": "tamano (más largo que el límite), no_serializable (no se pudo convertir a texto) o sin_tipo (no decía qué evento era). Puede haber otros." },
++            "tipo": { "type": "string", "minLength": 1, "maxLength": 64, "description": "El tipo del evento perdido, si lo tenía." },
++            "origen": { "type": "string", "minLength": 1, "maxLength": 64, "description": "El origen del evento perdido, si lo tenía." },
++            "corrida": { "type": "integer", "minimum": 1, "description": "La corrida del evento perdido, si era del simulador." },
++            "largo": { "type": "integer", "minimum": 0, "description": "El largo del evento perdido, en caracteres de su JSON (unidades de texto de JavaScript)." },
++            "limite": { "type": "integer", "minimum": 1, "description": "El largo máximo de una línea, en las mismas unidades." }
+           } } } } }
+       ]
+     },
+diff --git a/prototipo/COMO-FUNCIONA.md b/prototipo/COMO-FUNCIONA.md
+index 53ed89a..d88c6c1 100644
+--- a/prototipo/COMO-FUNCIONA.md
++++ b/prototipo/COMO-FUNCIONA.md
+@@ -1900,6 +1900,7 @@ El resumen usa **el mismo criterio que los pasos**, para no contradecirlos (INT-
+ |---|---|
+ | El C++ de `codigo_compilado` tiene comentarios | AUD-01 |
+ | Hueco: eventos perdidos cuando el disco falló, o una línea apartada (JSON dañado, bytes que no son UTF-8, fuera del esquema, sin hora, de otra versión) | AUD-02 · INT-02, INT-04, INT-07 |
++| Hueco: un evento que no se pudo guardar (`evento_descartado`: demasiado grande, no se pudo convertir a texto o sin tipo). Si era de una corrida, esa corrida no se compara; si era su inicio, sus eventos quedan sin atribuir (sección 69) | AUD-07 |
+ | Las fallas del cierre no son las que llegaron una a una; cierres que no coinciden entre sí | AUD-03 · R1 |
+ | Una corrida tiene eventos en una sesión donde no empezó | AUD-04 |
+ | La sesión comparte su código con otro equipo (se cuentan aparte) | INT-03 |
+@@ -1973,7 +1974,46 @@ La segunda prueba, con la app corregida (`PRUEBA-03`), coincidió sin avisos y *
+ 
+ ### Pruebas
+ 
+-- `npm run test:historia` (142 OK; 21 por INT-RES-01 a 05, 19 por INT-RES-03a/03b y el límite de la corrida abierta, y 7 por INT-RES-03c con `tramo`: la foto de antes del RESET que llega después, el reinicio por energía de esa foto, el RESET en pausa, sus controles y dos tiempos imposibles del reloj nuevo): una secuencia sintética armada con el sobre real (`crearRegistroEventos`) y un reloj fijo tiene que salir renglón por renglón; otra con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Siguen los casos de R1 a R3 (cierres faltantes, contradictorios, tardíos o sin inicio, y piezas que reutilizan el id), la sesión de Efraín y una regresión por familia de la auditoría: el programa (idéntico, solo espacios, los raw y empalmes de R4/R4a/R4b, INT-08, líneas largas de INT-09), INT-01 (modo, no idealidad, placa y pieza), INT-02 (hueco entre corridas y su control), INT-03, INT-04 (cuatro líneas inválidas y una sesión rota que no tumba la buena), INT-05, INT-10, INT-11 y la línea de comandos (código de salida, INT-06 e INT-07 con archivos de verdad). Los datos sintéticos cumplen el esquema, porque ahora el lector lo valida.
+-- `test:registro-app` (88): al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas. Una corrida de E2 pulsa RESET a los 1,5 s y se detiene poco después: el reinicio sale con 1524 ms y el cierre con 201 ms, y la historia lo lee sin avisos.
++- `npm run test:historia` (146 OK; 21 por INT-RES-01 a 05, 19 por INT-RES-03a/03b y el límite de la corrida abierta, 4 por `evento_descartado` (sección 69) y 7 por INT-RES-03c con `tramo`: la foto de antes del RESET que llega después, el reinicio por energía de esa foto, el RESET en pausa, sus controles y dos tiempos imposibles del reloj nuevo): una secuencia sintética armada con el sobre real (`crearRegistroEventos`) y un reloj fijo tiene que salir renglón por renglón; otra con los defectos de AUD-01 a AUD-04 tiene que avisarlos todos. Siguen los casos de R1 a R3 (cierres faltantes, contradictorios, tardíos o sin inicio, y piezas que reutilizan el id), la sesión de Efraín y una regresión por familia de la auditoría: el programa (idéntico, solo espacios, los raw y empalmes de R4/R4a/R4b, INT-08, líneas largas de INT-09), INT-01 (modo, no idealidad, placa y pieza), INT-02 (hueco entre corridas y su control), INT-03, INT-04 (cuatro líneas inválidas y una sesión rota que no tumba la buena), INT-05, INT-10, INT-11 y la línea de comandos (código de salida, INT-06 e INT-07 con archivos de verdad). Los datos sintéticos cumplen el esquema, porque ahora el lector lo valida.
++- `test:registro-app` (99 desde AUD-07/08): al final lee los registros reales que la app escribió en Electron (11 sesiones, de A7 a L9). Ninguno tiene avisos, y las corridas con el LED quemado cuentan sus dos fallas. Una corrida de E2 pulsa RESET a los 1,5 s y se detiene poco después: el reinicio sale con 1524 ms y el cierre con 201 ms, y la historia lo lee sin avisos.
+ - `probar:fotos` de TecnoCircuito (33): la misma foto de antes del RESET, entregada antes y después del RESET con el `simulador.js` real, deja sus hechos en el tramo 0 con su tiempo, el RESET en el 0 y lo del reloj nuevo, con el cierre, en el 1.
+ - Los instrumentos de Codex pasan, salvo dos controles que esperaban «el mismo programa» con solo otra sangría: por la decisión de Efraín ahora dicen «cambió solo en espacios o saltos de línea».
++
++## 69. Lo que no se puede guardar y las exportaciones (AUD-07 y AUD-08, 21 oct 2026, Claude)
++
++La auditoría integral de Codex (20 oct) encontró dos pérdidas silenciosas en el escritor del registro de TecnoBloques (`escritorio/registro-disco.js`), fuera del lector.
++
++**AUD-07: un evento demasiado grande desaparecía sin rastro.** Una línea se guarda si su JSON mide como mucho **2 097 152 caracteres** (unidades de texto de JavaScript, sin el salto de línea; con letras como «ñ» o emojis, en bytes puede ser hasta tres veces más). La línea más larga pasaba en silencio: `escribir()` devolvía `false`, nadie lo miraba y el registro seguía como si nada. Ahora, por decisión de Efraín, en su lugar va un evento nuevo del contrato, **`evento_descartado`**:
++
++```
++ la página                      el proceso principal (registro-disco.js)          el archivo .jsonl
++ ─────────────────────          ───────────────────────────────────────────        ─────────────────────────
++ registrar(ev) ── IPC ──►  escribir(línea):
++                             ¿registro apagado? ─────────────── sí ──► nada (como antes)
++                             ¿sin tipo? ────────────────────── sí ──┐
++                             ¿no se puede convertir a texto? ─ sí ──┤
++                             ¿más de 2 097 152 caracteres? ─── sí ──┴► evento_descartado ──► {motivo, tipo, origen,
++                             si no ────────────────────────────────► la línea, como siempre    corrida, largo, limite}
++ si el evento no cruza el IPC                                                          en el lugar del perdido
++ (no se puede copiar) ─────────────────────────────────────────────► evento_descartado (motivo: no_serializable)
++                             la cuenta sube ──► la esquina: «El registro perdió un evento · Avisen al instructor»
++                                             └► el panel del instructor: cuántos, el último y a qué hora
++```
++
++- El `evento_descartado` lleva el sobre del evento perdido (equipo y sesión) y va por el mismo camino que las demás líneas: si el disco falla, espera en la cola en su lugar (AUD-02). Si el sobre no sirve para armarlo, solo se cuenta («sin anotar»).
++- La cuenta es desde que se abrió la app; la esquina lo dice hasta cerrarla (decisión de Efraín). El archivo lo conserva para siempre.
++- La historia (sección 68) lo cuenta como un **hueco**: no compara a través de él, y si el evento perdido era de una corrida, esa corrida no se compara. Si era el inicio de una corrida, sus eventos quedan sin atribuir y el aviso dice por qué.
++
++**AUD-08: la segunda exportación del mismo minuto pisaba la primera.** La carpeta se llamaba `TecnoBloques-registros-AAAA-MM-DD_HHMM` y se creaba con `recursive`, así que dos exportaciones del mismo minuto usaban la misma y la segunda reemplazaba los archivos. Ahora:
++
++```
++ exportar ──► mkdir «…_1205»      ¿ya existe? ── sí ──► mkdir «…_1205-2» ── sí ──► «…_1205-3» …
++              (sin recursive: falla si existe, así la carpeta es solo de esta exportación)
++          ──► copiar cada .jsonl sin pisar (COPYFILE_EXCL), y su sha256 de lo que quedó en la copia
++          ──► exportacion.json: {formato, version_tb, t, completa, total, archivos: [{archivo, bytes, sha256}], pendientes}
++              si una copia falla a mitad: completa: false y el error; la app dice «La copia quedó incompleta…»
++```
++
++Una carpeta sin `exportacion.json` con `completa: true` no es una exportación entera. El lector de la historia lee solo los `.jsonl`, así que el manifiesto no le estorba, y si se le pasan dos exportaciones de lo mismo cuenta cada línea una vez (INT-06).
++
++**Pruebas:** `test:registro` de TecnoBloques (174): las fronteras exactas (2 097 151, 2 097 152 y 2 097 153 caracteres) con «x», «ñ» y emojis; un ciclo, un BigInt, un `toJSON` vacío y un evento sin tipo; uno del simulador con su corrida; sin sesión («sin anotar»); con el disco lleno; el de la página que no cruza; los controles del registro apagado y del evento pequeño. Y las exportaciones con el mismo reloj, con nombres ocupados, con una copia que falla a mitad, sin poder escribir el manifiesto y con la USB que se sacó. `test:registro-app` (99), en Electron, en una carpeta de datos aparte para que las 11 sesiones de antes sigan sin avisos: la esquina, su explicación, el panel del instructor, los dos `evento_descartado` en su lugar y dos exportaciones seguidas desde el panel. `test:historia` (146): el hueco entre corridas, el de una corrida, el inicio perdido y un control.
+diff --git a/prototipo/pruebas/probar_contrato.js b/prototipo/pruebas/probar_contrato.js
+index 8098668..92f3b5e 100644
+--- a/prototipo/pruebas/probar_contrato.js
++++ b/prototipo/pruebas/probar_contrato.js
+@@ -266,6 +266,8 @@ console.log('— Los eventos del registro cumplen el contrato');
+     programa_subido: edi('programa_subido', { ok: true, placa: 'uno' }),
+     sesion_terminada: edi('sesion_terminada', { ms: 3600000 }),
+     registro_interrumpido: edi('registro_interrumpido', { desde: t - 120000, hasta: t, recuperados: 7, perdidos: 0, motivo: 'ENOSPC' }),
++    evento_descartado: edi('evento_descartado', { motivo: 'tamano', tipo: 'simulacion_iniciada', origen: 'simulador', corrida: 3, largo: 2097153, limite: 2097152 }),
++    'evento_descartado (de la página, solo el motivo)': edi('evento_descartado', { motivo: 'no_serializable' }),
+   };
+   const SOBRE = { equipo: 'A7', sesion: '5f2c9a', version_tb: '0.4.0', version_tc: '0.2.0' };
+   for (const [nombre, ev] of Object.entries(EVENTOS)) {
+@@ -313,6 +315,11 @@ console.log('— Los eventos del registro cumplen el contrato');
+     ['placa_cambiada sin «de»', () => edi('placa_cambiada', { a: 'uno' }), /de/],
+     ['placa_cambiada a la placa «leonardo»', () => edi('placa_cambiada', { de: 'uno', a: 'leonardo' }), /\/a/],
+     ['placa_cambiada que dice venir del simulador', () => ({ ...EVENTOS.placa_cambiada, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
++    ['evento_descartado sin motivo', () => edi('evento_descartado', { tipo: 'falla' }), /motivo/],
++    ['evento_descartado que dice venir del simulador', () => ({ ...EVENTOS.evento_descartado, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
++    ['evento_descartado con la corrida 0', () => edi('evento_descartado', { motivo: 'tamano', corrida: 0 }), /corrida/],
++    ['evento_descartado con un tipo de más de 64 caracteres', () => edi('evento_descartado', { motivo: 'tamano', tipo: 'x'.repeat(65) }), /tipo/],
++    ['evento_descartado con el largo negativo', () => edi('evento_descartado', { motivo: 'tamano', largo: -1 }), /largo/],
+     ['bloques_cambiados con el XML en vez del resumen', () => edi('bloques_cambiados', { xml: '<xml/>' }), /bloques/],
+   ];
+   for (const [texto, armar, espera] of casosEv) {
+warning: in the working copy of 'contrato/evento.schema.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'prototipo/pruebas/probar_contrato.js', LF will be replaced by CRLF the next time Git touches it

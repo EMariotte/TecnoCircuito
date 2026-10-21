@@ -1,0 +1,8 @@
+UTC: 2026-10-21T22:20:49.543856+00:00
+COMANDO: git -c "safe.directory=C:/Users/ACER/Documents/Proyectos Tecno/TecnoCircuito" -C "C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito" diff --check
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+warning: in the working copy of 'CLAUDE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'contrato/evento.schema.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'prototipo/pruebas/probar_contrato.js', LF will be replaced by CRLF the next time Git touches it
+
+exit=0

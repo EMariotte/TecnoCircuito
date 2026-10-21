@@ -1,0 +1,19 @@
+COMANDO: npm.cmd --prefix ../TecnoBloques run test:herramientas
+CWD: C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito
+
+> tecnobloques@0.3.0 test:herramientas
+> node build.js && node test/herramientas-app.js
+
+Blockly 13.3.0 · local 1608 KB · artefacto 378 KB · simulador: etiqueta
+      por modo: por defecto 0/10 · detach 0/10 · undocked 0/10 · right 0/10 · bottom 0/10
+      se vieron abiertas 26 veces, de 28 a 62 ms (en modo detach Electron no las da por abiertas hasta su aviso)
+OK    sin PIN, abiertas por otro camino: 0 de 50 siguen abiertas a los 800 ms
+OK    sin PIN, F12 no las abre
+OK    con el PIN del instructor, F12 las abre
+OK    y se quedan abiertas
+OK    con el PIN, abiertas por otro camino también se quedan
+OK    sin errores en la página
+
+TODO BIEN
+
+exit=0
