@@ -64,3 +64,13 @@ La idea: **que los registros lleguen solos a una base central**, sin USB, sin pe
 - **Un token robado** solo permite insertar líneas falsas con el código de un equipo. Se mitiga con la revocación, un límite por minuto y la revisión del análisis.
 - **Volumen:** cada `simulacion_iniciada` lleva el circuito completo y cada `codigo_compilado` el C++. No está medido: hay que medirlo en el piloto y compararlo con el espacio del plan gratuito de Supabase (hoy, 500 MB de base de datos; confirmarlo al crear el proyecto).
 - **Ética:** nada se sube con aprendices antes del aval del comité y del consentimiento que mencione la nube.
+
+## 7. Requisito: una base que no se reinicia (Efraín, 25 oct)
+
+La base tiene que servir a cualquier pregunta de investigación, la de hoy y las que vengan ([rutas para más adelante](../../TecnoSuite/EstrategíaTecno/RUTAS-DE-INVESTIGACION.md)), sin borrarla ni empezar de cero. En el diseño eso significa:
+
+- **Lo crudo no se toca:** cada línea del `.jsonl` se guarda tal cual llegó, con su `id`, la versión del contrato, la del producto y el PC de origen. Solo se inserta.
+- **Lo que se interpreta va aparte:** etiquetas, anotaciones del facilitador y resultados de análisis van en tablas propias, con quién y cuándo las puso y con qué versión del criterio. Una pregunta nueva suma tablas; no reescribe eventos.
+- **Lo derivado se recalcula:** las vistas de resumen (corridas, fallas, correcciones) se pueden borrar y rehacer desde lo crudo.
+- **Los cambios del esquema solo agregan:** igual que el contrato 1, un campo nuevo no invalida los anteriores. `condicion` sigue reservado para la asignación del estudio.
+- **El borrado, solo el que pide la ley:** la supresión por código de equipo se hace explícita, queda registrada y no reinicia nada más.
