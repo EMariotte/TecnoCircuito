@@ -1765,3 +1765,13 @@ Codex devolvió MARCA-001 (COD-20261025-002) por **M1**: el ejemplo de aceptaci�
 ## 2026-10-25 — v0.3.0 etiquetada (MARCA-001)
 
 Codex verificó y cerró MARCA-001 (COD-20261025-003); Efraín aprobó la versión con su commit, etiqueta y push. `npm run preparar-version` armó `dist/tecnocircuito.js` 0.3.0 (contrato 1). Suite completa con cargador (`npm --prefix prototipo run probar`, KiCad real y Chromium): 1285 OK y ninguna falla. Una corrida anterior, también en verde, se repitió porque el PC estaba en batería. Commits `5ebb76f` (MARCA-001), `fdf6eb8` (versión) y `0de3ffd` (paquete); etiqueta `v0.3.0`. TecnoBloques sigue con `#v0.2.0` hasta su 0.4.1, en DIST-001.
+
+## 2026-10-25 — MARCA-002: el chip de TecnoCircuito en la serigrafía de las placas
+
+Efraín aprobó una maqueta de cada placa y las reglas (25 oct): el chip solo, en una tinta, al 80 % del alto de la marca vecina, uno por placa y en un espacio libre. Uno a la izquierda de «1st» (4,2 mm); shield L293D después de «Rev4», girado (2,8 mm); expansión roja y azul entre el jack y el zócalo (2,8 mm); protoboard en el canal central, a la derecha, en azul. Sin marca el Nano y el probador.
+
+- `marca/generar.py` escribe `marca/svg/chip-serigrafia.svg` (fuente única, dos colores de referencia y viewBox exacto). TecnoDiseñador lo dibuja en sus placas con `Lienzo.marca_tc()` (su bitácora) y `npm run vistas` trajo el Uno, la shield y la expansión: solo cambia el dibujo; pines, marcos, LEDs, partes y medidas iguales; el Nano no cambia.
+- La protoboard lo recibe del lienzo (`dibujarProtoboard(tipo, chip)`), porque `protoboard.js` también entra al Worker y a las pruebas de Node. El Worker sigue en 91 KB.
+- COMO-FUNCIONA 73 y `marca/MARCA.md`, sección «En la serigrafía de las placas».
+
+Pruebas (una tras otra, con cargador, 25 oct): suite completa (`npm --prefix prototipo run probar`, KiCad real y Chromium) 1298 OK y ninguna falla (antes 1285). `probar_vistas.py` 57 (11 nuevas: chips por placa y su alto, sin cruzar contactos, LEDs ni textos, y en la imagen exportada) y `probar_protoboard.py` con 2 nuevas. Con la página anterior al cambio fallan esas 10. TecnoBloques `test:simulador` con esta copia: 58 OK, sin errores. Sin commit.

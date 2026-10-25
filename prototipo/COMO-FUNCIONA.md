@@ -2225,3 +2225,19 @@ Efraín decidió que TecnoBloques sea el contenedor de la Suite y que TecnoCircu
 **`exportarSVG()`** pone la firma a escala 0,36 en una franja propia debajo del circuito: las letras chicas (24 en el dibujo) quedan de 8,6 px, como el texto de antes (9 px en Arial). El ancho mínimo de la imagen sale de la firma (294 px). Encima del circuito va el símbolo de una tinta azul (azul y blanco) al 10 %, centrado y del lado de la mitad del lado menor del circuito: el blanco se nota sobre la placa y el azul sobre el fondo. Los dos grupos van después del circuito, así el primer `<g>` sigue siendo el circuito. **La marca de agua va encima y no detrás** (decisión de Efraín, 25 oct): Codex la devolvió (M1) porque el ejemplo de aceptación decía «detrás», y detrás la placa y las piezas, que son opacas, la tapan casi entera. Efraín vio las dos y eligió encima, al 10 %. Los dos llevan clase (`tc-firma`, `tc-marca-agua`) para que se puedan encontrar.
 
 **Pruebas:** `pruebas/probar_svg.py` revisa que la firma cabe, está abajo a la derecha y debajo del circuito, que sus letras chicas miden al menos 8 px, que la marca de agua es tenue, centrada y no toca la firma, que las capas van en orden (fondo, circuito, marca de agua, firma) y que la marca de agua pisa la placa, que la imagen se abre sola como archivo y que `TecnoCircuito.MARCA` trae sus cuatro campos y no se puede cambiar. Del lado de TecnoBloques, `test:simulador`.
+
+## 73. El chip de TecnoCircuito en la serigrafía de las placas (MARCA-002, 25 oct 2026, Claude)
+
+La firma de la imagen exportada se borra con un recorte, como pasa con la de Fritzing. Una marca dentro del dibujo de la placa, en cambio, viaja con ella. Efraín aprobó una maqueta de cada placa y estas reglas: el chip solo, en una tinta, al 80 % del alto de la marca vecina, uno por placa y en un espacio libre (`marca/MARCA.md`).
+
+**Una sola fuente.** `marca/generar.py` escribe `marca/svg/chip-serigrafia.svg`: el chip de `chip(…, solo_cabeza=True)` en dos colores de referencia, `#FFFFFF` para la tinta y `#000000` para los ojos. Su viewBox es la caja exacta del dibujo (3,39 7,07 57,21 × 41,93), con la antena, así que basta escalarlo por el alto.
+
+**Las placas de TecnoDiseñador** (Uno, shield L293D y expansión roja y azul) lo traen ya dibujado en su vista. `Lienzo.marca_tc()` lee el archivo desde la carpeta hermana, cambia los colores (serigrafía `#F6FCFC` y el color de la placa) y lo pone en la serigrafía. La escala va en dos factores de dos decimales cada uno, `scale(0.1) scale(1)` o `scale(0.1) scale(0.67)`, porque la salida `-tc` redondea los números a dos decimales y un factor solo perdería hasta un 5 %. `npm run vistas` las trajo como siempre: pines, marcos, LEDs, partes y medidas iguales, y el dibujo con un grupo más (`td-…-marca-tc`, unos 950 caracteres). El Uno queda en 49,7 KB, dentro del límite de 50 KB. El Nano no cambia.
+
+**La protoboard** se dibuja aquí. `dibujarProtoboard(tipo, chip)` recibe el texto del chip desde el lienzo (`CHIP_SERIGRAFIA_SVG` de `src/marca.js`) y lo pone en el canal central, a la derecha, en azul `#00304D` y al 80 % del alto del canal. `protoboard.js` no importa el SVG porque también entra al Worker (por `motor/red.js` y `conexiones.js`) y a las pruebas de Node, que se arman sin cargador de SVG. Sin chip, dibuja la protoboard sin marca. El Worker sigue en 91 KB.
+
+**Pruebas:**
+- `probar_vistas.py`: cuántos chips trae cada placa y de qué alto (Uno 4,19 mm; shield y expansión 2,81 mm; Nano ninguno), que el chip no cruce ningún contacto, LED ni texto de su placa, y que siga en la imagen exportada, donde su id lleva delante el de la pieza (`tc-placa-td-uno-marca-tc`).
+- `probar_protoboard.py`: un chip, dentro del canal, a la derecha, al 80 % y solo en azul y el color del canal.
+
+Con la página anterior a este cambio fallan las 8 comprobaciones nuevas de las vistas y las 2 de la protoboard.

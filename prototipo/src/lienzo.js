@@ -13,7 +13,7 @@ import { esNano, perfilPlaca } from './placas.js';
 import { ALIASES_EXPANSION } from './piezas/shield_nano_io.js';
 import { PATAS } from './motor/red.js';
 import { VERSION_EVENTOS } from './eventos.js';
-import { FIRMA_SVG, UNA_TINTA_SVG, interiorSVG, medidaSVG } from './marca.js';
+import { FIRMA_SVG, UNA_TINTA_SVG, CHIP_SERIGRAFIA_SVG, interiorSVG, medidaSVG } from './marca.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Marca de la imagen SVG exportada: la firma abajo a la derecha («Hecho con:», el logo y la frase) y el símbolo de
@@ -224,7 +224,7 @@ export function crearLienzo(elemento, opciones = {}) {
     div.dataset.id = 'protoboard';
     div.dataset.tipo = 'protoboard';
     const plantilla = document.createElement('template');
-    plantilla.innerHTML = dibujarProtoboard(tipo);
+    plantilla.innerHTML = dibujarProtoboard(tipo, CHIP_SERIGRAFIA_SVG);
     const el = plantilla.content.firstElementChild;
     div.appendChild(el);
     const vPlaca = vistas.get('placa');
@@ -967,7 +967,7 @@ export function crearLienzo(elemento, opciones = {}) {
   function miniatura(tipo) {
     const plantilla = document.createElement('template');
     if (tipo === 'protoboard') {
-      plantilla.innerHTML = dibujarProtoboard('media');
+      plantilla.innerHTML = dibujarProtoboard('media', CHIP_SERIGRAFIA_SVG);
       return plantilla.content.firstElementChild;
     }
     const def = TIPOS[tipo];

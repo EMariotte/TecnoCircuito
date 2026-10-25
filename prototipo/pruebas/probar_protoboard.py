@@ -59,6 +59,18 @@ with sync_playwright() as p:
     # ---- Dibujo y tiras
     revisar(pg.locator('.tc-hueco').count() == 400, f'la media protoboard tiene 400 huecos ({pg.locator(".tc-hueco").count()})')
     revisar(pg.locator('.tc-hueco.tc-ocupado').count() == 10, 'los 10 huecos con una pata encajada quedan marcados (no reciben clics)')
+    # La marca (MARCA-002): el chip de TecnoCircuito en el canal central, a la derecha, en azul de una tinta
+    marca = pg.evaluate(f'''() => {{ const pb = {RAIZ}.querySelector('.tc-protoboard svg');
+      const ms = pb.querySelectorAll('[data-marca="tecnocircuito"]');
+      const canal = [...pb.querySelectorAll('rect')].find(r => r.getAttribute('fill') === '#e2dfd4').getBoundingClientRect();
+      const m = ms[0] && ms[0].getBoundingClientRect(), placa = pb.getBoundingClientRect();
+      const colores = ms[0] ? [...new Set([...ms[0].querySelectorAll('[fill], [stroke]')].flatMap(e => [e.getAttribute('fill'), e.getAttribute('stroke')]).filter(c => c && c !== 'none'))] : [];
+      return {{ n: ms.length, dentro: !!m && m.top >= canal.top && m.bottom <= canal.bottom && m.right <= canal.right,
+        derecha: !!m && m.left > placa.left + placa.width * 0.85, colores,
+        // alto por la escala (el viewBox del chip mide 41,93 con la antena); el canal mide 8 en el dibujo
+        alto: ms[0] ? parseFloat(ms[0].getAttribute('transform').match(/scale\\(([\\d.]+)\\)/)[1]) * 41.93 / 8 : 0 }}; }}''')
+    revisar(marca['n'] == 1 and marca['dentro'] and marca['derecha'] and abs(marca['alto'] - 0.8) < 0.01 and set(marca['colores']) <= {'#00304D', '#e2dfd4'},
+            f'el chip de TecnoCircuito va en el canal central, a la derecha, al {marca["alto"] * 100:.0f} % de su alto, en azul {marca["colores"]}')
     x, y = centro('protoboard.b15')
     pg.mouse.move(x, y)
     pg.wait_for_timeout(100)
@@ -165,6 +177,7 @@ with sync_playwright() as p:
     svg = pg.evaluate('lienzo.exportarSVG()')
     valido = pg.evaluate('(t) => !new DOMParser().parseFromString(t, "image/svg+xml").querySelector("parsererror")', svg)
     revisar(valido and svg.count('fill="#3d3b36"') == 400, 'la imagen SVG lleva la protoboard con sus 400 huecos y es válida')
+    revisar(svg.count('data-marca="tecnocircuito"') == 1, 'y su chip de TecnoCircuito en el canal')
 
     # ---- Borrar la protoboard: las piezas quedan sueltas y se van los cables a sus huecos
     pg.mouse.click(fin[0], fin[1])

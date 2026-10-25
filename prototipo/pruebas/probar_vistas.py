@@ -5,6 +5,7 @@ cada contacto del dibujo cae en su punto de conexión, los LED siguen a la simul
 deja pasar el clic a la expansión, los cables antiguos (OUT_5V) siguen dibujados, los id no se repiten y la imagen
 exportada conserva los dibujos. Ejecutar: python -I pruebas/probar_vistas.py dist/prototipo.html pruebas/capturas
 """
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -227,6 +228,36 @@ with sync_playwright() as p:
           return {{ total: ids.length, repetidos: [...repetidos].slice(0, 5) }}; }}''')
         revisar(not r['repetidos'], f'{placa}{"/" + variante if variante else ""}: {r["total"]} id en el lienzo, ninguno repetido {r["repetidos"] or ""}')
 
+    print('— La marca de TecnoCircuito en la serigrafía (MARCA-002): un chip por placa, sin tocar nada')
+    # (circuito, chips esperados por prefijo, alto esperado en mm). El Nano va sin marca (decisión de Efraín).
+    casos = [('uno', None, {'td-uno-': 4.2}), ('nano', None, {'td-nano-': None}), ('nano', 'roja', {'td-exp-roja-': 2.8, 'td-nano-': None}),
+             ('nano', 'azul', {'td-exp-azul-': 2.8, 'td-nano-': None}), ('uno', 'shield', {'td-uno-': 4.2, 'td-l293d-': 2.8})]
+    for placa, variante, esperado in casos:
+        abrir(pg, shield() if variante == 'shield' else circuito(placa, variante))
+        r = pg.evaluate(f'''(prefijos) => {{ const r = {RAIZ};
+          const cruza = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+          const salida = {{}};
+          for (const pre of prefijos) {{
+            const m = r.querySelector(`[id="${{pre}}marca-tc"]`);
+            if (!m) {{ salida[pre] = {{ n: 0, tocan: [], escala: 0 }}; continue; }}
+            const svg = m.ownerSVGElement;
+            const caja = m.getBoundingClientRect();
+            const vecinos = [...svg.querySelectorAll('[data-contacto], [data-led], text')].filter(e => !m.contains(e));
+            const tocan = vecinos.filter(e => cruza(caja, e.getBoundingClientRect())).map(e => e.dataset.contacto || e.dataset.led || e.textContent);
+            const escalas = [...m.getAttribute('transform').matchAll(/scale\\(([\\d.]+)\\)/g)].map(x => parseFloat(x[1]));
+            salida[pre] = {{ n: r.querySelectorAll(`[id="${{pre}}marca-tc"]`).length, tocan, escala: escalas.reduce((a, b) => a * b, 1) }};
+          }}
+          return salida; }}''', list(esperado))
+        for pre, alto in esperado.items():
+            q = r[pre]
+            nombre = f'{placa}{"/" + variante if variante else ""} ({pre[:-1]})'
+            if alto is None:
+                revisar(q['n'] == 0, f'{nombre}: sin marca, como decidió Efraín')
+                continue
+            alto_real = q.get('escala', 0) * 41.93   # alto del viewBox de marca/svg/chip-serigrafia.svg
+            revisar(q['n'] == 1 and abs(alto_real - alto) < 0.05 and not q['tocan'],
+                    f'{nombre}: un chip de {alto_real:.2f} mm (esperado {alto}) que no toca contactos, LEDs ni textos {q["tocan"] or ""}')
+
     print('— La imagen exportada conserva los dibujos')
     for placa, variante, prefijo in [('uno', None, 'td-uno-'), ('nano', 'azul', 'td-exp-azul-'), ('uno', 'shield', 'td-l293d-')]:
         abrir(pg, shield() if variante == 'shield' else circuito(placa, variante))
@@ -239,6 +270,9 @@ with sync_playwright() as p:
             valido = False
         revisar(valido and prefijo in svg and 'data-contacto' in svg and '<image' not in svg,
                 f'{placa}: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos')
+        # exportarSVG antepone el id de la pieza a cada id del dibujo (tc-placa-td-uno-marca-tc)
+        revisar(re.search(f'id="tc-[^"]*-{prefijo}marca-tc"', svg) is not None,
+                f'{placa}{"/" + variante if variante else ""}: el chip de la serigrafía sigue en la imagen exportada')
         (SALIDA / f'vistas_exportado_{placa}{"_" + variante if variante else ""}.svg').write_text(svg, encoding='utf-8')
 
     revisar(not errores, 'sin errores en la consola' + (f': {errores[:3]}' if errores else ''))

@@ -103,6 +103,21 @@ def svg(dibujo, fondo=None):
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">{t}{dibujo}</svg>\n'
 
 
+# Chip de serigrafía (MARCA-002): el chip solo, en dos colores de referencia que cada placa cambia por los suyos
+# (TINTA por su serigrafía y OJOS por el color de la placa, para que los ojos se vean calados). El viewBox es la caja
+# exacta del dibujo, con la antena: quien lo usa lo escala por su alto sin calcular márgenes.
+TINTA_REF, OJOS_REF = '#FFFFFF', '#000000'
+
+
+def chip_serigrafia():
+    k = 46 / 32                                   # la cabeza sola de chip(): (9, 19, 46, 30)
+    x0 = 9 - 5.4 * k + 1.5 * k                    # punta de las patas de la izquierda
+    y0 = 19 - 6.5 * k - 3.6 * k / 2               # borde de arriba del trazo de la antena
+    ancho, alto = 2 * (32 - x0), 19 + 30 - y0
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{f(x0)} {f(y0)} {f(ancho)} {f(alto)}">'
+            f'{chip(TINTA_REF, OJOS_REF, TINTA_REF, OJOS_REF, solo_cabeza=True)}</svg>\n')
+
+
 # ---------------------------------------------------------------- variantes del símbolo
 SVGS = {
     'simbolo-app.svg': svg(chip(VERDE, AZUL, BLANCO, AZUL), AZUL),               # ícono principal (fondo azul)
@@ -231,6 +246,7 @@ def main():
     SVGS['logo-horizontal-oscuro.svg'] = oscuro
     SVGS['compartir.svg'] = compartir()
     SVGS['firma.svg'] = firma(AZUL, VERDE, '#5b6770', SVGS['simbolo-app.svg'])
+    SVGS['chip-serigrafia.svg'] = chip_serigrafia()
     for nombre, contenido in SVGS.items():
         (M / 'svg' / nombre).write_text(contenido, encoding='utf-8', newline='\n')
 

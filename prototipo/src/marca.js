@@ -4,6 +4,7 @@ import simbolo from '../../marca/svg/simbolo-app.svg';
 import cabeza from '../../marca/svg/simbolo-cabeza.svg';
 import unaTinta from '../../marca/svg/una-tinta-azul.svg';
 import firma from '../../marca/svg/firma.svg';
+import chipSerigrafia from '../../marca/svg/chip-serigrafia.svg';
 
 // Contrato, sección 2: lo que TecnoBloques usa para mostrar la identidad de TecnoCircuito.
 export const MARCA = Object.freeze({
@@ -16,6 +17,9 @@ export const MARCA = Object.freeze({
 // Para la imagen que exporta el lienzo: la marca de agua y la firma de abajo.
 export const UNA_TINTA_SVG = unaTinta.trim();
 export const FIRMA_SVG = firma.trim();
+// El chip de serigrafía de las placas (MARCA-002), en dos colores de referencia (#FFFFFF tinta, #000000 ojos). Las
+// placas de TecnoDiseñador lo traen ya dibujado en su vista; la protoboard lo recibe del lienzo (protoboard.js).
+export const CHIP_SERIGRAFIA_SVG = chipSerigrafia.trim();
 
 /** El dibujo de un SVG sin su etiqueta <svg>, para meterlo dentro de otro (igual que _anidar en generar.py). */
 export function interiorSVG(texto) {

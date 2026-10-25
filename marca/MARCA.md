@@ -44,6 +44,7 @@ Antes de imprimir material oficial, confírmalos con el manual de identidad del 
 | `svg/una-tinta-azul.svg` / `una-tinta-blanca.svg` | Una sola tinta: stickers, grabado láser, impresión económica |
 | `svg/logo-horizontal.svg` / `logo-horizontal-oscuro.svg` | **Banner horizontal**: símbolo + nombre, para fondos claros / oscuros |
 | `svg/firma.svg` | **Firma**: «Hecho con:» + banner horizontal + la frase. Abajo a la derecha de la imagen que exporta el lienzo |
+| `svg/chip-serigrafia.svg` | **Chip de serigrafía**: el chip solo, en dos colores de referencia (`#FFFFFF` tinta, `#000000` ojos) que cada placa cambia por los suyos. Su viewBox es la caja exacta del dibujo, con la antena |
 | `png/icono-<tamaño>.png` | 16 a 1024 px (16 y 24 usan solo el chip) |
 | `png/logo-horizontal.png` / `logo-horizontal-oscuro.png` | Banner horizontal en PNG (el del README) |
 | `png/compartir.png` | 1200 × 630, para compartir enlaces y la vista previa de GitHub |
@@ -60,6 +61,16 @@ TecnoBloques es la casa y TecnoCircuito firma donde trabaja (decisión de Efraí
 - **«Acerca de»** (clic en el logo de TecnoBloques): las dos marcas del mismo tamaño, con su versión, y una sola línea de respaldo.
 - **Imagen exportada:** el símbolo de una tinta como marca de agua tenue (10 %) **encima** del circuito, y la firma abajo a la derecha. Encima y no detrás: la placa y las piezas son opacas y la taparían (decisión de Efraín, 25 oct, tras la verificación de Codex).
 - **No:** pantalla de bienvenida, marca de agua en el lienzo mientras se trabaja, logo en la barra de título ni colores de TecnoCircuito en la interfaz de TecnoBloques.
+
+## En la serigrafía de las placas
+
+Una marca dentro del dibujo de la placa sobrevive a un recorte, como el logo del fabricante en una placa real (MARCA-002, decisión de Efraín, 25 oct 2026):
+
+- **El chip solo**, en una tinta: blanco de serigrafía (`#F6FCFC`) con los ojos del color de la placa; en la protoboard, azul `#00304D` con los ojos del color del canal.
+- **Al 80 % del alto de la marca vecina** y en un espacio libre, sin tocar pines, rótulos ni LEDs. **Una por placa.**
+- **Uno:** 4,2 mm, a la izquierda de «1st». **Shield L293D:** 2,8 mm, después de «Rev4», girado como el texto. **Expansión roja y azul:** 2,8 mm, entre el jack y el zócalo del Nano. **Protoboard:** en el canal central, a la derecha.
+- **Sin marca:** el Nano (no hay espacio libre) y el probador LiPo (a ese tamaño no se leería). Tampoco las piezas chicas: LED, resistencia, potenciómetro, pulsador, servo, motor y batería.
+- Las placas de TecnoDiseñador lo dibujan con `Lienzo.marca_tc()`, que lee `svg/chip-serigrafia.svg` desde la carpeta hermana; la protoboard lo recibe del lienzo.
 
 Los dibujos llegan en el paquete, como `TecnoCircuito.MARCA` (contrato, sección 2): `prototipo/src/marca.js` los toma de `svg/` al construir. Después de cambiar la marca hay que volver a construir el paquete.
 

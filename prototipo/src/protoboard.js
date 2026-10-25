@@ -80,15 +80,36 @@ export function rotuloHueco(nombre) {
   return `Protoboard: hueco ${m[1]}${m[2]} · unido por dentro con ${primera}${m[2]}–${ultima}${m[2]}`;
 }
 
+// La marca de TecnoCircuito en el canal central, a la derecha (MARCA-002, decisión de Efraín): el chip de
+// marca/svg/chip-serigrafia.svg en azul de una tinta, al 80 % del alto del canal y a 6 px de su final. A la derecha,
+// porque los chips y botones que cruzan el canal se suelen montar desde la columna 1.
+const MARCA_TINTA = '#00304D';
+const CANAL = { alto: 8, color: '#e2dfd4' };
+
+function marcaCanal(chip, ancho, yCanal) {
+  const [vx, vy, vw, vh] = chip.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
+  const alto = 0.8 * CANAL.alto;
+  const s = alto / vh;
+  const x = ancho - 2 - 6 - vw * s;
+  const dibujo = chip.slice(chip.indexOf('>') + 1, chip.lastIndexOf('</svg>'))
+    .replaceAll('#FFFFFF', MARCA_TINTA).replaceAll('#000000', CANAL.color);
+  return `<g data-marca="tecnocircuito" transform="translate(${x.toFixed(2)} ${(yCanal + (CANAL.alto - alto) / 2).toFixed(2)}) ` +
+    `scale(${s.toFixed(4)}) translate(${-vx} ${-vy})">${dibujo}</g>`;
+}
+
 // Dibujo SVG (texto). Solo usa atributos, así se ve igual dentro del lienzo y en la imagen exportada.
-export function dibujarProtoboard(tipo = 'media') {
+// chip: el texto de marca/svg/chip-serigrafia.svg (lo pasa el lienzo). Este módulo también entra al Worker y a las
+// pruebas de Node, que no cargan archivos SVG: por eso no lo importa. Sin chip, la protoboard va sin marca.
+export function dibujarProtoboard(tipo = 'media', chip = null) {
   const t = TIPOS_PROTOBOARD[tipo] || TIPOS_PROTOBOARD.media;
   const { ancho, alto, columnas } = t;
   const p = [];
   p.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="${alto}" viewBox="0 0 ${ancho} ${alto}">`);
   p.push(`<rect x="0.5" y="0.5" width="${ancho - 1}" height="${alto - 1}" rx="4" fill="#f4f3ee" stroke="#cdc9bd"/>`);
   // Canal central
-  p.push(`<rect x="2" y="${(Y.e + Y.f) / 2 - 4}" width="${ancho - 4}" height="8" fill="#e2dfd4"/>`);
+  const yCanal = (Y.e + Y.f) / 2 - CANAL.alto / 2;
+  p.push(`<rect x="2" y="${yCanal}" width="${ancho - 4}" height="${CANAL.alto}" fill="${CANAL.color}"/>`);
+  if (chip) p.push(marcaCanal(chip, ancho, yCanal));
   // Líneas de colores de los rieles: roja junto al +, azul junto al −
   const linea = (y, color) => p.push(`<line x1="${MARGEN_X - 6}" y1="${y}" x2="${ancho - MARGEN_X + 6}" y2="${y}" stroke="${color}" stroke-width="1.2"/>`);
   linea(Y['s+'] - 5.5, '#d7263d');
