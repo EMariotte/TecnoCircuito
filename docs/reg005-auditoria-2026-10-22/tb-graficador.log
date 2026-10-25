@@ -1,0 +1,34 @@
+
+> tecnobloques@0.3.0 test:graficador
+> node test/graficador.js
+
+OK    «temp:25.3 luz:512» → temp y luz
+OK    «temp=25.3» → temp
+OK    «Temperatura: 25.3 C» → Temperatura (la unidad se ignora)
+OK    «min 430 max 431 prom 430.5» (validar_adc) → min, max y prom
+OK    «512 3.7 1» → valor1, valor2 y valor3
+OK    separados por coma y tabulación, con negativos
+OK    solo texto: sin valores
+OK    «adelante 200» → adelante = 200
+OK    «nan» queda como un hueco (NaN)
+OK    «x: 1, y: -2.5e1» → x y y (con exponente)
+OK    una etiqueta repetida en la línea: queda la última
+OK    una línea que llega en trozos se arma entera, con la hora de su fin de línea
+OK    un fin de línea partido entre dos trozos (retorno y salto) no crea una línea vacía
+OK    al simular de nuevo, el tiempo sigue (2022 ms)
+OK    la placa y el simulador quedan en el mismo registro, cada uno con su origen
+OK    empieza con la marca UTF-8 (Excel lee bien las tildes)
+OK    encabezado: t_ms;origen;linea;"min";"max"
+OK    fila: 1016;simulador;"min 430 max 431";430;431
+OK    coma decimal y comillas escapadas: 10;simulador;"prom 430.5 texto ""hola""";430,5
+OK    un «nan» queda como celda vacía
+OK    guarda las últimas líneas: recorta por bloques al pasar el límite (quedan 6 de 12, hasta la 11)
+OK    «Limpiar» vacía el registro
+OK    «Lectura 1: 512»: el «1» no es una etiqueta (no crea una columna por lectura)
+OK    «Hora 12:30»: dos números, sin etiquetas «12»
+OK    las columnas de números tienen un tope (40); las líneas siguen guardándose
+OK    en el CSV, una línea que empieza con = + - @ lleva un apóstrofo (Excel no la toma como fórmula)
+OK    marcas del eje con números enormes: terminan (1 y 6 marcas)
+OK    marcas «redondas» de 0 a 1023: 0, 200, 400, 600, 800, 1000
+
+Todo bien.

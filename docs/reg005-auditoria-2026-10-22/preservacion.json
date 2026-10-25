@@ -1,0 +1,179 @@
+{
+  "changes": {
+    "TecnoCircuito": [
+      "BITACORA.md"
+    ],
+    "TecnoBloques": [
+      "BITACORA.md"
+    ],
+    "TecnoSuite": [
+      "INVESTIGACION.md",
+      "TABLERO.md",
+      "canales/CODEX-A-CLAUDE.md",
+      "registro/SESIONES.md",
+      "tareas/INV-001.md",
+      "tareas/REG-005.md"
+    ]
+  },
+  "unexpected": {
+    "TecnoCircuito": [],
+    "TecnoBloques": [],
+    "TecnoSuite": []
+  },
+  "memoriasClaudeIguales": true,
+  "fuentesProductoIguales": true,
+  "links": [
+    {
+      "link": "reg005-auditoria-2026-10-22/inicio-version.json",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/preservacion.json",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/final-version.json",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/huellas-evidencia.json",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/ejecuciones.jsonl",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/herramientas/historia-registro.js#L406",
+      "exists": true
+    },
+    {
+      "link": "../prototipo/src/lienzo.js#L1051",
+      "exists": true
+    },
+    {
+      "link": "../prototipo/src/trabajador.js#L53",
+      "exists": true
+    },
+    {
+      "link": "../prototipo/src/simulador.js#L244",
+      "exists": true
+    },
+    {
+      "link": "../prototipo/src/nucleo.js#L722",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/src/app.js#L879",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/src/app.js#L856",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/herramientas/historia-registro.js#L143",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/src/app.js#L1367",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/src/app.js#L1666",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/escritorio/registro-disco.js#L154",
+      "exists": true
+    },
+    {
+      "link": "../prototipo/pruebas/probar_registro.py#L121",
+      "exists": true
+    },
+    {
+      "link": "../../TecnoBloques/escritorio/registro-disco.js#L187",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/diagnostico-node.json",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/diagnostico-electron.json",
+      "exists": true
+    },
+    {
+      "link": "reg005-auditoria-2026-10-22/diagnostico-proyecto.png",
+      "exists": true
+    }
+  ],
+  "artifactsSHA256": {
+    "TecnoCircuito\\prototipo\\dist\\tecnocircuito.js": "98e1fdce2db943901fd9997d2c5a5b3bc310030d45d543b0c2c9b00051d7a244",
+    "TecnoCircuito\\prototipo\\dist\\prototipo.html": "6c252999903a047d4177d4deb74ed4992a20d7745b5ffd45de6495998117e5a0",
+    "TecnoCircuito\\dist\\tecnocircuito.js": "d63792fe1ab1e32c078bcabf1aa01786e65c916b01b48ce89f21e0c168392ec9",
+    "TecnoBloques\\dist\\TecnoBloques.html": "d7750dde0a2e4c0abcb2c1f4d12ff5315e67b003db3771976faffc3f75cdfe4a"
+  },
+  "logCounts": {
+    "aceptacion-historica.log": {
+      "OK": 14,
+      "FALLA": 0
+    },
+    "coordinacion-comprobar.log": {
+      "OK": 0,
+      "FALLA": 0
+    },
+    "coordinacion-tablero.log": {
+      "OK": 0,
+      "FALLA": 0
+    },
+    "diagnostico-electron.log": {
+      "OK": 1,
+      "FALLA": 4
+    },
+    "diagnostico-node.log": {
+      "OK": 3,
+      "FALLA": 6
+    },
+    "profunda-historica.log": {
+      "OK": 23,
+      "FALLA": 0
+    },
+    "tb-generales.log": {
+      "OK": 0,
+      "FALLA": 0
+    },
+    "tb-graficador.log": {
+      "OK": 28,
+      "FALLA": 0
+    },
+    "tb-historia.log": {
+      "OK": 198,
+      "FALLA": 0
+    },
+    "tb-preprocesador.log": {
+      "OK": 74,
+      "FALLA": 0
+    },
+    "tb-registro-app.log": {
+      "OK": 115,
+      "FALLA": 0
+    },
+    "tb-registro.log": {
+      "OK": 204,
+      "FALLA": 0
+    },
+    "tb-simulador.log": {
+      "OK": 53,
+      "FALLA": 0
+    },
+    "tc-registro-repeticion.log": {
+      "OK": 18,
+      "FALLA": 0
+    },
+    "tc-suite-completa.log": {
+      "OK": 1251,
+      "FALLA": 1
+    }
+  }
+}

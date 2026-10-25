@@ -2036,3 +2036,180 @@ El nombre de la carpeta y el `t` del manifiesto salen de una sola hora. La app d
 - **Nada se compara a través de un hueco (A-03).** En un hueco (una línea apartada, un `evento_descartado` o eventos perdidos en `registro_interrumpido`) pudo perderse una compilación, un resumen de bloques o un cambio de placa. Después de él, la compilación siguiente no se compara con la anterior («después de un hueco: no se compara con la compilación anterior»), los bloques empiezan de nuevo y no se acusa un `placa_cambiada` que falta.
 
 **Pruebas:** `test:registro` de TecnoBloques (202): las fronteras con «x», «ñ», emojis y «漢»; los motivos; la configuración (doce formas mal formadas, el reemplazo y el control); anotado, pendiente y sin anotar con la cola llena por número y por tamaño; la cuenta por sesión; la hora y el día del marcador; la carpeta de origen sin permiso; la copia que escribe la mitad y falla, la que termina con otro tamaño y el tope de 1000. `test:historia` (192): los tramos imposibles, el cierre perdido, los huecos, las copias y la admisión (una exportación entera, nueve dañadas y trece manifiestos mal formados, con `pendientes` 0 y 2 como controles y un evento de verdad en la cola), UTF-8 con BOM y CRLF. `test:registro-app`, en Electron, en una carpeta de datos aparte: la esquina por equipo, el panel que se actualiza abierto, el registro apagado y dos exportaciones obligadas a usar el sufijo con carpetas señuelo. Los diagnósticos de Codex (23 casos) y del auditor (r01 a r08) no reproducen ninguno de sus fallos.
+
+## 70. El registro de punta a punta, la revisión final y sus límites (REG-005, 22 oct 2026, Claude)
+
+Fase 5 del registro: una revisión de código de los dos proyectos (`/code-review`, por separado), la corrección de lo que encontró, la sección 6.1 del contrato reescrita para describir lo que hay, y en esta sección el camino completo de un evento y la lista de lo que el registro **no** garantiza, con su estado.
+
+### El camino de un evento
+
+```
+ TecnoCircuito (el paquete; no guarda nada)                 TecnoBloques: la página (src/app.js, src/registro.js)
+ ──────────────────────────────────────────                 ──────────────────────────────────────────────────────
+ lienzo ── alEvento ── cable_agregado, componente_…  ─┐
+                       boton_pulsado                  │    registroEventos.registrar(ev):
+ simulador (página) ── alEvento ── simulacion_…,       ├──►   ¿hay equipo? (registro encendido y código confirmado)
+   ▲                   reinicio_placa (botón),        │      + sobre: equipo, sesion, version_tb, version_tc
+   │ fotos (turno)     falla, reinicio por energía ───┘      + eventos del editor: sesion_iniciada, placa_cambiada,
+ Worker: núcleo                                              codigo_compilado (C++ sin comentarios), programa_subido…
+ (chip + circuito)                                                │ IPC
+                                                                  ▼
+ TecnoBloques: el proceso principal (escritorio/registro-disco.js; solo él toca el disco)
+ ─────────────────────────────────────────────────────────────────────────────────────────
+   ¿línea válida y ≤ 2 097 152 caracteres? ── no ──► evento_descartado en su lugar (69)
+   escribir entera en registros/<equipo>-<fecha>.jsonl ── el disco falla ──► cola en memoria (5000 líneas o 20 MB);
+                                                                             al recuperarse: las líneas y registro_interrumpido
+   «Exportar registros» ──► intenta escribir la cola ──► carpeta nueva + copias sin pisar + exportacion.json (sha256)
+                                                                  │
+                                                                  ▼
+ herramientas/historia-registro.js (npm run historia -- <carpeta>), sección 68
+ ────────────────────────────────────────────────────────────────────────────
+   admitir la exportación (manifiesto) ─► leer con el esquema ─► hechos por equipo y sesión ─► integridad (huecos,
+   contradicciones, tramos, cierres) ─► conclusiones: «corrigió» solo entre corridas comparables; si no, «ya no se
+   observó (motivo)» o «no se compara»
+```
+
+### El tiempo de cada evento del simulador
+
+El Worker lleva el reloj; la página solo recibe fotos. Cada foto trae su `turno` (el estado con que se pidió) y los hechos que el núcleo no había mandado. Tres reglas, las dos primeras corregidas hoy:
+
+```
+ Worker  ──── 1000 ms ──── 1015 ms (el LED se quema, todavía sin foto) ──┐
+                                                                         │  RESET (turno 2)
+ antes:  foto(turno 2, ms 0) ── trae la falla de 1015 ── tramo 1, 0 ms   │  ✗ un hecho de antes, en el reloj nuevo
+ ahora:  foto(turno 1, ms 1015) ── la falla, tramo 0 ── luego el RESET ──┘  ✓ en su tramo, con su tiempo (TC-1)
+```
+
+1. **Al pulsar RESET, lo pendiente sale primero con el turno de antes** (`trabajador.js`). La página lo recibe como una foto tardía de su tramo (sección 66). Si esa foto falla, el Worker avisa el error y el RESET se hace igual.
+2. **Lo que emite la página lleva lo último que sabe del reloj de su tramo**: el mayor entre la vista y los hechos ya emitidos de ese tramo (`msAhora()` en `simulador.js`). Antes usaba solo la vista, que no avanza con una foto tardía, y un cierre sin confirmar podía decir 1000 ms con una falla ya registrada a 1014: la historia lo leía como «una falla después del cierre» (TC-3). La pausa y el RESET usan la misma regla (TC-4); el Worker pudo ir unos ms adelante, y eso se dice en el contrato.
+3. **El cierre dice si el Worker lo confirmó** (`confirmado`, decisión de Efraín): `true` con la confirmación y su última foto; `false` si salió por la espera de 500 ms, por cerrar la ventana (`sinEsperar`) o porque la última foto falló. Si una foto falla al detener, el Worker igual confirma que paró, sin tiempo (TC-6), y la página lo marca `false`. La historia no compara una corrida con `confirmado: false` («se cerró sin la confirmación del simulador (pudieron quedar fallas sin llegar)»), sin avisarlo como defecto del registro, porque cerrar la ventana mientras se simula es normal.
+
+**La frontera del tramo 0** (nota de la verificación de Codex del 21 oct): `simulacion_iniciada` abre la corrida siempre en el tramo 0, lleve o no el campo, y no cuenta para «mezcla eventos con tramo y sin él»; esa revisión mira los eventos posteriores. Un inicio con un tramo distinto de 0 sí es una contradicción.
+
+### Lo que encontró la revisión y qué se hizo
+
+| | Hallazgo | Qué se hizo |
+|---|---|---|
+| TB-1 | `quitarComentarios` no era idempotente: cada pasada añadía un espacio tras el `\/**/`, y la historia acusaba «C++ con comentarios» sobre un registro correcto | El separador que ya está queda igual; `test:registro-preprocesador` revisa ahora, en cada caso y en 2000 al azar, que limpiar otra vez no cambie nada |
+| TC-1 a TC-4, TC-6 | Arriba | Corregidos |
+| TC-2 | Un cierre sin confirmación perdía fallas en camino sin dejarlo dicho | Campo `confirmado` (contrato 6.1) y la historia no compara esa corrida |
+| TC-5 | Sin Worker, destruir sin esperar dejaba el reloj corriendo en la página | Terminar entrega el «detener» en el acto |
+| TC-7 | `activas` copiaba cualquier valor de `noIdealidades` (una línea inválida para el esquema) | Solo las claves conocidas, como sí o no |
+| TC-9 | `destruir()` no soltaba sus oyentes del lienzo | `alCambiar`, `_alPulsar` y `_alAcercar` devuelven cómo quitarlos, y `destruir()` los suelta |
+| TB-2 | Si apagar el registro fallaba por el disco, el equipo quedaba sin sesión con el registro encendido | Vuelve a su sesión y el panel dice qué hacer |
+| TB-3, TB-4, TB-9 | «Cambiar a Nano» no rehacía el lienzo; cambiar la placa o el proyecto mientras se compilaba simulaba el .hex en el lienzo nuevo; `programa_subido` tomaba la placa después de subir | El lienzo se rehace; la simulación no empieza si cambió la placa o el lienzo; la placa se toma al empezar |
+| TB-5, TB-6 | Exportar no intentaba antes escribir lo que esperaba; un original bloqueado (antivirus) se le culpaba a la USB | Se vacía la cola antes de copiar; si el original no se puede abrir para leer, el error es del origen |
+| TB-7 | Un código confirmado mientras otro cambio de equipo esperaba se perdía | Los cambios van en cola, uno detrás de otro |
+| TB-8 | Un proyecto que no abría dejaba dos `placa_cambiada` que nadie hizo | El cambio se registra solo si el proyecto abre |
+| TB-10, TB-15 | Una librería con «-» quedaba como error «compilar»; dos mensajes del instructor no decían qué hacer | Una sola expresión para los dos usos; mensajes con la acción |
+| TB-11, TB-12, TB-14 | Rendimiento: la configuración se lee dos veces por evento, la exportación copia y calcula el sha256 sin soltar la ventana, la historia lee dos veces cada archivo | No se cambian ahora: van a la tabla de abajo, con la medición pendiente |
+| TC-8, TB-13 | Rediseño: sellar el tiempo de cada hecho en el núcleo; atar cada evento a su sesión en un solo lugar | Ideas para después de la etapa 0: rehacen lo que Codex acaba de verificar |
+
+### Lo que el registro no garantiza (estado al 22 oct)
+
+Los once riesgos y límites que dejó la auditoría profunda de Codex (21 oct), los tres de rendimiento de la revisión y los dos del simulador. Ninguno se da por cerrado porque las pruebas pasen.
+
+| Riesgo o límite | Estado | Qué lo resolvería | Quién |
+|---|---|---|---|
+| Exportación síncrona y en memoria (TB-12) | Permanece: copia, relee y calcula el sha256 en el proceso principal; la ventana se congela mientras tanto. Sin prueba de volumen | Copiar y calcular por bloques, fuera del hilo de la ventana, con progreso; medir con semanas de registros en el PC del aula | Claude, si la medición lo pide |
+| Coste por evento (TB-11) y del IPC | Permanece: la configuración se lee dos veces por evento y el límite de una línea se revisa después de cruzar el IPC | Configuración en memoria y un presupuesto antes del IPC; medir latencia con ráfagas de eventos | Claude, si la medición lo pide |
+| Cierre de la app con el disco averiado | Permanece: la cola está en memoria; lo que espera al cerrar se pierde, con o sin `registro_interrumpido`. El aviso lo mostró | Guardar la cola en otro lugar o un criterio de «sesión incompleta» para el análisis | Efraín decide |
+| Durabilidad física de la USB | Pendiente externo: la copia y el sha256 están probados en el disco; no hubo USB real, extracción ni expulsión | Probar con una USB real, expulsión segura y leer la copia con la historia | Efraín (laboratorio) |
+| Hora y orden | Mejoró (la hora del evento perdido, medianoche); permanece: `t` es el reloj del PC, sin secuencia propia | Una secuencia por sesión si el estudio necesita orden garantizado | Efraín decide |
+| Procedencia de la versión | Pendiente: `exportacion.json` dice `version_tb`, pero no identifica el paquete exacto que produjo los datos | Resolverlo con la versión congelada (DIST-001) antes del estudio | REG-005/DIST-001 |
+| Portabilidad del lector | Permanece: la historia necesita Node y el esquema de TecnoCircuito al lado; no se probó instalada aparte | Empaquetarla y probarla sin red en el PC donde se analice | Claude, cuando se decida dónde se analiza |
+| PIN y privacidad | Mejoró la configuración; permanece: el PIN no cifra los `.jsonl`, y los textos entre comillas del C++ pueden traer lo que el aprendiz escribió | Efraín define permisos y manejo de copias; revisar los textos antes de compartir (contrato 6.1) | Efraín |
+| Retención y crecimiento | Pendiente: sin cuota, rotación ni aviso de poco espacio | Decidir retención y archivado; probar con poco espacio | Efraín decide |
+| Qué prueba una «corrección» | Límite que permanece: el registro dice qué pasó en el simulador entre corridas comparables; no prueba aprendizaje ni causa, ni une criptográficamente el `.hex` con la compilación | Mantener el lenguaje de observación; evidencia adicional si el estudio la exige | Efraín (diseño del estudio) |
+| Tope de 1000 exportaciones por minuto, cuenta volátil, fallo del aviso | Parcial: tope explícito (TOPE), panel por estados, cuenta por sesión. Permanecen: la cuenta empieza en cero al abrir; un evento sin sobre no se cuenta por equipo; si falla el propio aviso por IPC, no se ve | Documentado; no se presentan como pérdidas imposibles | — |
+| Lecturas repetidas de la historia (TB-14) | Permanece: admitir lee y calcula el sha256 de cada archivo y después lo lee otra vez | Calcular el sha256 sobre lo ya leído, si una carpeta grande lo pide | Claude, si se necesita |
+| Registros sin `tramo` (antes del 21 oct) | Límite que permanece: una foto de antes del RESET que llega después se lee en el reloj nuevo | Ninguno retroactivo | — |
+| Cierres sin `confirmado` (antes del 22 oct) | Límite que permanece: un cierre por la espera de 500 ms no se distingue | Ninguno retroactivo; desde el 22 oct, `confirmado` | — |
+
+**Pruebas:** en TecnoCircuito, `probar:fotos` suma el Worker real con reloj y canal controlados (la foto antes del RESET, el RESET cuando esa foto falla, la confirmación cuando la última foto falla, el modo sin Worker) y los casos de la página (`confirmado` con espera, `sinEsperar` y confirmación sin foto; la pausa y el RESET después de una foto tardía; `activas`; los oyentes); `probar:contrato` acepta `confirmado: false` y rechaza uno que no es booleano. En TecnoBloques, `test:registro-preprocesador` (avr-g++, todos los casos y 2000 al azar, ahora también idempotente), `test:historia` (TB-1 y `confirmado`, con sus controles), `test:registro` (TB-5 y TB-6, con sus controles) y la sección 10 de `test:registro-app`, en Electron, con la app real (TB-2, TB-3, TB-4, TB-7, TB-8, TB-9 y TB-10). Cada regresión nueva falla con el código anterior.
+
+## 71. El lote final del registro: lo que encontraron las dos verificaciones de Codex (24 oct 2026, Claude)
+
+Codex auditó la entrega del 22 oct (REG-005) y devolvió nueve defectos, un criterio de prueba y dos incoherencias de documentación (AUD-15 a AUD-23, D01 y D02). Su verificación profunda del 24 oct encontró cinco causas más (F01 a F05) y un riesgo, W-R1. Efraín decidió corregir todo en un solo lote y contener W-R1 ahora. Cada corrección tiene su regresión, y las regresiones fallan con el código que Codex auditó.
+
+### Qué se corrigió
+
+| Ficha | Lo que pasaba | Qué se hizo | Dónde se prueba |
+|---|---|---|---|
+| AUD-15 (R01, F02) | El lienzo da el primer id libre: si se quita `led1` y se agrega otro LED, también es `led1`. La historia daba por corregida la falla del anterior, o decía que «sigue» la del nuevo | Cada corrida guarda la generación de sus piezas (cuántas altas y bajas tuvo cada id), los proyectos y ejemplos abiertos y las piezas que cambiaron mientras corría; cada falla, la pieza que la tuvo. Una falla se corrige o sigue solo en la misma pieza. La de otra pieza con el mismo id se nombra «pieza 2» (también en los datos, `pieza`) | `test:historia` |
+| AUD-16 (R02) | Una foto perdida se llevaba sus fallas y el cierre decía `confirmado: true` | El Worker lleva `integra` (verificada por Codex el 24 oct) | `probar:fotos` 14 |
+| AUD-17 (R03) | Si la placa cambiaba mientras se soltaba el monitor serial, se subía con un FQBN y se registraba otra placa | Lo que se sube va en un solo objeto, tomado antes de la espera. Si cambió la placa o el puerto, la subida empieza otra vez con lo de ahora, una vez, con todas sus comprobaciones; si cambió el equipo, no se sube. Lo enviado, lo mostrado y lo registrado son lo mismo | `test:registro-app` 11 |
+| AUD-18 (R04) | Apagar el registro con un cambio de equipo pendiente dejaba al editor con un equipo que el disco ya no registraba | Apagar y encender van en la misma fila que los cambios de equipo; un cambio que llega con el registro apagado no empieza sesión | `test:registro-app` 11 |
+| AUD-19 (R05, R07, F03) | El C++ de un proyecto entraba con un temporizador; uno que no abría perdía el C++ a mano; un C++ vacío se abría como bloques | El C++ entra en la misma carga; el respaldo se toma antes de cambiar nada; `texto` cadena (también vacía) es modo texto, null es bloques y otro tipo se rechaza | `test:proyectos`, `test:registro-app` 10 |
+| AUD-20 (R06) | El panel del instructor se quedaba con la cuenta del primer aviso de disco lleno | El aviso sale enseguida al empezar o terminar la falla, al cambiar el motivo o al perder líneas; lo que espera se avisa junto, cada 250 ms | `test:registro`, `test:registro-app` 6b |
+| AUD-21 (R09) | Un original que abre pero falla al leerse se le culpaba a la USB | La copia se hace en dos etapas, leer el original y escribir la copia: el lado del error es la etapa que falló. Una copia distinta del original es del destino (`TAMANO` o `DISTINTA`) | `test:registro` |
+| AUD-22 (R10, F01) | El hash se comprobaba sobre una lectura y se analizaba otra; con el archivo suelto antes que su carpeta, se perdían los bytes comprobados | Cada archivo se lee una vez; el mismo archivo por dos caminos se junta en un descriptor con los bytes comprobados y la restricción más exigente. Dos lecturas distintas del mismo archivo no concluyen | `test:historia` |
+| AUD-23 (R08) | La prueba de la pausa comparaba lo que la página sabía en dos momentos (una foto tardía legítima subía 22 ms) | En Chromium se compara la primera foto del Worker al seguir con lo que se sabía al seguir; en Node, el reloj del Worker durante la pausa y la foto tardía por separado | `probar_registro.py`, `probar:fotos` 16 |
+| AUD-24 (F04) | Guardar enseguida de abrir un proyecto llevaba los bloques sin las definiciones de los bloques propios | Las definiciones se sacan del programa en ese momento (`generarPrograma`, que también trae las que ellas llaman), no del último código generado | `test:proyectos` |
+| AUD-25 (F05) | Elegir A y después B podía abrir A si la lectura de A terminaba al final; Abrir abría lo de antes mientras se leía | Cada selección tiene su número; la lectura vieja no escribe, al elegir otro archivo la caja se vacía, Abrir espera, un error de lectura se dice y lo escrito a mano manda | `test:proyectos` |
+| AUD-26 (W-R1) | Una excepción del núcleo fuera de la foto cortaba el reloj del Worker; la página seguía «corriendo» y el cierre decía `confirmado: true` | Ver abajo | `probar:fotos` 15 |
+
+### Cuando el núcleo falla (AUD-26)
+
+```
+ ciclo del Worker ── nucleo.avanzar lanza ──► el reloj para a propósito, la corrida queda incompleta
+                                              y sale «error» con su turno y parado: true
+ una orden (reiniciar, recablear…) lanza ───► lo mismo; «seguir» no vuelve a arrancar un núcleo que falló
+ una foto no sale ──────────────────────────► AUD-16: se avisa, el reloj sigue y la corrida queda incompleta
+ la página recibe «error» de su corrida ────► no la da por entera; si el reloj paró, la cierra ya
+                                              (simulacion_detenida con confirmado: false)
+ error o messageerror del Worker (después de listo) ──► lo mismo; el de messageerror no la cierra
+```
+
+No se reintenta solo: si el error sigue, cada vez que se pulsa Simular la corrida para una vez y se cierra sin confirmar. El aviso de una corrida anterior (su turno es de antes) no toca la nueva. Sin Worker, el mismo código corre en la página y hace lo mismo.
+
+### Qué son la sesión y la corrida (D02)
+
+- **Sesión** (`sesion`): un identificador al azar por cada vez que un equipo confirma su código: al abrir la app, al cambiar de equipo o al encender otra vez el registro. Termina con `sesion_terminada` (otro código, apagar el registro o cerrar la app). Una apertura de la app puede tener varias sesiones, y un equipo, varias en el día; la historia cuenta cada una aparte.
+- **Corrida** (`corrida`): cuenta en el paquete mientras la página está abierta, no por sesión. Sube con cada `simulacion_iniciada` y no vuelve a 1 al cambiar de equipo: una sesión puede empezar en la corrida 4. Ninguna corrida cruza dos sesiones, porque TecnoBloques la cierra antes de terminar la sesión (AUD-04).
+
+El contrato (6.1) y el esquema decían «por cada vez que se abre la app» y «dentro de la sesión»: ahora dicen lo que hay.
+
+### Los 25 hallazgos de la revisión del 22 oct (D01)
+
+La entrega del 22 oct dijo «17 corregidos y 8 no». Estaba mal contado. Son 25 identificadores: 20 tuvieron cambio (TC-10, solo en parte) y 5 no. Esta matriz sale de los resultados originales de las dos revisiones.
+
+| ID | Hallazgo | Decisión | Qué se hizo o por qué no | Prueba |
+|---|---|---|---|---|
+| TB-1 | `quitarComentarios` no era idempotente: falso aviso AUD-01 | Corregir | El separador `\/**/` que ya está queda igual | `test:registro-preprocesador` (casos y 2000 al azar), `test:historia` |
+| TB-2 | Si apagar fallaba por el disco, el equipo quedaba sin sesión | Corregir | El equipo vuelve a su sesión | `test:registro-app` 10, «TB-2» |
+| TB-3 | «Cambiar a Nano» no rehacía el lienzo | Corregir | El lienzo se rehace | `test:registro-app` 10, «TB-3» |
+| TB-4 | Cambiar la placa mientras se preparaba la simulación | Corregir | No se simula si cambió la placa o el lienzo | `test:registro-app` 10, «TB-4» |
+| TB-5 | Exportar no intentaba escribir antes lo que esperaba | Corregir | Se vacía la cola antes de copiar | `test:registro`, «TB-5» |
+| TB-6 | Un original bloqueado se le culpaba a la USB | Corregir | Desde AUD-21, con la copia en dos etapas | `test:registro`, «TB-6» y «AUD-21» |
+| TB-7 | Un código confirmado durante otro cambio se perdía | Corregir | Fila de cambios de equipo (desde AUD-18, también con apagar) | `test:registro-app` 10, «TB-7», y 11 |
+| TB-8 | Un proyecto que no abría dejaba dos `placa_cambiada` | Corregir | Se registra solo si abre | `test:registro-app` 10, «TB-8» |
+| TB-9 | `programa_subido` tomaba la placa después de subir | Corregir | Desde AUD-17, del objeto de la subida | `test:registro-app` 10, «TB-9», y 11 |
+| TB-10 | Una librería con «-» quedaba como error «compilar» | Corregir | Una sola expresión para el registro y el mensaje | `test:registro-app` 10, «TB-10» |
+| TB-11 | Rendimiento: la configuración se lee dos veces por evento | No ahora | Riesgo de la tabla de la sección 70, con medición pendiente | — |
+| TB-12 | Rendimiento: la exportación es síncrona y en memoria | No ahora | Riesgo de la tabla; desde AUD-21 lee el original y la copia, lo mismo en memoria que antes | — |
+| TB-13 | Estructura: los controles `turno === turnoEquipo` repartidos | No ahora | Rediseño para después de la etapa 0 | — |
+| TB-14 | Rendimiento: la historia leía dos veces cada archivo | No ahora | Resuelto de paso por AUD-22: cada archivo se lee una vez | `test:historia`, «F01» y «AUD-22» |
+| TB-15 | Dos mensajes del instructor no decían qué hacer | Corregir | Mensajes con la acción | `test:registro-app` 10, «TB-2» (el mensaje del disco) |
+| TC-1 | Al RESET, lo pendiente salía en el tramo nuevo | Corregir | Una foto con el turno anterior antes del RESET | `probar:fotos` 13 |
+| TC-2 | Un cierre sin confirmar perdía fallas sin decirlo | Corregir | Campo `confirmado` (decisión de Efraín) | `probar:fotos` 10, `test:historia` |
+| TC-3 | Un cierre sin confirmar usaba el tiempo de la vista | Corregir | `msAhora()` | `probar:fotos` 10 |
+| TC-4 | La pausa y el RESET usaban el tiempo de la vista | Corregir | `msAhora()` | `probar:fotos` 11 |
+| TC-5 | Sin Worker, destruir sin esperar dejaba el reloj corriendo | Corregir | Terminar entrega el «detener» en el acto | `probar:fotos`, «sin Worker» |
+| TC-6 | Si la última foto fallaba, no llegaba «detenido» | Corregir | La confirmación sale igual, sin tiempo | `probar:fotos` 13 |
+| TC-7 | `activas` copiaba cualquier valor | Corregir | Solo las claves conocidas, como sí o no | `probar:fotos` 12 |
+| TC-8 | Estructura: el tiempo de cada hecho se infiere en la página | No ahora | Rediseño para después de la etapa 0 | — |
+| TC-9 | `destruir()` no soltaba sus oyentes del lienzo | Corregir | Se sueltan | `probar:fotos`, «oyentes» |
+| TC-10 | El tiempo va tres veces en `simulacion_detenida`, y la espera llamaba a `cierre.terminar()` | En parte | La espera llama a `este.terminar()`; el tiempo triple es del contrato y se queda | `probar:fotos` 10 (el cierre por la espera) |
+
+La cifra «17/8» no cuadra con los identificadores y no se puede reconstruir cómo se agrupó: la cuenta correcta es la de esta matriz, 20 con cambio (TC-10 en parte) y 5 sin cambio. Ningún hallazgo quedó sin decisión.
+
+### Lo que cambia en la tabla de riesgos de la sección 70
+
+- **Lecturas repetidas de la historia (TB-14):** resuelto por AUD-22. La historia lee cada archivo una vez.
+- **Exportación síncrona y en memoria (TB-12):** permanece. Desde AUD-21 lee el original y la copia completos, como antes leía la copia.
+- **Errores del núcleo (W-R1):** contenido por AUD-26. No se identificó una entrada válida que lo provoque; la contención se probó con fallas inyectadas.
+- **Avisos del disco:** el panel abierto ve lo que espera con un retraso de hasta 250 ms; las pérdidas y el fin de la falla se ven enseguida.
+- Los demás riesgos (K01 a K15 de Codex) quedan como estaban; ninguno se da por cerrado porque las pruebas pasen.
+
+**Pruebas:** en TecnoCircuito, `probar:fotos` suma las secciones 15 (AUD-26: avanzar falla una vez y siempre, RESET y recablear que fallan, el error del Worker, `messageerror`, un error viejo y la ruta sin Worker) y 16 (AUD-23); `probar_registro.py` mide la pausa con la primera foto al seguir. En TecnoBloques, `test:historia` (F01 y F02), `test:registro` (AUD-20 y AUD-21), `test:proyectos` (nueva: AUD-19, AUD-24 y AUD-25) y la sección 11 de `test:registro-app` (AUD-17 y AUD-18, más AUD-20 con el panel abierto). Las regresiones nuevas fallan con el código auditado; tres pruebas de exportación que inyectaban la falla en `copyFileSync` ahora la inyectan en la etapa que corresponde, con el mismo criterio.

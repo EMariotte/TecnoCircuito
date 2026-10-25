@@ -1,0 +1,602 @@
+diff --git a/BITACORA.md b/BITACORA.md
+index b90e904..c5a7d5a 100644
+--- a/BITACORA.md
++++ b/BITACORA.md
+@@ -1373,3 +1373,23 @@ Una falla está «corregida al final» si alguna corrida posterior a la última
+ ## 2026-10-21 · Historia del registro: el manifiesto de una exportación se valida como estructura (AUD-09-R1 de Codex)
+ 
+ `herramientas/historia-registro.js`, `camposMalos()`: `app`, `version_tb`, `t`, `completa`, `total`, `archivos` y `pendientes` obligatorios y con sus tipos (enteros seguros no negativos, sin convertir; un `pendientes` que falta no es cero); con `completa: false`, `faltan` y `error`. Si no es válido, la exportación no se admite. `test:historia` 192.
++
++## 2026-10-22 · Contrato 1: confirmado en el cierre; revisión final del registro (REG-005)
++
++Fase 5 del registro: revisión de código de los dos proyectos y corrección de lo que encontró (detalle y tabla de riesgos en COMO-FUNCIONA 70 de TecnoCircuito). Cada corrección tiene una regresión, que falla con el código anterior.
++
++- **Contrato 1 (aditivo):** `simulacion_detenida` suma `confirmado` (decisión de Efraín). La historia no compara una corrida con `confirmado: false`, sin avisarlo como defecto.
++- **`src/registro.js`:** `quitarComentarios` deja igual el `/**/` que ya separa una `\` suelta. Limpiar otra vez ya no cambia nada; antes la historia acusaba «C++ con comentarios» sobre un registro correcto. `test:registro-preprocesador` lo revisa en cada caso.
++- **`src/app.js`:**
++  - Si apagar el registro falla por el disco, el equipo vuelve a su sesión.
++  - «Cambiar a Nano» al subir rehace el lienzo.
++  - Si cambian la placa o el proyecto mientras se compila, la simulación no empieza.
++  - `programa_subido` toma la placa al empezar.
++  - Los cambios de equipo van en cola: un código confirmado mientras otro espera ya no se pierde.
++  - Un proyecto que no abre no deja `placa_cambiada`.
++  - Una librería con «-» es «libreria».
++  - Los mensajes del instructor dicen qué hacer.
++- **`escritorio/registro-disco.js`:** exportar intenta antes escribir lo que espera. Si la copia falla y el original no se puede abrir para leer, el error es del origen y no de la USB.
++- **`escritorio/preload.js`:** el comentario de `alDescarte` dice los estados anotado, pendiente y sin anotar.
++
++Pruebas: `test:registro` 204, `test:historia` 198, `test:registro-app` 115 (sección 10 nueva, con la app real; sus 7 regresiones fallan con el `app.js` anterior), `test:simulador` 53 y `test:registro-preprocesador` sin fallas.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index f7dff82..83b5e62 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -486,6 +486,7 @@ Un solo archivo JSON lleva todo lo necesario para **abrir el proyecto en otro co
+ > **21 oct 2026, contrato 1 (aditivo):** los eventos del simulador suman el campo opcional `tramo`: cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho (el RESET pone `ms_sim` en cero). Lo pone `simulador.js` de TecnoCircuito con el turno de cada foto, así una foto de antes del RESET que llega después conserva su tramo (INT-RES-03c de Codex, decisión de Efraín). TecnoBloques no cambia: copia el sobre tal cual. `herramientas/historia-registro.js` lo usa para comparar cada cierre con su tramo; un registro sin `tramo` se lee por el orden de escritura.
+ > **21 oct 2026, contrato 1 (aditivo):** la sección 6.1 suma el evento del editor `evento_descartado` (AUD-07, decisión de Efraín): un evento que no se puede guardar (más largo que 2 097 152 caracteres de JSON, que no se puede convertir a texto o sin tipo) deja este en su lugar, con `motivo` y, si se saben, `tipo`, `origen`, `corrida`, `largo` y `limite`. Lo escribe `escritorio/registro-disco.js` (o `src/registro.js`, si el evento no cruza a la app); la esquina dice «El registro perdió un evento · Avisen al instructor» hasta cerrar la app y el panel del instructor lo detalla. El lector lo cuenta como un hueco.
+ > **21 oct 2026, contrato 1 (solo redacción, auditorías de AUD-07/08):** la `t` de `evento_descartado` es la del evento perdido (si la traía); su `motivo` puede tener otros valores; una corrida empieza en el tramo 0, lo que emite la página lleva el tramo actual y una foto el de su turno. La esquina avisa los eventos perdidos solo del equipo que está trabajando (decisión de Efraín). Sin cambios de formato ni de validación.
++> **22 oct 2026, contrato 1 (aditivo, REG-005):** `simulacion_detenida` suma `confirmado` (decisión de Efraín): `false` si el cierre salió sin la confirmación del Worker (la espera de 500 ms, cerrar la ventana o una última foto que falló). TecnoBloques no cambia al escribir: copia el sobre. `herramientas/historia-registro.js` no compara una corrida con `confirmado: false`, sin avisarlo como defecto. Además, la sección 6.1 pasa a describir lo implementado: el tiempo de lo que emite la página, cómo se escribe y se exporta (`exportacion.json`), la excepción `/**/` del C++ sin comentarios y los límites para leer los datos (detalle en COMO-FUNCIONA 70 de TecnoCircuito).
+ 
+ > **18 oct 2026, contrato 1 (aditivo, AUD-03, decisión de Efraín):** `sim.detener()` y `sim.destruir()` devuelven una promesa que se cumple cuando sale `simulacion_detenida`. Ese cierre espera a que el Worker confirme que paró, así trae las fallas de las fotos que venían en camino (tope de 500 ms). `{ sinEsperar: true }` lo saca ya. TecnoBloques: `detenerSimulacion()` devuelve esa promesa; `cerrarTrabajoDelEquipo()` la espera antes de cerrar la sesión de un equipo (cambiar de código, apagar el registro); `simular()` la espera antes de compilar; al cerrar la ventana usa `sinEsperar` (límite declarado). Un segundo clic en «Sí, somos ese equipo» mientras espera no abre otra sesión (`cambiandoEquipo`).
+ 
+diff --git a/escritorio/preload.js b/escritorio/preload.js
+index e5213bb..199d24b 100644
+--- a/escritorio/preload.js
++++ b/escritorio/preload.js
+@@ -21,7 +21,11 @@ contextBridge.exposeInMainWorld('tbEscritorio', {
+     escribir: (linea) => ipcRenderer.send('tb:registrar', linea),
+     /** fn({falla, fin}): falla = {motivo, desde, pendientes, perdidos} o null; fin = 'escrito' | 'apagado' al terminar */
+     alFalla: (fn) => { ipcRenderer.on('tb:registro-falla', (_e, d) => fn(d)); },
+-    /** fn({cantidad, sinAnotar, ultimo: {tipo, motivo, t}}): un evento no se pudo guardar y quedó anotado (AUD-07) */
++    /**
++     * fn({cantidad, anotados, pendientes, sinAnotar, ultimo: {tipo, motivo, t}, sesiones}): un evento no se pudo guardar
++     * (AUD-07). Su evento_descartado está anotado (escrito), pendiente (espera al disco) o sin anotar; `sesiones`, por
++     * sesión. La cuenta es desde que se abrió la app.
++     */
+     alDescarte: (fn) => { ipcRenderer.on('tb:registro-descartado', (_e, d) => fn(d)); },
+   },
+   alProgreso: (fn) => {
+diff --git a/escritorio/registro-disco.js b/escritorio/registro-disco.js
+index 95cb7d4..109e3be 100644
+--- a/escritorio/registro-disco.js
++++ b/escritorio/registro-disco.js
+@@ -182,6 +182,9 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+     }
+   }
+   const tamano = (archivo) => { try { return fs.statSync(archivo).size; } catch (e) { if (e.code === 'ENOENT') return 0; throw e; } };
++  /** De qué lado falló una copia: si el original no se puede abrir para leer (ya no está, bloqueado por otro programa,
++   * sin permiso), del origen; si se puede, del destino. Antes bastaba con que existiera (REG-005, TB-6). */
++  const ladoDelError = (origen) => { try { fs.closeSync(fs.openSync(origen, 'r')); return 'destino'; } catch (e) { return 'origen'; } };
+   /**
+    * Agrega una línea entera o nada (AUD-02-V1). Si la escritura falla a medias (el disco se llenó en la mitad), corta
+    * el archivo al tamaño que tenía; si ni eso se puede, no se vuelve a escribir en él hasta cortarlo. La primera vez que
+@@ -435,7 +438,8 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+       try { return listar(); } catch (e) { return []; }
+     },
+     /**
+-     * Copia los .jsonl a una carpeta nueva dentro de `destino`. Pide el PIN. Lo que espera en la cola no va.
++     * Copia los .jsonl a una carpeta nueva dentro de `destino`. Pide el PIN. Antes intenta escribir lo que espera; lo que
++     * siga esperando no va (`pendientes` en exportacion.json).
+      * Cada exportación tiene su propia carpeta, aunque haya otra del mismo minuto (AUD-08): se reserva con mkdir sin
+      * `recursive`, que falla si ya existe, y se prueba con -2, -3… Ningún archivo se copia encima de otro. Al final va
+      * exportacion.json, con el nombre, los bytes y el sha256 de cada archivo copiado y `completa: true`; si una copia
+@@ -447,6 +451,10 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+     exportar({ pin, destino }) {
+       const r = comprobar(pin);
+       if (!r.ok) return r;
++      // Lo que espera se intenta escribir antes de copiar: si el disco ya se recuperó, va en la copia y no queda como
++      // pendiente (REG-005, TB-5)
++      vaciar();
++      avisarSiCambio();
+       const noSePudo = (donde, e, extra) => ({ ok: false, motivo: 'disco', donde, codigo: String((e && e.code) || 'DESCONOCIDO'), mensaje: e && e.message, ...extra });
+       let archivos;
+       try { archivos = listar(); } catch (e) { return noSePudo('origen', e); }
+@@ -474,7 +482,7 @@ function crearRegistroDisco({ carpeta, ahora = () => Date.now(), alCambiar = ()
+           if (contenido.length !== tamano) throw Object.assign(new Error(`la copia tiene ${contenido.length} bytes y el original ${tamano}`), { code: 'TAMANO' });
+           copiados.push({ archivo: f, bytes: contenido.length, sha256: crypto.createHash('sha256').update(contenido).digest('hex') });
+         } catch (e) {
+-          error = { archivo: f, codigo: String(e.code || 'DESCONOCIDO'), mensaje: e.message, donde: fs.existsSync(origen) ? 'destino' : 'origen' };
++          error = { archivo: f, codigo: String(e.code || 'DESCONOCIDO'), mensaje: e.message, donde: ladoDelError(origen) };
+           // El pedazo que alcanzó a copiarse no se deja: terminaría en .jsonl y parecería un registro entero
+           if (e.code !== 'EEXIST') try { fs.rmSync(destinoArchivo, { force: true }); } catch (e2) { /* lo dice exportacion.json */ }
+           break;
+diff --git a/herramientas/historia-registro.js b/herramientas/historia-registro.js
+index 73c29dd..c276b76 100644
+--- a/herramientas/historia-registro.js
++++ b/herramientas/historia-registro.js
+@@ -849,6 +849,9 @@ function contarSesion({ sesion, equipo, segmentos, dudas: dudasDelGrupo, sinComp
+           aviso(`El cierre de la corrida ${n} dice ${datos.ms_sim} ms simulados y su sobre ${ev.ms_sim}.`);
+           c.contradicciones.push('su cierre dice dos tiempos simulados distintos');
+         }
++        // Un cierre sin la confirmación del simulador (la espera de 500 ms, cerrar la ventana): pudieron quedar fallas en
++        // camino, así que la corrida no se compara. No es un defecto del registro: no se avisa (REG-005, TC-2)
++        if (datos.confirmado === false) contradice(c, 'se cerró sin la confirmación del simulador (pudieron quedar fallas sin llegar)');
+         if (!c.cierres.length) { // se cierra ahora: las que empezaron mientras seguía abierta se cruzaron con ella
+           for (const x of h.corridas) {
+             if (x === c || !x.abiertas.includes(n)) continue;
+diff --git a/src/app.js b/src/app.js
+index 4a210ff..9801dce 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -859,7 +859,8 @@ function cargarProyecto(p, silencioso, sinRespaldo) {
+   embebidos = p.embebidos || {};
+   extrasProyecto = {};
+   Object.keys(p).forEach(k => { if (!CAMPOS_PROYECTO.includes(k)) extrasProyecto[k] = p[k]; });
+-  if (p.placa && PLACAS[p.placa]) ponerPlaca(p.placa);
++  const placaAntes = placaActual;
++  if (p.placa && PLACAS[p.placa]) ponerPlaca(p.placa, { registrar: false }); // se registra si el proyecto abre (abajo)
+   if ([1, 2, 3].includes(p.nivel)) ponerNivel(p.nivel, { vista: !silencioso, aviso: !silencioso });
+   $('nombreProyecto').value = p.nombre || 'Mi proyecto';
+   Blockly.Events.disable();
+@@ -870,6 +871,9 @@ function cargarProyecto(p, silencioso, sinRespaldo) {
+     if (masNuevo) return `Este proyecto se hizo con TecnoBloques ${p.creadoCon || 'más nuevo'} y usa bloques que esta versión (${TB_VERSION}) no conoce. Actualiza TecnoBloques para abrirlo.`;
+     return 'No se pudo abrir el proyecto: ' + e.message;
+   }
++  // El cambio de placa queda en el registro solo si el proyecto abrió: uno que no abre vuelve al anterior sin dejar
++  // dos cambios que nadie hizo (REG-005, TB-8). La vuelta atrás (sinRespaldo) no cambia nada.
++  if (!sinRespaldo && placaActual !== placaAntes) registrarEditor('placa_cambiada', { de: placaAntes, a: placaActual });
+   asegurarPrograma();
+   encuadrar();
+   if (p.texto) setTimeout(() => entrarModoTexto(p.texto, ''), 200);
+@@ -1351,7 +1355,8 @@ async function subirPlaca(forzar) {
+       botones: [
+         { texto: 'Subir igual', accion: () => { setTimeout(() => subirPlaca(true), 50); } },
+         { texto: `Cambiar a ${PLACAS[detectada].nombre}`, primario: true, accion: () => {
+-          ponerPlaca(detectada); refrescarPines(); actualizar(); setTimeout(() => subirPlaca(true), 50);
++          // Como el selector de placa: también el lienzo pasa a la placa nueva (REG-005, TB-3)
++          ponerPlaca(detectada); refrescarPines(); abrirLienzo(); actualizar(); setTimeout(() => subirPlaca(true), 50);
+         } }
+       ]
+     });
+@@ -1359,6 +1364,7 @@ async function subirPlaca(forzar) {
+   }
+   if (!estado.texto) actualizar(); // el código más reciente de los bloques
+   const turno = turnoEquipo; // antes de la primera espera: la subida es del equipo que pulsó Subir (AUD-04)
++  const placaSubida = placaActual; // y de la placa para la que se compila (REG-005, TB-9)
+   const reconectar = serial.conectado;
+   if (reconectar) await desconectarSerial(); // el puerto no se puede compartir con la carga
+   puertos.ocupado = true;
+@@ -1383,7 +1389,7 @@ async function subirPlaca(forzar) {
+   finally { quitar(); puertos.ocupado = false; }
+   if (turno === turnoEquipo) { // si cambió el equipo mientras subía, no es del equipo nuevo (AUD-04)
+     registrarCompilacion(r, codigoSubido);
+-    if (r.etapa === 'subir') registrarEditor('programa_subido', { ok: r.ok, placa: placaActual });
++    if (r.etapa === 'subir') registrarEditor('programa_subido', { ok: r.ok, placa: placaSubida });
+   }
+   if (r.ok) {
+     const m = r.memoria || {};
+@@ -1401,6 +1407,8 @@ async function subirPlaca(forzar) {
+     modal({ titulo: ex.titulo, cuerpo: ex.cuerpo.concat([el('details', { class: 'subir-detalle' }, el('summary', null, 'Ver el mensaje completo'), el('pre', null, r.salida || ''))]) });
+   }
+ }
++// Falta una librería: el nombre puede llevar -, + o una carpeta (avr/...). Lo usan explicarError y el registro (REG-005, TB-10).
++const ERROR_LIBRERIA = /fatal error: ([\w./+-]+)\.h: No such file/;
+ /** Traduce lo que dicen el compilador y avrdude a algo que un aprendiz pueda arreglar. */
+ function explicarError(r, puerto) {
+   const s = r.salida || '';
+@@ -1408,7 +1416,7 @@ function explicarError(r, puerto) {
+   if (r.etapa === 'cancelado') return { titulo: 'Subida cancelada', cuerpo: [el('p', null, 'No se cambió nada en la placa. Revisa la placa y el puerto de arriba y vuelve a intentarlo.')] };
+   if (r.etapa === 'ocupado') return { titulo: 'Espera un momento', cuerpo: [el('p', null, 'Ya se está subiendo un programa.')] };
+   if (r.etapa === 'compilar') {
+-    const lib = /fatal error: ([\w]+)\.h: No such file/.exec(s);
++    const lib = ERROR_LIBRERIA.exec(s);
+     if (lib) return { titulo: 'Falta una librería', cuerpo: [el('p', null, `Este computador no tiene la librería ${NOMBRES_LIB[lib[1]] || lib[1]}. Pídele al instructor que actualice TecnoBloques.`)] };
+     if (/Sketch too big|text section exceeds/.test(s)) return { titulo: 'El programa no cabe', cuerpo: [el('p', null, `Es muy grande para la memoria del ${placa().nombre}. Quita bloques que no uses o textos largos, o usa un Arduino Mega.`)] };
+     if (/data section exceeds|not enough memory/i.test(s)) return { titulo: 'No alcanza la memoria', cuerpo: [el('p', null, 'El programa usa más memoria de variables de la que tiene la placa. Usa menos textos largos o variables.')] };
+@@ -1509,7 +1517,9 @@ let tResumenBloques = null;
+ // AUD-04: lo que hace un equipo queda en su sesión. turnoEquipo sube cada vez que cambia el equipo (o termina su
+ // sesión): una compilación que empezó con otro turno ya no es de nadie y se descarta (decisión de Efraín, 18 oct).
+ let turnoEquipo = 0;
+-let cambiandoEquipo = false; // mientras se espera el cierre de la corrida del equipo anterior (AUD-03)
++// Los cambios de equipo, uno detrás de otro: cada uno espera el cierre de la corrida del equipo anterior (AUD-03). Un
++// código confirmado mientras otro cambio espera ya no se pierde: se hace después (REG-005, TB-7).
++let cambioDeEquipo = Promise.resolve();
+ 
+ function pintarAvisoRegistro() {
+   const a = $('avisoRegistro');
+@@ -1652,14 +1662,13 @@ function confirmarEquipo(codigo) {
+       { texto: 'Corregir', accion: () => { setTimeout(() => pedirEquipo(codigo), 50); } },
+       { texto: 'Sí, somos ese equipo', primario: true, accion: async () => {
+         // El mismo equipo sigue en su sesión, con su simulación (AUD-04). Un segundo clic mientras se cierra la
+-        // corrida del equipo anterior no abre otra sesión.
+-        if (registroEventos.equipo() !== codigo && !cambiandoEquipo) {
+-          cambiandoEquipo = true;
+-          try {
+-            if (await cerrarTrabajoDelEquipo()) mostrarToast('La simulación se detuvo porque cambió el equipo. Pulsen «Simular» para empezar la suya.');
+-            registroEventos.empezar(codigo, { placa: placaActual, nivel: nivelActual });
+-          } finally { cambiandoEquipo = false; }
+-        }
++        // corrida del equipo anterior no abre otra sesión: cuando le toca, ya es su equipo.
++        cambioDeEquipo = cambioDeEquipo.then(async () => {
++          if (registroEventos.equipo() === codigo) return;
++          if (await cerrarTrabajoDelEquipo()) mostrarToast('La simulación se detuvo porque cambió el equipo. Pulsen «Simular» para empezar la suya.');
++          registroEventos.empezar(codigo, { placa: placaActual, nivel: nivelActual });
++        }).catch((e) => console.error(e));
++        await cambioDeEquipo;
+         pintarAvisoRegistro();
+       } }
+     ],
+@@ -1681,11 +1690,14 @@ function cerrarTrabajoDelEquipo(opciones) {
+ }
+ /** Lo que pasa en el editor: si no hay equipo, registroEventos no escribe nada. */
+ function registrarEditor(tipo, datos) { registroEventos.editor(tipo, datos); }
+-/** Cambia la placa elegida y, si de verdad cambió, lo deja en el registro antes de lo que provoca (REG-004). */
+-function ponerPlaca(nueva) {
++/**
++ * Cambia la placa elegida y, si de verdad cambió, lo deja en el registro antes de lo que provoca (REG-004). Abrir un
++ * proyecto lo registra él mismo, solo si abre ({ registrar: false }).
++ */
++function ponerPlaca(nueva, { registrar = true } = {}) {
+   const de = placaActual;
+   placaActual = nueva; $('placa').value = nueva;
+-  if (nueva !== de) registrarEditor('placa_cambiada', { de, a: nueva });
++  if (registrar && nueva !== de) registrarEditor('placa_cambiada', { de, a: nueva });
+ }
+ /** Un resumen de los bloques unos segundos después del último cambio (no el XML). */
+ function programarResumenBloques() {
+@@ -1702,7 +1714,7 @@ function escribirResumenBloques() {
+ function tipoErrorCompilacion(r) {
+   if (r.ok) return null;
+   const s = r.salida || '';
+-  if (/fatal error: [\w]+\.h: No such file/.test(s)) return 'libreria';
++  if (ERROR_LIBRERIA.test(s)) return 'libreria';
+   if (/Sketch too big|text section exceeds/.test(s)) return 'memoria_programa';
+   if (/data section exceeds|not enough memory/i.test(s)) return 'memoria_variables';
+   const m = /\.ino:\d+:\d+: error: (.*)/.exec(s);
+@@ -1732,7 +1744,8 @@ function campoPin(id, etiqueta) {
+ }
+ const MOTIVOS_PIN = {
+   pin: 'Ese no es el PIN.', 'pin-invalido': 'El PIN debe tener de 4 a 8 dígitos.', espera: 'Demasiados intentos. Espera un minuto.',
+-  'config-ilegible': 'La configuración está dañada: confirma que quieres crear un PIN nuevo.', disco: 'No se pudo guardar en el disco.'
++  'config-ilegible': 'La configuración está dañada: confirma que quieres crear un PIN nuevo.',
++  disco: 'No se pudo guardar en el disco. Revisa que haya espacio libre y vuelve a intentarlo.'
+ };
+ /** Crear el PIN del instructor: la primera vez o, con la configuración dañada, uno nuevo (`reemplazarIlegible`). */
+ function crearPinInstructor(reemplazarIlegible) {
+@@ -1811,9 +1824,17 @@ function panelInstructor(pin, estado) {
+         return false;
+       } }] : []),
+       { texto: estado.activo ? 'Apagar el registro' : 'Encender el registro', accion: async () => {
++        const equipoAntes = registroEventos.equipo();
+         if (estado.activo) { await cerrarTrabajoDelEquipo(); registroEventos.terminar(); } // la última línea del equipo, antes de apagar
+         const r = await escritorio.registro.instructor({ accion: 'activar', pin, activo: !estado.activo });
+-        if (!r.ok) { nota.textContent = MOTIVOS_PIN[r.motivo] || 'No se pudo cambiar.'; return false; }
++        if (!r.ok) {
++          // No se apagó: el registro sigue encendido y el equipo vuelve a su sesión, para que lo que haga no se pierda
++          // sin aviso (REG-005, TB-2)
++          if (estado.activo && equipoAntes) registroEventos.empezar(equipoAntes, { placa: placaActual, nivel: nivelActual });
++          pintarAvisoRegistro();
++          nota.textContent = MOTIVOS_PIN[r.motivo] || 'No se pudo cambiar. Vuelve a intentarlo.';
++          return false;
++        }
+         registroEncendido = r.activo;
+         registroFalla = r.falla || null;
+         pintarAvisoRegistro();
+@@ -1831,7 +1852,7 @@ function panelInstructor(pin, estado) {
+         // copia a medias queda marcada como incompleta en su exportacion.json
+         if (r.motivo === 'copia-incompleta') nota.textContent = `La copia quedó incompleta en ${r.carpeta}: se copiaron ${r.copiados} de ${r.total} archivos (${textoErrorExportar(r)}). Vuelve a exportar.`;
+         else if (r.motivo === 'disco') nota.textContent = `No se pudo exportar: ${textoErrorExportar(r)}.`;
+-        else if (r.motivo !== 'cancelado') nota.textContent = r.motivo === 'sin-archivos' ? 'Todavía no hay registros en este computador.' : (MOTIVOS_PIN[r.motivo] || 'No se pudo copiar.');
++        else if (r.motivo !== 'cancelado') nota.textContent = r.motivo === 'sin-archivos' ? 'Todavía no hay registros en este computador.' : (MOTIVOS_PIN[r.motivo] || 'No se pudo copiar. Revisa la carpeta elegida y vuelve a exportar.');
+         return false;
+       } },
+       { texto: 'Cambiar el PIN', accion: () => { setTimeout(() => cambiarPin(pin), 50); } },
+@@ -1904,16 +1925,21 @@ async function simular() {
+   if (!estado.texto) actualizar(); // el código más reciente de los bloques
+   const codigo = codigoActual();
+   const turno = turnoEquipo;
++  // El .hex es de esta placa y para este lienzo: si mientras se prepara cambian la placa o abren otro proyecto o
++  // ejemplo, no se simula en el lienzo nuevo (REG-005, TB-4)
++  const placaCompilada = placaActual;
++  const lienzo = simulador.lienzo;
++  const cambioLienzo = () => placaActual !== placaCompilada || simulador.lienzo !== lienzo;
+   simulador.compilando = true;
+   uiSimulador('Preparando tu programa…');
+   await cierreAnterior; // el cierre de la corrida anterior queda antes que lo de esta (AUD-03)
+   let r;
+-  try { r = await escritorio.compilarHex({ codigo, fqbn: placa().fqbn }); }
++  try { r = await escritorio.compilarHex({ codigo, fqbn: PLACAS[placaCompilada].fqbn }); }
+   catch (e) { r = { ok: false, etapa: 'app', salida: e.message }; }
+   if (turno === turnoEquipo) registrarCompilacion(r, codigo);
+   // El monitor muestra la simulación: la placa real se desconecta antes. Es la última espera; después ya no hay
+   // ninguna hasta iniciar, así que el turno se revisa una sola vez y nada preparado queda para otro equipo (AUD-04-V1).
+-  if (turno === turnoEquipo && r.ok && r.hex && serial.conectado) await desconectarSerial();
++  if (turno === turnoEquipo && !cambioLienzo() && r.ok && r.hex && serial.conectado) await desconectarSerial();
+   simulador.compilando = false;
+   if (turno !== turnoEquipo) {
+     // El equipo cambió mientras se preparaba: la simulación no es del equipo nuevo (AUD-04).
+@@ -1921,6 +1947,11 @@ async function simular() {
+     mostrarToast('Cambió el equipo mientras se preparaba el programa. Pulsen «Simular» otra vez.');
+     return;
+   }
++  if (cambioLienzo()) {
++    uiSimulador();
++    mostrarToast('Cambiaste la placa o el proyecto mientras se preparaba el programa. Pulsa «Simular» otra vez.');
++    return;
++  }
+   if (!r.ok || !r.hex) {
+     uiSimulador();
+     const ex = explicarError(r, '');
+diff --git a/src/registro.js b/src/registro.js
+index 2259388..81817e8 100644
+--- a/src/registro.js
++++ b/src/registro.js
+@@ -64,8 +64,12 @@ function quitarComentarios(codigo) {
+         pegar(fuera, c.slice(copia, i));
+         if (!bloque) quitarEspaciosAlFinal(fuera);
+         // Una \ suelta justo antes del comentario, pegada al salto, sería un empalme y uniría dos líneas: el comentario
+-        // vacío /**/ la separa (no lleva nada del comentario).
+-        if (terminaEnBarra(fuera)) pegar(fuera, '/**/');
++        // vacío /**/ la separa (no lleva nada del comentario). Si ya está ese separador, queda igual: limpiar otra vez
++        // un código limpio no lo cambia, y la historia lo revisa así (REG-005, TB-1).
++        if (terminaEnBarra(fuera)) {
++          pegar(fuera, '/**/');
++          if (c.slice(i, fin) === '/**/') { i = copia = fin; continue; }
++        }
+         const saltos = c.slice(i, fin).match(/\r\n|\r|\n/g);
+         if (!saltos) pegar(fuera, bloque ? ' ' : '');
+         else if (bloque && (enDirectiva || (!inicioDeLinea && sigueAlmohadilla(c, fin, almohadilla)))) {
+diff --git a/test/historia-registro.js b/test/historia-registro.js
+index aa20145..a3b4dbc 100644
+--- a/test/historia-registro.js
++++ b/test/historia-registro.js
+@@ -912,6 +912,37 @@ try {
+   } finally { fs.rmSync(carpeta, { recursive: true, force: true }); }
+ }
+ 
++// ---- Revisión de REG-005 (22 oct)
++// TB-1: el C++ que guarda la app con el separador /**/ de una \ suelta no es «C++ con comentarios» (antes, limpiarlo
++// otra vez agregaba un espacio y la historia avisaba AUD-01 sobre un registro correcto)
++{
++  const B = String.fromCharCode(92);
++  const guardados = ['int x = 1; ' + B + ' // nota\nint y;\n', 'int a = 1; ' + B + '/* a\nb */ int b;\n', '#define M a ' + B + '// x\nint z;\n'].map(quitarComentarios);
++  const separador = sesionCon(() => { for (const g of guardados) compila(g); });
++  revisar(guardados.every((g) => g.includes(B + '/**/')) && !con(separador, 'AUD-01'), `TB-1: el C++ con el separador /**/ no se acusa de tener comentarios (${separador.avisos.length} avisos)`);
++  const conComentario = sesionCon(() => { compila('int x = 1; // nota\n'); });
++  revisar(con(conComentario, 'AUD-01'), 'control TB-1: un C++ con un comentario de verdad sí se avisa');
++}
++// TC-2: un cierre sin la confirmación del simulador (confirmado: false) deja la corrida sin comparar, sin aviso; con
++// confirmado true o sin el campo (registros de antes del 22 oct), se compara como siempre
++{
++  const cerrarCon = (n, fallas, confirmado) => { pasar(1); sim('simulacion_detenida', n, 1000, { ms_sim: 1000, fallas: fallas.map((tipo) => ({ tipo, componente: 'led1' })), ...(confirmado === undefined ? {} : { confirmado }) }); };
++  const dos = (n, confirmado) => sesionCon(() => {
++    iniciar(n, 'realista', [LED], [{}, {}]); quemado(n); cerrarCon(n, ['led_quemado'], confirmado);
++    iniciar(n + 1, 'realista', [LED, R1], [{}, {}, {}]); cerrarCon(n + 1, [], true);
++  });
++  const sinConfirmar = dos(170, false);
++  revisar(sinConfirmar.corridas[0].contradicciones.includes('se cerró sin la confirmación del simulador (pudieron quedar fallas sin llegar)') &&
++    sinConfirmar.corridas[1].corrigio === null && !sinConfirmar.resumen.includes(CORREGIDA) && !sinConfirmar.avisos.length,
++  `TC-2: la corrida cerrada sin confirmación no se compara y no se avisa («${pasoDe(sinConfirmar, 171)}»)`);
++  for (const [n, confirmado] of [[172, true], [174, undefined]]) {
++    const h = dos(n, confirmado);
++    revisar(h.corridas[1].corrigio.length === 1 && h.resumen.endsWith(CORREGIDA) && !h.avisos.length, `control TC-2: con confirmado ${confirmado} se compara como siempre`);
++  }
++  const ultima = sesionCon(() => { iniciar(176, 'realista', [LED], [{}, {}]); quemado(176); cerrarCon(176, ['led_quemado'], false); });
++  revisar(ultima.resumen.includes('no se puede asegurar, porque la corrida 176 se cerró sin la confirmación del simulador'), `TC-2: si es la última corrida, el final no se asegura («${ultima.resumen}»)`);
++}
++
+ // ---- La línea de comandos (INT-06, INT-07 y la decisión 3): siempre muestra la historia y sale con 1 si hay problemas
+ const cli = path.join(__dirname, '..', 'herramientas', 'historia-registro.js');
+ const correr = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8' });
+diff --git a/test/registro-app.js b/test/registro-app.js
+index 4d441ca..bd8190a 100644
+--- a/test/registro-app.js
++++ b/test/registro-app.js
+@@ -437,7 +437,9 @@ const LED = {
+     confirmarEquipo('J7');
+     $('modalAcciones').querySelector('.primario').click(); // «Sí, somos ese equipo», con el cierre de I6 pendiente
+     await new Promise((r) => setTimeout(r, 30));
+-    const antes = { equipo: registroEventos.equipo(), cambiando: cambiandoEquipo, ms: Math.round(performance.now() - t0) };
++    // El cambio de equipo sigue esperando: su promesa en la cola todavía no se cumplió (REG-005: la cola reemplaza la bandera)
++    const cambiando = await Promise.race([cambioDeEquipo.then(() => false), new Promise((r) => setTimeout(() => r(true), 0))]);
++    const antes = { equipo: registroEventos.equipo(), cambiando, ms: Math.round(performance.now() - t0) };
+     __ret.soltar();
+     await __detener;
+     return antes;
+@@ -745,7 +747,130 @@ const LED = {
+   revisar((await esquina()).texto === 'Esta sesión se registra · Falta el código del equipo', 'AUD-07: al abrir otra vez, la cuenta empieza de cero (es desde que se abrió la app)');
+   await app.close();
+   fs.rmSync(datos2, { recursive: true, force: true });
+-  revisar(!errores.length, 'sin errores en la consola, también en la sección 9' + (errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''));
++
++  // 10. REG-005 (22 oct): lo que encontró la revisión de código de la app, con la app real. En otra carpeta de datos.
++  const datos3 = path.join(os.tmpdir(), 'tecnobloques-prueba-registro-app-3');
++  if (path.dirname(path.resolve(datos3)) !== path.resolve(os.tmpdir())) throw new Error('Ruta temporal inesperada');
++  fs.rmSync(datos3, { recursive: true, force: true });
++  const registros3 = path.join(datos3, 'registros');
++  const leerRegistro3 = () => (fs.existsSync(registros3) ? fs.readdirSync(registros3).filter((f) => f.endsWith('.jsonl')) : [])
++    .flatMap((f) => fs.readFileSync(path.join(registros3, f), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)));
++  const cambiarSelector = (placa) => win.evaluate((p) => { const s = $('placa'); s.value = p; s.dispatchEvent(new Event('change')); }, placa);
++  ({ app, win } = await abrir(datos3));
++  await win.keyboard.press('Control+Alt+Shift+KeyR');
++  await win.waitForTimeout(300);
++  await win.locator('#pinNuevo').fill('1357');
++  await win.locator('#pinRepetido').fill('1357');
++  await boton(win, 'Crear PIN');
++  await win.waitForTimeout(300);
++  await boton(win, 'Encender el registro');
++  await win.waitForTimeout(400);
++  await win.locator('#codigoEquipo').fill('N1');
++  await win.locator('#codigoEquipo').press('Enter');
++  await win.waitForTimeout(200);
++  await boton(win, 'Sí, somos ese equipo');
++  await win.waitForTimeout(300);
++
++  // TB-10: una librería con - en el nombre es «libreria» en el registro y en lo que ve el aprendiz
++  const lib = await win.evaluate(() => {
++    const r = { ok: false, etapa: 'compilar', salida: 'C:\\x\\x.ino:1:10: fatal error: Adafruit-GFX.h: No such file or directory' };
++    return [tipoErrorCompilacion(r), explicarError(r, '').titulo];
++  });
++  revisar(lib[0] === 'libreria' && lib[1] === 'Falta una librería', `TB-10: Adafruit-GFX.h es «libreria» y «Falta una librería» (${lib.join(', ')})`);
++
++  // TB-8: un proyecto que no abre (un bloque que esta versión no conoce) no deja cambios de placa; uno que abre, uno
++  let desde = leerRegistro3().length;
++  const noAbrio = await win.evaluate(() => cargarProyecto({ app: 'TecnoBloques', placa: 'nano', nivel: 1,
++    bloques: { blocks: { languageVersion: 0, blocks: [{ type: 'bloque_que_no_existe', x: 0, y: 0 }] } } }, true));
++  await win.waitForTimeout(400);
++  const trasNoAbrio = leerRegistro3().slice(desde);
++  revisar(noAbrio !== true && await win.evaluate(() => placaActual) === 'uno' && !trasNoAbrio.some((l) => l.tipo === 'placa_cambiada'),
++    `TB-8: el proyecto que no abre vuelve a la placa de antes sin cambios de placa en el registro (${trasNoAbrio.map((l) => l.tipo).join(', ') || 'nada'})`);
++  desde = leerRegistro3().length;
++  const abrio = await win.evaluate(() => cargarProyecto({ app: 'TecnoBloques', placa: 'nano', nivel: 1, bloques: { blocks: { languageVersion: 0, blocks: [] } } }, true));
++  await win.waitForTimeout(400);
++  const cambios = leerRegistro3().slice(desde).filter((l) => l.tipo === 'placa_cambiada');
++  revisar(abrio === true && cambios.length === 1 && cambios[0].datos.de === 'uno' && cambios[0].datos.a === 'nano', 'control TB-8: el proyecto que abre deja un placa_cambiada uno → nano');
++  await cambiarSelector('uno');
++  await win.waitForTimeout(400);
++
++  // TB-3: «Cambiar a Nano» al subir (la placa conectada no coincide) también pasa el lienzo a la placa nueva
++  await win.evaluate(() => {
++    const s = $('puerto');
++    s.append(el('option', { value: 'COM98' }, 'COM98'));
++    s.value = 'COM98';
++    window.placaDetectada = () => 'nano';
++    window.subirOriginal = subirPlaca;
++    subirPlaca();
++  });
++  await win.waitForTimeout(300);
++  const tituloNoCoincide = await titulo(win);
++  await win.evaluate(() => { window.subirPlaca = async () => {}; }); // la subida no es de esta parte
++  await boton(win, 'Cambiar a');
++  await win.waitForTimeout(500);
++  const lienzoNano = await win.evaluate(() => [placaActual, simulador.lienzo && simulador.lienzo.circuito().placa]);
++  revisar(tituloNoCoincide === 'La placa no coincide' && lienzoNano.join() === 'nano,nano', `TB-3: «Cambiar a Nano» cambia la placa y el lienzo (${lienzoNano.join(', ')})`);
++
++  // TB-9: programa_subido dice la placa para la que se compiló, aunque la cambien mientras sube (a un puerto que no existe)
++  desde = leerRegistro3().length;
++  await win.evaluate(() => { window.subirPlaca = window.subirOriginal; subirPlaca(true); });
++  await win.waitForTimeout(300);
++  await cambiarSelector('uno');
++  const subio = await esperar(win, () => !puertos.ocupado && !/^Subir a/.test($('modalTitulo').textContent), 120000);
++  await win.waitForTimeout(400);
++  const subido = leerRegistro3().slice(desde).find((l) => l.tipo === 'programa_subido');
++  revisar(subio && subido && subido.datos.placa === 'nano' && subido.datos.ok === false,
++    `TB-9: subir al Nano y cambiar a Uno mientras sube: programa_subido dice ${subido ? subido.datos.placa : '(no salió)'}`);
++  await win.keyboard.press('Escape');
++  await win.waitForTimeout(200);
++
++  // TB-4: cambiar la placa mientras se prepara la simulación: no se simula en el lienzo nuevo
++  desde = leerRegistro3().length;
++  await win.evaluate(() => { simular(); setTimeout(() => { const s = $('placa'); s.value = 'nano'; s.dispatchEvent(new Event('change')); }, 100); });
++  const preparo = await esperar(win, () => !simulador.compilando, 120000);
++  await win.waitForTimeout(500);
++  const trasSimular = leerRegistro3().slice(desde).map((l) => l.tipo);
++  revisar(preparo && await win.evaluate(() => !simulador.sim) && trasSimular.includes('codigo_compilado') && !trasSimular.includes('simulacion_iniciada'),
++    `TB-4: la placa cambió mientras se preparaba: no hay simulación (${trasSimular.join(', ')})`);
++
++  // TB-7: dos códigos confirmados seguidos, el segundo mientras el primero espera: los dos cambios se hacen, en orden
++  desde = leerRegistro3().length;
++  const equipoFinal = await win.evaluate(async () => {
++    confirmarEquipo('N2'); document.querySelector('#modalAcciones .primario').click();
++    confirmarEquipo('N3'); document.querySelector('#modalAcciones .primario').click();
++    await cambioDeEquipo;
++    return registroEventos.equipo();
++  });
++  await win.waitForTimeout(400);
++  const inicios = leerRegistro3().slice(desde).filter((l) => l.tipo === 'sesion_iniciada').map((l) => l.equipo);
++  revisar(equipoFinal === 'N3' && inicios.join() === 'N2,N3', `TB-7: el segundo código no se pierde (equipo ${equipoFinal}; sesiones ${inicios.join(', ')})`);
++
++  // TB-2: si apagar el registro falla por el disco, el registro sigue encendido y el equipo vuelve a su sesión
++  const bloqueo = path.join(datos3, 'registro-config.json.tmp'); // una carpeta donde va el temporal: guardar() no puede
++  fs.mkdirSync(bloqueo);
++  await entrarPanel();
++  desde = leerRegistro3().length;
++  await boton(win, 'Apagar el registro');
++  await win.waitForTimeout(600);
++  const notaApagar = await win.evaluate(() => [...document.querySelectorAll('#modalCuerpo p.muted')].pop().textContent);
++  const trasFallo = leerRegistro3().slice(desde).map((l) => `${l.tipo}:${l.equipo}`);
++  const estadoFallo = await win.evaluate(() => [registroEventos.equipo(), registroEncendido]);
++  revisar(estadoFallo.join() === 'N3,true' && /No se pudo guardar en el disco\. Revisa que haya espacio libre/.test(notaApagar) &&
++    trasFallo.slice(-2).join() === 'sesion_terminada:N3,sesion_iniciada:N3',
++  `TB-2: apagar falló por el disco: sigue encendido con N3 en su sesión (${trasFallo.join(', ')}; «${notaApagar}»)`);
++  fs.rmSync(bloqueo, { recursive: true, force: true });
++  await boton(win, 'Apagar el registro');
++  await win.waitForTimeout(600);
++  revisar(await win.evaluate(() => registroEventos.equipo() === null && !registroEncendido), 'control TB-2: con el disco bien, se apaga');
++  await app.close();
++  await new Promise((r) => setTimeout(r, 300));
++  if (fs.existsSync(REVISOR)) {
++    const { revisarEvento } = require(REVISOR);
++    const problemas = leerRegistro3().flatMap((l, i) => revisarEvento(l).map((p) => `${i + 1} (${l.tipo}): ${p}`));
++    revisar(!problemas.length, `REG-005: las ${leerRegistro3().length} líneas de la sección 10 cumplen contrato/evento.schema.json` + (problemas.length ? ':\n  ' + problemas.slice(0, 10).join('\n  ') : ''));
++  }
++  fs.rmSync(datos3, { recursive: true, force: true });
++  revisar(!errores.length, 'sin errores en la consola, también en las secciones 9 y 10' + (errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''));
+   console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');
+   process.exit(fallos ? 1 : 0);
+ })().catch((e) => { console.error(e); process.exit(1); });
+diff --git a/test/registro-preprocesador.js b/test/registro-preprocesador.js
+index 229928b..1df6706 100644
+--- a/test/registro-preprocesador.js
++++ b/test/registro-preprocesador.js
+@@ -4,7 +4,7 @@
+ //   1. El compilador ve lo mismo: -E del original y -E del limpio dan los mismos símbolos.
+ //   2. No queda ningún comentario: -E -CC (que conserva los comentarios, también los de un #define) y -E del limpio
+ //      dan lo mismo.
+-//   3. El limpio tiene las mismas líneas que el original.
++//   3. El limpio tiene las mismas líneas que el original, y limpiarlo otra vez no lo cambia.
+ // Las tres usan -dD, que muestra cada #define aunque no se use (AUD-01-V3), y -undef. Para no mezclar los comentarios
+ // de las cabeceras del sistema, los #include van a cabeceras vacías de prueba (-nostdinc); aparte, los programas que
+ // compilan se compilan antes y después de limpiarlos con las cabeceras reales (-mmcu=atmega328p).
+@@ -97,6 +97,8 @@ function contrastar(programas) {
+       const sinVacio = (s) => juntar(s.split('/**/').join(' '));
+       if (sinVacio(limpioC[n]) !== sinVacio(limpio[n])) motivos.push('quedó un comentario');
+       if (lineas(p) !== lineas(limpios[n])) motivos.push('cambió el número de líneas');
++      // Limpiar otra vez lo limpio no lo cambia: la historia revisa así que el C++ del registro no tenga comentarios (REG-005, TB-1)
++      if (quitarComentarios(limpios[n]) !== limpios[n]) motivos.push('limpiarlo otra vez lo cambia');
+       if (motivos.length) fallan.push({ programa: p, limpio: limpios[n], motivos, original: original[n], preprocesadoLimpio: limpio[n], conComentarios: limpioC[n] });
+     });
+   }
+diff --git a/test/registro.js b/test/registro.js
+index 23a3ac1..3d22295 100644
+--- a/test/registro.js
++++ b/test/registro.js
+@@ -683,6 +683,21 @@ console.log('— Cada exportación en su propia carpeta (AUD-08)');
+   revisar(e4.ok === false && e4.motivo === 'copia-incompleta' && e4.copiados === 1 && e4.total === 2 && /E2-2026-10-21\.jsonl: ENOSPC/.test(e4.mensaje) &&
+     m4.completa === false && m4.archivos.length === 1 && igual(m4.error, { archivo: 'E2-2026-10-21.jsonl', codigo: 'ENOSPC', donde: 'destino' }) && igual(m4.faltan, ['E2-2026-10-21.jsonl']) && e4.codigo === 'ENOSPC' && e4.donde === 'destino' && cuadra(e4.carpeta) && !fs.existsSync(path.join(e4.carpeta, 'E2-2026-10-21.jsonl')),
+   `una copia que falla a mitad: «copia-incompleta» (${e4.copiados} de ${e4.total}) y exportacion.json con completa: false y el error`);
++  // REG-005, TB-6: un original que existe pero está bloqueado (un antivirus) es un error del origen, no de la USB
++  const abrir = fs.openSync;
++  let copiasB = 0;
++  fs.copyFileSync = function (de, a, ...resto) {
++    if (String(a).startsWith(usb) && ++copiasB === 2) throw Object.assign(new Error('EBUSY sintético'), { code: 'EBUSY' });
++    return copiar.call(this, de, a, ...resto);
++  };
++  fs.openSync = function (p, ...resto) {
++    if (copiasB === 2 && !String(p).startsWith(usb) && String(p).endsWith('E2-2026-10-21.jsonl')) throw Object.assign(new Error('EBUSY sintético'), { code: 'EBUSY' });
++    return abrir.call(this, p, ...resto);
++  };
++  let e4b;
++  try { e4b = disco.exportar({ pin: '2468', destino: usb }); } finally { fs.copyFileSync = copiar; fs.openSync = abrir; }
++  revisar(e4b.ok === false && e4b.motivo === 'copia-incompleta' && e4b.donde === 'origen' && e4b.codigo === 'EBUSY' && manifiesto(e4b.carpeta).error.donde === 'origen' && cuadra(e4b.carpeta),
++    `TB-6: el original bloqueado es del lado del origen (${e4b.donde}), y una USB llena sigue siendo del destino (${e4.donde})`);
+   // Si no se puede escribir exportacion.json, tampoco cuenta como completa
+   const escribirArchivo = fs.writeFileSync;
+   fs.writeFileSync = function (a, ...resto) { if (String(a).endsWith('exportacion.json')) throw Object.assign(new Error('EIO sintético'), { code: 'EIO' }); return escribirArchivo.call(this, a, ...resto); };
+@@ -692,6 +707,27 @@ console.log('— Cada exportación en su propia carpeta (AUD-08)');
+     'sin exportacion.json, la exportación no se da por completa');
+   const e6 = disco.exportar({ pin: '2468', destino: path.join(base, 'usb-que-no-existe') });
+   revisar(e6.ok === false && e6.motivo === 'disco' && !fs.existsSync(path.join(base, 'usb-que-no-existe')), 'un destino que ya no existe (se sacó la USB): «disco», sin crear nada');
++  // REG-005, TB-5: exportar intenta antes escribir lo que espera. Con el disco todavía lleno, queda pendiente; si ya se
++  // recuperó, va en la copia y no queda como pendiente
++  {
++    const anexar = fs.appendFileSync;
++    let lleno = true;
++    fs.appendFileSync = function (archivo, ...resto) {
++      if (lleno && String(archivo).startsWith(carpeta)) throw Object.assign(new Error('ENOSPC sintético'), { code: 'ENOSPC' });
++      return anexar.call(this, archivo, ...resto);
++    };
++    let sigueLleno, recuperado;
++    try {
++      disco.escribir(ev('E1', 77));
++      sigueLleno = disco.exportar({ pin: '2468', destino: usb });
++      lleno = false;
++      recuperado = disco.exportar({ pin: '2468', destino: usb });
++    } finally { fs.appendFileSync = anexar; }
++    const lineasE1 = fs.readFileSync(path.join(recuperado.carpeta, 'E1-2026-10-21.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
++    revisar(sigueLleno.ok && sigueLleno.pendientes === 1 && manifiesto(sigueLleno.carpeta).pendientes === 1 &&
++      recuperado.ok && recuperado.pendientes === 0 && manifiesto(recuperado.carpeta).pendientes === 0 && lineasE1.some((l) => l.datos && l.datos.bloques === 77) && cuadra(recuperado.carpeta),
++    `TB-5: con el disco lleno queda 1 pendiente; recuperado, la línea va en la copia (pendientes ${recuperado.pendientes})`);
++  }
+   revisar(manifiesto(e1.carpeta).archivos.every((a) => sha(path.join(e1.carpeta, a.archivo)) === a.sha256) && sha(copiaE1) === antes.sha, 'después de todo, la primera exportación sigue igual');
+   // La historia de dos exportaciones de lo mismo: cada línea se cuenta una vez (INT-06)
+   const { leerArchivos, contarHistoria } = require('../herramientas/historia-registro.js');

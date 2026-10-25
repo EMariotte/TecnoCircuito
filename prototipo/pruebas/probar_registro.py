@@ -67,8 +67,19 @@ with sync_playwright() as p:
     pg.locator('#iniciar').click()
     pg.wait_for_timeout(500)
     pg.locator('#pausar').click()
-    pg.wait_for_timeout(150)
-    pg.locator('#iniciar').click()
+    pg.wait_for_timeout(300)
+    # AUD-23: al seguir, la primera foto del turno nuevo dice dónde estaba el reloj del Worker. Si avanzó en la pausa,
+    # se nota aquí; una foto de antes de pausar que llegó tarde, no (también es de antes de pausar).
+    primera_al_seguir = pg.evaluate('''() => new Promise((listo) => {
+      const antes = window.sim.medidas().msSimulados;
+      document.querySelector('#iniciar').click();
+      const desde = performance.now();
+      const mirar = () => {
+        const ms = window.sim.medidas().msSimulados;
+        if (ms !== antes || performance.now() - desde > 2000) listo(ms); else setTimeout(mirar, 0);
+      };
+      mirar();
+    })''')
     pg.wait_for_timeout(300)
     pg.locator('#reiniciar').click()
     pg.wait_for_timeout(300)
@@ -118,9 +129,13 @@ with sync_playwright() as p:
     revisar(pausada['ms_sim'] > 200 and reinicio['ms_sim'] > pausada['ms_sim'],
             f'el tiempo simulado avanza: pausa en {pausada["ms_sim"]} ms, reinicio en {reinicio["ms_sim"]} ms')
     reanudada = next(e for e in sim if e['tipo'] == 'simulacion_reanudada')
-    revisar(abs(reanudada['ms_sim'] - pausada['ms_sim']) <= 20 and reanudada['t'] - pausada['t'] >= 100,
-            f'la pausa duró {reanudada["t"] - pausada["t"]} ms reales y el tiempo simulado no avanzó '
-            f'({pausada["ms_sim"]} → {reanudada["ms_sim"]} ms)')
+    # AUD-23: la reanudación lleva lo último que sabía la página, que puede ser más que al pausar si llegó tarde una foto
+    # de antes de pausar (TC-4). Que el reloj no avanzó lo dice la primera foto del Worker al seguir: queda a lo sumo una
+    # foto (16 ms) y una mirada más (16 ms) por delante de lo que se sabía; si hubiera avanzado en 300 ms de pausa, no.
+    revisar(reanudada['ms_sim'] >= pausada['ms_sim'] and primera_al_seguir - reanudada['ms_sim'] <= 40
+            and reanudada['t'] - pausada['t'] >= 250,
+            f'la pausa duró {reanudada["t"] - pausada["t"]} ms reales y el reloj del simulador no avanzó: se sabía '
+            f'{pausada["ms_sim"]} ms al pausar y {reanudada["ms_sim"]} al seguir, y su primera foto dice {round(primera_al_seguir)} ms')
     d2 = detenidas[1]
     revisar(d2['datos']['ms_sim'] == d2['ms_sim'] == d2['datos']['ms_simulados'] and d2['ms_sim'] < reinicio['ms_sim'],
             f'simulacion_detenida: ms_sim (y ms_simulados, el nombre de antes) cuenta desde el reinicio ({d2["ms_sim"]} ms)')

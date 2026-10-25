@@ -1,0 +1,24 @@
+OK control-activo-y-apagado
+OK frontera-x
+OK frontera-ñ
+OK frontera-😀
+OK descarte-con-cola-saturada
+OK exportaciones-mismo-reloj
+OK copia-incompleta-leida-como-limpia
+OK archivo-alterado-y-hash-ignorado
+OK archivo-omitido-oculta-hueco
+OK dos-exportaciones-pierden-repeticion-legitima
+OK listar-origen-sin-permiso
+OK configuracion-null
+OK configuracion-array
+OK configuracion-sin-pin
+OK configuracion-pin-roto
+OK utf8-invalido-aparta-texto-valido-con-UFFFD
+OK control-entrada-fuera-contrato-JSON
+OK falla-tramo-sin-reset
+OK cierre-tramo-inexistente
+OK pausa-tramo-inexistente
+OK control-foto-previa-tras-reset
+OK exportacion-con-pendientes-leida-como-limpia
+OK frontera-UTF8-tres-bytes
+23 casos; 0 incumplimientos de criterios diagnósticos. Evidencia: docs/reg005-auditoria-2026-10-22/profunda-historica.json

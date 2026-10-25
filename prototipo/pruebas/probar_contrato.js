@@ -302,6 +302,8 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['una falla sin componente', () => sim('falla', { tipo: 'led_quemado' }), /componente/],
     ['una falla que dice venir del lienzo', () => ({ ...EVENTOS.falla, origen: 'circuito' }), /origen/],
     ['simulacion_detenida sin la lista de fallas', () => sim('simulacion_detenida', { ms_sim: 10 }), /fallas/],
+    ['un cierre sin la confirmación del Worker (confirmado: false, 22 oct)', () => sim('simulacion_detenida', { ms_sim: 10, fallas: [], confirmado: false }), null],
+    ['confirmado que no es sí o no', () => sim('simulacion_detenida', { ms_sim: 10, fallas: [], confirmado: 'no' }), /confirmado/],
     ['simulacion_iniciada sin el circuito', () => sim('simulacion_iniciada', { placa: 'uno', modo: 'realista', activas }, 0), /circuito/],
     ['simulacion_iniciada en modo «medio»', () => sim('simulacion_iniciada', { ...EVENTOS.simulacion_iniciada.datos, modo: 'medio' }, 0), /modo/],
     ['simulacion_iniciada con un cable a una pieza que no existe', () => sim('simulacion_iniciada', { ...EVENTOS.simulacion_iniciada.datos, circuito: { ...ejemplos.EJEMPLO_PB, cables: [{ de: 'placa.D13', a: 'led9.anodo' }] } }, 0), /circuito: .*led9/],

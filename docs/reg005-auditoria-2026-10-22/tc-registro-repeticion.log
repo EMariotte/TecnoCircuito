@@ -1,0 +1,20 @@
+OK    registro: los 10 eventos cumplen contrato/evento.schema.json (componente_cambiado, falla, reinicio_placa, simulacion_detenida, simulacion_iniciada, simulacion_pausada, simulacion_reanudada)
+OK    la historia de la simulación, en orden: ['simulacion_iniciada', 'simulacion_detenida', 'simulacion_iniciada', 'simulacion_pausada', 'simulacion_reanudada', 'reinicio_placa', 'simulacion_detenida']
+OK    cada evento lleva «v»: 1, también los del lienzo
+OK    la corrida sigue contando con un simulador nuevo: [1, 2]
+OK    cada evento del simulador lleva la corrida en la que pasó
+OK    simulacion_detenida de la corrida 1 trae sus fallas, una vez cada una: [('corriente_pin', 'placa.D13'), ('led_quemado', 'led1')]
+OK    las fallas de la lista son las que se avisaron durante la corrida 1
+OK    las fallas van sin el mensaje en pantalla
+OK    simulacion_detenida de la corrida 2: sin fallas (se corrigió)
+OK    la corrida 1 empezó con el LED solo
+OK    la corrida 2 empezó con la resistencia de 330 Ω que eligió el equipo ({'ohmios': 330})
+OK    modo realista: las 7 no idealidades encendidas (danoComponentes, limitePin, entradaFlotante, ruidoADC, limiteUSB, caidaL293D, resistenciaBateria)
+OK    simulacion_iniciada lleva ms_sim 0
+OK    el tiempo simulado avanza: pausa en 538 ms, reinicio en 872 ms
+OK    la pausa duró 201 ms reales y el tiempo simulado no avanzó (538 → 538 ms)
+OK    simulacion_detenida: ms_sim (y ms_simulados, el nombre de antes) cuenta desde el reinicio (328 ms)
+OK    el cambio de la resistencia queda como evento del lienzo, sin corrida
+OK    sin errores en la consola
+
+TODO BIEN

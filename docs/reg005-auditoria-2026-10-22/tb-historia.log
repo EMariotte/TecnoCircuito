@@ -1,0 +1,253 @@
+
+> tecnobloques@0.3.0 test:historia
+> node test/historia-registro.js
+
+
+Equipo A1 · 19 de oct de 2026, 10:00 a 10:09 · uno, nivel 1 · sesión sesion-1
+  10:00  Empezó la sesión (uno, nivel 1).
+  10:00  Abrió el ejemplo «parpadeo».
+  10:01  Circuito: agregó led1 (led); conectó placa.D13 → led1.anodo, led1.catodo → placa.GND1; movió led1.
+  10:02  Bloques: 5 (3 tipos).
+  10:02  Compiló: bien, 924 bytes.
+  10:02  ▶ Corrida 1 (uno, realista; 1 pieza, 2 cables).
+  10:02     falla: LED quemado (led1), a los 0,0 s simulados.
+  10:02     falla: corriente del pin (placa), a los 0,0 s simulados.
+  10:02  ■ Corrida 1 terminó: 41,0 s simulados. Fallas: LED quemado (led1), corriente del pin (placa).
+  10:04  Circuito: agregó r1 (resistencia); cambió r1: valor 220; conectó placa.D13 → r1.1, r1.2 → led1.anodo; desconectó placa.D13 → led1.anodo.
+  10:04  Compiló: bien, 924 bytes (el mismo programa).
+  10:04  ▶ Corrida 2 (uno, realista; 2 piezas, 4 cables).
+  10:05     pausó.
+  10:05     siguió.
+  10:05  ■ Corrida 2 terminó: 40,0 s simulados. Sin fallas. Corrigió: LED quemado (led1), corriente del pin (placa).
+  10:06  Circuito: quitó r1 (resistencia); agregó btn1 (boton).
+  10:06  Compiló: con error (no_declarado). Programa: `void setup() { pinMode(13, OUTPUT); }` `void loop() { digitalWrite(13, HIGH); delay(500);…` → `void setup() { velocidad = 3; }`.
+  10:07  Compiló: bien, 1100 bytes. Programa: `void setup() { velocidad = 3; }` → `void setup() {}` `void loop() {}`.
+  10:07  ▶ Corrida 3 (uno, realista; 2 piezas, 3 cables).
+  10:07     falla: corriente del pin (placa), a los 2,9 s simulados.
+  10:07  Pulsó btn1 2 veces.
+  10:07     la placa se reinició (energía del USB, 3 veces).
+  10:07  ■ Corrida 3 terminó: 23,0 s simulados. Fallas: corriente del pin (placa). Nuevas: corriente del pin (placa).
+  10:09  Terminó la sesión (10 min).
+  Resumen: 3 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa). Corregidas al final: LED quemado (led1). Sin corregir: corriente del pin (placa).
+  Avisos: ninguno.
+
+OK    A1: un equipo, Uno nivel 1, tres corridas
+OK    corrida 1: dos fallas, sin corrida anterior para comparar
+OK    corrida 2: sin fallas y corrigió el LED quemado y la corriente del pin
+OK    corrida 3: la corriente del pin vuelve como nueva y la placa se reinició 3 veces
+OK    A1 sin avisos (ninguno)
+OK    la historia de A1 dice exactamente lo que pasó, en orden
+OK    y los renglones están en el orden en que pasaron
+
+Equipo B2 · 19 de oct de 2026, 11:00 a 11:00 · nano → uno, nivel 2 · sesión sesion-2
+  11:00  Empezó la sesión (nano, nivel 2).
+  11:00  Compiló: bien, 900 bytes.
+  11:00  El disco no dejó guardar de 11:00 a 11:00 (ENOSPC); se recuperaron 4 eventos.
+  11:00  ▶ Corrida 4 (uno, realista; 1 pieza, 2 cables).
+  11:00     falla: LED quemado (led1), a los 0,0 s simulados.
+  11:00  ■ Corrida 4 terminó: 5,0 s simulados. El cierre dice: ninguna; llegaron: LED quemado (led1).
+  11:00     falla: corriente del pin (placa), a los 0,0 s simulados.
+  11:00  ▶ Corrida 5 (uno, ideal; 1 pieza, 2 cables).
+  Resumen: 2 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa) [sin atribuir: corrida 9]. Corregidas al final: no se puede asegurar, porque la corrida 5 quedó sin cierre. Sin corregir: no se puede asegurar.
+  Avisos:
+  ⚠ El C++ de codigo_compilado tiene comentarios (prueba.jsonl línea 2); el registro debe guardarlo sin ellos (AUD-01).
+  ⚠ Hay un hueco: 2 eventos se perdieron cuando el disco falló (11:00 a 11:00).
+  ⚠ La corrida 9 no empezó en esta sesión y tiene eventos aquí: ¿quedó en el equipo equivocado?
+  ⚠ La sesión no tiene sesion_terminada: la app se cerró de golpe o el archivo está incompleto.
+  ⚠ 1 evento «algo_nuevo» (editor) que esta historia no interpreta: no entran en ella (¿registro de una versión más nueva?).
+  ⚠ La corrida 4: las fallas del cierre (ninguna) no son las que llegaron (LED quemado (led1)).
+  ⚠ La corrida 5 no tiene cierre (simulacion_detenida).
+
+OK    AUD-01: avisa el C++ con comentarios
+OK    AUD-02: avisa el hueco de eventos perdidos
+OK    AUD-03: avisa que el cierre de la corrida 4 no trae la falla que llegó
+OK    AUD-04: avisa la falla y el cierre de una corrida que no empezó en esta sesión
+OK    avisa la corrida sin cierre
+OK    avisa la sesión sin sesion_terminada
+OK    un tipo nuevo no rompe la historia: se avisa que no se interpreta (en el estudio la versión está congelada)
+OK    después de un hueco no se acusa un placa_cambiada que falta
+OK    control completo (pausa, reinicio, falla y cierre coherente): sin avisos y el resumen exacto («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Sin corregir: LED quemado (led1).»)
+OK    R1, corrida sin cierre con una falla: el resumen la conserva y no afirma nada al final («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 12 quedó sin cierre. Sin corregir: al menos LED quemado (led1).»)
+OK    R1, el cierre perdió la falla (AUD-03): el resumen la conserva y avisa la diferencia («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 13 tiene un cierre que no coincide con las fallas que llegaron. Sin corregir: al menos LED quemado (led1).»)
+OK    R2, una falla después del cierre: se avisa el orden y la diferencia, y el resumen la conserva (2 avisos)
+OK    R1, la falla vuelve en la última corrida, sin cierre: la 16 corrigió, pero el final no se da por corregido («3 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 17 quedó sin cierre. Sin corregir: al menos LED quemado (led1).»)
+OK    una corrida después de otra sin cierre no se compara con ella, y el resumen tampoco da por corregida su falla (INT-RES-01) («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 19 empezó antes de que la corrida 18 se cerrara, y esa nunca se cerró. Sin corregir: no se puede asegurar.»)
+OK    control, dos corridas coherentes: la segunda corrigió el LED («■ Corrida 21 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    R1a, falla tardía en la segunda corrida: ni el paso ni los datos dicen que corrigió («■ Corrida 23 terminó: 1,0 s simulados. El cierre dice: ninguna; llegaron: LED quemado (led1). No se compara con la corrida 22: el cierre de esta corrida no coincide con las fallas que llegaron.»)
+OK    R1a, falla tardía en la corrida anterior: la siguiente no se compara con ella («■ Corrida 25 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 24: su cierre no coincide con las fallas que llegaron.»)
+OK    R1b, una falla y un cierre de corridas sin inicio: se conservan sin atribuir («0 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 30], corriente del pin (placa) [sin atribuir: corrida 31].»)
+OK    R1b, con una corrida propia sin fallas y una falla sin atribuir: no se afirma el final («1 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 33]. Corregidas al final: no se puede asegurar, porque llegaron fallas de una corrida que no empezó en esta sesión. Sin corregir: no se puede asegurar.»)
+OK    control, un solo cierre con la falla y sin evento suelto: la falla se conserva («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 40 tiene un cierre que no coincide con las fallas que llegaron. Sin corregir: al menos LED quemado (led1).»)
+OK    R1c, dos cierres contradictorios: el segundo no borra la falla del primero ni da la corrida por coherente («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 41 tiene cierres que no coinciden entre sí. Sin corregir: al menos LED quemado (led1).»)
+OK    R1c sin inicio: los dos cierres de la corrida 42 conservan la falla sin atribuir («0 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 42].»)
+OK    control, cierre repetido idéntico: se avisa, pero la corrida sigue coherente y la comparación siguiente vale («■ Corrida 44 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    la prueba de Efraín, con placa_cambiada: la placa, el programa, los bloques y el circuito sin pasos de más, y sin avisos
+OK    sin placa_cambiada, la corrida avisa una vez la placa distinta; un placa_cambiada que no cuadra también se avisa (2 avisos)
+OK    control, agrega y quita una pieza nueva («Circuito: hizo cambios y los deshizo.»)
+OK    control, quita la pieza que estaba («Circuito: quitó r1 (resistencia).»)
+OK    control, varios valores de la misma pieza: queda el último («Circuito: cambió r1: ohmios 330.»)
+OK    R3, quita la que estaba, agrega otra r1 y la quita: no se esconde la baja («Circuito: quitó r1 (resistencia).»)
+OK    R3, 1000 Ω, la quita y agrega otra: la nueva no hereda el valor («Circuito: quitó r1 (resistencia); agregó otra r1 (resistencia).»)
+OK    R3, la nueva r1 cuenta solo sus cambios («Circuito: quitó r1 (resistencia); agregó otra r1 (resistencia); cambió r1: ohmios 330.»)
+OK    control, el mismo programa («Compiló: bien, 100 bytes (el mismo programa).»)
+OK    control, el mismo programa con una cadena empalmada larga («Compiló: bien, 100 bytes (el mismo programa).»)
+OK    otra sangría y líneas vacías: no es «el mismo programa», cambió solo en espacios («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    control, delay(500) → delay(200) («Compiló: bien, 100 bytes. Programa: `void loop() { delay(500); }` → `void loop() { delay(200); }`.»)
+OK    R4, espacios dentro de un raw («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4, una línea vacía dentro de un raw («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4, un salto dentro de un raw frente al texto «\n» («Compiló: bien, 100 bytes. Programa: `A` `B` → `A\nB`.»)
+OK    R4, espacios dentro de una cadena («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4a, cadena empalmada con LF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4a, cadena empalmada con CRLF y espacio («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4a, cadena empalmada con CRLF y tabulador («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4b, empalme con 98 espacios y LF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4b, empalme con 99 espacios y LF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4b, empalme con 97 espacios y CRLF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4b, empalme con 98 espacios y CRLF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4b, empalme con 120 espacios y CRLF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    R4b, empalme con 98 tabuladores y CRLF («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    INT-08, raw con el prefijo R empalmado («Compiló: bien, 100 bytes. Programa: `"x( A )x";` → `"x(A)x";`.»)
+OK    INT-08, raw con el prefijo u8R empalmado («Compiló: bien, 100 bytes. Programa: `"x( A )x";` → `"x(A)x";`.»)
+OK    INT-08, CR de una directiva frente a un espacio («Compiló: bien, 100 bytes. Programa: cambió solo en espacios o saltos de línea.»)
+OK    INT-08, un programa con error (cadena sin cerrar) («Compiló: bien, 100 bytes. Programa: `void loop() { Serial.print("hola); }` → `void loop() { Serial.print("hola ); }`.»)
+OK    una línea larga se muestra alrededor de lo que cambió («Compiló: bien, 100 bytes. Programa: `…grama"); delay(500); }` → `…grama"); delay(200); }`.»)
+OK    INT-09, dos líneas largas seguidas cambian: cada par muestra su diferencia («Compiló: bien, 100 bytes. Programa: `…1"); int v1 = 10;` → `…1"); int v1 = 11;` y `…2"); int v2 = 20;` → `…2"); int v2 = 21;`.»)
+OK    INT-09, cuatro líneas: si el detalle no cabe, lo dice («Compiló: bien, 100 bytes. Programa: cambió un tramo de 4 líneas (el detalle no cabe).»)
+OK    INT-01, realista → ideal, el mismo circuito: no «corrigió», «ya no se observó» (cambió el modo: realista → ideal) («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Ya no se observaron al final: LED quemado (led1) (cambió el modo: realista → ideal). Sin corregir: ninguna.»)
+OK    INT-01, se apagó danoComponentes: no «corrigió», «ya no se observó» (cambió lo que se revisa: danoComponentes apagada) («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Ya no se observaron al final: LED quemado (led1) (cambió lo que se revisa: danoComponentes apagada). Sin corregir: ninguna.»)
+OK    INT-01, se quitó la pieza: no «corrigió», «ya no se observó» (quitó led1) («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Ya no se observaron al final: LED quemado (led1) (quitó led1). Sin corregir: ninguna.»)
+OK    INT-01, otra placa: no «corrigió», «ya no se observó» (cambió la placa: uno → nano) («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Ya no se observaron al final: LED quemado (led1) (cambió la placa: uno → nano). Sin corregir: ninguna.»)
+OK    corrigió en una corrida comparable y después cambió la placa: sigue corregida al final («3 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna.»)
+OK    INT-02, un hueco entre dos corridas: no se comparan ni se afirma la corrección («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna.»)
+OK    control, un hueco antes de las corridas no impide compararlas («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna.»)
+OK    INT-03, otro equipo con la misma sesión: se cuenta aparte y no le da una corrección («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la sesión sesion-57-0000 también tiene líneas del equipo OTRO. Sin corregir: al menos LED quemado (led1).»)
+OK    INT-04, «datos» null: se aparta con su motivo, sin romper ni inventar, y deja un hueco («■ Corrida 81 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 80: hay un hueco en el registro entre las dos.»)
+OK    INT-04, sin la hora: se aparta con su motivo, sin romper ni inventar, y deja un hueco («■ Corrida 81 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 80: hay un hueco en el registro entre las dos.»)
+OK    INT-04, la hora como texto: se aparta con su motivo, sin romper ni inventar, y deja un hueco («■ Corrida 81 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 80: hay un hueco en el registro entre las dos.»)
+OK    INT-04, versión 2: se aparta con su motivo, sin romper ni inventar, y deja un hueco («■ Corrida 81 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 80: hay un hueco en el registro entre las dos.»)
+OK    INT-04, una sesión inválida no tumba la válida del mismo lote
+OK    INT-05, sin sesion_iniciada: se avisa y no se asegura el final («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la sesión no tiene sesion_iniciada: puede faltarle el comienzo. Sin corregir: no se puede asegurar.»)
+OK    INT-05, sesion_iniciada repetido: se avisa y no se asegura el final
+OK    INT-05, una corrida que empieza dos veces sigue siendo una y no se compara («■ Corrida 83 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 82: empieza dos veces.»)
+OK    INT-05, reanudar sin pausa y pausar dos veces se avisan
+OK    INT-10, tipos nuevos: no se inventa un efecto, se avisan y no cambian lo demás (1 evento «componente_soldado» (circuito) que esta historia no interpreta: no entran en ella (¿registro de una versión más nueva?). | 1 evento «__proto__» (editor) que esta historia no interpreta: no entran en ella (¿registro de una versión más nueva?).)
+OK    INT-11, la placa de la corrida y la de su circuito no coinciden: se avisa y no se compara
+OK    INT-11, una falla después del tiempo simulado del cierre: se avisa
+OK    INT-11, el reloj retrocede: se avisa y se sigue el orden en que se escribió
+OK    un cierre con la misma falla dos veces sigue siendo coherente
+OK    INT-RES-01, la corrida que vio la falla cierres contradictorios: el resumen no la da por corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 90 tiene cierres que no coinciden entre sí). Sin corregir: ninguna.»)
+OK    INT-RES-01, la corrida que vio la falla empieza dos veces: el resumen no la da por corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 90 empieza dos veces). Sin corregir: ninguna.»)
+OK    INT-RES-01, la corrida que vio la falla falla después del tiempo del cierre: el resumen no la da por corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 90 tiene una falla después del tiempo simulado de su cierre). Sin corregir: ninguna.»)
+OK    INT-RES-01, la corrida que vio la falla cierre sin la falla suelta: el resumen no la da por corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (la corrida 90 tiene un cierre que no coincide con las fallas que llegaron). Sin corregir: ninguna.»)
+OK    INT-RES-01, la corrida que vio la falla sin cierre: el resumen no la da por corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 91 empezó antes de que la corrida 90 se cerrara, y esa nunca se cerró. Sin corregir: no se puede asegurar.»)
+OK    control, origen completo y coherente: corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna.»)
+OK    control, la falla vuelve al final: sin corregir («3 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Sin corregir: LED quemado (led1).»)
+OK    INT-RES-02, una línea apartada después del último cierre: la corrección de la corrida 94 se conserva, pero el final no se asegura («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna.»)
+OK    INT-RES-02, una línea apartada después del fin de la sesión: la corrección de la corrida 94 se conserva, pero el final no se asegura («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna.»)
+OK    INT-RES-02, eventos perdidos después del último cierre: la corrección de la corrida 94 se conserva, pero el final no se asegura («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. No se puede asegurar: LED quemado (led1) (hay un hueco en el registro después de verla). Sin corregir: ninguna.»)
+OK    INT-RES-03, corridas que se cruzan: se avisa, no se compara y no se da por corregida («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 96 se cruza con la corrida 95. Sin corregir: no se puede asegurar.»)
+OK    INT-RES-03, una corrida después del fin de la sesión: es una contradicción de la corrida y no se compara («■ Corrida 98 terminó: 1,0 s simulados. Fallas: ninguna. No se compara con la corrida 97: esta corrida empezó después de terminar la sesión.»)
+OK    INT-RES-03, un cierre con dos tiempos: es una contradicción de la corrida y no se compara («■ Corrida 98 terminó: 1,0 s simulados. Fallas: ninguna. No se compara con la corrida 97: esta corrida su cierre dice dos tiempos simulados distintos.»)
+OK    INT-RES-03, reanudar sin pausa: es una contradicción de la corrida y no se compara («■ Corrida 98 terminó: 1,0 s simulados. Fallas: ninguna. No se compara con la corrida 97: esta corrida sigue sin haberse pausado.»)
+OK    control, corridas seguidas con una pausa normal: sin avisos y corregida
+OK    INT-RES-03a, la falla se repite con más tiempo que el cierre, antes de él: «tiene una falla después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, las mismas repeticiones en el otro orden: «tiene una falla después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, la repetición con más tiempo llega después del cierre: «tiene una falla después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene eventos después de su cierre.»)
+OK    INT-RES-03a, la misma falla, con el mismo tiempo, después del cierre: «tiene eventos después de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene eventos después de su cierre.»)
+OK    INT-RES-03a, un segundo cierre con más tiempo no esconde el primero: «tiene una falla después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, los dos cierres en el otro orden: «sus cierres dicen tiempos simulados distintos», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, después de un RESET, una falla con más tiempo que el cierre: «tiene una falla después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, un reinicio por energía no pone el reloj en cero: «tiene una falla después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, una pausa con más tiempo que el cierre: «tiene una pausa o un reinicio después del tiempo simulado de su cierre», se guardan todos los tiempos y no se da por corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una pausa o un reinicio después del tiempo simulado de su cierre.»)
+OK    INT-RES-03a, los datos conservan el tiempo de cada cierre
+OK    control, la misma falla dos veces con el mismo tiempo: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    control, RESET con el botón: la falla de antes tiene más tiempo que el cierre: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    control, RESET con el botón y la falla después, dentro del tiempo del cierre: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    control, RESET en pausa: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    INT-RES-03c, la foto de antes del RESET llega después; cierre a 10 ms del reloj nuevo: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    INT-RES-03c, control, la misma foto llega antes del RESET: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    INT-RES-03c, control, la foto llega después y el cierre nuevo es mayor: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    INT-RES-03c, un reinicio por energía de una foto de antes del RESET: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    INT-RES-03c, RESET en pausa: reanudar y reiniciar con el tiempo de antes: coherente, sin avisos y corregida («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. Corrigió: LED quemado (led1).»)
+OK    INT-RES-03c, una falla del reloj nuevo con más tiempo que su cierre sigue siendo imposible: contradicción, no se compara («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una falla después del tiempo simulado de su cierre.»)
+OK    INT-RES-03c, una pausa del reloj nuevo con más tiempo que su cierre también: contradicción, no se compara («■ Corrida 111 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 110: tiene una pausa o un reinicio después del tiempo simulado de su cierre.»)
+OK    INT-RES-03b, el cierre de la última corrida llega después del fin: se conserva, pero no se compara ni se asegura el final («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 121 se cerró después de terminar la sesión. Sin corregir: no se puede asegurar.»)
+OK    INT-RES-03b, una falla y el cierre llegan después del fin: se conserva, pero no se compara ni se asegura el final («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 121 tiene eventos después de terminar la sesión. Sin corregir: al menos LED quemado (led1).»)
+OK    INT-RES-03b, una pausa de una corrida ya cerrada llega después del fin: se conserva, pero no se compara ni se asegura el final («2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 121 tiene eventos después de su cierre. Sin corregir: no se puede asegurar.»)
+OK    límite de CLA-009, una corrida anterior abierta que nunca se cierra: no se da por corregida («3 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 132 empezó antes de que la corrida 130 se cerrara, y esa nunca se cerró. Sin corregir: no se puede asegurar.»)
+OK    límite de CLA-009, una corrida anterior abierta que nunca se cierra, con la misma falla: no se da por corregida («3 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 132 empezó antes de que la corrida 130 se cerrara, y esa nunca se cerró. Sin corregir: no se puede asegurar.»)
+OK    INT-RES-04, la sesión escrita con un escape JSON: el hueco queda en su sesión, no en otra (1 historia(s))
+OK    control, una línea dañada de otra sesión deja su hueco en esa sesión, no en esta
+OK    INT-RES-05, t = 8,64e15 + 1: se aparta («su hora («t») no es una fecha») y la historia se narra
+OK    INT-RES-05, t = 1e20: se aparta («su hora («t») no es una fecha») y la historia se narra
+OK    INT-RES-05, registro_interrumpido con horas 1e20: se aparta («las horas de «registro_interrumpido» no son fechas») y la historia se narra
+OK    control, t = 8,64e15 (el límite de Date) se lee
+OK    AUD-07, un evento descartado entre dos corridas: se cuenta, es un hueco y no se compara a través de él («■ Corrida 141 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 140: hay un hueco en el registro entre las dos.»)
+OK    AUD-07, un evento descartado de una corrida: esa corrida no se compara («■ Corrida 143 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 142: perdió un evento del registro (falla).»)
+OK    AUD-07, se perdió el inicio de una corrida: sus fallas quedan sin atribuir y el aviso dice por qué («0 corrida(s). Fallas vistas: LED quemado (led1) [sin atribuir: corrida 144].»)
+OK    control, un evento descartado antes de las corridas: se avisa, pero no impide comparar después (Hay un hueco: no se guardó un evento (bloques_cambiados) porque no se pudo convertir a texto (prueba.jsonl línea 2).)
+OK    AUD-12, una falla de un tramo que no existe: la corrida no se compara ni se da por corregida (trae un tramo del reloj que todavía no existía (no hubo tantos RESET))
+OK    AUD-12, un cierre de un tramo que no existe: la corrida no se compara ni se da por corregida (trae un tramo del reloj que todavía no existía (no hubo tantos RESET))
+OK    AUD-12, una pausa de un tramo que no existe: la corrida no se compara ni se da por corregida (trae un tramo del reloj que todavía no existía (no hubo tantos RESET))
+OK    AUD-12, un RESET que dice otro tramo: la corrida no se compara ni se da por corregida (trae un tramo del reloj que todavía no existía (no hubo tantos RESET))
+OK    AUD-12, un cierre de un tramo anterior al último RESET: la corrida no se compara ni se da por corregida (su cierre no es del tramo actual del reloj)
+OK    AUD-12, una corrida que mezcla eventos con tramo y sin él: la corrida no se compara ni se da por corregida (mezcla eventos con tramo del reloj y sin él: no se puede acreditar su reloj)
+OK    A-01, un cierre perdido: las corridas siguientes son coherentes y la 152 corrigió; la 151 no se compara con la 150 («■ Corrida 151 terminó: 1,0 s simulados. Fallas: LED quemado (led1). No se compara con la corrida 150: perdió su cierre (no se guardó).»)
+OK    control A-01: una corrida que de verdad nunca se cerró sigue sin acreditar el orden
+OK    A-03, A, una compilación perdida y A: no dice «el mismo programa» («Compiló: bien, 100 bytes (después de un hueco: no se compara con la compilación anterior).»)
+OK    control A-03: sin hueco, A y A es «el mismo programa»
+OK    A-03, los bloques no se juntan ni se comparan a través de un hueco
+OK    A-03, después de perder un placa_cambiada no se acusa al siguiente
+OK    AUD-10: la primera copia y la última juntas cuentan lo mismo que la última sola (la alta repetida no se pierde)
+OK    AUD-10: también pasándolas en otro orden
+OK    AUD-10: dos copias que no coinciden se avisan y no aseguran el final
+OK    control AUD-09: una exportación entera se admite y se lee igual que antes (salida 0)
+OK    AUD-09, una exportación incompleta (completa: false): se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación con un archivo cambiado después de exportar: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación sin uno de sus archivos: se dice, la línea de comandos sale con 1 y no se afirma la corrección (sin historia)
+OK    AUD-09, una exportación con un .jsonl de más: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación con exportacion.json roto: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación sin exportacion.json: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación de un formato desconocido: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación con un nombre de archivo que sale de la carpeta: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la exportac)
+OK    AUD-09, una exportación con eventos pendientes al exportar: se dice, la línea de comandos sale con 1 y no se afirma la corrección (2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque en la expor)
+OK    AUD-09-R1, pendientes ausente: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, pendientes texto «1»: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, pendientes null: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, pendientes negativo: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, pendientes fracción: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, pendientes objeto: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, completa como texto: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, total ausente: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, t negativo: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, app de otro programa: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, version_tb vacía: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, bytes como texto: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, faltan con completa: true: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    AUD-09-R1, completa: false sin faltan ni error: el manifiesto no es válido, CLI 1, sin comparar ni afirmar el final
+OK    control AUD-09-R1, pendientes 0: se admite y concluye
+OK    control AUD-09-R1, pendientes 2: se avisa y no se asegura el final
+OK    AUD-09-R1, con un evento de verdad en la cola: pendientes 1 avisa, y cambiado a "1" tampoco sale limpio (1)
+OK    AUD-09: en una exportación no admitida tampoco se comparan las corridas
+OK    control AUD-09: un archivo suelto se lee crudo, sin verificar la exportación
+OK    control AUD-09: la carpeta de registros de la app no es una exportación y se lee como siempre
+OK    AUD-13: con BOM y CRLF, solo se aparta la línea del byte roto (la 3); el U+FFFD legítimo se conserva
+OK    TB-1: el C++ con el separador /**/ no se acusa de tener comentarios (0 avisos)
+OK    control TB-1: un C++ con un comentario de verdad sí se avisa
+OK    TC-2: la corrida cerrada sin confirmación no se compara y no se avisa («■ Corrida 171 terminó: 1,0 s simulados. Sin fallas. No se compara con la corrida 170: se cerró sin la confirmación del simulador (pudieron quedar fallas sin llegar).»)
+OK    control TC-2: con confirmado true se compara como siempre
+OK    control TC-2: con confirmado undefined se compara como siempre
+OK    TC-2: si es la última corrida, el final no se asegura («1 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: no se puede asegurar, porque la corrida 176 se cerró sin la confirmación del simulador (pudieron quedar fallas sin llegar). Sin corregir: al menos LED quemado (led1).»)
+OK    la carpeta: lee los dos .jsonl, en orden de hora, y no el .txt
+OK    la línea dañada se dice con su archivo y número, la historia sale igual y el código es 1 (1)
+OK    --json de un registro limpio: la historia como datos y el código 0 (0)
+OK    leerArchivos: 44 líneas buenas y la dañada apartada
+OK    sin nada que leer: el uso y el código 2
+OK    INT-06, la misma ruta dos veces se lee una vez
+OK    INT-06, una copia exportada de las mismas líneas se cuenta una vez
+OK    INT-06, los archivos de una sesión pasados al revés se ordenan por la fecha de su nombre
+OK    INT-07, un BOM al inicio no hace perder sesion_iniciada
+OK    INT-07, bytes que no son UTF-8: la línea se aparta con su motivo, no se reemplaza callando
+OK    INT-07, una ruta que no existe se dice y las demás se leen
+
+TODO BIEN

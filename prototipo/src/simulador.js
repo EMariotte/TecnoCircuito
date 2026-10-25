@@ -27,8 +27,10 @@ export function crearSimulador(opciones = {}) {
   leerHex(hex); // se revisa aquí, de una vez: si el .hex está dañado, el error sale al crear el simulador
   const modo = opciones.modo === 'ideal' ? 'ideal' : 'realista';
   // El modo enciende o apaga todas las no idealidades; noIdealidades ajusta una por una encima del modo.
+  // Solo las claves conocidas y como sí o no: así las guarda simulacion_iniciada (REG-005, TC-7).
   const activas = Object.fromEntries(CLAVES_NO_IDEALIDADES.map((k) => [k, modo === 'realista']));
-  Object.assign(activas, opciones.noIdealidades || {});
+  const pedidas = opciones.noIdealidades || {};
+  for (const k of CLAVES_NO_IDEALIDADES) if (k in pedidas) activas[k] = !!pedidas[k];
   const alEvento = typeof opciones.alEvento === 'function' ? opciones.alEvento : null;
   const oyentes = { serial: [], falla: [], estado: [] };
 
@@ -52,7 +54,14 @@ export function crearSimulador(opciones = {}) {
   // que llega después queda en su tramo, con su reloj (INT-RES-03c; contrato 6.1, «tramo»).
   const turnosReset = [];
   const tramoDe = (t) => turnosReset.filter((r) => r <= t).length;
+  // El tiempo más alto del tramo actual que trajo un hecho. La vista puede ir detrás (una foto tardía entrega sus hechos
+  // pero no se dibuja): los eventos de la página nunca dicen un tiempo menor que el de un hecho ya registrado (REG-005,
+  // TC-3 y TC-4).
+  let msHechos = 0;
+  const msAhora = () => Math.max(medidas.msSimulados, msHechos);
   const fallas = [];
+  // El Worker avisó un error en esta corrida (AUD-26): su cierre sale sin confirmar, aunque después confirme que paró
+  let errorEnCorrida = false;
 
   const trabajador = crearTrabajador(recibir);
   // `_semilla` (interna, no es del contrato): las pruebas fijan el azar del núcleo para que se repitan.
@@ -66,7 +75,7 @@ export function crearSimulador(opciones = {}) {
   // orden, antes de su «detenido» llegan todas las fotos pendientes (AUD-03-V1).
   function recibir(m) {
     if (!oyendo) return;
-    if (m.tipo === 'error') return console.error('TecnoCircuito:', m.mensaje);
+    if (m.tipo === 'error') return recibirError(m);
     if (m.tipo === 'detenido') return cierre && m.turno === cierre.turno ? cierre.terminar(m) : undefined;
     if (m.tipo !== 'foto' || m.turno < turnoCorrida || (estado === 'detenido' && !cierre)) return;
     entregarHechos(m);
@@ -77,9 +86,20 @@ export function crearSimulador(opciones = {}) {
     vista = m;
     if (!cuadro) cuadro = requestAnimationFrame(dibujar);
   }
+  // Un error del Worker es de la corrida en curso (o de la que espera su cierre) si su turno es de ella; uno sin turno
+  // (el Worker mismo falló, `error` o `messageerror`) también. Esa corrida ya no se puede dar por entera; si el núcleo
+  // falló y el reloj paró (`parado`), se cierra ya, en vez de seguir viéndose corriendo sin avanzar (W-R1, AUD-26).
+  function recibirError(m) {
+    console.error('TecnoCircuito:', m.mensaje);
+    const deEstaCorrida = (estado !== 'detenido' || cierre) && (m.turno === undefined || m.turno >= turnoCorrida);
+    if (!deEstaCorrida) return;
+    errorEnCorrida = true;
+    if (m.parado && estado !== 'detenido') api.detener();
+  }
   function entregarHechos(m) {
     const ms = Math.round(m.msSimulados); // el tiempo simulado de la foto: el de los hechos, aunque llegue tarde
     const tramo = tramoDe(m.turno); // y el tramo de su reloj
+    if (tramo === turnosReset.length) msHechos = Math.max(msHechos, ms);
     for (const f of m.fallas) {
       fallas.push(f);
       oyentes.falla.forEach((fn) => avisar(fn, { tipo: f.tipo, componente: f.componente, mensaje: f.mensaje }));
@@ -122,8 +142,8 @@ export function crearSimulador(opciones = {}) {
   }
 
   // Contrato, sección 6.1: cada evento del simulador lleva su corrida, el tiempo simulado de esa corrida y el tramo de
-  // su reloj (los de la página, el tramo actual; los de una foto, el de su turno).
-  function emitir(tipo, datos, msSim = medidas.msSimulados, tramo = turnosReset.length) {
+  // su reloj (los de la página, el tramo actual y lo último que se sabe de su reloj; los de una foto, el de su turno).
+  function emitir(tipo, datos, msSim = msAhora(), tramo = turnosReset.length) {
     if (alEvento) avisar(alEvento, { v: VERSION_EVENTOS, t: Date.now(), origen: 'simulador', tipo, corrida, ms_sim: Math.round(msSim), tramo, datos });
   }
 
@@ -134,24 +154,28 @@ export function crearSimulador(opciones = {}) {
 
   // Un botón presionado o soltado con el mouse: lo resuelve el Worker al instante (no cambia el circuito guardado).
   // «La mano»: el mouse sobre un pin o un cable. Una entrada al aire que toca capta la red de 60 Hz.
+  // Cada registro en el lienzo devuelve cómo soltarlo: destruir() los suelta, para que un simulador viejo no quede
+  // en memoria mientras el lienzo siga abierto (REG-005, TC-9).
+  const soltar = [];
+  const escuchar = (quitar) => typeof quitar === 'function' && soltar.push(quitar);
   if (typeof lienzo._alAcercar === 'function') {
-    lienzo._alAcercar((refs) => {
+    escuchar(lienzo._alAcercar((refs) => {
       if (vivo) trabajador.enviar({ tipo: 'mano', refs });
-    });
+    }));
   }
   if (typeof lienzo._alPulsar === 'function') {
-    lienzo._alPulsar((id, presionado) => {
+    escuchar(lienzo._alPulsar((id, presionado) => {
       if (vivo) trabajador.enviar({ tipo: 'pulsador', id, presionado });
-    });
+    }));
   }
 
   // Si el aprendiz cambia el cableado (o gira la perilla), el Worker resuelve otra vez al instante.
-  lienzo.alCambiar((nuevo) => {
+  escuchar(lienzo.alCambiar((nuevo) => {
     if (!vivo) return;
     trabajador.enviar({ tipo: 'circuito', circuito: nuevo, mostrar: estado !== 'detenido', turno });
-  });
+  }));
 
-  return {
+  const api = {
     iniciar() {
       if (!vivo || estado === 'corriendo') return;
       // Una corrida nueva antes de que el Worker confirme el cierre de la anterior: ese cierre sale ya, con lo que
@@ -167,6 +191,8 @@ export function crearSimulador(opciones = {}) {
         vista = null;
         reiniciosVistos = 0;
         turnosReset.length = 0;
+        msHechos = 0;
+        errorEnCorrida = false;
         Object.assign(medidas, { msSimulados: 0, msReales: 0, velocidad: 1 });
         corrida = ++corridas;
         // El circuito completo: cada corrida se puede analizar sola, sin reconstruirla desde los cambios.
@@ -193,6 +219,7 @@ export function crearSimulador(opciones = {}) {
       emitir('reinicio_placa', { motivo: 'boton' });
       turnosReset.push(turno); // desde aquí, otro tramo: las fotos con este turno o uno mayor ya son del reloj nuevo
       medidas.msSimulados = 0; // el chip vuelve a cero ya; la foto del Worker llega un instante después
+      msHechos = 0;
       // Como apretar el botón RESET: el programa empieza desde setup().
       trabajador.enviar({ tipo: 'reiniciar', turno });
       trabajador.enviar({ tipo: 'iniciar', nuevo: false, turno });
@@ -204,7 +231,9 @@ export function crearSimulador(opciones = {}) {
     // Contrato 1: se ve detenida al instante y devuelve una promesa que se cumple cuando sale simulacion_detenida.
     // Ese cierre espera a que el Worker confirme que paró, así trae las fallas de las fotos que venían en camino
     // (AUD-03-V1); si el Worker no contesta en ESPERA_CIERRE_MS, sale con lo que llegó. { sinEsperar: true } lo saca
-    // ya (al cerrar la ventana no se puede esperar).
+    // ya (al cerrar la ventana no se puede esperar). `confirmado` dice si el Worker confirmó que paró con su última
+    // foto, sin perder ninguna en la corrida y sin avisar un error en ella: si no, pudieron quedar fallas sin llegar y
+    // la corrida no se compara (REG-005, TC-2; AUD-16; AUD-26; contrato 6.1).
     detener({ sinEsperar = false } = {}) {
       if (cierre) {
         const p = cierre.promesa;
@@ -216,7 +245,7 @@ export function crearSimulador(opciones = {}) {
       trabajador.enviar({ tipo: 'detener', turno });
       let cumplir;
       const promesa = new Promise((r) => { cumplir = r; });
-      const espera = setTimeout(() => cierre && cierre.terminar(), ESPERA_CIERRE_MS);
+      const espera = setTimeout(() => este.terminar(), ESPERA_CIERRE_MS);
       const este = {
         turno,
         promesa,
@@ -226,8 +255,12 @@ export function crearSimulador(opciones = {}) {
           clearTimeout(espera);
           // Las fallas de esta corrida, una vez cada una: si una falta en la corrida siguiente, el equipo la corrigió.
           const vistas = new Map(fallas.map((f) => [f.tipo + '|' + f.componente, { tipo: f.tipo, componente: f.componente }]));
-          const ms = Math.round(m && typeof m.msSimulados === 'number' ? m.msSimulados : medidas.msSimulados);
-          emitir('simulacion_detenida', { ms_sim: ms, ms_simulados: ms, fallas: [...vistas.values()] }, ms);
+          const conUltima = !!m && typeof m.msSimulados === 'number';
+          // Y el Worker no perdió ninguna foto de la corrida (una que no salió se llevó sus hechos, AUD-16) ni avisó un
+          // error en ella (AUD-26)
+          const confirmado = conUltima && m.integra !== false && !errorEnCorrida;
+          const ms = Math.round(Math.max(msAhora(), conUltima ? m.msSimulados : 0));
+          emitir('simulacion_detenida', { ms_sim: ms, ms_simulados: ms, fallas: [...vistas.values()], confirmado }, ms);
           cumplir();
         },
       };
@@ -259,6 +292,7 @@ export function crearSimulador(opciones = {}) {
       finDestruir = this.detener(opciones).then(() => {
         oyendo = false;
         trabajador.terminar();
+        soltar.splice(0).forEach((quitar) => quitar());
       });
       return finDestruir;
     },
@@ -277,6 +311,7 @@ export function crearSimulador(opciones = {}) {
       return this.mediciones();
     },
   };
+  return api;
 }
 
 // Crea el Worker desde el código embebido. Si el navegador no lo permite, corre el mismo código en la página.
@@ -307,11 +342,15 @@ function crearTrabajador(alMensaje) {
       recibir(e.data);
     };
     w.onerror = (e) => {
-      if (listo) return console.error('TecnoCircuito:', e.message);
+      // Después de cargar, un error que el Worker no atrapó pudo cortar su reloj: la corrida no se da por entera y se
+      // cierra (AUD-26)
+      if (listo) return alMensaje({ tipo: 'error', mensaje: e.message, parado: true });
       e.preventDefault();
       w.terminate();
       usarPagina();
     };
+    // Un mensaje del Worker que no se pudo leer es una foto perdida: la corrida queda incompleta (AUD-26)
+    w.onmessageerror = () => alMensaje({ tipo: 'error', mensaje: 'un mensaje del simulador no se pudo leer' });
     destino = w;
   } catch {
     usarPagina();
@@ -332,6 +371,12 @@ function trabajadorEnPagina(recibir) {
   new Function('self', CODIGO_TRABAJADOR)(falso); // eslint-disable-line no-new-func
   return {
     postMessage: (m) => setTimeout(() => falso.onmessage && falso.onmessage({ data: m })),
-    terminate: () => (falso.onmessage = null),
+    // Terminar lo detiene ya: un «detener» que todavía espera su turno no llegaría, y el reloj seguiría corriendo en
+    // la página (REG-005, TC-5).
+    terminate: () => {
+      const recibirOrden = falso.onmessage;
+      falso.onmessage = null;
+      if (recibirOrden) recibirOrden({ data: { tipo: 'detener' } });
+    },
   };
 }

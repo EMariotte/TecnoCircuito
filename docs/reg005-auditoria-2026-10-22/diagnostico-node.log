@@ -1,0 +1,11 @@
+OK control-misma-pieza
+FALLA R01-identidad-reutilizada
+FALLA R10-hash-de-otros-bytes
+FALLA R06-contadores-de-disco-obsoletos
+FALLA R09-error-lectura-no-es-error-usb
+TecnoCircuito: la foto no se pudo mandar
+TecnoCircuito: la foto no se pudo mandar
+OK control-reset-sin-fallo
+FALLA R02-foto-perdida-antes-reset
+OK R08-control-foto-anterior-en-pausa
+FALLA R02-variante-foto-periodica

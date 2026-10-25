@@ -1782,6 +1782,16 @@ export function crearLienzo(elemento, opciones = {}) {
 
   // ---- API (contrato 1)
 
+  // Agrega un oyente a la lista y devuelve cómo quitarlo.
+  function escucharEn(lista, fn) {
+    if (typeof fn !== 'function') return () => {};
+    lista.push(fn);
+    return () => {
+      const k = lista.indexOf(fn);
+      if (k >= 0) lista.splice(k, 1);
+    };
+  }
+
   function ponerTema(tema) {
     tc.classList.toggle('tc-oscuro', tema === 'oscuro');
     tc.classList.toggle('tc-claro', tema === 'claro');
@@ -1789,8 +1799,9 @@ export function crearLienzo(elemento, opciones = {}) {
 
   const api = {
     circuito: () => copia(datos),
+    // Devuelve una función para dejar de escuchar (el simulador la usa al destruirse).
     alCambiar(fn) {
-      if (typeof fn === 'function') oyentes.push(fn);
+      return escucharEn(oyentes, fn);
     },
     ponerPlaca(nueva) {
       if (nueva !== placa) throw new Error(`Este prototipo solo dibuja la placa «${placa}».`);
@@ -1802,11 +1813,11 @@ export function crearLienzo(elemento, opciones = {}) {
     exportarNetlist: (opciones) => netlistKiCad(datos, opciones),
     // Interno (no es parte del contrato): el simulador escucha aquí los botones presionados con el mouse.
     _alPulsar(fn) {
-      if (typeof fn === 'function') oyentesPulsar.push(fn);
+      return escucharEn(oyentesPulsar, fn);
     },
     // Interno (no es parte del contrato): el simulador escucha aquí «la mano» (refs bajo el mouse, o []).
     _alAcercar(fn) {
-      if (typeof fn === 'function') oyentesMano.push(fn);
+      return escucharEn(oyentesMano, fn);
     },
     // Interno (no es parte del contrato): el simulador lo usa para mostrar lo que pasa.
     _mostrar(estado) {

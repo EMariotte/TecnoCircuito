@@ -18,11 +18,11 @@
         "origen": { "enum": ["circuito", "simulador", "editor"] },
         "tipo": { "type": "string", "pattern": "^[a-z0-9_]+$" },
         "datos": { "type": "object" },
-        "corrida": { "type": "integer", "minimum": 1, "description": "Número de la simulación mientras la app está abierta (1, 2, 3…). Lo cuenta TecnoCircuito." },
+        "corrida": { "type": "integer", "minimum": 1, "description": "Número de la simulación mientras la página está abierta (1, 2, 3…). Lo cuenta TecnoCircuito: sube con cada simulacion_iniciada y no vuelve a 1 al cambiar de equipo o de sesión, así que una sesión puede empezar en la corrida 4. Ninguna corrida cruza dos sesiones." },
         "ms_sim": { "type": "number", "minimum": 0, "description": "Tiempo simulado de esa corrida, en ms." },
         "tramo": { "type": "integer", "minimum": 0, "description": "Solo del simulador (desde el 21 oct; opcional): cuántos RESET con el botón llevaba la corrida cuando ocurrió el hecho. Cada RESET pone ms_sim en cero, así que ms_sim se compara solo dentro de un mismo tramo. Un hecho de antes del RESET que llega después conserva su tramo." },
         "equipo": { "type": "string", "minLength": 1, "description": "El código del equipo, sin datos de los aprendices. Su formato no es parte del contrato." },
-        "sesion": { "type": "string", "minLength": 1, "description": "Un identificador al azar por cada vez que se abre la app." },
+        "sesion": { "type": "string", "minLength": 1, "description": "Un identificador al azar por cada sesión de un equipo: empieza cuando el equipo confirma su código (al abrir la app, al cambiar de equipo o al encender otra vez el registro) y termina con sesion_terminada. Una apertura de la app puede tener varias sesiones." },
         "version_tb": { "type": "string", "minLength": 1 },
         "version_tc": { "type": "string", "minLength": 1 }
       },
@@ -61,6 +61,7 @@
           "properties": {
             "ms_sim": { "type": "number", "minimum": 0 },
             "ms_simulados": { "type": "number", "minimum": 0, "description": "El nombre de antes del 16 oct: se conserva." },
+            "confirmado": { "type": "boolean", "description": "true si el Worker confirmó que paró y entregó su última foto sin perder ninguna en la corrida; false si el cierre salió sin esa confirmación (la espera de 500 ms, cerrar la ventana o una última foto que falló) o si alguna foto de la corrida no se pudo mandar (24 oct, AUD-16) o el simulador avisó un error en ella (24 oct, AUD-26): pudieron quedar fallas sin llegar y la corrida no se compara. Desde el 22 oct (decisión de Efraín, REG-005); sin el campo, no se sabe." },
             "fallas": { "type": "array", "items": { "type": "object", "required": ["tipo", "componente"], "properties": { "tipo": { "$ref": "#/$defs/tipo-falla" }, "componente": { "type": "string" } } }, "description": "Las fallas de esa corrida. Que una falla no aparezca en la corrida siguiente es corrección solo si las dos son comparables (completas y coherentes, sin huecos entre ellas, mismo modo, mismas no idealidades, misma placa y la pieza sigue); si no, solo «ya no se observó» (decisión de Efraín, 20 oct; CONTRATO 6.1)." }
           } } } } },
         { "if": { "properties": { "tipo": { "const": "falla" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {

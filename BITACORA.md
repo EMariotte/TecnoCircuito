@@ -1698,3 +1698,51 @@ Codex verificó AUD-07 y AUD-10 a AUD-14 ([verificación](docs/VERIFICACION-CLA0
 ## 2026-10-21 18:00 · Codex: cierre verificado de AUD-09/R1
 
 AUD-09/R1 verificado tras CLA-20261021-008: ocho familias F01–F08 verificadas en su matriz de software. Historia 192, registro 202, aceptación de Codex 14/14 y diagnóstico profundo 23/23, exit 0. El manifiesto inválido ya no acredita final, con cola real y controles cero/positivo. Fuentes y memorias de Claude preservadas; delta solo lector/prueba y documentación. Sin nueva devolución ni reapertura: acumulados 20/19 funcionales. Visto bueno técnico del lote, sin acreditar eliminados once riesgos/límites, distribución, USB real, hardware o aula; REG-005 sigue pendiente. [Informe](docs/CIERRE-AUD09-CLA008-CODEX-2026-10-21.md). Bases main TC 0894750 / TB 720b908 / TS f6ccd45, entrega sin commit y hashes completos en manifiestos. Claude conserva implementación, memorias y gestión de Git; Efraín decide la siguiente entrega. Codex registra cierre/canal COD-20261021-005 sin modificar producto.
+
+## 2026-10-22 · Contrato 1: confirmado en el cierre; revisión final del registro (REG-005)
+
+Fase 5 del registro. Revisión de código (`/code-review`, por separado en los dos proyectos): 25 hallazgos, cada uno verificado contra el código. Con la decisión de Efraín se corrigieron 17, cada uno con su regresión, que falla con el código anterior. Los otros 8 (rendimiento y rediseño) quedan en la tabla de riesgos de COMO-FUNCIONA 70.
+
+- **Contrato 1, sección 6.1 (aditivo; decisión de Efraín):** `simulacion_detenida` suma `confirmado`. Es `false` si el cierre salió sin la confirmación del Worker (la espera de 500 ms, cerrar la ventana o una última foto que falló), y la historia no compara esa corrida. Esquema y `probar:contrato` actualizados. La sección 6.1 pasa a describir lo implementado: el tiempo de lo que emite la página, cómo se escribe y se exporta, la excepción `/**/` del 18 oct y los límites para leer los datos. Sin cambios en la API ni en el formato del circuito.
+- **Simulador:**
+  - Al pulsar RESET, lo pendiente sale con el turno de antes, en su tramo; si esa foto falla, el RESET se hace igual.
+  - Lo que emite la página nunca dice un tiempo menor que un hecho ya registrado de su tramo. Antes daba un falso «falla después del cierre».
+  - El Worker confirma que paró aunque su última foto falle.
+  - Sin Worker, destruir sin esperar detiene el reloj de la página.
+  - `activas` guarda solo las claves conocidas, como booleanos.
+  - `destruir()` suelta sus oyentes del lienzo: `alCambiar`, `_alPulsar` y `_alAcercar` devuelven cómo quitarlos.
+- COMO-FUNCIONA 70: el camino de un evento, el tiempo de cada evento del simulador, lo que encontró la revisión y la tabla de lo que el registro no garantiza (los once riesgos de Codex, tres de rendimiento y dos del simulador).
+
+Pruebas: `probar:fotos` 46 (con `trabajador.js` real, reloj y canal controlados), `probar:contrato` 191, `probar:nucleo` 120, `probar:corte` 7; Chromium: registro 18, simulación 20, T1/T2 17, prototipo 25, servo 19. En TecnoBloques: `test:registro` 204, `test:historia` 198, `test:registro-app` 115, `test:simulador` 53 y `test:registro-preprocesador` (avr-g++, todos los casos y 2000 al azar) sin fallas. No se corrió la suite global, ni KiCad, el instalador, hardware o el aula.
+
+
+## 2026-10-22 11:55 · Codex: auditoría completa de REG-005, devuelta
+
+Auditoría completa autorizada por Efraín de CLA-20261022-002 sobre TC main cfeee9b / TB main 1c6c660 / TS main a3c8ca2 y entrega sin commit identificada por SHA256. Nueve defectos funcionales, uno de comprobación y dos documentales; seguimiento AUD-15–AUD-23 y 15 riesgos/límites con posibles soluciones. [Informe y reproducciones](docs/AUDITORIA-REG005-CODEX-2026-10-22.md). Sin visto bueno del conjunto ni reapertura automática de cierres históricos.
+
+TC completo: 1251 OK y una falla de pausa; repetición aislada 18/18 sin cambios, KiCad real Uno/Nano ejecutado. TB registro 204, historia 198, preprocesador 74 con 2000 aleatorios, Electron registro 115, simulador 53, graficador 28 y generales aprobados con errores revisados. Históricos 14/14 y 23/23; diagnósticos propios Node 6 incumplimientos en 9 escenarios y Electron 4 en 5, con controles y sin errores JS. No son regresiones aprobadas. Solo datos sintéticos; fuentes y memorias de Claude preservadas, sin implementar producto, commit, push, etiqueta ni publicación. No probado instalador, USB real, hardware ni aula. Efraín decide prioridad; Claude conserva la implementación.
+
+
+## 2026-10-24 — Lote alto de la auditoría de REG-005 (AUD-15, AUD-16, AUD-19 y AUD-22)
+
+Efraín aprobó corregir primero los cuatro defectos de prioridad alta de la [auditoría de Codex](docs/AUDITORIA-REG005-CODEX-2026-10-22.md). Antes de corregir, los reproduje con copias de sus diagnósticos. Lo de este proyecto:
+
+- **AUD-16 (R02), `src/trabajador.js` y `src/simulador.js`:** el núcleo entrega cada falla en una sola foto; si esa foto no salía, la falla se perdía y el cierre decía `confirmado: true`. Ahora el Worker lleva la integridad de la corrida: una foto que no sale la deja incompleta hasta la corrida nueva, y su `detenido` trae `integra: false`, así que el cierre dice `confirmado: false`. Los hechos perdidos no se reenvían en otra foto, porque quedarían con otro turno y otro tramo del reloj. La vuelta periódica ya no se corta si una foto falla: avisa la primera de la corrida y sigue. Si falla la primera foto, el reloj arranca igual.
+- **Contrato 6.1 y esquema, solo redacción:** `confirmado: false` también cuando se perdió una foto (AUD-16), y «la pieza sigue» es la misma pieza, no otra con su id ni la de otro proyecto o ejemplo (AUD-15, en el lector de TecnoBloques). Sin campos nuevos.
+- AUD-15, AUD-19 y AUD-22 son de TecnoBloques (su bitácora).
+
+Las seis regresiones nuevas de `probar_fotos.js` (sección 14) fallan con el `trabajador.js` y el `simulador.js` anteriores, reconstruidos e identificados por su sha256. Dos de ellas fallan solo porque el campo `integra` no existía.
+
+Pruebas (corridas una tras otra): `probar:fotos` 52, `probar:contrato` 191, `probar:nucleo` 120, `probar:corte` 7; Chromium: registro 18, simulación 20, T1/T2 17, prototipo 25, servo 19. En TecnoBloques: `test:registro` 204, `test:historia` 209, `test:registro-app` 120, `test:registro-preprocesador` 74, `test:simulador` 53, `test:graficador` 28. Sin fallas. Los diagnósticos de Codex, corridos desde una copia, pasan en R01, R02 (las dos variantes), R10, R05 y R07; R03, R04, R06 y R09 siguen fallando: son del lote siguiente. No se corrió la suite global de TC, KiCad, el instalador, hardware ni el aula.
+
+## 2026-10-25 — Lote final del registro (F01 a F05, AUD-17 a AUD-26, D01 y D02)
+
+Efraín decidió entregar en un lote todo lo que quedaba del registro tras la [verificación profunda de Codex del 24 oct](../TecnoSuite/registro/auditoria-20261024/INFORME.md), y contener ahora el riesgo W-R1. Lo de este proyecto:
+
+- **AUD-26 (W-R1), `src/trabajador.js` y `src/simulador.js`:** una excepción del núcleo fuera de la foto (al avanzar, reiniciar o recablear) cortaba el reloj del Worker; la página seguía «corriendo» y el cierre decía `confirmado: true`. Ahora el Worker atrapa el error, para el reloj a propósito, deja la corrida incompleta y avisa con su turno y `parado: true`; «seguir» no vuelve a arrancar un núcleo que falló. La página no da por entera la corrida que avisó un error, la cierra si el reloj paró y su cierre sale con `confirmado: false`; también ante `error` o `messageerror` del Worker después de cargar. No se reintenta solo.
+- **AUD-23 (R08), `pruebas/probar_registro.py` y `probar_fotos.js` 16:** la prueba de la pausa comparaba lo que la página sabía en dos momentos, y una foto anterior que llegaba tarde subía ese valor. En Chromium se compara ahora la primera foto del Worker al seguir con lo que se sabía al seguir; en Node, el reloj del Worker durante la pausa y la foto tardía por separado.
+- **Contrato 6.1 y esquema, solo redacción:** `confirmado: false` también cuando el simulador avisó un error en la corrida (AUD-26), y qué son `sesion` y `corrida` (D02): una sesión por cada vez que un equipo confirma su código, no por apertura de la app; la corrida cuenta mientras la página está abierta y no vuelve a 1 en cada sesión. Sin campos nuevos ni cambios de validación.
+- **COMO-FUNCIONA 71:** lo corregido en el lote, el diagrama de la contención de AUD-26, sesión y corrida, la matriz de los 25 hallazgos del 22 oct (D01: 20 con cambio, TC-10 en parte, y 5 sin cambio; la cifra «17/8» estaba mal contada) y lo que cambia en la tabla de riesgos.
+- F01 a F05 y AUD-17, 18, 20 y 21 son de TecnoBloques (su bitácora).
+
+Pruebas (una tras otra, 25 oct): suite completa (`npm --prefix prototipo run probar`, con KiCad real y Chromium) 1277 OK y ninguna falla; `probar:fotos` 71, y en Chromium la pausa duró 309 ms con 531 ms al pausar y al seguir, y la primera foto en 552. Con el `trabajador.js` y el `simulador.js` auditados por Codex, las regresiones de AUD-26 fallan (10) y la prueba se corta por la excepción que se escapa. El diagnóstico del Worker de Codex, corrido desde una copia: 29 de 29 conformes, también W-R1. Las pruebas de TecnoBloques, en su bitácora. Pasar una vez no prueba que la intermitencia de la pausa desapareció. No se corrió el instalador, hardware ni el aula.

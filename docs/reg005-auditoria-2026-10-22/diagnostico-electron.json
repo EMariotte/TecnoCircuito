@@ -1,0 +1,242 @@
+{
+  "utc": "2026-10-22T16:49:50.772Z",
+  "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg005-codex-xslkhV",
+  "results": [
+    {
+      "id": "control-subida-sin-espera",
+      "expected": "Sin cambio durante espera, la placa registrada es la solicitada",
+      "observed": {
+        "v": 1,
+        "t": 1792687788850,
+        "origen": "editor",
+        "tipo": "programa_subido",
+        "datos": {
+          "ok": false,
+          "placa": "uno"
+        },
+        "equipo": "AUDITORIA",
+        "sesion": "348178d6-4262-4c28-af2d-fd136e106e7d",
+        "version_tb": "0.3.0",
+        "version_tc": "0.1.0-dev"
+      },
+      "ok": true
+    },
+    {
+      "id": "R03-placa-subida-tras-espera",
+      "expected": "La placa registrada coincide con el FQBN realmente enviado",
+      "observed": {
+        "peticiones": [
+          {
+            "codigo": "// Mi proyecto · Arduino Uno R3\n// Generado con TecnoBloques\n\nvoid setup() {\n}\n\nvoid loop() {\n}\n",
+            "fqbn": "arduino:avr:nano:cpu=atmega328",
+            "puerto": "COM_AUDITORIA"
+          }
+        ],
+        "eventos": [
+          {
+            "v": 1,
+            "t": 1792687789051,
+            "origen": "editor",
+            "tipo": "placa_cambiada",
+            "datos": {
+              "de": "uno",
+              "a": "nano"
+            },
+            "equipo": "AUDITORIA",
+            "sesion": "348178d6-4262-4c28-af2d-fd136e106e7d",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792687789067,
+            "origen": "editor",
+            "tipo": "codigo_compilado",
+            "datos": {
+              "ok": true,
+              "error": null,
+              "bytes": null,
+              "codigo": "\n\n\nvoid setup() {\n}\n\nvoid loop() {\n}\n"
+            },
+            "equipo": "AUDITORIA",
+            "sesion": "348178d6-4262-4c28-af2d-fd136e106e7d",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792687789067,
+            "origen": "editor",
+            "tipo": "programa_subido",
+            "datos": {
+              "ok": false,
+              "placa": "uno"
+            },
+            "equipo": "AUDITORIA",
+            "sesion": "348178d6-4262-4c28-af2d-fd136e106e7d",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "id": "R04-apagado-con-cambio-pendiente",
+      "expected": "Registro apagado deja al editor sin equipo y ningún equipo nuevo con solo sesion_terminada",
+      "observed": {
+        "estado": {
+          "activo": false,
+          "equipo": "AUDITORIA_B",
+          "sesion": "93abb5e6-3055-46fb-95c6-02f45800c3a6",
+          "aviso": "Esta sesión se registra · Equipo AUDITORIA_B"
+        },
+        "eventos": [
+          {
+            "v": 1,
+            "t": 1792687789288,
+            "origen": "editor",
+            "tipo": "sesion_terminada",
+            "datos": {
+              "ms": 473
+            },
+            "equipo": "AUDITORIA",
+            "sesion": "348178d6-4262-4c28-af2d-fd136e106e7d",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          }
+        ],
+        "trasReencender": [
+          {
+            "v": 1,
+            "t": 1792687789288,
+            "origen": "editor",
+            "tipo": "sesion_terminada",
+            "datos": {
+              "ms": 473
+            },
+            "equipo": "AUDITORIA",
+            "sesion": "348178d6-4262-4c28-af2d-fd136e106e7d",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792687789691,
+            "origen": "editor",
+            "tipo": "codigo_compilado",
+            "datos": {
+              "ok": true,
+              "codigo": "void setup(){}\nvoid loop(){}",
+              "error": null,
+              "bytes": 1
+            },
+            "equipo": "AUDITORIA_B",
+            "sesion": "93abb5e6-3055-46fb-95c6-02f45800c3a6",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "id": "R05-texto-del-proyecto-anterior",
+      "expected": "El proyecto B sin texto no hereda el C++ de A",
+      "observed": {
+        "a": true,
+        "b": true,
+        "nombre": "B",
+        "texto": true,
+        "codigo": "void setup(){int SOLO_A=1;}\nvoid loop(){}",
+        "proyecto": {
+          "app": "TecnoBloques",
+          "version": 1,
+          "nombre": "B",
+          "placa": "uno",
+          "nivel": 3,
+          "bloques": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "programa",
+                  "id": "2w+D:e]9jayQD~}b3wmA",
+                  "x": 40,
+                  "y": 40,
+                  "deletable": false
+                }
+              ]
+            }
+          },
+          "embebidos": {},
+          "texto": "void setup(){int SOLO_A=1;}\nvoid loop(){}",
+          "creadoCon": "0.3.0",
+          "guardado": "2026-10-22T16:49:50.140Z"
+        }
+      },
+      "ok": false
+    },
+    {
+      "id": "R07-rollback-pierde-texto",
+      "expected": "Si abrir falla se conserva el proyecto completo, incluido el C++ editado",
+      "observed": {
+        "antes": {
+          "app": "TecnoBloques",
+          "version": 1,
+          "nombre": "B",
+          "placa": "uno",
+          "nivel": 3,
+          "bloques": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "programa",
+                  "id": "2w+D:e]9jayQD~}b3wmA",
+                  "x": 40,
+                  "y": 40,
+                  "deletable": false
+                }
+              ]
+            }
+          },
+          "embebidos": {},
+          "texto": "void setup(){int CONSERVAR=42;}\nvoid loop(){}",
+          "creadoCon": "0.3.0",
+          "guardado": "2026-10-22T16:49:50.143Z"
+        },
+        "resultado": "No se pudo abrir el proyecto: Invalid block definition for type: AUDITORIA_INEXISTENTE",
+        "despues": {
+          "app": "TecnoBloques",
+          "version": 1,
+          "nombre": "B",
+          "placa": "uno",
+          "nivel": 3,
+          "bloques": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "programa",
+                  "id": "2w+D:e]9jayQD~}b3wmA",
+                  "x": 40,
+                  "y": 40,
+                  "deletable": false
+                }
+              ]
+            }
+          },
+          "embebidos": {},
+          "texto": null,
+          "creadoCon": "0.3.0",
+          "guardado": "2026-10-22T16:49:50.517Z"
+        },
+        "codigo": "// B · Arduino Uno R3\n// Generado con TecnoBloques\n\nvoid setup() {\n}\n\nvoid loop() {\n}\n",
+        "texto": false
+      },
+      "ok": false
+    }
+  ],
+  "errores": []
+}

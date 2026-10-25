@@ -1,0 +1,2638 @@
+{
+  "utc": "2026-10-22T16:48:45.893Z",
+  "results": [
+    {
+      "id": "control-misma-pieza",
+      "expected": "Sin reemplazo: comparación y corrección",
+      "observed": {
+        "eventos": [
+          {
+            "v": 1,
+            "t": 1792681200000,
+            "tipo": "sesion_iniciada",
+            "datos": {
+              "placa": "uno",
+              "nivel": 3
+            },
+            "origen": "editor",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792681200100,
+            "tipo": "simulacion_iniciada",
+            "datos": {
+              "placa": "uno",
+              "modo": "realista",
+              "activas": {
+                "danoComponentes": true
+              },
+              "circuito": {
+                "formato": 1,
+                "placa": "uno",
+                "protoboard": null,
+                "componentes": [
+                  {
+                    "id": "led1",
+                    "tipo": "led",
+                    "x": 0,
+                    "y": 0,
+                    "rot": 0,
+                    "props": {
+                      "color": "rojo"
+                    }
+                  }
+                ],
+                "cables": []
+              }
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200200,
+            "tipo": "falla",
+            "datos": {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 1,
+            "ms_sim": 100,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200300,
+            "tipo": "simulacion_detenida",
+            "datos": {
+              "fallas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "ms_sim": 100,
+              "confirmado": true
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 1,
+            "ms_sim": 100,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200400,
+            "tipo": "simulacion_iniciada",
+            "datos": {
+              "placa": "uno",
+              "modo": "realista",
+              "activas": {
+                "danoComponentes": true
+              },
+              "circuito": {
+                "formato": 1,
+                "placa": "uno",
+                "protoboard": null,
+                "componentes": [
+                  {
+                    "id": "led1",
+                    "tipo": "led",
+                    "x": 0,
+                    "y": 0,
+                    "rot": 0,
+                    "props": {
+                      "color": "rojo"
+                    }
+                  }
+                ],
+                "cables": []
+              }
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 2,
+            "ms_sim": 0,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200500,
+            "tipo": "simulacion_detenida",
+            "datos": {
+              "fallas": [],
+              "ms_sim": 100,
+              "confirmado": true
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 2,
+            "ms_sim": 100,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200600,
+            "tipo": "sesion_terminada",
+            "datos": {
+              "ms": 1000
+            },
+            "origen": "editor",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          }
+        ],
+        "historia": {
+          "equipo": "AUDITORIA",
+          "sesion": "reg005-identidad",
+          "archivos": [
+            "AUDITORIA-2026-10-22.jsonl"
+          ],
+          "inicio": 1792681200000,
+          "fin": 1792681200600,
+          "placa": "uno",
+          "placas": [
+            "uno"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792681200000,
+              "texto": "Empezó la sesión (uno, nivel 3)."
+            },
+            {
+              "t": 1792681200100,
+              "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+              "corrida": 1
+            },
+            {
+              "t": 1792681200200,
+              "texto": "   falla: LED quemado (led1), a los 0,1 s simulados.",
+              "corrida": 1
+            },
+            {
+              "t": 1792681200300,
+              "texto": "■ Corrida 1 terminó: 0,1 s simulados. Fallas: LED quemado (led1).",
+              "corrida": 1
+            },
+            {
+              "t": 1792681200400,
+              "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+              "corrida": 2
+            },
+            {
+              "t": 1792681200500,
+              "texto": "■ Corrida 2 terminó: 0,1 s simulados. Sin fallas. Corrigió: LED quemado (led1).",
+              "corrida": 2
+            },
+            {
+              "t": 1792681200600,
+              "texto": "Terminó la sesión (1 s)."
+            }
+          ],
+          "corridas": [
+            {
+              "numero": 1,
+              "inicio": 1792681200100,
+              "fin": 1792681200300,
+              "modo": "realista",
+              "placa": "uno",
+              "activas": {
+                "danoComponentes": true
+              },
+              "piezas": {
+                "led1": "led"
+              },
+              "fallasVistas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1",
+                  "ms_sim": 100
+                }
+              ],
+              "cierres": [
+                [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ]
+              ],
+              "ms_sim": 100,
+              "reinicios": 0,
+              "contradicciones": [],
+              "ocurrencias": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1",
+                  "ms_sim": 100,
+                  "tramo": 0
+                }
+              ],
+              "tiemposCierre": [
+                {
+                  "ms_sim": 100,
+                  "tramo": 0
+                }
+              ],
+              "desdePos": 1,
+              "hastaPos": 3,
+              "fallas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "completa": true,
+              "cierre": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "coherente": true,
+              "incoherencia": null,
+              "comparada": null,
+              "nuevas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "siguen": [],
+              "yaNoSeObservo": [],
+              "corrigio": []
+            },
+            {
+              "numero": 2,
+              "inicio": 1792681200400,
+              "fin": 1792681200500,
+              "modo": "realista",
+              "placa": "uno",
+              "activas": {
+                "danoComponentes": true
+              },
+              "piezas": {
+                "led1": "led"
+              },
+              "fallasVistas": [],
+              "cierres": [
+                []
+              ],
+              "ms_sim": 100,
+              "reinicios": 0,
+              "contradicciones": [],
+              "ocurrencias": [],
+              "tiemposCierre": [
+                {
+                  "ms_sim": 100,
+                  "tramo": 0
+                }
+              ],
+              "desdePos": 4,
+              "hastaPos": 5,
+              "fallas": [],
+              "completa": true,
+              "cierre": [],
+              "coherente": true,
+              "incoherencia": null,
+              "comparada": 1,
+              "nuevas": [],
+              "siguen": [],
+              "yaNoSeObservo": [],
+              "corrigio": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ]
+            }
+          ],
+          "avisos": [],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [],
+          "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna."
+        }
+      },
+      "ok": true
+    },
+    {
+      "id": "R01-identidad-reutilizada",
+      "expected": "Tras baja y alta, la pieza anterior no sigue: no acreditar corrección de ella",
+      "observed": {
+        "eventos": [
+          {
+            "v": 1,
+            "t": 1792681200000,
+            "tipo": "sesion_iniciada",
+            "datos": {
+              "placa": "uno",
+              "nivel": 3
+            },
+            "origen": "editor",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792681200100,
+            "tipo": "simulacion_iniciada",
+            "datos": {
+              "placa": "uno",
+              "modo": "realista",
+              "activas": {
+                "danoComponentes": true
+              },
+              "circuito": {
+                "formato": 1,
+                "placa": "uno",
+                "protoboard": null,
+                "componentes": [
+                  {
+                    "id": "led1",
+                    "tipo": "led",
+                    "x": 0,
+                    "y": 0,
+                    "rot": 0,
+                    "props": {
+                      "color": "rojo"
+                    }
+                  }
+                ],
+                "cables": []
+              }
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200200,
+            "tipo": "falla",
+            "datos": {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 1,
+            "ms_sim": 100,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200300,
+            "tipo": "simulacion_detenida",
+            "datos": {
+              "fallas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "ms_sim": 100,
+              "confirmado": true
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 1,
+            "ms_sim": 100,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200400,
+            "tipo": "componente_quitado",
+            "datos": {
+              "id": "led1",
+              "tipo": "led"
+            },
+            "origen": "circuito",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792681200500,
+            "tipo": "componente_agregado",
+            "datos": {
+              "id": "led1",
+              "tipo": "led"
+            },
+            "origen": "circuito",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          },
+          {
+            "v": 1,
+            "t": 1792681200600,
+            "tipo": "simulacion_iniciada",
+            "datos": {
+              "placa": "uno",
+              "modo": "realista",
+              "activas": {
+                "danoComponentes": true
+              },
+              "circuito": {
+                "formato": 1,
+                "placa": "uno",
+                "protoboard": null,
+                "componentes": [
+                  {
+                    "id": "led1",
+                    "tipo": "led",
+                    "x": 0,
+                    "y": 0,
+                    "rot": 0,
+                    "props": {
+                      "color": "rojo"
+                    }
+                  }
+                ],
+                "cables": []
+              }
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 2,
+            "ms_sim": 0,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200700,
+            "tipo": "simulacion_detenida",
+            "datos": {
+              "fallas": [],
+              "ms_sim": 100,
+              "confirmado": true
+            },
+            "origen": "simulador",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev",
+            "corrida": 2,
+            "ms_sim": 100,
+            "tramo": 0
+          },
+          {
+            "v": 1,
+            "t": 1792681200800,
+            "tipo": "sesion_terminada",
+            "datos": {
+              "ms": 1000
+            },
+            "origen": "editor",
+            "equipo": "AUDITORIA",
+            "sesion": "reg005-identidad",
+            "version_tb": "0.3.0",
+            "version_tc": "0.1.0-dev"
+          }
+        ],
+        "historia": {
+          "equipo": "AUDITORIA",
+          "sesion": "reg005-identidad",
+          "archivos": [
+            "AUDITORIA-2026-10-22.jsonl"
+          ],
+          "inicio": 1792681200000,
+          "fin": 1792681200800,
+          "placa": "uno",
+          "placas": [
+            "uno"
+          ],
+          "nivel": 3,
+          "pasos": [
+            {
+              "t": 1792681200000,
+              "texto": "Empezó la sesión (uno, nivel 3)."
+            },
+            {
+              "t": 1792681200100,
+              "texto": "▶ Corrida 1 (uno, realista; 1 pieza, 0 cables).",
+              "corrida": 1
+            },
+            {
+              "t": 1792681200200,
+              "texto": "   falla: LED quemado (led1), a los 0,1 s simulados.",
+              "corrida": 1
+            },
+            {
+              "t": 1792681200300,
+              "texto": "■ Corrida 1 terminó: 0,1 s simulados. Fallas: LED quemado (led1).",
+              "corrida": 1
+            },
+            {
+              "t": 1792681200400,
+              "texto": "Circuito: quitó led1 (led); agregó otra led1 (led)."
+            },
+            {
+              "t": 1792681200600,
+              "texto": "▶ Corrida 2 (uno, realista; 1 pieza, 0 cables).",
+              "corrida": 2
+            },
+            {
+              "t": 1792681200700,
+              "texto": "■ Corrida 2 terminó: 0,1 s simulados. Sin fallas. Corrigió: LED quemado (led1).",
+              "corrida": 2
+            },
+            {
+              "t": 1792681200800,
+              "texto": "Terminó la sesión (1 s)."
+            }
+          ],
+          "corridas": [
+            {
+              "numero": 1,
+              "inicio": 1792681200100,
+              "fin": 1792681200300,
+              "modo": "realista",
+              "placa": "uno",
+              "activas": {
+                "danoComponentes": true
+              },
+              "piezas": {
+                "led1": "led"
+              },
+              "fallasVistas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1",
+                  "ms_sim": 100
+                }
+              ],
+              "cierres": [
+                [
+                  {
+                    "tipo": "led_quemado",
+                    "componente": "led1"
+                  }
+                ]
+              ],
+              "ms_sim": 100,
+              "reinicios": 0,
+              "contradicciones": [],
+              "ocurrencias": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1",
+                  "ms_sim": 100,
+                  "tramo": 0
+                }
+              ],
+              "tiemposCierre": [
+                {
+                  "ms_sim": 100,
+                  "tramo": 0
+                }
+              ],
+              "desdePos": 1,
+              "hastaPos": 3,
+              "fallas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "completa": true,
+              "cierre": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "coherente": true,
+              "incoherencia": null,
+              "comparada": null,
+              "nuevas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ],
+              "siguen": [],
+              "yaNoSeObservo": [],
+              "corrigio": []
+            },
+            {
+              "numero": 2,
+              "inicio": 1792681200600,
+              "fin": 1792681200700,
+              "modo": "realista",
+              "placa": "uno",
+              "activas": {
+                "danoComponentes": true
+              },
+              "piezas": {
+                "led1": "led"
+              },
+              "fallasVistas": [],
+              "cierres": [
+                []
+              ],
+              "ms_sim": 100,
+              "reinicios": 0,
+              "contradicciones": [],
+              "ocurrencias": [],
+              "tiemposCierre": [
+                {
+                  "ms_sim": 100,
+                  "tramo": 0
+                }
+              ],
+              "desdePos": 6,
+              "hastaPos": 7,
+              "fallas": [],
+              "completa": true,
+              "cierre": [],
+              "coherente": true,
+              "incoherencia": null,
+              "comparada": 1,
+              "nuevas": [],
+              "siguen": [],
+              "yaNoSeObservo": [],
+              "corrigio": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                }
+              ]
+            }
+          ],
+          "avisos": [],
+          "notas": [],
+          "dudas": [],
+          "sinAtribuir": [],
+          "huecos": [],
+          "resumen": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna."
+        }
+      },
+      "ok": false
+    },
+    {
+      "id": "R10-hash-de-otros-bytes",
+      "expected": "Analizar exactamente los bytes cuya huella fue verificada, o detectar la modificación entre lecturas",
+      "observed": {
+        "lecturas": 2,
+        "problemas": [],
+        "antes": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: ninguna. Sin corregir: LED quemado (led1).",
+        "despues": "2 corrida(s). Fallas vistas: LED quemado (led1). Corregidas al final: LED quemado (led1). Sin corregir: ninguna."
+      },
+      "ok": false
+    },
+    {
+      "id": "R06-contadores-de-disco-obsoletos",
+      "expected": "El aviso en vivo informa la cola y las pérdidas actuales",
+      "observed": {
+        "durante": {
+          "activo": true,
+          "tienePin": true,
+          "falla": {
+            "motivo": "ENOSPC",
+            "desde": 1792681200000,
+            "pendientes": 5000,
+            "perdidos": 2
+          },
+          "configIlegible": false,
+          "descartados": null
+        },
+        "avisos": [
+          {
+            "f": {
+              "motivo": "ENOSPC",
+              "desde": 1792681200000,
+              "pendientes": 1,
+              "perdidos": 0
+            },
+            "fin": null
+          },
+          {
+            "f": null,
+            "fin": "escrito"
+          }
+        ],
+        "visible": {
+          "motivo": "ENOSPC",
+          "desde": 1792681200000,
+          "pendientes": 1,
+          "perdidos": 0
+        }
+      },
+      "ok": false
+    },
+    {
+      "id": "R09-error-lectura-no-es-error-usb",
+      "expected": "Un origen que abre pero falla al leer no debe atribuirse con certeza al destino",
+      "observed": {
+        "respuesta": {
+          "ok": false,
+          "motivo": "copia-incompleta",
+          "carpeta": "C:\\Users\\ACER\\AppData\\Local\\Temp\\reg005-copia-eB4Olw\\usb\\TecnoBloques-registros-2026-10-22_1000",
+          "copiados": 0,
+          "total": 1,
+          "archivo": "AUDITORIA-2026-10-22.jsonl",
+          "codigo": "EIO",
+          "donde": "destino",
+          "mensaje": "AUDITORIA-2026-10-22.jsonl: Error sintético al leer el contenido del origen (abrir sí funciona)"
+        }
+      },
+      "ok": false
+    },
+    {
+      "id": "control-reset-sin-fallo",
+      "expected": "El RESET entrega las fallas y cierre confirmado",
+      "observed": {
+        "salidas": [
+          {
+            "tipo": "listo"
+          },
+          {
+            "tipo": "foto",
+            "turno": 1,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 2,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": false,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": false,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 0
+          },
+          {
+            "tipo": "foto",
+            "turno": 1,
+            "msSimulados": 15.0000625,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": 0.6913554349274326,
+              "led1.anodo": 0.6913554349274326,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": true,
+              "brilloL": 0.99,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "Pin 13 en ALTO:",
+            "fallas": [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1",
+                "corriente_mA": 100.6,
+                "mensaje": "El LED led1 se quemó: le pasaron 101 mA y aguanta unos 20 mA. Ponle una resistencia en serie (220 Ω sirve)."
+              },
+              {
+                "tipo": "corriente_pin",
+                "componente": "placa.D13",
+                "corriente_mA": 100.6,
+                "mensaje": "El pin 13 entrega 101 mA y aguanta 40 mA: en la placa real se puede dañar. Revisa que haya una resistencia."
+              }
+            ],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0.6913554349274326,
+                "led1.anodo": 0.6913554349274326,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 0.6913554349274326,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [
+                {
+                  "pin": "D13",
+                  "v": 4.999202615296437,
+                  "i": 4.963316263475761e-12
+                }
+              ],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {
+                "D13": 0.993
+              },
+              "usb": {
+                "amperios": 0.05000000000000001,
+                "pico": 0.05,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0.05000000000000001,
+              "pico": 0.05,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 15
+          },
+          {
+            "tipo": "foto",
+            "turno": 2,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 15
+          },
+          {
+            "tipo": "foto",
+            "turno": 2,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 15
+          },
+          {
+            "tipo": "foto",
+            "turno": 3,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 15
+          },
+          {
+            "tipo": "detenido",
+            "turno": 3,
+            "msSimulados": 0
+          }
+        ],
+        "eventos": [
+          {
+            "v": 1,
+            "t": 1792687725657,
+            "origen": "simulador",
+            "tipo": "simulacion_iniciada",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 0,
+            "datos": {
+              "placa": "uno",
+              "modo": "realista",
+              "activas": {
+                "danoComponentes": true,
+                "limitePin": true,
+                "entradaFlotante": true,
+                "ruidoADC": true,
+                "limiteUSB": true,
+                "caidaL293D": true,
+                "resistenciaBateria": true
+              },
+              "circuito": {
+                "formato": 1,
+                "placa": "uno",
+                "protoboard": null,
+                "componentes": [
+                  {
+                    "id": "led1",
+                    "tipo": "led",
+                    "x": 0,
+                    "y": 0,
+                    "props": {
+                      "color": "rojo"
+                    }
+                  }
+                ],
+                "cables": [
+                  {
+                    "de": "placa.D13",
+                    "a": "led1.anodo"
+                  },
+                  {
+                    "de": "led1.catodo",
+                    "a": "placa.GND1"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "v": 1,
+            "t": 1792687725708,
+            "origen": "simulador",
+            "tipo": "reinicio_placa",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 0,
+            "datos": {
+              "motivo": "boton"
+            }
+          },
+          {
+            "v": 1,
+            "t": 1792687725711,
+            "origen": "simulador",
+            "tipo": "falla",
+            "corrida": 1,
+            "ms_sim": 15,
+            "tramo": 0,
+            "datos": {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "corriente_mA": 100.6
+            }
+          },
+          {
+            "v": 1,
+            "t": 1792687725711,
+            "origen": "simulador",
+            "tipo": "falla",
+            "corrida": 1,
+            "ms_sim": 15,
+            "tramo": 0,
+            "datos": {
+              "tipo": "corriente_pin",
+              "componente": "placa.D13",
+              "corriente_mA": 100.6
+            }
+          },
+          {
+            "v": 1,
+            "t": 1792687725711,
+            "origen": "simulador",
+            "tipo": "simulacion_detenida",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 1,
+            "datos": {
+              "ms_sim": 0,
+              "ms_simulados": 0,
+              "fallas": [
+                {
+                  "tipo": "led_quemado",
+                  "componente": "led1"
+                },
+                {
+                  "tipo": "corriente_pin",
+                  "componente": "placa.D13"
+                }
+              ],
+              "confirmado": true
+            }
+          }
+        ],
+        "cierre": {
+          "v": 1,
+          "t": 1792687725711,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 1,
+          "datos": {
+            "ms_sim": 0,
+            "ms_simulados": 0,
+            "fallas": [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              },
+              {
+                "tipo": "corriente_pin",
+                "componente": "placa.D13"
+              }
+            ],
+            "confirmado": true
+          }
+        }
+      },
+      "ok": true
+    },
+    {
+      "id": "R02-foto-perdida-antes-reset",
+      "expected": "Perder una foto con hechos invalida la integridad de toda esa corrida",
+      "observed": {
+        "salidas": [
+          {
+            "tipo": "listo"
+          },
+          {
+            "tipo": "foto",
+            "turno": 1,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 2,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": false,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": false,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 0
+          },
+          {
+            "tipo": "error",
+            "mensaje": "la foto no se pudo mandar"
+          },
+          {
+            "tipo": "error",
+            "mensaje": "la foto no se pudo mandar"
+          },
+          {
+            "tipo": "foto",
+            "turno": 2,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 15
+          },
+          {
+            "tipo": "foto",
+            "turno": 3,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 15
+          },
+          {
+            "tipo": "detenido",
+            "turno": 3,
+            "msSimulados": 0
+          }
+        ],
+        "eventos": [
+          {
+            "v": 1,
+            "t": 1792687725717,
+            "origen": "simulador",
+            "tipo": "simulacion_iniciada",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 0,
+            "datos": {
+              "placa": "uno",
+              "modo": "realista",
+              "activas": {
+                "danoComponentes": true,
+                "limitePin": true,
+                "entradaFlotante": true,
+                "ruidoADC": true,
+                "limiteUSB": true,
+                "caidaL293D": true,
+                "resistenciaBateria": true
+              },
+              "circuito": {
+                "formato": 1,
+                "placa": "uno",
+                "protoboard": null,
+                "componentes": [
+                  {
+                    "id": "led1",
+                    "tipo": "led",
+                    "x": 0,
+                    "y": 0,
+                    "props": {
+                      "color": "rojo"
+                    }
+                  }
+                ],
+                "cables": [
+                  {
+                    "de": "placa.D13",
+                    "a": "led1.anodo"
+                  },
+                  {
+                    "de": "led1.catodo",
+                    "a": "placa.GND1"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "v": 1,
+            "t": 1792687725754,
+            "origen": "simulador",
+            "tipo": "reinicio_placa",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 0,
+            "datos": {
+              "motivo": "boton"
+            }
+          },
+          {
+            "v": 1,
+            "t": 1792687725759,
+            "origen": "simulador",
+            "tipo": "simulacion_detenida",
+            "corrida": 1,
+            "ms_sim": 0,
+            "tramo": 1,
+            "datos": {
+              "ms_sim": 0,
+              "ms_simulados": 0,
+              "fallas": [],
+              "confirmado": true
+            }
+          }
+        ],
+        "cierre": {
+          "v": 1,
+          "t": 1792687725759,
+          "origen": "simulador",
+          "tipo": "simulacion_detenida",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 1,
+          "datos": {
+            "ms_sim": 0,
+            "ms_simulados": 0,
+            "fallas": [],
+            "confirmado": true
+          }
+        }
+      },
+      "ok": false
+    },
+    {
+      "id": "R08-control-foto-anterior-en-pausa",
+      "expected": "Una foto producida antes de pausar puede elevar ms_sim al reanudar, sin avance durante la pausa",
+      "observed": {
+        "pausa": {
+          "v": 1,
+          "t": 1792687725830,
+          "origen": "simulador",
+          "tipo": "simulacion_pausada",
+          "corrida": 1,
+          "ms_sim": 0,
+          "tramo": 0,
+          "datos": {}
+        },
+        "reanuda": {
+          "v": 1,
+          "t": 1792687725831,
+          "origen": "simulador",
+          "tipo": "simulacion_reanudada",
+          "corrida": 1,
+          "ms_sim": 22,
+          "tramo": 0,
+          "datos": {}
+        },
+        "ciclosAntes": 352001,
+        "ciclosDespues": 352001,
+        "delta": 22
+      },
+      "ok": true
+    },
+    {
+      "id": "R02-variante-foto-periodica",
+      "expected": "Un fallo periódico debe producir estado de error y no dejar una corrida congelada con cierre aparentemente íntegro",
+      "observed": {
+        "excepcion": "la foto no se pudo mandar",
+        "sinActividadPosterior": true,
+        "salidas": [
+          {
+            "tipo": "listo"
+          },
+          {
+            "tipo": "foto",
+            "turno": 1,
+            "msSimulados": 0,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 2,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [],
+            "voltajes": {
+              "placa.D13": null,
+              "led1.anodo": null,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "D13": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": false,
+              "brilloL": 0,
+              "ledTX": false,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 0,
+                "led1.anodo": 0,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": false,
+                  "v": 0,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {},
+              "usb": {
+                "amperios": 0,
+                "pico": 0,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 0
+          },
+          {
+            "tipo": "foto",
+            "turno": 2,
+            "msSimulados": 17.0000625,
+            "servos": {},
+            "piezas": {},
+            "evaluaciones": 7,
+            "leds": {
+              "led1": 0
+            },
+            "quemados": [
+              "led1"
+            ],
+            "voltajes": {
+              "placa.D13": 1.4318277624184614,
+              "led1.anodo": 1.4318277624184614,
+              "led1.catodo": 0,
+              "placa.GND1": 0
+            },
+            "entradas": {
+              "D2": {
+                "alto": false,
+                "alAire": true
+              },
+              "D3": {
+                "alto": false,
+                "alAire": true
+              },
+              "D4": {
+                "alto": false,
+                "alAire": true
+              },
+              "D5": {
+                "alto": false,
+                "alAire": true
+              },
+              "D6": {
+                "alto": false,
+                "alAire": true
+              },
+              "D7": {
+                "alto": false,
+                "alAire": true
+              },
+              "D8": {
+                "alto": false,
+                "alAire": true
+              },
+              "D9": {
+                "alto": false,
+                "alAire": true
+              },
+              "D10": {
+                "alto": false,
+                "alAire": true
+              },
+              "D11": {
+                "alto": false,
+                "alAire": true
+              },
+              "D12": {
+                "alto": false,
+                "alAire": true
+              },
+              "A0": {
+                "alto": false,
+                "alAire": true
+              },
+              "A1": {
+                "alto": false,
+                "alAire": true
+              },
+              "A2": {
+                "alto": false,
+                "alAire": true
+              },
+              "A3": {
+                "alto": false,
+                "alAire": true
+              },
+              "A4": {
+                "alto": false,
+                "alAire": true
+              },
+              "A5": {
+                "alto": false,
+                "alAire": true
+              }
+            },
+            "placa": {
+              "led13": true,
+              "brilloL": 0.99,
+              "ledTX": true,
+              "ledRX": false
+            },
+            "serial": "",
+            "fallas": [],
+            "medicion": {
+              "convergio": true,
+              "iteraciones": 1,
+              "voltajes": {
+                "placa.D13": 1.4318277624184614,
+                "led1.anodo": 1.4318277624184614,
+                "led1.catodo": 0,
+                "placa.GND1": 0
+              },
+              "leds": [
+                {
+                  "id": "led1",
+                  "quemado": true,
+                  "v": 1.4318277624184614,
+                  "i": 0,
+                  "brillo": 0
+                }
+              ],
+              "resistencias": [],
+              "pines": [
+                {
+                  "pin": "D13",
+                  "v": 4.999297022581184,
+                  "i": 4.96762994016462e-12
+                }
+              ],
+              "fuentes": [],
+              "potenciometros": [],
+              "pwm": {
+                "D13": 0.994
+              },
+              "usb": {
+                "amperios": 0,
+                "pico": 0.05,
+                "voltios": 5,
+                "fusible": 0,
+                "apagada": false,
+                "reinicios": 0
+              },
+              "servos": [],
+              "consumo5V": 0,
+              "motores": [],
+              "baterias": [],
+              "shield": null,
+              "probadores": [],
+              "porVin": false
+            },
+            "energia": {
+              "amperios": 0,
+              "pico": 0.05,
+              "voltios": 5,
+              "fusible": 0,
+              "apagada": false,
+              "reinicios": 0
+            },
+            "velocidad": 1,
+            "msReales": 17
+          },
+          {
+            "tipo": "detenido",
+            "turno": 2,
+            "msSimulados": 17.0000625
+          }
+        ]
+      },
+      "ok": false
+    }
+  ]
+}

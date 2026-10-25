@@ -1,0 +1,6 @@
+OK control-subida-sin-espera
+FALLA R03-placa-subida-tras-espera
+FALLA R04-apagado-con-cambio-pendiente
+FALLA R05-texto-del-proyecto-anterior
+FALLA R07-rollback-pierde-texto
+Errores JS: []
