@@ -174,7 +174,7 @@ Detalles en `..\TecnoBloques\CLAUDE.md` («Proyecto hermano», «App de escritor
 - la región de los datos;
 - el consentimiento que mencione la nube (Ley 1581).
 
-Nada se sube con aprendices antes del aval de ética.
+Nada se sube con aprendices antes del aval de ética. **Efraín (25 oct): no antes de 2027**; en 2026 los datos del A/B se analizan en una base local y se borran tras el informe (EST-002).
 
 **Iniciativas para después del registro (EVOL-001):**
 - **LED y resistencia como Piezas Tecno** (pedido de Efraín, 14 oct), para que todas las piezas de la suite nos pertenezcan (hoy salen de `@wokwi/elements`).

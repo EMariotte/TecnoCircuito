@@ -67,6 +67,8 @@ La idea: **que los registros lleguen solos a una base central**, sin USB, sin pe
 
 ## 7. Requisito: una base que no se reinicia (Efraín, 25 oct)
 
+> **Alcance (Efraín, 25 oct):** rige la base permanente, que empieza en 2027 con los permisos institucionales. En 2026 nada sube a la nube: los datos de la comparación A/B (EST-002) se analizan en una base local con este mismo diseño y sus datos crudos se borran después del informe, como dice ADR-002.
+
 La base tiene que servir a cualquier pregunta de investigación, la de hoy y las que vengan ([rutas para más adelante](../../TecnoSuite/EstrategíaTecno/RUTAS-DE-INVESTIGACION.md)), sin borrarla ni empezar de cero. En el diseño eso significa:
 
 - **Lo crudo no se toca:** cada línea del `.jsonl` se guarda tal cual llegó, con su `id`, la versión del contrato, la del producto y el PC de origen. Solo se inserta.
