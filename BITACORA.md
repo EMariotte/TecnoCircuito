@@ -1746,3 +1746,18 @@ Efraín decidió entregar en un lote todo lo que quedaba del registro tras la [v
 - F01 a F05 y AUD-17, 18, 20 y 21 son de TecnoBloques (su bitácora).
 
 Pruebas (una tras otra, 25 oct): suite completa (`npm --prefix prototipo run probar`, con KiCad real y Chromium) 1277 OK y ninguna falla; `probar:fotos` 71, y en Chromium la pausa duró 309 ms con 531 ms al pausar y al seguir, y la primera foto en 552. Con el `trabajador.js` y el `simulador.js` auditados por Codex, las regresiones de AUD-26 fallan (10) y la prueba se corta por la excepción que se escapa. El diagnóstico del Worker de Codex, corrido desde una copia: 29 de 29 conformes, también W-R1. Las pruebas de TecnoBloques, en su bitácora. Pasar una vez no prueba que la intermitencia de la pausa desapareció. No se corrió el instalador, hardware ni el aula.
+
+## 2026-10-25 — Contrato 1: TecnoCircuito.MARCA y la firma de la imagen (MARCA-001)
+
+**Pedido y decisiones de Efraín (25 oct):** TecnoBloques es el contenedor de la Suite y TecnoCircuito conserva su identidad dentro de él. Aprobó la propuesta mínima (panel Circuito, «Acerca de», imagen exportada), sumó una marca de agua en el SVG exportado, pidió «Hecho con:» seguido de la marca y la frase de TecnoCircuito, y autorizó el cambio aditivo del contrato y la versión 0.3.0 con su commit y etiqueta.
+
+- **Contrato 1, sección 2 (aditivo):** entra `TecnoCircuito.MARCA` (`nombre`, `frase`, `simbolo`, `cabeza`), congelado. `src/marca.js` toma los SVG de `marca/svg/` al construir (`construir.js`: cargador `text` para `.svg`), así viajan en `dist/tecnocircuito.js` y se ven sin red.
+- **`exportarSVG()`:** la franja de abajo lleva la firma (`marca/svg/firma.svg`, nueva en `generar.py`: «Hecho con:», el logo horizontal y la frase «Prueba tu idea antes de armarla en la placa.», todo en trazados) a escala 0,36, con letras chicas de 8,6 px. Encima del circuito, el símbolo de una tinta al 10 %, centrado. El texto anterior en Arial sale.
+- **`marca/MARCA.md`:** la frase, la firma y las reglas de uso dentro de TecnoBloques. COMO-FUNCIONA 72.
+- Los SVG que ya existían se regeneran idénticos; los PNG se dejaron como estaban (regenerarlos solo cambia sus bytes).
+
+Pruebas (una tras otra, con cargador, 25 oct): suite completa (`npm --prefix prototipo run probar`, KiCad real y Chromium) 1283 OK y ninguna falla; `probar_svg.py` revisa la firma, la marca de agua y `MARCA`. TecnoBloques, en su bitácora. Sin commit: la versión 0.3.0 y su etiqueta van después de la verificación de Codex.
+
+## 2026-10-25 — MARCA-001: la marca de agua va encima (devolución M1 de Codex)
+
+Codex devolvió MARCA-001 (COD-20261025-002) por **M1**: el ejemplo de aceptación decía «marca de agua detrás del circuito» y `exportarSVG()` la pone encima. El ejemplo lo había escrito yo, y la puse encima a propósito sin consultarlo: detrás, la placa y las piezas, que son opacas, la tapan casi entera. Le mostré las dos a Efraín y **decidió encima, al 10 %**. El código no cambia. `probar_svg.py` suma dos comprobaciones: el orden de capas (fondo, circuito, marca de agua, firma) y que la marca de agua pisa la placa. Con la marca detrás, la del orden falla. `probar_svg.py` 24 OK. Guía de la marca y COMO-FUNCIONA 72 alineadas.

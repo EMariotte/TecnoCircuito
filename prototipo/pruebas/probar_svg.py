@@ -69,25 +69,58 @@ with sync_playwright() as p:
     revisar(re.search(r'id="tc-pot1-rotating"[^>]*transform="rotate\(', svg) or re.search(r'transform="rotate\([^"]+\)"[^>]*id="tc-pot1-rotating"', svg),
             'la perilla del potenciómetro queda girada como atributo')
     revisar('rotate(90)' in svg, 'la resistencia girada sale girada')
+    # La marca (MARCA-001): la firma abajo a la derecha y el símbolo de una tinta como marca de agua.
     marca = pg.evaluate('''(texto) => {
       const caja = document.createElement('div');
       caja.innerHTML = texto;
       document.body.appendChild(caja);
       const svg = caja.querySelector('svg');
-      const t = svg.querySelector(':scope > text');
-      const m = t.getBBox();
-      const c = svg.querySelector(':scope > g').getBBox();
-      const tr = svg.querySelector(':scope > g').transform.baseVal.consolidate().matrix;
-      const r = { texto: t.textContent, x0: m.x, x1: m.x + m.width, y0: m.y, y1: m.y + m.height,
-                  ancho: svg.width.baseVal.value, alto: svg.height.baseVal.value, finCircuito: c.y + c.height + tr.f };
+      const enImagen = (n) => {  // caja del grupo en las coordenadas de la imagen
+        const b = n.getBBox(), m = n.transform.baseVal.consolidate().matrix;
+        return { x0: m.e + b.x * m.a, y0: m.f + b.y * m.d, x1: m.e + (b.x + b.width) * m.a, y1: m.f + (b.y + b.height) * m.d, escala: m.a };
+      };
+      const circuito = enImagen(svg.querySelector(':scope > g'));
+      const firma = svg.querySelector(':scope > g.tc-firma');
+      const agua = svg.querySelector(':scope > g.tc-marca-agua');
+      const r = { ancho: svg.width.baseVal.value, alto: svg.height.baseVal.value, circuito,
+                  firma: firma && enImagen(firma), etiqueta: firma && firma.getAttribute('aria-label'),
+                  agua: agua && enImagen(agua), opacidad: agua && Number(agua.getAttribute('opacity')),
+                  textoSuelto: svg.querySelectorAll(':scope > text').length,
+                  ultimo: svg.lastElementChild.getAttribute('class'),
+                  // orden de pintado: lo que viene después se dibuja encima
+                  capas: [...svg.children].map((n) => n.tagName + (n.getAttribute('class') ? '.' + n.getAttribute('class') : '')) };
+      // la placa es opaca: la marca de agua tiene que pisarla, no quedar escondida detrás
+      const p = svg.querySelector(':scope > g:first-of-type #tc-placa').getBoundingClientRect();
+      const w = agua && agua.getBoundingClientRect();
+      r.sobrePlaca = w ? Math.max(0, Math.min(p.right, w.right) - Math.max(p.left, w.left)) * Math.max(0, Math.min(p.bottom, w.bottom) - Math.max(p.top, w.top)) : 0;
       caja.remove();
       return r;
     }''', svg)
     print('   marca:', marca)
-    revisar(marca['texto'] == 'Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima', f'lleva la marca «{marca["texto"]}»')
-    revisar(marca['x0'] >= 0 and marca['x1'] <= marca['ancho'] and marca['y1'] <= marca['alto'], 'la marca cabe entera en la imagen')
-    revisar(marca['x1'] > marca['ancho'] - 20 and marca['y1'] > marca['alto'] - 12, 'la marca está en la esquina inferior derecha')
-    revisar(marca['y0'] >= marca['finCircuito'], 'la marca va debajo del circuito, sin tapar nada')
+    f, a = marca['firma'], marca['agua']
+    revisar(f is not None and marca['textoSuelto'] == 0, 'lleva la firma de TecnoCircuito en lugar del texto de antes')
+    revisar(marca['etiqueta'] == 'Hecho con TecnoCircuito, TecnoAcademia Tolima · SENA. Prueba tu idea antes de armarla en la placa.',
+            f'la firma dice «{marca["etiqueta"]}» (los lectores de pantalla la leen)')
+    revisar(f['x0'] >= 0 and f['x1'] <= marca['ancho'] and f['y0'] >= 0 and f['y1'] <= marca['alto'], 'la firma cabe entera en la imagen')
+    revisar(f['x1'] > marca['ancho'] - 16 and f['y1'] > marca['alto'] - 12, 'la firma está en la esquina inferior derecha')
+    revisar(f['y0'] >= marca['circuito']['y1'], 'la firma va debajo del circuito, sin tapar nada')
+    revisar(24 * f['escala'] >= 8, f'las letras chicas de la firma se leen ({24 * f["escala"]:.1f} px)')
+    revisar(a is not None and 0 < marca['opacidad'] <= 0.1, f'lleva la marca de agua, tenue (opacidad {marca["opacidad"]})')
+    if a:
+        cx, cy = (a['x0'] + a['x1']) / 2, (a['y0'] + a['y1']) / 2
+        revisar(a['x0'] >= 0 and a['x1'] <= marca['ancho'] and a['y1'] <= f['y0'], 'la marca de agua queda dentro del circuito, sin tocar la firma')
+        # el dibujo del símbolo no llena su cuadro de 64 (la antena es angosta): se acepta un poco de holgura
+        revisar(abs(cx - marca['ancho'] / 2) < 4 and abs(cy - f['y0'] / 2) < 12,
+                f'la marca de agua está centrada en el circuito ({cx:.0f}, {cy:.0f})')
+    # Decisión de Efraín (25 oct, tras la devolución M1 de Codex): la marca de agua va ENCIMA del circuito, al 10 %
+    revisar(marca['capas'] == ['title', 'rect', 'g', 'g.tc-marca-agua', 'g.tc-firma'],
+            f'capas en orden: fondo, circuito, marca de agua encima y firma ({" > ".join(marca["capas"])})')
+    revisar(marca['sobrePlaca'] > 1000, f'la marca de agua pisa la placa, que es opaca ({marca["sobrePlaca"]:.0f} px² en común)')
+    api = pg.evaluate('''() => { const m = TecnoCircuito.MARCA;
+      return { nombre: m.nombre, frase: m.frase, simbolo: m.simbolo.slice(0, 40), cabeza: m.cabeza.slice(0, 40), congelada: Object.isFrozen(m) }; }''')
+    revisar(api['nombre'] == 'TecnoCircuito' and api['frase'] == 'Prueba tu idea antes de armarla en la placa.'
+            and api['simbolo'].startswith('<svg') and api['cabeza'].startswith('<svg') and api['congelada'],
+            f'TecnoCircuito.MARCA trae nombre, frase, símbolo y cabeza, y no se puede cambiar: {api}')
 
     # Abrir el archivo solo, como lo abriría otro programa, y comparar con la pantalla
     # (como imagen dentro de una página: la foto de un SVG abierto solo se queda esperando en Chromium)

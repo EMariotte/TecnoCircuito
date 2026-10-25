@@ -27,6 +27,11 @@ TecnoCircuito.CONTRATO   // 1        sube solo cuando se rompe la compatibilidad
 TecnoCircuito.PLACAS     // ['uno', 'nano', 'nano_old']  placas que sabe dibujar y simular hoy; comprobar por clave
 TecnoCircuito.filasDeMediciones(m)  // la tabla en español a partir de sim.mediciones():
                          //   [{ pieza: 'Pin 9', voltaje: '0,37 V', corriente: '0,00 mA', detalle: 'señal de servo: …' }, …]
+TecnoCircuito.MARCA      // la identidad de TecnoCircuito, para mostrarla dentro de TecnoBloques (desde la 0.3.0):
+                         //   { nombre: 'TecnoCircuito', frase: 'Prueba tu idea antes de armarla en la placa.',
+                         //     simbolo: '<svg …>',   símbolo sobre fondo azul (viewBox 64), desde 32 px
+                         //     cabeza: '<svg …>' }   solo el chip, de 16 a 24 px
+                         //   Texto SVG dentro del paquete: funciona sin red. Las reglas de uso están en marca/MARCA.md.
 
 // Lienzo: protoboard y cables. Funciona sin .hex (sirve también en la versión web).
 const lienzo = TecnoCircuito.crearLienzo(elemento, {
@@ -44,7 +49,8 @@ lienzo.alCambiar(fn);       // fn(circuito) cada vez que el aprendiz cambia algo
 // llama conserva el original hasta que el aprendiz edite (así lo hace TecnoBloques). COMO-FUNCIONA, sección 60.
 lienzo.ponerTema('oscuro');
 lienzo.exportarSVG();       // el circuito como texto SVG, tal como se ve (documentación, evidencias en TecnoRuta),
-                            // con la marca «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima» abajo a la derecha
+                            // con el símbolo de TecnoCircuito como marca de agua tenue y, abajo a la derecha, la firma:
+                            // «Hecho con:», el logo (con «TecnoAcademia Tolima · SENA») y la frase (desde la 0.3.0)
 lienzo.exportarNetlist({ nombre });  // el circuito como netlist de KiCad (.net, «export» versión E): piezas con su huella
                             // y redes. El Uno va como los 4 conectores (J1–J4) de la plantilla «Arduino Uno Shield»
                             // de KiCad; en su editor de placas, Archivo → Importar → Netlist
@@ -413,3 +419,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 22 oct 2026 | Sección 6.1 (REG-005): `simulacion_detenida` suma el campo `confirmado` (decisión de Efraín): `false` si el cierre salió sin la confirmación del Worker, y esa corrida no se compara. Agregar un campo no rompe nada. Además, la sección pasa a describir lo implementado: el tiempo de lo que emite la página, cómo se escribe y se exporta (`exportacion.json`), la excepción `/**/` del código sin comentarios (18 oct) y los límites para leer los datos. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
 | 1 (borrador) | 24 oct 2026 | Sección 6.1 y descripción de `confirmado` en el esquema (auditoría de Codex de REG-005): `confirmado: false` también cuando una foto de la corrida no se pudo mandar, porque sus fallas se perdieron (AUD-16); y «la pieza sigue» es la misma pieza, no otra con su id ni la de otro proyecto o ejemplo (AUD-15). Sin campos nuevos ni cambios de validación. |
 | 1 (borrador) | 24 oct 2026 | Sección 6.1 y descripciones del esquema, solo redacción (verificación profunda de Codex del 24 oct): `confirmado: false` también cuando el simulador avisó un error en la corrida, y la página la cierra si el reloj paró (AUD-26, decisión de Efraín de contener W-R1). Qué son `sesion` y `corrida` (D02): una sesión por cada vez que un equipo confirma su código, no por apertura de la app; la corrida cuenta mientras la página está abierta y no vuelve a 1 en cada sesión. Sin campos nuevos ni cambios de validación. |
+| 1 (borrador) | 25 oct 2026 | Sección 2: entra `TecnoCircuito.MARCA` (`nombre`, `frase`, `simbolo`, `cabeza`; MARCA-001, decisión de Efraín): la identidad de TecnoCircuito viaja en su paquete para que TecnoBloques la muestre sin red. La imagen de `exportarSVG()` cambia su marca: el símbolo como marca de agua tenue y la firma «Hecho con:» + logo + frase en la franja de abajo, en lugar del texto «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima». Agregar una propiedad no rompe nada: un TecnoBloques que no la lee sigue igual, y uno que la lee con un paquete anterior no muestra la firma. Versión menor: 0.3.0. Sin cambios en el formato del circuito ni en los eventos. |

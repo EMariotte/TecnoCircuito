@@ -38,7 +38,7 @@ const { outputFiles } = esbuild.buildSync({
   minify: true,
   write: false,
   target: ['chrome120'],
-  loader: { '.css': 'text' },
+  loader: { '.css': 'text', '.svg': 'text' }, // los .svg son los de marca/svg (src/marca.js)
   legalComments: 'eof', // conserva los avisos de licencia de Lit y de los dibujos
 });
 const js = outputFiles[0].text;

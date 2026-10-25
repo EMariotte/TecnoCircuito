@@ -187,6 +187,29 @@ def logo_horizontal(c_tecno, c_circuito, c_linea, simbolo_svg):
             f'role="img" aria-label="TecnoCircuito, TecnoAcademia Tolima · SENA">{cuerpo}</svg>\n'), w, h
 
 
+FRASE = 'Prueba tu idea antes de armarla en la placa.'
+
+
+def firma(c_tecno, c_circuito, c_linea, simbolo_svg):
+    """«Hecho con:» + el logo horizontal + la frase, para la imagen que exporta el lienzo (MARCA-001).
+    El logo conserva sus proporciones; la frase es una línea más en la columna del nombre."""
+    negrita, normal = Fuente('AtkinsonHyperlegible-Bold.woff'), Fuente('AtkinsonHyperlegible-Regular.woff')
+    m, lado, hueco = 4, 112, 22
+    etiqueta = 'Hecho con:'
+    sx = m + normal.ancho(etiqueta, 24, 0.3) + hueco
+    tx = sx + lado + hueco
+    ancho = max(negrita.ancho('TecnoCircuito', 72, -1), normal.ancho('TecnoAcademia Tolima · SENA', 24, 0.3),
+                normal.ancho(FRASE, 24))
+    w, h = round(tx + ancho + m), m + 132 + 8 + m
+    cuerpo = normal.trazado(etiqueta, m, m + 64, 24, c_linea, 0.3)
+    cuerpo += _anidar(simbolo_svg, sx, m, lado)
+    cuerpo += negrita.trazado('TecnoCircuito', tx, m + 64, 72, c_tecno, -1, tramos=[(5, c_tecno), (8, c_circuito)])
+    cuerpo += normal.trazado('TecnoAcademia Tolima · SENA', tx, m + 98, 24, c_linea, 0.3)
+    cuerpo += normal.trazado(FRASE, tx, m + 132, 24, c_linea)
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
+            f'role="img" aria-label="Hecho con TecnoCircuito, TecnoAcademia Tolima · SENA. {FRASE}">{cuerpo}</svg>\n')
+
+
 def compartir():
     """Imagen 1200 × 630 para compartir enlaces y vista previa de GitHub (Social preview)."""
     negrita, normal = Fuente('AtkinsonHyperlegible-Bold.woff'), Fuente('AtkinsonHyperlegible-Regular.woff')
@@ -194,7 +217,7 @@ def compartir():
     d += _anidar(SVGS['simbolo-sobre-oscuro.svg'], 90, 150, 330)
     d += negrita.trazado('TecnoCircuito', 476, 262, 92, BLANCO, -1.5, tramos=[(5, BLANCO), (8, VERDE_CLARO)])
     d += normal.trazado('Simulador de electrónica y robótica.', 476, 332, 30, '#e3edf3')
-    d += normal.trazado('Prueba tu idea antes de armarla en la placa.', 476, 372, 30, '#e3edf3')
+    d += normal.trazado(FRASE, 476, 372, 30, '#e3edf3')
     d += normal.trazado('TecnoAcademia Tolima · SENA', 476, 444, 24, '#9fb6c6', 0.3)
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">{d}</svg>\n'
 
@@ -207,6 +230,7 @@ def main():
     SVGS['logo-horizontal.svg'] = claro
     SVGS['logo-horizontal-oscuro.svg'] = oscuro
     SVGS['compartir.svg'] = compartir()
+    SVGS['firma.svg'] = firma(AZUL, VERDE, '#5b6770', SVGS['simbolo-app.svg'])
     for nombre, contenido in SVGS.items():
         (M / 'svg' / nombre).write_text(contenido, encoding='utf-8', newline='\n')
 

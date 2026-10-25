@@ -13,11 +13,16 @@ import { esNano, perfilPlaca } from './placas.js';
 import { ALIASES_EXPANSION } from './piezas/shield_nano_io.js';
 import { PATAS } from './motor/red.js';
 import { VERSION_EVENTOS } from './eventos.js';
+import { FIRMA_SVG, UNA_TINTA_SVG, interiorSVG, medidaSVG } from './marca.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-// Marca de la imagen SVG exportada (abajo a la derecha). La imagen sigue siendo de quien la hace (NOTICE).
-const MARCA_SVG = 'Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima';
-const MARCA_ANCHO_MIN = 280; // px: la marca (unos 245 px en Arial 9) cabe aunque el circuito sea pequeño
+// Marca de la imagen SVG exportada: la firma abajo a la derecha («Hecho con:», el logo y la frase) y el símbolo de
+// una tinta como marca de agua (MARCA-001, decisión de Efraín). La imagen sigue siendo de quien la hace (NOTICE).
+const FIRMA = medidaSVG(FIRMA_SVG);
+const ESCALA_FIRMA = 0.36; // las letras chicas de la firma (24 en su dibujo) quedan de unos 9 px, como la marca anterior
+const MARCA_ANCHO_MIN = Math.ceil(FIRMA.ancho * ESCALA_FIRMA) + 24; // px: la firma cabe aunque el circuito sea pequeño
+const MARCA_AGUA_OPACIDAD = 0.1; // se nota sin tapar el circuito: tinta azul y blanca, así se ve sobre la placa y sobre el blanco
+const MARCA_AGUA_TAMANO = 0.5; // lado del símbolo: la mitad del lado menor del circuito
 const ORIGEN_SVG = 5000; // la capa de cables empieza en (-5000, -5000): así todo cable recibe clics
 const UMBRAL_CLIC = 4; // px de pantalla: si el puntero se mueve menos, es un clic y no un arrastre
 const IMAN = 8; // px de pantalla: un doblez se alinea con el punto vecino si queda así de cerca
@@ -1604,13 +1609,18 @@ export function crearLienzo(elemento, opciones = {}) {
 
   // Arma un SVG que se abre igual en el navegador, Word, LibreOffice o Inkscape: fondo blanco, cada pieza con
   // su dibujo de Wokwi (con sus estilos y sus identificadores renombrados) y los cables encima, como en pantalla.
-  // Abajo a la derecha lleva la marca «Hecho con TecnoCircuito», en una franja propia para no tapar nada.
+  // Encima, el símbolo de TecnoCircuito como marca de agua; abajo a la derecha, la firma, en una franja propia para
+  // no tapar nada. Las dos son trazados: se ven igual sin la fuente instalada.
   function exportarSVG() {
     const caja = cajaDelCircuito() || { x0: 0, y0: 0, x1: 100, y1: 100 };
     const margen = 12;
-    const franja = 16;
+    const firmaAncho = FIRMA.ancho * ESCALA_FIRMA;
+    const firmaAlto = FIRMA.alto * ESCALA_FIRMA;
+    const franja = Math.ceil(firmaAlto) + 8;
     const ancho = Math.max(MARCA_ANCHO_MIN, Math.ceil(caja.x1 - caja.x0 + 2 * margen));
-    const alto = Math.ceil(caja.y1 - caja.y0 + 2 * margen) + franja;
+    const altoCircuito = Math.ceil(caja.y1 - caja.y0 + 2 * margen);
+    const alto = altoCircuito + franja;
+    const lado = MARCA_AGUA_TAMANO * Math.min(ancho, altoCircuito);
     const partes = [
       `<svg xmlns="${SVG_NS}" xmlns:xlink="http://www.w3.org/1999/xlink" width="${ancho}" height="${alto}" viewBox="0 0 ${ancho} ${alto}">`,
       '<title>Circuito armado en TecnoCircuito</title>',
@@ -1635,8 +1645,12 @@ export function crearLienzo(elemento, opciones = {}) {
     }
     partes.push(
       '</g>',
-      `<text x="${ancho - margen}" y="${alto - 9}" text-anchor="end" font-family="Arial, Helvetica, sans-serif" ` +
-        `font-size="9" fill="#7a7a7a">${escaparXML(MARCA_SVG)}</text>`,
+      `<g class="tc-marca-agua" opacity="${MARCA_AGUA_OPACIDAD}" ` +
+        `transform="translate(${redondear((ancho - lado) / 2)} ${redondear((altoCircuito - lado) / 2)}) scale(${redondear(lado / 64)})">` +
+        `${interiorSVG(UNA_TINTA_SVG)}</g>`,
+      `<g class="tc-firma" aria-label="${escaparXML(FIRMA_SVG.match(/aria-label="([^"]*)"/)[1])}" ` +
+        `transform="translate(${redondear(ancho - margen - firmaAncho)} ${redondear(alto - 6 - firmaAlto)}) scale(${ESCALA_FIRMA})">` +
+        `${interiorSVG(FIRMA_SVG)}</g>`,
       '</svg>',
     );
     return partes.join('\n');
