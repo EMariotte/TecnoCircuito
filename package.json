@@ -1,6 +1,6 @@
 {
   "name": "tecnocircuito",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Simulador de circuitos con microcontrolador para TecnoBloques — TecnoAcademia Tolima, SENA",
   "license": "Apache-2.0",
