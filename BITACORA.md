@@ -1761,3 +1761,7 @@ Pruebas (una tras otra, con cargador, 25 oct): suite completa (`npm --prefix pro
 ## 2026-10-25 — MARCA-001: la marca de agua va encima (devolución M1 de Codex)
 
 Codex devolvió MARCA-001 (COD-20261025-002) por **M1**: el ejemplo de aceptación decía «marca de agua detrás del circuito» y `exportarSVG()` la pone encima. El ejemplo lo había escrito yo, y la puse encima a propósito sin consultarlo: detrás, la placa y las piezas, que son opacas, la tapan casi entera. Le mostré las dos a Efraín y **decidió encima, al 10 %**. El código no cambia. `probar_svg.py` suma dos comprobaciones: el orden de capas (fondo, circuito, marca de agua, firma) y que la marca de agua pisa la placa. Con la marca detrás, la del orden falla. `probar_svg.py` 24 OK. Guía de la marca y COMO-FUNCIONA 72 alineadas.
+
+## 2026-10-25 — v0.3.0 etiquetada (MARCA-001)
+
+Codex verificó y cerró MARCA-001 (COD-20261025-003); Efraín aprobó la versión con su commit, etiqueta y push. `npm run preparar-version` armó `dist/tecnocircuito.js` 0.3.0 (contrato 1). Suite completa con cargador (`npm --prefix prototipo run probar`, KiCad real y Chromium): 1285 OK y ninguna falla. Una corrida anterior, también en verde, se repitió porque el PC estaba en batería. Commits `5ebb76f` (MARCA-001), `fdf6eb8` (versión) y `0de3ffd` (paquete); etiqueta `v0.3.0`. TecnoBloques sigue con `#v0.2.0` hasta su 0.4.1, en DIST-001.
