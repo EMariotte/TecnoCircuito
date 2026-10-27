@@ -2,7 +2,7 @@
 
 12 de octubre de 2026 · Especificación de entrega, versión 1. Fuente única: este archivo. TecnoDiseñador la enlaza desde su `CLAUDE.md`.
 
-**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano, la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62) y la shield L293D, con sus headers analógicos (sección 64). **27 oct:** fichas del LED (6.6) y de la resistencia (6.7), para PIEZA-001; el revisor ya las comprueba.
+**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano, la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62) y la shield L293D, con sus headers analógicos (sección 64). **27 oct:** fichas del LED (6.6) y de la resistencia (6.7), para PIEZA-001, y del potenciómetro (6.8) y el pulsador (6.9), para PIEZA-002; el revisor ya las comprueba.
 
 **Para quién:** el agente que dibuja en `..\TecnoDiseñador` y Efraín. Dice exactamente qué archivos entregar, con qué reglas y con qué datos, para que el dibujo reemplace la vista de una pieza de TecnoCircuito **sin tocar nada a mano** al migrarlo.
 
@@ -48,7 +48,7 @@ En `componentes/<modelo>/entrega/tecnocircuito/`, generado por el mismo script q
 - TecnoCircuito reemplaza `width` y `height` por píxeles (1 mm = 9,6 / 2,54 = 3,7795 px). No hay que reescalar nada a mano.
 - Números con **máximo 2 decimales** (0,01 mm).
 
-**Qué se dibuja:** la pieza **vista desde arriba**, tal como es (el LED es la excepción: va de frente, sección 6.6). Las piezas montadas se dibujan completas aunque otra las tape en la realidad (por ejemplo, la expansión con sus zócalos bajo el Nano). **El orden de las capas lo pone TecnoCircuito**: no se recortan ventanas ni agujeros para ver otra pieza.
+**Qué se dibuja:** la pieza **vista desde arriba**, tal como es (el LED y el potenciómetro son la excepción: van de frente, secciones 6.6 y 6.8). Las piezas montadas se dibujan completas aunque otra las tape en la realidad (por ejemplo, la expansión con sus zócalos bajo el Nano). **El orden de las capas lo pone TecnoCircuito**: no se recortan ventanas ni agujeros para ver otra pieza.
 
 **Permitido:** `g`, `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon`, `text`, `tspan`, `defs`, `linearGradient`, `radialGradient`, `stop`, `clipPath` y `use` que apunte a un `id` del mismo archivo. Atributos de presentación (`fill`, `stroke`, `opacity`, `font-size`, `transform`…) y los `data-*` de la sección 4.
 
@@ -58,11 +58,11 @@ En `componentes/<modelo>/entrega/tecnocircuito/`, generado por el mismo script q
 - `<metadata>`, `<title>` y `<desc>`: TecnoCircuito pone los suyos.
 - Animaciones (`animate`, `animateTransform`, `set`) y enlaces externos (`href` a `http…`).
 
-**`id`:** todos empiezan con el prefijo **exacto** de la pieza, son únicos y cada `url(#…)` apunta a uno que existe. Prefijos: `td-nano-`, `td-exp-roja-`, `td-exp-azul-`, `td-uno-`, `td-l293d-`, `td-led-`, `td-resistencia-025w-`, `td-resistencia-025w6-`, `td-resistencia-05w-`; para otra pieza, `td-` + su tipo con guiones (`td-bateria-lipo-`). Motivo: en el lienzo, el Nano y la expansión viven en el mismo documento. Si los dos tienen un `gPcb`, la expansión roja se puede pintar con el azul del Nano.
+**`id`:** todos empiezan con el prefijo **exacto** de la pieza, son únicos y cada `url(#…)` apunta a uno que existe. Prefijos: `td-nano-`, `td-exp-roja-`, `td-exp-azul-`, `td-uno-`, `td-l293d-`, `td-led-`, `td-resistencia-025w-`, `td-resistencia-025w6-`, `td-resistencia-05w-`, `td-potenciometro-`, `td-pulsador-`; para otra pieza, `td-` + su tipo con guiones (`td-bateria-lipo-`). Motivo: en el lienzo, el Nano y la expansión viven en el mismo documento. Si los dos tienen un `gPcb`, la expansión roja se puede pintar con el azul del Nano.
 
 **Texto:** `<text>` con `font-family="Arial, Helvetica, sans-serif"`, **no** letras convertidas en trazados (pesan el doble). Un rótulo menor de 1 mm de alto no se lee en pantalla: se puede omitir o simplificar.
 
-**Tamaño:** **máximo 50 KB por SVG**; se recomienda no pasar de unos 600 elementos. **El LED y la resistencia, máximo 15 KB** y unos 150 elementos: un circuito tiene muchos a la vez. Como referencia, los dibujos actuales pesan: Nano 14 KB, expansión 35 KB, shield 15 KB. El paquete completo de TecnoCircuito pesa 285 KB y viaja dentro de TecnoBloques. Si hace falta recortar, se sacrifica el detalle que a la escala del lienzo no se ve (pistas finas, componentes de 0402, sombras sobre sombras), nunca los contactos ni la serigrafía de los pines.
+**Tamaño:** **máximo 50 KB por SVG**; se recomienda no pasar de unos 600 elementos. **El LED, la resistencia, el potenciómetro y el pulsador, máximo 15 KB** y unos 150 elementos: un circuito tiene muchos a la vez. Como referencia, los dibujos actuales pesan: Nano 14 KB, expansión 35 KB, shield 15 KB. El paquete completo de TecnoCircuito pesa 285 KB y viaja dentro de TecnoBloques. Si hace falta recortar, se sacrifica el detalle que a la escala del lienzo no se ve (pistas finas, componentes de 0402, sombras sobre sombras), nunca los contactos ni la serigrafía de los pines.
 
 ## 4. Atributos que necesita TecnoCircuito
 
@@ -72,6 +72,8 @@ En `componentes/<modelo>/entrega/tecnocircuito/`, generado por el mismo script q
 | `data-led="<nombre>"` | Una sola forma (`circle`, `rect`, `ellipse` o `path`) con `fill` | Encender y apagar el LED cambiando su `fill` | En el archivo va el color **apagado**. Brillos y reflejos van encima, en elementos aparte, y deben verse bien sobre los dos colores. Va en **todo** LED de la placa real, aunque hoy no se use; su nombre es el de la serigrafía. |
 | `data-parte="<nombre>"` | Un `g` con todo lo de esa parte | Mostrar u ocultar (puente PWR) o girar (brazo, rueda) | El `g` **no lleva `transform` propio**, porque TecnoCircuito lo escribe; si hace falta uno, va en un hijo. Las partes que giran declaran su pivote en el JSON. |
 
+| `data-relleno="capuchon"` | Solo en el pulsador: una sola forma con `fill` | Pintar el botón con el color de la ficha | En el archivo, el negro del kit; los seis colores van en `colores` del JSON. |
+| `data-valor` | Solo en el potenciómetro: un `<text>` | Escribir el valor impreso según los ohmios | En el archivo, «B10K», el del kit. |
 | `data-banda="<n>"` | Solo en la resistencia: una sola forma (`rect` o `path`) con `fill` por banda de color, `1` la más cercana a la pata `1` | Pintar el código de colores según los ohmios | Bandas `1` a `4` (o `1` a `5`, según el JSON). En el archivo, cualquier color: TecnoCircuito los reemplaza. Brillos encima, en elementos aparte. |
 
 El lienzo dibuja sus propios puntos de clic encima. El SVG **no** es interactivo y no marca nada como «clicable».
@@ -125,7 +127,7 @@ Ejemplo (Nano, valores ilustrativos):
 | `pines` | **Todos** los nombres de la sección 6 → `{x, y}` en mm, en el sistema del SVG, con 2 decimales. Ni uno más ni uno menos. |
 | `leds` | Cada `data-led` del SVG con su color apagado y encendido (`#rrggbb`). El encendido lo propone TecnoDiseñador a partir de la foto o del color típico del LED. |
 | `partes` | Cada `data-parte`: `{ "descripcion": "…" }` y, si gira, `"pivote": {x, y}` y `"angulo_dibujado"` en grados. |
-| `colores` | Solo en el LED: los cinco colores del contrato (`rojo`, `verde`, `amarillo`, `azul`, `blanco`), cada uno con `apagado` y `encendido`. `leds.LED` repite el rojo, que es el color del archivo. |
+| `colores` | En el LED: los cinco colores del contrato (`rojo`, `verde`, `amarillo`, `azul`, `blanco`), cada uno con `apagado` y `encendido`; `leds.LED` repite el rojo, que es el color del archivo. En el pulsador: los seis del contrato, cada uno un `#rrggbb`; el `negro` es el del archivo. |
 | `bandas` | Solo en la resistencia: `4` o `5`, cuántos `data-banda` tiene el dibujo. |
 | `medidas` | Lo medido: contorno, agujeros, separación de los headers, con su incertidumbre. **Es informativo.** TecnoCircuito lo usa para revisar su geometría, y lo valida aparte antes de usarlo en KiCad o en cualquier dato funcional. |
 | `diferencias` | Lista de textos con lo que no coincide con la sección 6: contactos que faltan o sobran, serigrafía distinta, otra disposición. Vacía si todo coincide. |
@@ -234,7 +236,7 @@ Las mismas reglas valen para cualquier otra Pieza Tecno. Los nombres de contacto
 | `bateria_lipo` | `POS`, `NEG`, `BAL0`, `BAL1`, `BAL2` | indicador de carga |
 | `probador_lipo` | `NEG`, `C1` … `C8` | pantalla de 7 segmentos (`data-seg`) y aviso de pitido |
 
-El Uno tiene su propia ficha en la sección 6.5; el LED y la resistencia, en las secciones 6.6 y 6.7.
+El Uno tiene su propia ficha en la sección 6.5; el LED, la resistencia, el potenciómetro y el pulsador, en las secciones 6.6 a 6.9.
 
 ### 6.5 Uno R3 (`pieza: "uno"`): encargo planeado
 
@@ -304,6 +306,46 @@ Reemplaza a `wokwi-resistor` (decisión de Efraín, 26 oct). Dos potencias, las 
 - **LED y partes:** ninguno. TecnoCircuito muestra el aviso de calor con su propia capa.
 - **Tamaño:** máximo 15 KB por variante.
 
+### 6.8 Potenciómetro de 16 mm (`pieza: "potenciometro"`): encargo de PIEZA-002
+
+Reemplaza a `wokwi-potentiometer` (decisión de Efraín, 27 oct). Los nombres de contacto no cambian.
+
+- **Pieza:** el potenciómetro rotatorio de 16 mm del kit («B10K»), con eje estriado de 6 mm y sin perilla, desde fotos propias.
+- **Orientación: de frente**, con el eje hacia el aprendiz y las patas hacia abajo, como el LED: es como se para en la protoboard.
+- **Marco: fijo, 17,78 × 25,40 mm** (7 × 10 pasos), con el centro del eje en **(8,89; 8,03)**.
+- **Contactos: 3, en posiciones fijas**, a 2 pasos: las patas reales están a 5 mm.
+
+| Nombre | x (mm) | y (mm) | Qué es |
+|---|---|---|---|
+| `GND` | 3,81 | 24,13 | Pata izquierda |
+| `SIG` | 8,89 | 24,13 | Pata del medio (el cursor) |
+| `VCC` | 13,97 | 24,13 | Pata derecha |
+
+  Con el eje todo girado contra el reloj, el cursor toca la pata izquierda (Efraín, 27 oct): al girar a la derecha, sube el voltaje.
+- **Partes:** `data-parte="eje"` con el extremo del eje y su ranura, dibujado en la **posición del medio** (`posicion` 0,5) con la ranura vertical. En el JSON lleva `pivote` (el centro del eje) y `angulo_dibujado: 0`. TecnoCircuito lo gira de −135° (`posicion` 0) a +135° (`posicion` 1).
+- **Valor:** el rótulo impreso («B10K») va en un `<text data-valor>`. TecnoCircuito cambia su texto según los ohmios de la ficha («B1K», «B10K», «B100K»): el simulador ofrece tres valores aunque el kit traiga solo de 10 kΩ, porque los componentes se comparten con Electrónica.
+- **LED:** ninguno. **Tamaño:** máximo 15 KB.
+
+### 6.9 Pulsador de 6 × 6 mm (`pieza: "pulsador"`): encargo de PIEZA-002
+
+Reemplaza a `wokwi-pushbutton` (decisión de Efraín, 27 oct). Los nombres de contacto no cambian.
+
+- **Pieza:** el pulsador de 6 × 6 mm del kit, negro, con el botón redondo de 3,5 mm, desde fotos propias.
+- **Orientación:** vista desde arriba, con las patas unidas por dentro a la izquierda y a la derecha.
+- **Marco: fijo, 10,16 × 7,62 mm** (4 × 3 pasos). **Contactos: 4, en posiciones fijas**, a 3 pasos de lado a lado (las patas reales están a 7 mm) y a 2 pasos en el mismo lado (5 mm):
+
+| Nombre | x (mm) | y (mm) |
+|---|---|---|
+| `1i` | 1,27 | 1,27 |
+| `1d` | 8,89 | 1,27 |
+| `2i` | 1,27 | 6,35 |
+| `2d` | 8,89 | 6,35 |
+
+  `1i` y `1d` están unidas por dentro, igual que `2i` y `2d`; al presionar se unen las cuatro (Efraín lo midió el 27 oct y coincide con el modelo).
+- **Partes:** `data-parte="capuchon"` con el botón redondo y su brillo. TecnoCircuito lo achica un poco mientras se presiona.
+- **Color:** el botón lleva `data-relleno="capuchon"` en una sola forma, pintada con el **negro** del kit. El JSON trae `colores` con los seis del contrato (`rojo`, `verde`, `azul`, `amarillo`, `blanco`, `negro`), cada uno un `#rrggbb`. Se conservan los seis porque los componentes se comparten con Electrónica.
+- **LED:** ninguno. **Tamaño:** máximo 15 KB.
+
 ## 7. Si la pieza real no coincide
 
 Puede pasar que falte o sobre un contacto, que la serigrafía diga otra cosa o que la roja y la azul no tengan los mismos grupos. Entonces:
@@ -322,7 +364,7 @@ El revisor está en TecnoCircuito. Solo usa la librería estándar de Python y n
 python -I ../TecnoCircuito/prototipo/pruebas/revisar_vista_td.py componentes/<modelo>/entrega/tecnocircuito/<pieza>-tc.json [otro-tc.json …]
 ```
 
-Revisa: que el SVG cumpla la sección 3; el paso exacto de 2,54 mm en las placas (Nano y Uno, sección 6.0); los `id` y sus referencias; que los nombres de `data-contacto` sean exactamente los de la sección 6 y que cada centro coincida con el JSON (±0,01 mm); los LED y las partes que pide cada pieza; los colores; en el LED y la resistencia, su marco y sus contactos fijos, los cinco colores y las bandas; el tamaño; los campos del JSON y la licencia. Con varias piezas de una familia (Nano + expansiones; Uno + shield), comprueba además que compartan el marco y que ningún `id` se repita entre ellas. También rechaza unidades dentro del dibujo (`cx="11.22mm"`), atributos de otros programas (`inkscape:…`) y contactos dentro de `<defs>`. Sale con 0 si todo está bien. Cada falla dice qué arreglar.
+Revisa: que el SVG cumpla la sección 3; el paso exacto de 2,54 mm en las placas (Nano y Uno, sección 6.0); los `id` y sus referencias; que los nombres de `data-contacto` sean exactamente los de la sección 6 y que cada centro coincida con el JSON (±0,01 mm); los LED y las partes que pide cada pieza; los colores; en el LED, la resistencia, el potenciómetro y el pulsador, su marco y sus contactos fijos, los colores, las bandas, el pivote del eje, el valor impreso y el relleno del botón; el tamaño; los campos del JSON y la licencia. Con varias piezas de una familia (Nano + expansiones; Uno + shield), comprueba además que compartan el marco y que ningún `id` se repita entre ellas. También rechaza unidades dentro del dibujo (`cx="11.22mm"`), atributos de otros programas (`inkscape:…`) y contactos dentro de `<defs>`. Sale con 0 si todo está bien. Cada falla dice qué arreglar.
 
 Además, TecnoCircuito revisa a ojo la vista en el lienzo, sobre la pieza real y con los cables puestos.
 
@@ -338,3 +380,4 @@ Además, TecnoCircuito revisa a ojo la vista en el lienzo, sobre la pieza real y
 8. En la ficha, el dibujo pasa de «Dibujo basado en referencias» a «Dibujo medido por TecnoDiseñador (registro …)». La validación eléctrica sigue pendiente hasta el laboratorio.
 9. Con el Uno (6.5): `PLACAS.uno` deja la etiqueta `wokwi-arduino-uno` y usa la Pieza Tecno con su `mostrar` para los LED. Las coordenadas `FILAS_UNO` de la shield salen del JSON del Uno. Como el marco y la esquina de la placa no cambian, los pines solo se corren lo que se equivocaba el dibujo de wokwi (menos de 0,3 mm).
 10. Con el LED y la resistencia (6.6 y 6.7): `src/piezas/led.js` y `src/piezas/resistencia.js` reemplazan a `wokwi-led` y `wokwi-resistor`. TecnoCircuito pinta la cápsula con el color de la ficha, el brillo y el halo con la simulación, muestra `quemado` y pinta las bandas con el código de colores de los ohmios. La prop `vatios` elige la variante y el límite de calor; una resistencia guardada sin `vatios` se dibuja con la variante `025w6` (¼ W con las patas a 6 pasos) y conserva el límite de hoy, 0,25 W. Al abrir un circuito, una pieza encajada en la protoboard se recoloca sobre sus huecos, porque el dibujo nuevo pone las patas unos pocos píxeles más allá que el de wokwi: la conexión la manda `en` y no cambia.
+11. Con el potenciómetro y el pulsador (6.8 y 6.9): `src/piezas/potenciometro.js` y `src/piezas/pulsador.js` reemplazan a `wokwi-potentiometer` y `wokwi-pushbutton`. TecnoCircuito gira `eje` con la `posicion` y con el mouse, cambia el texto de `data-valor` según los ohmios, pinta `data-relleno` con el color de la ficha y achica `capuchon` mientras se presiona. Un circuito guardado con estas piezas, cuyas patas estaban a los pasos de wokwi (1 paso en el potenciómetro, 7 × 2 en el pulsador), se abre con el dibujo de wokwi de antes y un aviso en la ficha; al soltar la pieza otra vez, toma el dibujo nuevo (decisión de Efraín, 27 oct).

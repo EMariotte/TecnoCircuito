@@ -35,7 +35,8 @@ ALIAS_NANO = {'SDA', 'SCL', 'MISO', 'MOSI', 'SCK', 'SS'}
 ALIAS_EXPANSION = {'SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G', 'OUT_5V', 'OUT_5V_2'}
 # Lo que cada pieza debe traer además de sus contactos (sección 6 de la especificación).
 LEDS = {'nano': {'PWR', 'L', 'RX', 'TX'}, 'uno': {'PWR', 'L', 'RX', 'TX'}, 'shield_l293d': {'PWR'}, 'led': {'LED'}}
-PARTES = {'shield_l293d': {'puente-pwr'}, 'led': {'quemado'}}
+PARTES = {'shield_l293d': {'puente-pwr'}, 'led': {'quemado'}, 'potenciometro': {'eje'}, 'pulsador': {'capuchon'}}
+GIRAN = {'potenciometro': 'eje'}   # partes que giran: el JSON declara su pivote (sección 5)
 VARIANTES = {'shield_nano_io': ('roja', 'azul'), 'resistencia': ('025w', '025w6', '05w')}
 # LED y resistencia (secciones 6.6 y 6.7): marco y contactos fijos, en mm. ¼ W tiene las patas a 4 pasos; ½ W y la ¼ W
 # de los circuitos guardados sin vatios (025w6), a 6 pasos, como el dibujo de wokwi, para que no se muevan.
@@ -45,9 +46,12 @@ FIJAS = {
     ('resistencia', '025w'): {'marco': (12.70, 5.08), 'pines': {'1': (1.27, 2.54), '2': (11.43, 2.54)}},
     ('resistencia', '025w6'): SEIS_PASOS,
     ('resistencia', '05w'): SEIS_PASOS,
+    ('potenciometro', None): {'marco': (17.78, 25.40), 'pines': {'GND': (3.81, 24.13), 'SIG': (8.89, 24.13), 'VCC': (13.97, 24.13)}},
+    ('pulsador', None): {'marco': (10.16, 7.62),
+                         'pines': {'1i': (1.27, 1.27), '1d': (8.89, 1.27), '2i': (1.27, 6.35), '2d': (8.89, 6.35)}},
 }
 # Piezas chicas: un circuito tiene muchas a la vez.
-LIMITE_CHICAS = {'led': 15 * 1024, 'resistencia': 15 * 1024}
+LIMITE_CHICAS = {p: 15 * 1024 for p in ('led', 'resistencia', 'potenciometro', 'pulsador')}
 FORMAS_BANDA = {'rect', 'path'}
 # Familias que comparten marco (sección 6). La shield, mientras no exista el Uno Tecno, usa el marco del Uno de wokwi.
 FAMILIAS = [{'nano', 'shield_nano_io'}, {'uno', 'shield_l293d'}]
@@ -90,11 +94,11 @@ def nombres_esperados(pieza):
     return set(defs[clave]['enum']) if clave in defs else None
 
 
-def colores_led():
-    """Los colores del LED en el contrato (props.color del componente «led»)."""
+def colores_de(tipo):
+    """Los colores de una pieza en el contrato (props.color del componente «led» o «pulsador»)."""
     esquema = json.loads(ESQUEMA.read_text(encoding='utf-8'))
     for regla in esquema['$defs']['componente']['allOf']:
-        if regla.get('if', {}).get('properties', {}).get('tipo', {}).get('const') == 'led':
+        if regla.get('if', {}).get('properties', {}).get('tipo', {}).get('const') == tipo:
             return regla['then']['properties']['props']['properties']['color']['enum']
     return []
 
@@ -313,10 +317,36 @@ def revisar_entrega(ruta_json):
     # LED: los cinco colores del contrato, y el archivo pintado con el rojo (sección 6.6).
     if pieza == 'led':
         colores = datos.get('colores') or {}
-        revisar(set(colores) == set(colores_led()) and all(isinstance(v, dict) and COLOR.match(str(v.get('apagado', '')))
+        revisar(set(colores) == set(colores_de('led')) and all(isinstance(v, dict) and COLOR.match(str(v.get('apagado', '')))
                                                           and COLOR.match(str(v.get('encendido', ''))) for v in colores.values()),
-                f'{nombre}: «colores» trae {", ".join(colores_led())} con apagado y encendido #rrggbb')
+                f'{nombre}: «colores» trae {", ".join(colores_de("led"))} con apagado y encendido #rrggbb')
         revisar(leds_json.get('LED') == colores.get('rojo'), f'{nombre}: leds.LED repite el rojo de «colores»')
+    # Partes que giran: pivote {x, y} y ángulo dibujado en el JSON (sección 5).
+    if pieza in GIRAN:
+        parte = partes_json.get(GIRAN[pieza]) or {}
+        pivote = parte.get('pivote') or {}
+        revisar(isinstance(pivote.get('x'), (int, float)) and isinstance(pivote.get('y'), (int, float))
+                and isinstance(parte.get('angulo_dibujado'), (int, float)),
+                f'{nombre}: la parte «{GIRAN[pieza]}» declara pivote {{x, y}} y angulo_dibujado')
+    # Potenciómetro: un solo <text data-valor> (sección 6.8).
+    valores = [el for el in raiz.iter() if el.get('data-valor') is not None]
+    if pieza == 'potenciometro':
+        revisar(len(valores) == 1 and valores[0].tag == NS + 'text' and (valores[0].text or '').strip(),
+                f'{nombre}: un <text data-valor> con el valor impreso')
+    else:
+        revisar(not valores, f'{nombre}: sin data-valor (solo el potenciómetro lo lleva)')
+    # Pulsador: data-relleno en una sola forma, pintada con el negro, y los seis colores (sección 6.9).
+    rellenos = [el for el in raiz.iter() if el.get('data-relleno') is not None]
+    if pieza == 'pulsador':
+        colores = datos.get('colores') or {}
+        revisar(set(colores) == set(colores_de('pulsador')) and all(COLOR.match(str(v)) for v in colores.values()),
+                f'{nombre}: «colores» trae {", ".join(colores_de("pulsador"))}, cada uno #rrggbb')
+        revisar(len(rellenos) == 1 and rellenos[0].get('data-relleno') == 'capuchon'
+                and rellenos[0].tag.replace(NS, '') in FORMAS_LED
+                and (rellenos[0].get('fill') or '').lower() == str(colores.get('negro', '')).lower(),
+                f'{nombre}: un data-relleno="capuchon" en una sola forma, pintada con el negro de «colores»')
+    else:
+        revisar(not rellenos, f'{nombre}: sin data-relleno (solo el pulsador lo lleva)')
     # Resistencia: data-banda 1…n, cada una una sola forma con fill (sección 6.7).
     bandas_svg = {}
     for el in raiz.iter():
