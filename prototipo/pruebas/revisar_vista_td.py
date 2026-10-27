@@ -36,15 +36,15 @@ ALIAS_EXPANSION = {'SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G'
 # Lo que cada pieza debe traer además de sus contactos (sección 6 de la especificación).
 LEDS = {'nano': {'PWR', 'L', 'RX', 'TX'}, 'uno': {'PWR', 'L', 'RX', 'TX'}, 'shield_l293d': {'PWR'}, 'led': {'LED'}}
 PARTES = {'shield_l293d': {'puente-pwr'}, 'led': {'quemado'}}
-VARIANTES = {'shield_nano_io': ('roja', 'azul'), 'resistencia': ('025w', '05w', '2w')}
-# LED y resistencia (secciones 6.6 y 6.7): marco y contactos fijos, en mm. La de 2 W tiene las patas a 6 pasos, como el
-# dibujo de wokwi, para que los circuitos guardados no se muevan; ¼ W y ½ W, a 4 pasos.
-CHICA = {'marco': (12.70, 5.08), 'pines': {'1': (1.27, 2.54), '2': (11.43, 2.54)}}
+VARIANTES = {'shield_nano_io': ('roja', 'azul'), 'resistencia': ('025w', '025w6', '05w')}
+# LED y resistencia (secciones 6.6 y 6.7): marco y contactos fijos, en mm. ¼ W tiene las patas a 4 pasos; ½ W y la ¼ W
+# de los circuitos guardados sin vatios (025w6), a 6 pasos, como el dibujo de wokwi, para que no se muevan.
+SEIS_PASOS = {'marco': (17.78, 7.62), 'pines': {'1': (1.27, 3.81), '2': (16.51, 3.81)}}
 FIJAS = {
     ('led', None): {'marco': (7.62, 12.70), 'pines': {'catodo': (2.54, 11.43), 'anodo': (5.08, 11.43)}},
-    ('resistencia', '025w'): CHICA,
-    ('resistencia', '05w'): CHICA,
-    ('resistencia', '2w'): {'marco': (17.78, 7.62), 'pines': {'1': (1.27, 3.81), '2': (16.51, 3.81)}},
+    ('resistencia', '025w'): {'marco': (12.70, 5.08), 'pines': {'1': (1.27, 2.54), '2': (11.43, 2.54)}},
+    ('resistencia', '025w6'): SEIS_PASOS,
+    ('resistencia', '05w'): SEIS_PASOS,
 }
 # Piezas chicas: un circuito tiene muchas a la vez.
 LIMITE_CHICAS = {'led': 15 * 1024, 'resistencia': 15 * 1024}

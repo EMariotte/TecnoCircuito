@@ -58,7 +58,7 @@ En `componentes/<modelo>/entrega/tecnocircuito/`, generado por el mismo script q
 - `<metadata>`, `<title>` y `<desc>`: TecnoCircuito pone los suyos.
 - Animaciones (`animate`, `animateTransform`, `set`) y enlaces externos (`href` a `http…`).
 
-**`id`:** todos empiezan con el prefijo **exacto** de la pieza, son únicos y cada `url(#…)` apunta a uno que existe. Prefijos: `td-nano-`, `td-exp-roja-`, `td-exp-azul-`, `td-uno-`, `td-l293d-`, `td-led-`, `td-resistencia-025w-`, `td-resistencia-05w-`, `td-resistencia-2w-`; para otra pieza, `td-` + su tipo con guiones (`td-bateria-lipo-`). Motivo: en el lienzo, el Nano y la expansión viven en el mismo documento. Si los dos tienen un `gPcb`, la expansión roja se puede pintar con el azul del Nano.
+**`id`:** todos empiezan con el prefijo **exacto** de la pieza, son únicos y cada `url(#…)` apunta a uno que existe. Prefijos: `td-nano-`, `td-exp-roja-`, `td-exp-azul-`, `td-uno-`, `td-l293d-`, `td-led-`, `td-resistencia-025w-`, `td-resistencia-025w6-`, `td-resistencia-05w-`; para otra pieza, `td-` + su tipo con guiones (`td-bateria-lipo-`). Motivo: en el lienzo, el Nano y la expansión viven en el mismo documento. Si los dos tienen un `gPcb`, la expansión roja se puede pintar con el azul del Nano.
 
 **Texto:** `<text>` con `font-family="Arial, Helvetica, sans-serif"`, **no** letras convertidas en trazados (pesan el doble). Un rótulo menor de 1 mm de alto no se lee en pantalla: se puede omitir o simplificar.
 
@@ -284,22 +284,22 @@ Reemplaza a `wokwi-led` (decisión de Efraín, 26 oct). Los nombres de contacto 
 - **Partes:** `data-parte="quemado"`, con lo que se ve cuando el LED se quema (la cápsula oscurecida por dentro y una marca en el chip). Se dibuja **visible**; TecnoCircuito la oculta mientras el LED está sano.
 - **Tamaño:** máximo 15 KB.
 
-### 6.7 Resistencia (`pieza: "resistencia"`, `variante: "025w"`, `"05w"` o `"2w"`): encargo de PIEZA-001
+### 6.7 Resistencia (`pieza: "resistencia"`, `variante: "025w"`, `"025w6"` o `"05w"`): encargo de PIEZA-001
 
-Reemplaza a `wokwi-resistor` (decisión de Efraín, 26 oct). Tres potencias, una entrega por cada una: la prop `vatios` de la ficha elige cuál se dibuja. Los nombres de contacto no cambian.
+Reemplaza a `wokwi-resistor` (decisión de Efraín, 26 oct). Dos potencias, las del kit: la prop `vatios` de la ficha elige cuál se dibuja. Los nombres de contacto no cambian. **El kit no tiene resistencias de 2 W** (Efraín, 27 oct): 2 W sale del contrato y se agrega cuando haya una pieza para fotografiar.
 
-- **Pieza:** las resistencias de ¼ W, ½ W y 2 W del kit, desde fotos propias.
+- **Pieza:** las resistencias de ¼ W y ½ W del kit, desde fotos propias. En el kit las de ¼ W son de dos tipos del mismo tamaño (beige de 4 bandas y azul de 5 bandas); la de ½ W es azul, de 4 bandas.
 - **Orientación:** acostada, vista desde arriba, con la pata `1` a la izquierda.
-- **Marco y contactos: fijos.** ¼ W y ½ W comparten el marco y las patas a **4 pasos**; 2 W tiene las patas a **6 pasos**, como el dibujo de hoy, para que los circuitos guardados no se muevan.
+- **Marco y contactos: fijos.** ¼ W tiene las patas a **4 pasos** y ½ W, a **6 pasos** (su cuerpo de 8,7 mm no cabe en 4). `025w6` es la de ¼ W con las patas abiertas a 6 pasos: el mismo cuerpo, con las patas más largas. Es el dibujo de una resistencia guardada sin `vatios`, que conserva así sus huecos y su límite de 0,25 W (decisión de Efraín, 27 oct).
 
 | Variante | Marco (mm) | `1` (x; y) | `2` (x; y) | Cuerpo, de largo máximo |
 |---|---|---|---|---|
 | `025w` (¼ W) | 12,70 × 5,08 | 1,27; 2,54 | 11,43; 2,54 | 7,62 mm |
-| `05w` (½ W) | 12,70 × 5,08 | 1,27; 2,54 | 11,43; 2,54 | 7,62 mm |
-| `2w` (2 W) | 17,78 × 7,62 | 1,27; 3,81 | 16,51; 3,81 | 12,70 mm |
+| `025w6` (¼ W, patas a 6 pasos) | 17,78 × 7,62 | 1,27; 3,81 | 16,51; 3,81 | 7,62 mm |
+| `05w` (½ W) | 17,78 × 7,62 | 1,27; 3,81 | 16,51; 3,81 | 12,70 mm |
 
-  El punto es donde la pata doblada entra en el hueco. Entre el cuerpo y cada contacto se ve un tramo de pata. Si el cuerpo real no cabe en su largo máximo (algunas de ½ W miden unos 9 mm), **el estándar manda**: se dibuja recortado al máximo, como pide la regla 6.0, y la medida real va en `medidas` y en `diferencias`. TecnoCircuito decide con Efraín si cambia el paso de esa variante.
-- **Bandas:** `data-banda="1"` … `"4"`, o hasta `"5"` si el kit trae resistencias de 5 bandas (lo dice la foto), y `bandas` en el JSON con ese número. La banda `1` es la más cercana a la pata `1`; la de tolerancia, la más cercana a la `2`, con el espacio mayor antes de ella. TecnoCircuito las pinta según los ohmios.
+  El punto es donde la pata doblada entra en el hueco. Entre el cuerpo y cada contacto se ve un tramo de pata. Si el cuerpo real no cabe en su largo máximo, **el estándar manda**: se dibuja recortado al máximo, como pide la regla 6.0, y la medida real va en `medidas` y en `diferencias`. TecnoCircuito decide con Efraín si cambia el paso de esa variante.
+- **Bandas:** `data-banda="1"` … `"4"`, o hasta `"5"` en una resistencia de 5 bandas, y `bandas` en el JSON con ese número. ¼ W se dibuja con 4 bandas, como la beige (la más común en el aula); la de 5 bandas queda anotada en `diferencias`. La banda `1` es la más cercana a la pata `1`; la de tolerancia, la más cercana a la `2`, con el espacio mayor antes de ella. TecnoCircuito las pinta según los ohmios.
 - **Cuerpo:** del color de la foto de cada potencia. Es solo dibujo y no se cambia en la simulación.
 - **LED y partes:** ninguno. TecnoCircuito muestra el aviso de calor con su propia capa.
 - **Tamaño:** máximo 15 KB por variante.
@@ -337,4 +337,4 @@ Además, TecnoCircuito revisa a ojo la vista en el lienzo, sobre la pieza real y
 7. Los circuitos guardados se conservan, porque los cables se refieren a los contactos por nombre. Si la geometría cambia mucho, los dobleces de los cables pueden quedar corridos.
 8. En la ficha, el dibujo pasa de «Dibujo basado en referencias» a «Dibujo medido por TecnoDiseñador (registro …)». La validación eléctrica sigue pendiente hasta el laboratorio.
 9. Con el Uno (6.5): `PLACAS.uno` deja la etiqueta `wokwi-arduino-uno` y usa la Pieza Tecno con su `mostrar` para los LED. Las coordenadas `FILAS_UNO` de la shield salen del JSON del Uno. Como el marco y la esquina de la placa no cambian, los pines solo se corren lo que se equivocaba el dibujo de wokwi (menos de 0,3 mm).
-10. Con el LED y la resistencia (6.6 y 6.7): `src/piezas/led.js` y `src/piezas/resistencia.js` reemplazan a `wokwi-led` y `wokwi-resistor`. TecnoCircuito pinta la cápsula con el color de la ficha, el brillo y el halo con la simulación, muestra `quemado` y pinta las bandas con el código de colores de los ohmios. La prop `vatios` elige la variante y el límite de calor; una resistencia guardada sin `vatios` se dibuja con la variante `2w` (patas a 6 pasos) y conserva el límite de hoy, 0,25 W. Al abrir un circuito, una pieza encajada en la protoboard se recoloca sobre sus huecos, porque el dibujo nuevo pone las patas unos pocos píxeles más allá que el de wokwi: la conexión la manda `en` y no cambia.
+10. Con el LED y la resistencia (6.6 y 6.7): `src/piezas/led.js` y `src/piezas/resistencia.js` reemplazan a `wokwi-led` y `wokwi-resistor`. TecnoCircuito pinta la cápsula con el color de la ficha, el brillo y el halo con la simulación, muestra `quemado` y pinta las bandas con el código de colores de los ohmios. La prop `vatios` elige la variante y el límite de calor; una resistencia guardada sin `vatios` se dibuja con la variante `025w6` (¼ W con las patas a 6 pasos) y conserva el límite de hoy, 0,25 W. Al abrir un circuito, una pieza encajada en la protoboard se recoloca sobre sus huecos, porque el dibujo nuevo pone las patas unos pocos píxeles más allá que el de wokwi: la conexión la manda `en` y no cambia.
