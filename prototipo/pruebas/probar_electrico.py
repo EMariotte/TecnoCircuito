@@ -11,6 +11,10 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+# El LED (Pieza Tecno, PIEZA-001): `data-brillo` es su brillo de 0 a 1; `data-encendido`, si prende.
+LED_SVG = RAIZ + '.querySelector(\'.tc-comp[data-tipo="led"] svg\')'
+LED_BRILLO = f'Number({LED_SVG}.dataset.brillo || 0)'
+LED_PRENDE = f'{LED_SVG}.querySelector("[data-led]").hasAttribute("data-encendido")'
 CLAVE = 'tecnocircuito-prototipo-0'
 fallos = []
 
@@ -54,7 +58,7 @@ with sync_playwright() as p:
     revisar(abs(led['i'] - 0.01250) < 0.0001 and abs(led['v'] - 1.938) < 0.005 and abs(pin['v'] - 4.688) < 0.005,
             f'220 Ω: LED {led["i"] * 1000:.2f} mA a {led["v"]:.3f} V, pin 13 a {pin["v"]:.3f} V (Node: 12,50 mA, 1,938 V, 4,688 V)')
     revisar(abs(r1['i'] - led['i']) < 1e-9, 'misma corriente en la resistencia y en el LED')
-    brillo220 = pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").brightness')
+    brillo220 = pg.evaluate(LED_BRILLO)
     revisar(0.7 < brillo220 <= 1, f'el LED brilla al {brillo220 * 100:.0f} %')
     filas = pg.locator('#mediciones tbody tr').count()
     revisar(filas == 3, f'la tabla de mediciones muestra pin, resistencia y LED ({filas} filas)')
@@ -73,16 +77,16 @@ with sync_playwright() as p:
     pg.locator('select[data-prop="ohmios"]').select_option('1000')
     pg.wait_for_timeout(200)
     led = pieza(pg.evaluate('sim._mediciones()'), 'leds', 'id', 'led1')
-    brillo1k = pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").brightness')
+    brillo1k = pg.evaluate(LED_BRILLO)
     revisar(abs(led['i'] - 0.00310) < 0.0001 and brillo1k < brillo220 / 2,
             f'1 kΩ: {led["i"] * 1000:.2f} mA (Node: 3,10 mA), brillo {brillo1k * 100:.0f} %')
 
     # 4. Sin resistencia: el LED se quema, el pin pasa su límite y salen los mensajes y los eventos
     sin_resistencia = {
         'formato': 1, 'placa': 'uno',
-        'componentes': [{'id': 'led1', 'tipo': 'led', 'x': 380, 'y': -100, 'rot': 0, 'props': {'color': 'rojo'}}],
+        'componentes': [{'id': 'led1', 'tipo': 'led', 'x': 385.8, 'y': -101.2, 'rot': 0, 'props': {'color': 'rojo'}}],
         'cables': [{'de': 'placa.D13', 'a': 'led1.anodo', 'color': 'verde', 'puntos': [[125, -20], [405, -20]]},
-                   {'de': 'led1.catodo', 'a': 'placa.GND1', 'color': 'negro', 'puntos': [[395, -40], [115.5, -40]]}],
+                   {'de': 'led1.catodo', 'a': 'placa.GND1', 'color': 'negro', 'puntos': [[395.4, -40], [115.5, -40]]}],
         'protoboard': None,
     }
     abrir_con(sin_resistencia)
@@ -91,9 +95,10 @@ with sync_playwright() as p:
     revisar(any('se quemó' in t for t in mensajes) and any('pin 13' in t for t in mensajes), 'avisa el LED quemado y el exceso de corriente del pin 13')
     quemado = pg.evaluate(f'''() => {{
       const r = {RAIZ};
-      return r.querySelector('.tc-comp[data-id="led1"]').classList.contains('tc-quemado') && !r.querySelector('wokwi-led').value;
+      return r.querySelector('.tc-comp[data-id="led1"]').classList.contains('tc-quemado') && !{LED_PRENDE}
+        && r.querySelector('.tc-comp[data-id="led1"] [data-parte="quemado"]').getAttribute('display') === 'inline';
     }}''')
-    revisar(quemado, 'el LED queda gris, con el rótulo «quemado» y apagado')
+    revisar(quemado, 'el LED se ve quemado (la cápsula oscurecida), con el rótulo «quemado» y apagado')
     led = pieza(pg.evaluate('sim._mediciones()'), 'leds', 'id', 'led1')
     revisar(led['quemado'] and led['i'] == 0, 'un LED quemado queda abierto: ya no pasa corriente')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent)')

@@ -73,7 +73,8 @@ sim.alFalla((falla) => {}); // { tipo, componente, mensaje }  mensaje en españo
 sim.alEstado((estado) => {}); // 'corriendo' | 'pausado' | 'detenido' | 'reiniciado'
 sim.medidas();   // { msSimulados, msReales, velocidad, estado, hilo }  para la línea de estado
                  //   velocidad: 0 a 1 (1 = al ritmo del chip real) · hilo: 'worker' | 'pagina'
-sim.mediciones(); // lo que mediría un multímetro en cada pieza (null si no se simula): voltajes, leds, resistencias,
+sim.mediciones(); // lo que mediría un multímetro en cada pieza (null si no se simula): voltajes, leds, resistencias
+                 //   (con los `vatios` que aguanta cada una),
                  //   pines, potenciometros, servos, pwm, consumo5V, usb, entradas, fallas, modo, activas;
                  //   con la shield: shield, motores, baterias y porVin.
                  //   Las señales que cambian se promedian como el ojo y el multímetro (~100 ms).
@@ -130,10 +131,10 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
 
   | `tipo` | Pines | `props` |
   |---|---|---|
-  | `resistencia` | `1`, `2` | `ohmios` |
+  | `resistencia` | `1`, `2` | `ohmios`; `vatios`: `0.25` (¼ W, patas a 4 pasos) o `0.5` (½ W, patas a 6 pasos): cambia el dibujo y lo que aguanta antes de calentarse |
   | `led` | `anodo`, `catodo` | `color`: rojo, verde, amarillo, azul o blanco |
-  | `potenciometro` | `GND`, `SIG`, `VCC` | `ohmios`, `posicion` (0 hacia GND, 1 hacia VCC) |
-  | `pulsador` | `1i`, `1d`, `2i`, `2d` | `color` |
+  | `potenciometro` | `GND`, `SIG`, `VCC` | `ohmios`, `posicion` (0 hacia GND, 1 hacia VCC); `modelo`: `16mm` (el del kit, patas a 2 pasos) |
+  | `pulsador` | `1i`, `1d`, `2i`, `2d` | `color`; `modelo`: `6x6` (el del kit, patas a 3 × 2 pasos) |
   | `servo` | `GND` (marrón), `VCC` (rojo), `SIG` (naranja, la señal) | `modelo`: `sg90` o `mg90s` (cambia el dibujo, el consumo y la velocidad) |
   | `shield_l293d` | `M1A`, `M1B`, `M2A`, `M2B`, `M3A`, `M3B`, `M4A`, `M4B`, `GND_IZQ`, `GND_DER`, `EXT_POS`, `EXT_GND`, `S1_SIG`, `S1_POS`, `S1_GND`, `S2_SIG`, `S2_POS`, `S2_GND`; headers analógicos `A0_S`…`A5_S`, `A0_V`…`A5_V`, `A0_G`…`A5_G` | `puentePWR`: `true` (la batería también alimenta el VIN) o `false`. Va montada sobre el Uno: `x` e `y` son 0, sin `en`, y hay una sola |
   | `shield_nano_io` | Para D0–D13 y A0–A7: `<pin>_S`, `<pin>_V`, `<pin>_G`; conectores adicionales y alimentación en 4.2 | `variante`: `roja` o `azul`; `alimentacion`: `usb`, `jack`, `apagada`; `voltajeJack`: 0, 5, 7, 9 o 12. Solo Nano/Nano antiguo; máximo una, `x=y=rot=0`, sin `en` |
@@ -146,6 +147,11 @@ Va en el campo `circuito` del proyecto `.tbq.json`. **TecnoBloques lo guarda y l
   **Headers analógicos (decididos e implementados el 14 oct):** los tres headers macho 1×6 de la shield real («+5», «Gnd» y «A0-5») se cablean con la convención de la expansión del Nano: `A0_S` … `A5_S` son A0 a A5 del Uno, `A0_V` … `A5_V` el 5V y `A0_G` … `A5_G` el GND. Lo que llega a cada fila se confirma con continuidad en el laboratorio. Con la shield montada, **SCL, SDA e IOREF del Uno quedan tapados** (la shield real no tiene agujeros sobre ellos): no se pueden cablear ni enchufar; un cable que ya llegaba ahí se conserva. Detalle en `..\TecnoDiseñador\componentes\l293d-shield\entrega\tecnocircuito\HALLAZGOS-PARA-TECNOCIRCUITO.md`.
 
   En el pulsador, las patas con el mismo número están unidas por dentro, y al presionarlo se une la 1 con la 2. Si está presionado o no, no se guarda: solo existe mientras se simula.
+
+  **Dibujos medidos (PIEZA-001 y PIEZA-002, 27 oct):** el LED, la resistencia, el potenciómetro y el pulsador son Piezas Tecno, con las patas en el paso exacto de 2,54 mm. Un circuito guardado antes abre así, sin cambiar sus conexiones ni su comportamiento:
+  - **LED:** con el dibujo nuevo, corrido unos píxeles para que sus patas queden sobre los huecos que dice su `en`.
+  - **Resistencia sin `vatios`:** de ¼ W con las patas abiertas a 6 pasos (los huecos que ocupaba) y el límite de calor de siempre, 0,25 W. Una nueva lleva `vatios`.
+  - **Potenciómetro y pulsador sin `modelo`:** conservan el dibujo anterior, con sus patas a 1 paso y a 7 × 2 pasos, y un aviso en la ficha. Al moverlos toman el `modelo` y el dibujo nuevo (decisión de Efraín). Uno nuevo lleva `modelo`.
 - **Colores de cable:** `negro`, `marron`, `rojo`, `naranja`, `amarillo`, `verde`, `azul`, `morado` (se muestra como violeta), `gris` y `blanco`, en el orden del código de colores (0 a 9).
 - **Agregar un tipo de componente nuevo no rompe el contrato.** Una versión vieja del simulador muestra el componente como «desconocido» y no lo simula.
 
@@ -420,3 +426,4 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 24 oct 2026 | Sección 6.1 y descripción de `confirmado` en el esquema (auditoría de Codex de REG-005): `confirmado: false` también cuando una foto de la corrida no se pudo mandar, porque sus fallas se perdieron (AUD-16); y «la pieza sigue» es la misma pieza, no otra con su id ni la de otro proyecto o ejemplo (AUD-15). Sin campos nuevos ni cambios de validación. |
 | 1 (borrador) | 24 oct 2026 | Sección 6.1 y descripciones del esquema, solo redacción (verificación profunda de Codex del 24 oct): `confirmado: false` también cuando el simulador avisó un error en la corrida, y la página la cierra si el reloj paró (AUD-26, decisión de Efraín de contener W-R1). Qué son `sesion` y `corrida` (D02): una sesión por cada vez que un equipo confirma su código, no por apertura de la app; la corrida cuenta mientras la página está abierta y no vuelve a 1 en cada sesión. Sin campos nuevos ni cambios de validación. |
 | 1 (borrador) | 25 oct 2026 | Sección 2: entra `TecnoCircuito.MARCA` (`nombre`, `frase`, `simbolo`, `cabeza`; MARCA-001, decisión de Efraín): la identidad de TecnoCircuito viaja en su paquete para que TecnoBloques la muestre sin red. La imagen de `exportarSVG()` cambia su marca: el símbolo como marca de agua tenue y la firma «Hecho con:» + logo + frase en la franja de abajo, en lugar del texto «Hecho con TecnoCircuito · SENA – TecnoAcademia Tolima». Agregar una propiedad no rompe nada: un TecnoBloques que no la lee sigue igual, y uno que la lee con un paquete anterior no muestra la firma. Versión menor: 0.3.0. Sin cambios en el formato del circuito ni en los eventos. |
+| 1 (borrador) | 27 oct 2026 | Sección 4 (PIEZA-001 y PIEZA-002, decisiones de Efraín): la resistencia suma `vatios` (`0.25` o `0.5`), que elige el dibujo y el límite de calor (la falla `resistencia_caliente` dice lo que aguanta); el potenciómetro y el pulsador suman `modelo` (`16mm` y `6x6`), que marca el dibujo medido. Sin ellas, la pieza abre como antes. `mediciones()` da los `vatios` de cada resistencia. Las cuatro piezas dejan los dibujos de `@wokwi/elements`, que quedan solo para el potenciómetro y el pulsador guardados sin `modelo`. Agregar props no rompe nada: un TecnoBloques las guarda y devuelve tal cual. Esquema actualizado. |

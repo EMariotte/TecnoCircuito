@@ -2,7 +2,7 @@
 
 12 de octubre de 2026 · Especificación de entrega, versión 1. Fuente única: este archivo. TecnoDiseñador la enlaza desde su `CLAUDE.md`.
 
-**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano, la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62) y la shield L293D, con sus headers analógicos (sección 64). **27 oct:** fichas del LED (6.6) y de la resistencia (6.7), para PIEZA-001, y del potenciómetro (6.8) y el pulsador (6.9), para PIEZA-002; el revisor ya las comprueba.
+**Estado (14 oct):** integradas en TecnoCircuito las entregas del Uno, el Nano, la expansión roja y azul (`npm run vistas`, COMO-FUNCIONA, sección 62) y la shield L293D, con sus headers analógicos (sección 64). **27 oct:** fichas del LED (6.6) y de la resistencia (6.7), para PIEZA-001, y del potenciómetro (6.8) y el pulsador (6.9), para PIEZA-002; el revisor ya las comprueba. **27 oct, después:** las cuatro integradas en TecnoCircuito (`npm run vistas`, COMO-FUNCIONA, sección 74), con las props `vatios` y `modelo` del contrato.
 
 **Para quién:** el agente que dibuja en `..\TecnoDiseñador` y Efraín. Dice exactamente qué archivos entregar, con qué reglas y con qué datos, para que el dibujo reemplace la vista de una pieza de TecnoCircuito **sin tocar nada a mano** al migrarlo.
 
@@ -264,7 +264,7 @@ Hoy el Uno lo dibuja `@wokwi/elements` y no cumple la regla 6.0. **Decisión de 
 - **Paso:** 2,54 mm exactos dentro de cada header (el revisor lo comprueba). Las separaciones entre headers (de D8 a D7, de VIN a A0, de una fila a la otra) se miden y van en `medidas`.
 - **LED:** `PWR` (rotulado «ON» en la placa), `L`, `TX` y `RX`, con `data-led`. Se usan estos nombres, como en el Nano.
 - **Partes:** ninguna. El botón RESET, el USB, el jack y el ICSP son solo dibujo.
-- **Qué hace TecnoCircuito con esta entrega** (sección 9): reemplaza `wokwi-arduino-uno` por la Pieza Tecno `src/piezas/uno.js`, enciende los LED desde la simulación, regenera los headers apilables de la shield L293D desde este JSON y actualiza las pruebas que dependen de las coordenadas del Uno. `@wokwi/elements` se sigue usando para el LED, la resistencia, el botón y el potenciómetro.
+- **Qué hace TecnoCircuito con esta entrega** (sección 9): reemplaza `wokwi-arduino-uno` por la Pieza Tecno `src/piezas/uno.js`, enciende los LED desde la simulación, regenera los headers apilables de la shield L293D desde este JSON y actualiza las pruebas que dependen de las coordenadas del Uno. `@wokwi/elements` se siguió usando para el LED, la resistencia, el botón y el potenciómetro hasta PIEZA-001 y PIEZA-002 (secciones 6.6 a 6.9).
 
 ### 6.6 LED de 5 mm (`pieza: "led"`): encargo de PIEZA-001
 

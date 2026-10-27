@@ -223,16 +223,23 @@
   pointer-events: visiblePainted;
 }
 
+/* Igual el LED, la resistencia, el botón y el potenciómetro: su marco de rejilla es más grande que su cuerpo y, si
+   recibiera el clic, taparía los huecos de la protoboard que quedan debajo. */
+.tc-comp.tc-solo-pintado {
+  pointer-events: none;
+}
+
+.tc-comp.tc-solo-pintado svg * {
+  pointer-events: visiblePainted;
+}
+
 .tc-comp.tc-seleccionado {
   outline: 1.5px dashed var(--sel);
   outline-offset: 4px;
   border-radius: 2px;
 }
 
-/* LED quemado: gris y con un rótulo, hasta detener la simulación */
-.tc-comp.tc-quemado > * {
-  filter: grayscale(1) brightness(0.5);
-}
+/* LED quemado: su dibujo muestra la cápsula oscurecida (parte «quemado») y lleva un rótulo, hasta detener la simulación */
 
 .tc-comp.tc-quemado::after {
   content: "quemado";
@@ -664,6 +671,14 @@
   padding: 8px;
   border-radius: 8px;
   background: var(--fondo);
+}
+
+/* Un potenciómetro o un botón con el dibujo antiguo: se renueva al moverlo */
+.tc-ficha-aviso {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aviso);
 }
 
 .tc-ficha-props .tc-campo {

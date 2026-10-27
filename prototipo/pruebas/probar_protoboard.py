@@ -12,6 +12,10 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+# El LED (Pieza Tecno, PIEZA-001): `data-brillo` es su brillo de 0 a 1; `data-encendido`, si prende.
+LED_SVG = RAIZ + '.querySelector(\'.tc-comp[data-tipo="led"] svg\')'
+LED_BRILLO = f'Number({LED_SVG}.dataset.brillo || 0)'
+LED_PRENDE = f'{LED_SVG}.querySelector("[data-led]").hasAttribute("data-encendido")'
 fallos = []
 
 
@@ -90,7 +94,7 @@ with sync_playwright() as p:
     # ---- El circuito funciona a través de la protoboard (botón con pull-down)
     pg.locator('#iniciar').click()
     pg.wait_for_timeout(500)
-    led = lambda: pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").value')
+    led = lambda: pg.evaluate(LED_PRENDE)
     suelto = led()
     bx, by = centro('protoboard.f23')  # en medio del botón (está encima de la protoboard)
     caja = pg.locator('.tc-comp[data-id="btn1"]').bounding_box()
@@ -114,10 +118,9 @@ with sync_playwright() as p:
     nuevo = pieza('led2')
     pb = pieza('protoboard')
     hx, hy = pb['x'] + 14.4 + 26 * 9.6, pb['y'] + 49.4  # hueco b27
-    destino_x, destino_y = hx - 15 + 20, hy - 42 + 10  # el LED se toma por su centro (20, 10) para que la pata del cátodo (15, 42) caiga en b27
-    caja = pg.locator('.tc-comp[data-id="led2"]').bounding_box()
-    x0, y0 = caja['x'] + caja['width'] / 2, caja['y'] + 12
-    tomado = pantalla(nuevo['x'] + 20, nuevo['y'] + 12)
+    # El LED se toma por la cápsula (14,4; 10) para que la pata del cátodo (9,6; 43,2) caiga en b27
+    destino_x, destino_y = hx - 9.6 + 14.4, hy - 43.2 + 10
+    tomado = pantalla(nuevo['x'] + 14.4, nuevo['y'] + 10)
     pg.mouse.move(tomado[0], tomado[1])
     pg.mouse.down()
     fin = pantalla(destino_x + 1.5, destino_y - 1.2)  # un poco corrido: el encaje lo corrige
@@ -137,7 +140,7 @@ with sync_playwright() as p:
     agregar('LED')
     pg.wait_for_timeout(300)
     l3 = pieza('led3')
-    tomado = pantalla(l3['x'] + 20, l3['y'] + 12)
+    tomado = pantalla(l3['x'] + 14.4, l3['y'] + 10)
     fin = pantalla(destino_x, destino_y)
     pg.mouse.move(tomado[0], tomado[1])
     pg.mouse.down()

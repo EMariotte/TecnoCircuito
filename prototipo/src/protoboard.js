@@ -143,9 +143,12 @@ export function dibujarProtoboard(tipo = 'media', chip = null) {
 }
 
 // ¿Dónde caen las patas de una pieza? Recibe las patas en coordenadas del dibujo de la protoboard y devuelve
-// el corrimiento para que la primera pata quede justo en un hueco y a qué hueco va cada pata, o null si alguna
+// el corrimiento para que la pata que mejor cae quede justo en un hueco y a qué hueco va cada pata, o null si alguna
 // no cae cerca de un hueco libre. tolerancia: cuánto puede quedar corrida una pata (los dibujos de Wokwi no
 // siempre tienen las patas a 0,1" exactas).
+// La guía es la pata más cercana a un hueco, no la primera de la lista: con la primera, el resultado dependía del
+// orden de las patas de cada dibujo, y una pieza con otra pata ya sobre un hueco se corría un paso entero (el LED
+// con el cátodo junto a VIN y el ánodo sobre a1 caía entero en a1 y a2).
 export function encajar(patas, { tipo = 'media', ocupados = new Set(), tolerancia = 3.5 } = {}) {
   if (!patas.length) return null;
   const lista = huecos(tipo);
@@ -161,10 +164,11 @@ export function encajar(patas, { tipo = 'media', ocupados = new Set(), toleranci
     }
     return { hueco: mejor, distancia: d };
   };
-  const primero = cercano(patas[0].x, patas[0].y);
-  if (primero.distancia > PASO) return null; // la pieza no está sobre la protoboard
-  const dx = primero.hueco.x - patas[0].x;
-  const dy = primero.hueco.y - patas[0].y;
+  const cercanos = patas.map((p) => cercano(p.x, p.y));
+  const guia = cercanos.reduce((k, c, i) => (c.distancia < cercanos[k].distancia ? i : k), 0);
+  if (cercanos[guia].distancia > PASO) return null; // la pieza no está sobre la protoboard
+  const dx = cercanos[guia].hueco.x - patas[guia].x;
+  const dy = cercanos[guia].hueco.y - patas[guia].y;
   const en = {};
   const usados = new Set();
   for (const pata of patas) {

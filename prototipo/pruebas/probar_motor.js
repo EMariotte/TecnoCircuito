@@ -89,6 +89,26 @@ function medir(circuito, estados = { D13: PinState.High }) {
   revisar(red.fallasFijas[0]?.tipo === 'cortocircuito', `5V a GND: «${red.fallasFijas[0]?.mensaje}»`);
 }
 
+// 8b. Lo que aguanta una resistencia sale de sus `vatios` (PIEZA-001): 5V directo a GND por la resistencia.
+// Con 68 Ω disipa 0,37 W: se calienta la de ¼ W (y la falla sugiere una de ½ W), no la de ½ W. Una guardada sin
+// `vatios` es de ¼ W, como siempre. Con 33 Ω (0,76 W) se calienta también la de ½ W, y ya no se sugiere otra.
+{
+  const directa = (props) => medir({ formato: 1, placa: 'uno', componentes: [{ id: 'r1', tipo: 'resistencia', props }],
+    cables: [{ de: 'placa.5V', a: 'r1.1' }, { de: 'r1.2', a: 'placa.GND1' }] });
+  const calor = (m) => revisarFallas(m, TODAS).find((f) => f.tipo === 'resistencia_caliente');
+  const cuarto = directa({ ohmios: 68, vatios: 0.25 });
+  const medio = directa({ ohmios: 68, vatios: 0.5 });
+  const guardada = directa({ ohmios: 68 });
+  revisar(cuarto.resistencias[0].vatios === 0.25 && medio.resistencias[0].vatios === 0.5 && guardada.resistencias[0].vatios === 0.25,
+    'la medición dice los vatios de cada resistencia (sin vatios: 0,25)');
+  revisar(/aguanta 0,25 W.*o una de ½ W/.test(calor(cuarto)?.mensaje || '') && !calor(medio),
+    `68 Ω (${cuarto.resistencias[0].w.toFixed(2)} W): la de ¼ W se calienta y la falla sugiere una de ½ W; la de ½ W no («${calor(cuarto)?.mensaje}»)`);
+  revisar(/aguanta 0,25 W/.test(calor(guardada)?.mensaje || ''), 'una resistencia guardada sin vatios aguanta 0,25 W, como siempre');
+  const fuerte = calor(directa({ ohmios: 33, vatios: 0.5 }));
+  revisar(/aguanta 0,5 W\. Usa una de más ohmios\.$/.test(fuerte?.mensaje || ''), `33 Ω en la de ½ W: se calienta, sin sugerir otra potencia («${fuerte?.mensaje}»)`);
+  revisar(!revisarFallas(cuarto, {}).length, 'en modo ideal, la de ¼ W con 0,37 W no da falla');
+}
+
 // 9. Convergencia en un barrido de 0 Ω a 1 MΩ y con todos los colores
 {
   let peor = 0;

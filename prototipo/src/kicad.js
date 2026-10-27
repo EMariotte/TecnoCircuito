@@ -68,7 +68,10 @@ const kOhm = (ohmios) => (ohmios >= 1000 ? +(ohmios / 1000).toFixed(2) + 'k' : S
 // Los números de pad se comprobaron con las huellas de KiCad 10 (pruebas/probar_kicad_pcb.py).
 export const PIEZAS_KICAD = {
   resistencia: {
+    // La de ½ W (8,7 mm, patas a 6 pasos) lleva la huella de 9 mm a 15,24 mm (`otraHuella`). La de ¼ W, y una guardada
+    // sin `vatios`, la de 6,3 mm a 10,16 mm, como siempre.
     ref: 'R', lib: 'Device', parte: 'R', huella: 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal',
+    otraHuella: (p) => (Number(p.vatios) === 0.5 ? 'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal' : null),
     valor: (p) => kOhm(Number(p.ohmios) || 220), pads: { 1: '1', 2: '2' },
   },
   led: {
@@ -309,7 +312,8 @@ export function netlistKiCad(circuito, { nombre = 'Circuito', fecha = new Date()
   for (const c of delCircuito) {
     const def = PIEZAS_KICAD[c.tipo];
     if (SE_CUBRE.has(c.tipo) && enConector(c.id, Object.keys(def.pads))) continue; // ya va en SERVO_1 o SERVO_2
-    lista.push({ ...def, id: c.id, valor: def.valor(c.props || {}), pads: Object.entries(def.pads).map(([pin, pad]) => [pad, nodo(c.id + '.' + pin)]) });
+    const huella = (def.otraHuella && def.otraHuella(c.props || {})) || def.huella;
+    lista.push({ ...def, id: c.id, huella, valor: def.valor(c.props || {}), pads: Object.entries(def.pads).map(([pin, pad]) => [pad, nodo(c.id + '.' + pin)]) });
   }
   for (const d of deShield) {
     lista.push({ ...d, pads: Object.entries(d.pads).map(([pad, destino]) => [pad, clave(destino), destino.startsWith('pieza:') ? RED_SHIELD[destino.slice(6)] : null]) });

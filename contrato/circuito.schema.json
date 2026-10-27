@@ -110,7 +110,12 @@
           "if": { "properties": { "tipo": { "const": "resistencia" } } },
           "then": {
             "properties": {
-              "props": { "properties": { "ohmios": { "type": "number", "exclusiveMinimum": 0 } } },
+              "props": {
+                "properties": {
+                  "ohmios": { "type": "number", "exclusiveMinimum": 0 },
+                  "vatios": { "enum": [0.25, 0.5], "description": "Potencia que aguanta: 0.25 (¼ W, patas a 4 pasos) o 0.5 (½ W, patas a 6 pasos). Sin ella, ¼ W con las patas a 6 pasos, como se guardaba antes." }
+                }
+              },
               "en": { "propertyNames": { "$ref": "#/$defs/pines-resistencia" } }
             }
           }
@@ -131,7 +136,8 @@
               "props": {
                 "properties": {
                   "ohmios": { "type": "number", "exclusiveMinimum": 0 },
-                  "posicion": { "type": "number", "minimum": 0, "maximum": 1, "description": "0 = perilla hacia GND, 1 = hacia VCC." }
+                  "posicion": { "type": "number", "minimum": 0, "maximum": 1, "description": "0 = perilla hacia GND, 1 = hacia VCC." },
+                  "modelo": { "enum": ["16mm"], "description": "El potenciómetro de 16 mm del kit (dibujo medido, patas a 2 pasos). Sin él, el dibujo anterior, con las patas a 1 paso." }
                 }
               },
               "en": { "propertyNames": { "$ref": "#/$defs/pines-potenciometro" } }
@@ -194,7 +200,12 @@
           "if": { "properties": { "tipo": { "const": "pulsador" } } },
           "then": {
             "properties": {
-              "props": { "properties": { "color": { "enum": ["rojo", "verde", "azul", "amarillo", "blanco", "negro"] } } },
+              "props": {
+                "properties": {
+                  "color": { "enum": ["rojo", "verde", "azul", "amarillo", "blanco", "negro"] },
+                  "modelo": { "enum": ["6x6"], "description": "El pulsador de 6 × 6 mm del kit (dibujo medido, patas a 3 × 2 pasos). Sin él, el dibujo anterior, con las patas a 7 × 2 pasos." }
+                }
+              },
               "en": { "propertyNames": { "$ref": "#/$defs/pines-pulsador" } }
             }
           }

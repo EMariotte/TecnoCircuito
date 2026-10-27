@@ -29,13 +29,15 @@ with sync_playwright() as p:
     pg.get_by_text('Ejemplo con potenciómetro (T2)').click()
     pg.wait_for_selector('.tc-pin[data-ref="led1.anodo"]', state='attached')
     pg.wait_for_timeout(400)
-    # La perilla en un ángulo que se note y la resistencia girada, para probar los dos casos difíciles.
+    # La perilla en un ángulo que se note y la resistencia girada, para probar los dos casos difíciles. Y un
+    # potenciómetro guardado sin `modelo`, con el dibujo antiguo de wokwi, que gira su perilla con una variable CSS.
     pg.evaluate('''() => {
       const c = lienzo.circuito();
       for (const k of c.componentes) {
         if (k.tipo === 'potenciometro') k.props.posicion = 0.8;
         if (k.tipo === 'resistencia') k.rot = 90;
       }
+      c.componentes.push({ id: 'pot2', tipo: 'potenciometro', x: 330, y: 215, rot: 0, props: { ohmios: 10000, posicion: 0.8 } });
       localStorage.setItem("tecnocircuito-prototipo-0", JSON.stringify(c));
     }''')
     pg.reload()
@@ -66,8 +68,10 @@ with sync_playwright() as p:
     placa = re.search(r'<svg id="tc-placa".*?</svg>', svg, re.S)
     textos = re.findall(r'<text\b[^>]*>', placa.group(0)) if placa else []
     revisar(textos and all('font-size=' in t for t in textos), f'los {len(textos)} textos de la placa traen su tamaño, sin depender de estilos')
-    revisar(re.search(r'id="tc-pot1-rotating"[^>]*transform="rotate\(', svg) or re.search(r'transform="rotate\([^"]+\)"[^>]*id="tc-pot1-rotating"', svg),
-            'la perilla del potenciómetro queda girada como atributo')
+    revisar(re.search(r'<g data-parte="eje" transform="rotate\(81 8\.89 8\.03\)"', svg),
+            'el eje del potenciómetro del kit sale girado (81° con la perilla en el 80 %)')
+    revisar(re.search(r'id="tc-pot2-rotating"[^>]*transform="rotate\(', svg) or re.search(r'transform="rotate\([^"]+\)"[^>]*id="tc-pot2-rotating"', svg),
+            'la perilla del potenciómetro antiguo de wokwi queda girada como atributo')
     revisar('rotate(90)' in svg, 'la resistencia girada sale girada')
     # La marca (MARCA-001): la firma abajo a la derecha y el símbolo de una tinta como marca de agua.
     marca = pg.evaluate('''(texto) => {

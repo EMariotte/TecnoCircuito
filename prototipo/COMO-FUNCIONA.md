@@ -2241,3 +2241,70 @@ La firma de la imagen exportada se borra con un recorte, como pasa con la de Fri
 - `probar_protoboard.py`: un chip, dentro del canal, a la derecha, al 80 % y solo en azul y el color del canal.
 
 Con la página anterior a este cambio fallan las 8 comprobaciones nuevas de las vistas y las 2 de la protoboard.
+
+## 74. LED, resistencia, potenciómetro y pulsador como Piezas Tecno (PIEZA-001 y PIEZA-002, 27 oct 2026, Claude)
+
+Eran las cuatro últimas piezas que se dibujaban con `@wokwi/elements`, y sus patas no caían en el paso exacto de 2,54 mm (el LED a 10 px, la resistencia a 58,8). Efraín fotografió las del kit, TecnoDiseñador las dibujó con las fichas de vista 6.6 a 6.9 de la especificación de entrega y Efraín aprobó los dibujos. Por pedido suyo, las dos fichas se integraron juntas, con una sola entrega, porque tocan los mismos archivos.
+
+**De la foto al lienzo:**
+
+```mermaid
+flowchart LR
+  TD["TecnoDiseñador<br/>led-tc · resistencia-025w/025w6/05w-tc<br/>potenciometro-tc · pulsador-tc<br/>(.svg + .json)"] -->|npm run vistas<br/>revisor en 0 fallas| V["src/piezas/vistas/*.js<br/>(versionados)"]
+  V --> P["src/piezas/led.js · resistencia.js<br/>potenciometro.js · pulsador.js<br/>dibujar(props): colores, bandas,<br/>eje y rótulo ya pintados"]
+  P --> C["catalogo.js · TIPOS<br/>aplicar · mostrar · presionar<br/>noCompletar · antiguo · ancla · soloPintado"]
+  C --> L["lienzo.js<br/>abrir, ficha, arrastre,<br/>perilla y botón"]
+  C --> N["motor/red.js<br/>límite de calor por vatios"]
+```
+
+Cada pieza pinta su dibujo **antes de crearlo** (`rellenar` en `vista_td.js` cambia el `fill` de la cápsula, de cada banda o del capuchón en el texto del SVG). Así la miniatura de «+ Agregar», el lienzo y la imagen exportada salen iguales. Un cambio posterior en la ficha pinta el SVG ya creado (`aplicar`).
+
+**Props nuevas (contrato 1, sección 4, aditivas; decisiones de Efraín):**
+
+| Pieza | Prop | Valores | Qué cambia |
+|---|---|---|---|
+| `resistencia` | `vatios` | `0.25` o `0.5` | El dibujo (¼ W beige de 6,3 mm con las patas a 4 pasos; ½ W azul de 8,7 mm a 6 pasos) y lo que aguanta antes de calentarse. |
+| `potenciometro` | `modelo` | `16mm` | Marca el dibujo medido (patas a 2 pasos). |
+| `pulsador` | `modelo` | `6x6` | Marca el dibujo medido (patas a 3 × 2 pasos). |
+
+Una pieza nueva las trae. El LED no necesita prop: sus patas siguen a 1 paso.
+
+**Un circuito guardado antes del 27 oct** abre con las mismas conexiones y mediciones:
+
+| Pieza guardada | Al abrir | Al tocarla |
+|---|---|---|
+| LED | Dibujo medido, corrido unos píxeles (5,4; −1,2) para que cada pata quede sobre el hueco que dice su `en`. | — |
+| Resistencia sin `vatios` | ¼ W con las patas abiertas a 6 pasos (variante `025w6`): los mismos huecos y el límite de 0,25 W. La ficha dice «¼ W, patas abiertas». | Elegir ¼ W o ½ W la cambia. |
+| Potenciómetro o pulsador sin `modelo` | El dibujo de wokwi de antes, con la ficha que avisa «Dibujo antiguo: vuelve a ponerlo en la protoboard». | Al levantarlo toma el `modelo` y el dibujo medido, con sus patas centradas donde estaban las de antes; al soltarlo encaja con las patas nuevas. |
+
+Para esto hicieron falta dos cosas en el lienzo:
+- **`noCompletar`.** Al abrir, `normalizar` completa las props que faltan con las de una pieza nueva. Eso le ponía `vatios` y `modelo` a todo lo guardado, y borraba justo la marca de «guardada antes». Ahora cada tipo dice qué props no se completan.
+- **El encaje al abrir también en la protoboard.** `alinearEnchufesAlAbrir` ya corría las piezas enchufadas en pines (sección 63). Ahora corre también la pieza encajada en la protoboard cuyas patas no caen justo en sus huecos, si todas piden el mismo corrimiento. En la protoboard la tolerancia es 0,01 px, porque cada pata debe quedar justo sobre su hueco, como cuando se suelta ahí. Con tolerancia de imán (3,5 px), el LED corrido 5,5 px no se habría movido.
+
+**LED.** La cápsula toma el color apagado de la foto y, con la corriente, `mostrarLeds` la lleva hacia el encendido con su halo (el mismo de los LED de las placas, sección 63). `data-brillo` en el SVG deja el brillo sin redondear: lo leen las pruebas y TecnoBloques, que antes leían `brightness` del elemento de wokwi. Quemado, se ve la parte `quemado` (la cápsula oscurecida y una grieta) y sigue el rótulo; ya no se pone gris.
+
+**Resistencia.** Las bandas siguen el código de colores de los ohmios: dos cifras, el multiplicador (oro ×0,1, plata ×0,01) y la tolerancia en oro. Un valor con más de dos cifras significativas se redondea a dos. El límite de calor sale de `vatiosDe(props)` en `motor/red.js` (sin `vatios`, 0,25 W), y `mediciones()` da los `vatios` de cada una. Si una de ½ W alcanzaría, la falla lo sugiere: «… aguanta 0,25 W. Usa una de más ohmios o una de ½ W.» Al cambiar la potencia con la pieza encajada, la pata 1 se queda en su hueco (`ancla`) y la pieza vuelve a encajar con la pata 2 donde le toque; si ya no cabe, queda suelta y se avisa. En KiCad, la de ½ W lleva la huella `R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal`; la de ¼ W y la guardada sin `vatios`, la de siempre (10,16 mm).
+
+**Potenciómetro.** El eje gira de −135° (`posicion` 0, el cursor en GND) a +135° (`posicion` 1). Con el mouse, el lienzo suma lo que giró el puntero alrededor del eje por el camino corto (pasar por abajo no salta de un extremo al otro) y se detiene en los topes. El rótulo impreso sigue a los ohmios: «B1K», «B10K», «B100K».
+
+**Pulsador.** Presionado, el capuchón se achica al 86 % alrededor de su centro y el SVG lleva `data-presionado`. Girado 90°, cruza el canal central de la protoboard, porque de la fila e a la f hay 3 pasos, como las patas del real.
+
+**El encaje ya no depende del orden de las patas.** `encajar` (protoboard.js) tomaba como guía la primera pata de la lista y le permitía correrse hasta un paso entero hacia un hueco. El LED de wokwi listaba primero el ánodo; el medido lista primero el cátodo, y con eso un LED soltado con el cátodo junto a VIN y el ánodo sobre a1 caía entero en a1 y a2 (lo encontró `probar_enchufe.py`). Ahora la guía es la pata que cae más cerca de un hueco.
+
+**El clic, solo donde hay dibujo.** El marco de rejilla de estas piezas es más grande que su cuerpo; el de la resistencia de ¼ W llega hasta las filas b y d. Como la placa (sección 62), solo reciben el clic donde están pintadas (`tc-solo-pintado`), y los huecos bajo el marco transparente se siguen alcanzando. No se aplica al dibujo de wokwi, que maneja sus propios eventos.
+
+**Pruebas:**
+- `probar_piezas.py` (nueva, 43): biblioteca sin wokwi; props de una pieza nueva; paso exacto de las cuatro; bandas de 220 Ω y 10 kΩ; ½ W a 6 pasos con su ficha; colores del LED y del botón; rótulos «B1K» y «B100K»; el eje con el mouse hasta el tope; encaje al paso (resistencia de c5 a c9 y, al pasarla a ½ W, a c11 con la pata 1 fija; potenciómetro en j3/j5/j7; pulsador girado en e/f; LED en a27/a28 sin tapar b29); el botón que baja y prende el LED; el circuito antiguo con sus mismos huecos, props y cables, el LED corrido, la resistencia a 6 pasos, el botón de wokwi con su aviso y la misma corriente del LED que con las piezas del kit; el botón y el potenciómetro antiguos que se renuevan al moverlos; la imagen exportada.
+- Adaptadas al dibujo nuevo: `probar_electrico`, `probar_extras`, `probar_protoboard`, `probar_simulacion`, `probar_t1t2`, `probar_pwm` (leían el `wokwi-led`), `probar_svg` (el eje medido y la perilla antigua), `probar_prototipo` (la resistencia trae `vatios`) y `probar_nano_ui` (el potenciómetro más grande quedaba bajo la ficha).
+- `probar_motor.js` (+5): el límite por `vatios` y la sugerencia de ½ W. `probar_kicad.js` (+1): la huella de ½ W, que `probar_kicad_pcb.py` encuentra en KiCad 10. `probar_contrato.js` (212): las props nuevas en el esquema y los ejemplos.
+- `probar_enchufe.py` encontró el defecto de `encajar` con el LED medido y pasa con la corrección.
+- Suite completa con cargador: 1372 OK y ninguna falla (antes 1298). TecnoBloques: `test:simulador` 58 y `test:registro-app` 134 sin fallas; `npm test` y `test:app` sin errores.
+- **Antes y después:** 22 circuitos de referencia (los ejemplos de la página y de TecnoBloques de HEAD, `t1_protoboard` y su fixture) abren en el lienzo con las mismas conexiones, props y giros que con HEAD; solo se corren el LED y las resistencias encajados. En el núcleo, 126 corridas (cada circuito con 3 a 6 programas, 60 cuadros, los botones presionados del 20 al 35) dan fotos idénticas cuadro a cuadro, salvo el campo nuevo `vatios`. La comparación sí detecta un cambio: con 330 Ω en vez de 220, las seis corridas difieren desde el primer cuadro.
+- Paquete: 527 KB → 556 KB (los seis dibujos); el Worker sigue en 91 KB.
+
+**Límites:**
+- La geometría no se ha probado en la protoboard real con aprendices (fase 7 de PIEZA-001, LAB-001 punto 4).
+- El potenciómetro de frente tapa con su cuerpo los huecos de arriba de sus patas, como el real visto de frente.
+- `@wokwi/elements` y Lit siguen en el paquete por el potenciómetro y el pulsador antiguos. Cuando no queden circuitos guardados con ellos, se pueden quitar.
+- Los `-tc.svg` de TecnoDiseñador traen unos 2,6 KB de degradados que no usan (la plantilla de sus `defs`). Pesan en el paquete y en cada pieza del lienzo; se pueden quitar en el generador de TecnoDiseñador.
+- La huella de KiCad del potenciómetro (Alps RK09K) y la del pulsador no cambiaron.

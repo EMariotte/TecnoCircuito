@@ -20,6 +20,12 @@ const ENTREGAS = [
   { modulo: 'shield_nano_io_roja', json: 'componentes/nano-expansion/entrega/tecnocircuito/shield_nano_io-roja-tc.json' },
   { modulo: 'shield_nano_io_azul', json: 'componentes/nano-expansion/entrega/tecnocircuito/shield_nano_io-azul-tc.json' },
   { modulo: 'shield_l293d', json: 'componentes/l293d-shield/entrega/tecnocircuito/shield_l293d-tc.json' },
+  { modulo: 'led', json: 'componentes/led-5mm/entrega/tecnocircuito/led-tc.json' },
+  { modulo: 'resistencia_025w', json: 'componentes/resistencia-axial/entrega/tecnocircuito/resistencia-025w-tc.json' },
+  { modulo: 'resistencia_025w6', json: 'componentes/resistencia-axial/entrega/tecnocircuito/resistencia-025w6-tc.json' },
+  { modulo: 'resistencia_05w', json: 'componentes/resistencia-axial/entrega/tecnocircuito/resistencia-05w-tc.json' },
+  { modulo: 'potenciometro', json: 'componentes/potenciometro-16mm/entrega/tecnocircuito/potenciometro-tc.json' },
+  { modulo: 'pulsador', json: 'componentes/pulsador-6mm/entrega/tecnocircuito/pulsador-tc.json' },
 ];
 
 const jsons = ENTREGAS.map((e) => path.join(ORIGEN, e.json));
@@ -60,6 +66,8 @@ for (const [k, e] of ENTREGAS.entries()) {
     pines: datos.pines,
     leds: datos.leds,
     partes: datos.partes,
+    colores: datos.colores, // solo el LED y el pulsador (sección 5); sin él, la clave no se escribe
+    bandas: datos.bandas, // solo la resistencia
     origen: { registro: datos.origen.registro, generador: datos.origen.generador, fecha: datos.origen.fecha },
     diferencias: datos.diferencias,
     cuerpo: cuerpo(svg),

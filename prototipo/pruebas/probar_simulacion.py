@@ -11,6 +11,10 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+# El LED (Pieza Tecno, PIEZA-001): `data-brillo` es su brillo de 0 a 1; `data-encendido`, si prende.
+LED_SVG = RAIZ + '.querySelector(\'.tc-comp[data-tipo="led"] svg\')'
+LED_BRILLO = f'Number({LED_SVG}.dataset.brillo || 0)'
+LED_PRENDE = f'{LED_SVG}.querySelector("[data-led]").hasAttribute("data-encendido")'
 VERSION_DEV = json.loads((Path(__file__).resolve().parents[2] / 'package.json').read_text(encoding='utf-8'))['version'] + '-dev'  # la pone construir.js
 fallos = []
 
@@ -23,14 +27,15 @@ def revisar(condicion, texto):
 
 # Muestrea el LED cada 20 ms durante `segundos` y devuelve los intervalos entre cambios, en ms.
 MUESTREO = f'''async (segundos) => {{
-  const led = {RAIZ}.querySelector('wokwi-led');
+  const led = {RAIZ}.querySelector('.tc-comp[data-tipo="led"] [data-led]');
+  const prende = () => led.hasAttribute('data-encendido');
   const ledL = {RAIZ}.querySelector('.tc-placa [data-led="L"]');
-  const cambios = []; let previo = led.value; let prendido = 0, muestras = 0, l13 = 0;
+  const cambios = []; let previo = prende(); let prendido = 0, muestras = 0, l13 = 0;
   const fin = performance.now() + segundos * 1000;
   while (performance.now() < fin) {{
     await new Promise(r => setTimeout(r, 20));
-    muestras++; if (led.value) prendido++; if (ledL.hasAttribute('data-encendido')) l13++;
-    if (led.value !== previo) {{ cambios.push(performance.now()); previo = led.value; }}
+    muestras++; if (prende()) prendido++; if (ledL.hasAttribute('data-encendido')) l13++;
+    if (prende() !== previo) {{ cambios.push(performance.now()); previo = prende(); }}
   }}
   return {{ intervalos: cambios.slice(1).map((t, i) => t - cambios[i]), prendido: prendido / muestras, l13: l13 / muestras }};
 }}'''
@@ -133,7 +138,7 @@ with sync_playwright() as p:
     pg.locator('#detener').click()
     apagados = pg.evaluate(f'''() => {{
       const r = {RAIZ};
-      return !r.querySelector('wokwi-led').value && !r.querySelector('.tc-placa [data-led="PWR"]').hasAttribute('data-encendido');
+      return !{LED_PRENDE} && !r.querySelector('.tc-placa [data-led="PWR"]').hasAttribute('data-encendido');
     }}''')
     revisar(apagados, 'al detener, todo se apaga (también el LED ON de la placa)')
     # El cierre de la corrida sale cuando el Worker confirma que paró (AUD-03-V1): unos ms después del clic

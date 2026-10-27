@@ -119,7 +119,7 @@ with sync_playwright() as p:
     # Cambiar el valor y el color desde la barra
     pg.locator('select[data-prop="ohmios"]').select_option('1000')
     r1 = next(k for k in pg.evaluate('lienzo.circuito()')['componentes'] if k['id'] == 'r1')
-    revisar(r1['props'] == {'ohmios': 1000}, f'valor de la resistencia: {r1["props"]}')
+    revisar(r1['props'] == {'ohmios': 1000, 'vatios': 0.25}, f'valor de la resistencia (de ¼ W): {r1["props"]}')
 
     # Seleccionar el cable 1 por la mitad de su tramo vertical (lejos del cable de GND) y borrarlo con Supr
     pg.mouse.click(xd, yd - 30)

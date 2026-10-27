@@ -24,7 +24,9 @@ export const LED = {
   quemamA: 30, // por encima de esto se quema
   plenomA: 15, // corriente a la que el dibujo brilla al máximo
 };
-const RESISTENCIA_MAX_W = 0.25; // resistencias de 1/4 W del kit
+// Lo que aguanta una resistencia sin calentarse: su prop `vatios` (¼ o ½ W, las del kit). Una guardada sin `vatios`
+// (antes de que la pieza tuviera dos potencias) es de ¼ W, como siempre.
+export const vatiosDe = (props) => (Number(props && props.vatios) > 0 ? Number(props.vatios) : 0.25);
 // Potenciómetro: la perilla parte la resistencia total en dos. En los extremos queda un mínimo (como el real),
 // así el solucionador nunca recibe 0 Ω.
 export const POT = { minimo: 1 };
@@ -36,7 +38,7 @@ export function modeloLed(color) {
   return { Is: LED.iRef / Math.expm1(vUnion / (LED.n * VT)), n: LED.n };
 }
 
-// Las patas de las piezas de @wokwi/elements (el lienzo las usa para revisar un «en» al abrir un circuito).
+// Las patas de las piezas que el núcleo arma una por una.
 export const PATAS = { led: ['anodo', 'catodo'], resistencia: ['1', '2'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1i', '1d', '2i', '2d'], servo: ['GND', 'VCC', 'SIG'] };
 
 // Arma la red una vez por cableado (y por botones presionados). Cambiar los pines (ponerPines) no la rehace:
@@ -132,7 +134,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
   for (const c of circuito.componentes) {
     if (c.tipo === 'resistencia') {
       const r = resistencia(nodo(c.id + '.1'), nodo(c.id + '.2'), Number(c.props.ohmios) || 1);
-      resistencias.push({ id: c.id, ohmios: Number(c.props.ohmios) || 1, el: r });
+      resistencias.push({ id: c.id, ohmios: Number(c.props.ohmios) || 1, vatios: vatiosDe(c.props), el: r });
       if (r.a !== r.b) elementos.push(r);
     } else if (c.tipo === 'led') {
       const a = nodo(c.id + '.anodo');
@@ -238,7 +240,7 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
         }),
         resistencias: resistencias.map((x) => {
           const i = x.el.a === x.el.b ? 0 : x.el.corriente(r.x);
-          return { id: x.id, ohmios: x.ohmios, v: resta(V(x.id + '.1'), V(x.id + '.2')), i, w: i * i * x.ohmios };
+          return { id: x.id, ohmios: x.ohmios, vatios: x.vatios, v: resta(V(x.id + '.1'), V(x.id + '.2')), i, w: i * i * x.ohmios };
         }),
         pines: Object.entries(pines)
           .filter(([, f]) => f.g > 0)
@@ -274,12 +276,15 @@ export function revisarFallas(m, activas) {
       }
     }
     for (const r of m.resistencias) {
-      if (r.w > RESISTENCIA_MAX_W) {
+      const aguanta = r.vatios || 0.25;
+      if (r.w > aguanta) {
+        // Si una de ½ W alcanza, se dice: el kit las tiene.
+        const otra = aguanta < 0.5 && r.w <= 0.5 ? ' o una de ½ W' : '';
         fallas.push({
           tipo: 'resistencia_caliente',
           componente: r.id,
           potencia_W: +r.w.toFixed(2),
-          mensaje: `La resistencia ${r.id} se calienta: disipa ${r.w.toFixed(2).replace('.', ',')} W y aguanta 0,25 W. Usa una de más ohmios.`,
+          mensaje: `La resistencia ${r.id} se calienta: disipa ${r.w.toFixed(2).replace('.', ',')} W y aguanta ${String(aguanta).replace('.', ',')} W. Usa una de más ohmios${otra}.`,
         });
       }
     }

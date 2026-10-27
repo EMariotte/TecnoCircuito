@@ -971,6 +971,7 @@ function promediar(sols) {
     resistencias: base.resistencias.map((x, n) => ({
       id: x.id,
       ohmios: x.ohmios,
+      vatios: x.vatios,
       v: prom((m) => m.resistencias[n].v),
       i: prom((m) => m.resistencias[n].i),
       w: prom((m) => m.resistencias[n].w), // potencia promedio: lo que calienta de verdad

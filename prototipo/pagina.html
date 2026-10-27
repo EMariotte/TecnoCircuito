@@ -79,6 +79,7 @@
     <button type="button" id="ejemplo">Ver un ejemplo armado</button>
     <button type="button" id="ejemploT1">Ejemplo con botón (T1)</button>
     <button type="button" id="ejemploPB">Ejemplo en protoboard (T1)</button>
+    <button type="button" id="ejemploPBAntiguo">El mismo, guardado antes del 27 oct</button>
     <button type="button" id="ejemploT2">Ejemplo con potenciómetro (T2)</button>
     <button type="button" id="ejemploServo">Ejemplo con servo (T3)</button>
     <button type="button" id="ejemploServos">Cuatro servos en el USB (T3)</button>
@@ -153,8 +154,8 @@
     formato: 1,
     placa: 'uno',
     componentes: [
-      { id: 'r1', tipo: 'resistencia', x: 300, y: -26, rot: 0, props: { ohmios: 220 } },
-      { id: 'led1', tipo: 'led', x: 380, y: -100, rot: 0, props: { color: 'rojo' } },
+      { id: 'r1', tipo: 'resistencia', x: 295.2, y: -29.95, rot: 0, props: { ohmios: 220, vatios: 0.25 } },
+      { id: 'led1', tipo: 'led', x: 385.8, y: -101.2, rot: 0, props: { color: 'rojo' } },
     ],
     cables: [],
     protoboard: null,
@@ -164,7 +165,7 @@
     cables: [
       { de: 'placa.D13', a: 'r1.1', color: 'naranja', puntos: [[125, -20.35]] },
       { de: 'r1.2', a: 'led1.anodo', color: 'naranja', puntos: [[405, -20.35]] },
-      { de: 'led1.catodo', a: 'placa.GND1', color: 'negro', puntos: [[395, -40], [115.5, -40]] },
+      { de: 'led1.catodo', a: 'placa.GND1', color: 'negro', puntos: [[395.4, -40], [115.5, -40]] },
     ],
   };
   // Tarea T2: LED con resistencia en el pin 9 (PWM) y potenciómetro en A0, 5V y GND.
@@ -172,15 +173,15 @@
     ...INICIAL,
     componentes: [
       ...INICIAL.componentes,
-      { id: 'pot1', tipo: 'potenciometro', x: 250, y: 215, rot: 0, props: { ohmios: 10000, posicion: 0.5 } },
+      { id: 'pot1', tipo: 'potenciometro', x: 245, y: 205, rot: 0, props: { ohmios: 10000, posicion: 0.5, modelo: '16mm' } },
     ],
     cables: [
       { de: 'placa.D9', a: 'r1.1', color: 'naranja', puntos: [[163, -20.35]] },
       { de: 'r1.2', a: 'led1.anodo', color: 'naranja', puntos: [[405, -20.35]] },
-      { de: 'led1.catodo', a: 'placa.GND1', color: 'negro', puntos: [[395, -40], [115.5, -40]] },
-      { de: 'placa.GND3', a: 'pot1.GND', color: 'negro', puntos: [[179, 310], [279, 310]] },
-      { de: 'placa.A0', a: 'pot1.SIG', color: 'verde', puntos: [[208, 300], [289, 300]] },
-      { de: 'placa.5V', a: 'pot1.VCC', color: 'rojo', puntos: [[160, 320], [299, 320]] },
+      { de: 'led1.catodo', a: 'placa.GND1', color: 'negro', puntos: [[395.4, -40], [115.5, -40]] },
+      { de: 'placa.GND3', a: 'pot1.GND', color: 'negro', puntos: [[179, 310], [259.4, 310]] },
+      { de: 'placa.A0', a: 'pot1.SIG', color: 'verde', puntos: [[208, 300], [278.6, 300]] },
+      { de: 'placa.5V', a: 'pot1.VCC', color: 'rojo', puntos: [[160, 320], [297.8, 320]] },
     ],
   };
   // Tarea T1: 5V → botón → pin 2, con una pull-down de 10 kΩ del pin 2 a GND, y el LED del pin 13.
@@ -188,22 +189,25 @@
     ...INICIAL,
     componentes: [
       ...INICIAL.componentes,
-      { id: 'btn1', tipo: 'pulsador', x: 330, y: 60, rot: 0, props: { color: 'rojo' } },
-      { id: 'r2', tipo: 'resistencia', x: 420, y: 67.35, rot: 0, props: { ohmios: 10000 } },
+      { id: 'btn1', tipo: 'pulsador', x: 325.2, y: 68.2, rot: 0, props: { color: 'rojo', modelo: '6x6' } },
+      { id: 'r2', tipo: 'resistencia', x: 385.2, y: 63.4, rot: 0, props: { ohmios: 10000, vatios: 0.25 } },
     ],
     cables: [
       { de: 'placa.D13', a: 'r1.1', color: 'naranja', puntos: [[125, -20.35]] },
       { de: 'r1.2', a: 'led1.anodo', color: 'naranja', puntos: [[405, -20.35]] },
-      { de: 'led1.catodo', a: 'placa.GND1', color: 'negro', puntos: [[395, -40], [115.5, -40]] },
+      { de: 'led1.catodo', a: 'placa.GND1', color: 'negro', puntos: [[395.4, -40], [115.5, -40]] },
       { de: 'placa.D2', a: 'btn1.1i', color: 'amarillo', puntos: [[236.5, -6], [310, -6], [310, 73]] },
-      { de: 'placa.5V', a: 'btn1.2i', color: 'rojo', puntos: [[160, 215], [320, 215], [320, 92]] },
+      { de: 'placa.5V', a: 'btn1.2i', color: 'rojo', puntos: [[160, 215], [320, 215], [320, 92.2]] },
       { de: 'btn1.1d', a: 'r2.1', color: 'amarillo' },
-      { de: 'r2.2', a: 'placa.GND3', color: 'negro', puntos: [[478.8, 240], [179, 240]] },
+      { de: 'r2.2', a: 'placa.GND3', color: 'negro', puntos: [[428.4, 240], [179, 240]] },
     ],
   };
   // Prototipo 4: la tarea T1 armada en la protoboard, como en la mesa. Cada pieza dice en «en» qué pata va en
   // qué hueco. El botón cruza el canal central (girado), con su pull-down de 10 kΩ al riel − de abajo.
-  const EJEMPLO_PB = {"formato":1,"placa":"uno","protoboard":{"tipo":"media","x":300,"y":30},"componentes":[{"id":"r1","tipo":"resistencia","x":429.6,"y":83.35,"rot":0,"props":{"ohmios":220},"en":{"1":"protoboard.c13","2":"protoboard.c19"}},{"id":"led1","tipo":"led","x":405,"y":27.8,"rot":0,"props":{"color":"rojo"},"en":{"catodo":"protoboard.a12","anodo":"protoboard.a13"}},{"id":"btn1","tipo":"pulsador","x":491.68,"y":80.76,"rot":90,"props":{"color":"rojo"},"en":{"2i":"protoboard.a22","1i":"protoboard.a24","2d":"protoboard.f22","1d":"protoboard.f24"}},{"id":"r2","tipo":"resistencia","x":535.2,"y":150.55,"rot":0,"props":{"ohmios":10000},"en":{"1":"protoboard.h24","2":"protoboard.h30"}}],"cables":[{"de":"placa.D13","a":"protoboard.a19","color":"naranja","puntos":[[125,-8],[487.2,-8]]},{"de":"protoboard.e12","a":"protoboard.i-12","color":"negro"},{"de":"protoboard.i-2","a":"placa.GND2","color":"negro","puntos":[[324,230],[169.5,230]]},{"de":"placa.5V","a":"protoboard.j22","color":"rojo","puntos":[[160,240],[516,240]]},{"de":"placa.D2","a":"protoboard.g24","color":"amarillo","puntos":[[236.5,-16],[620,-16],[620,146.6]]},{"de":"protoboard.j30","a":"protoboard.i-30","color":"negro"}]};
+  const EJEMPLO_PB = {"formato":1,"placa":"uno","protoboard":{"tipo":"media","x":300,"y":30},"componentes":[{"id":"r1","tipo":"resistencia","x":424.8,"y":79.4,"rot":0,"props":{"ohmios":220,"vatios":0.25},"en":{"1":"protoboard.c13","2":"protoboard.c17"}},{"id":"led1","tipo":"led","x":410.4,"y":26.6,"rot":0,"props":{"color":"rojo"},"en":{"catodo":"protoboard.a12","anodo":"protoboard.a13"}},{"id":"btn1","tipo":"pulsador","x":506.4,"y":108.2,"rot":90,"props":{"color":"rojo","modelo":"6x6"},"en":{"2i":"protoboard.e22","1i":"protoboard.e24","2d":"protoboard.f22","1d":"protoboard.f24"}},{"id":"r2","tipo":"resistencia","x":530.4,"y":146.6,"rot":0,"props":{"ohmios":10000,"vatios":0.25},"en":{"1":"protoboard.h24","2":"protoboard.h28"}}],"cables":[{"de":"placa.D13","a":"protoboard.a17","color":"naranja","puntos":[[125,-8],[468,-8]]},{"de":"protoboard.e12","a":"protoboard.i-12","color":"negro"},{"de":"protoboard.i-2","a":"placa.GND2","color":"negro","puntos":[[324,230],[169.5,230]]},{"de":"placa.5V","a":"protoboard.j22","color":"rojo","puntos":[[160,240],[516,240]]},{"de":"placa.D2","a":"protoboard.g24","color":"amarillo","puntos":[[236.5,-16],[620,-16],[620,146.6]]},{"de":"protoboard.j28","a":"protoboard.i-28","color":"negro"}]};
+  // El mismo circuito guardado antes de las piezas del kit (27 oct): resistencias sin `vatios` (a 6 pasos) y el botón
+  // sin `modelo` (el dibujo de wokwi, a 7 × 2 pasos). Abre con las mismas conexiones; el LED se recoloca en sus huecos.
+  const EJEMPLO_PB_ANTIGUO = {"formato":1,"placa":"uno","protoboard":{"tipo":"media","x":300,"y":30},"componentes":[{"id":"r1","tipo":"resistencia","x":429.6,"y":83.35,"rot":0,"props":{"ohmios":220},"en":{"1":"protoboard.c13","2":"protoboard.c19"}},{"id":"led1","tipo":"led","x":405,"y":27.8,"rot":0,"props":{"color":"rojo"},"en":{"catodo":"protoboard.a12","anodo":"protoboard.a13"}},{"id":"btn1","tipo":"pulsador","x":491.68,"y":80.76,"rot":90,"props":{"color":"rojo"},"en":{"2i":"protoboard.a22","1i":"protoboard.a24","2d":"protoboard.f22","1d":"protoboard.f24"}},{"id":"r2","tipo":"resistencia","x":535.2,"y":150.55,"rot":0,"props":{"ohmios":10000},"en":{"1":"protoboard.h24","2":"protoboard.h30"}}],"cables":[{"de":"placa.D13","a":"protoboard.a19","color":"naranja","puntos":[[125,-8],[487.2,-8]]},{"de":"protoboard.e12","a":"protoboard.i-12","color":"negro"},{"de":"protoboard.i-2","a":"placa.GND2","color":"negro","puntos":[[324,230],[169.5,230]]},{"de":"placa.5V","a":"protoboard.j22","color":"rojo","puntos":[[160,240],[516,240]]},{"de":"placa.D2","a":"protoboard.g24","color":"amarillo","puntos":[[236.5,-16],[620,-16],[620,146.6]]},{"de":"protoboard.j30","a":"protoboard.i-30","color":"negro"}]};
   // Tarea T3: un servo SG90 con la señal en el pin 9, alimentado por el 5V de la placa.
   const EJEMPLO_SERVO = {
     formato: 1,
@@ -285,8 +289,8 @@
     formato: 1, placa: 'nano', protoboard: null,
     componentes: [
       { id: 'exp1', tipo: 'shield_nano_io', x: 0, y: 0, rot: 0, props: { variante: 'roja', alimentacion: 'usb', voltajeJack: 9 } },
-      { id: 'pot6', tipo: 'potenciometro', x: 310, y: 20, props: { ohmios: 10000, posicion: 0.25 } },
-      { id: 'pot7', tipo: 'potenciometro', x: 310, y: 180, props: { ohmios: 10000, posicion: 0.75 } },
+      { id: 'pot6', tipo: 'potenciometro', x: 310, y: 20, props: { ohmios: 10000, posicion: 0.25, modelo: '16mm' } },
+      { id: 'pot7', tipo: 'potenciometro', x: 310, y: 180, props: { ohmios: 10000, posicion: 0.75, modelo: '16mm' } },
     ],
     cables: ['6', '7'].flatMap(n => [
       { de: 'exp1.A' + n + '_S', a: 'pot' + n + '.SIG', color: 'verde' },
@@ -409,6 +413,7 @@
   $('ejemploProbador').onclick = () => { $('programa').value = 'parpadeo13'; abrir(EJEMPLO_PROBADOR); };
   $('ejemploT1').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_T1); };
   $('ejemploPB').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_PB); };
+  $('ejemploPBAntiguo').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_PB_ANTIGUO); };
   $('ejemploT2').onclick = () => { $('programa').value = 'potenciometro'; abrir(EJEMPLO_T2); };
   $('limpiar').onclick = () => { $('eventos').textContent = ''; abrir($('placa').value === 'uno' ? INICIAL : null); };
   $('copiar').onclick = async (e) => {

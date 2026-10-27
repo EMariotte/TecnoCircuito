@@ -10,6 +10,10 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 fallos = []
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+# El LED (Pieza Tecno, PIEZA-001): `data-brillo` es su brillo de 0 a 1; `data-encendido`, si prende.
+LED_SVG = RAIZ + '.querySelector(\'.tc-comp[data-tipo="led"] svg\')'
+LED_BRILLO = f'Number({LED_SVG}.dataset.brillo || 0)'
+LED_PRENDE = f'{LED_SVG}.querySelector("[data-led]").hasAttribute("data-encendido")'
 
 
 def revisar(condicion, texto):
@@ -114,10 +118,11 @@ with sync_playwright() as p:
     caja = pg.locator('.tc-comp[data-id="led1"]').bounding_box()
     pg.mouse.click(caja['x'] + caja['width'] / 2, caja['y'] + 10)
     pg.get_by_label('Ver encendido').check()
-    encendido = pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").value')
+    encendido = pg.evaluate(LED_PRENDE)
     revisar(encendido is True and cables() == antes, 'Ver encendido prende el dibujo sin tocar el circuito')
     pg.locator('select[data-prop="color"]').select_option('verde')
-    revisar(pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").color') == 'green', 'cambiar el color del LED')
+    revisar(pg.evaluate(f'{LED_SVG}.querySelector("[data-led]").getAttribute("fill")') == '#01fbb3' and pg.evaluate(LED_PRENDE),
+            'cambiar el color del LED: la cápsula se pinta verde y sigue encendida')
     pg.wait_for_timeout(150)
     pg.screenshot(path=str(SALIDA / '9_encendido.png'))
 

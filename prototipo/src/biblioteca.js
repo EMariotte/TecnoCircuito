@@ -4,7 +4,7 @@
 //
 // Una pieza nueva se agrega aquí con su ficha: { nombre, descripcion, palabras, pines, datos(props), validacion(props) }.
 //   validacion → { estado: 'validado' | 'por_validar', texto }: si su modelo ya se comparó con la placa real.
-import { LED } from './motor/red.js';
+import { LED, vatiosDe } from './motor/red.js';
 import { MODELOS_SERVO } from './piezas/servo.js';
 import { MOTOR_TT } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, LIPO } from './piezas/bateria_lipo.js';
@@ -55,12 +55,15 @@ export const FICHAS = {
     descripcion: 'Limita la corriente. Va en serie con el LED para que no se queme, y como pull-down o pull-up en un botón.',
     palabras: ['resistor', 'ohm', 'ohmios', 'limitar', 'corriente', 'pull-down', 'pull-up'],
     pines: '1 y 2 (da igual el sentido)',
+    // Sin `vatios` (guardada antes de que hubiera dos potencias): ¼ W con las patas abiertas a 6 pasos.
     datos: (p) => [
       ['Valor', ohmios(Number(p.ohmios) || 220)],
-      ['Potencia máxima', '¼ W (0,25 W): más, se calienta'],
+      ['Potencia máxima', vatiosDe(p) === 0.5 ? '½ W (0,5 W): más, se calienta' : '¼ W (0,25 W): más, se calienta'],
+      ['Cuerpo', vatiosDe(p) === 0.5 ? '8,7 mm, azul (la de ½ W del kit)' : '6,3 mm, beige (la de ¼ W del kit)'],
+      ['Patas', p.vatios === 0.25 ? 'a 4 pasos (10,16 mm)' : 'a 6 pasos (15,24 mm)'],
       ['Tolerancia', '±5 % (franja dorada)'],
     ],
-    validacion: () => validado('Comparada con el multímetro el 7 oct 2026 (220, 330 y 1 kΩ con un LED rojo).'),
+    validacion: () => validado('Comparada con el multímetro el 7 oct 2026 (220, 330 y 1 kΩ con un LED rojo). Dibujo medido por TecnoDiseñador desde las del kit (27 oct); falta probar sus pasos en la protoboard real.'),
   },
   led: {
     nombre: 'LED',
@@ -76,8 +79,8 @@ export const FICHAS = {
     // Solo se midió el LED rojo: los otros colores usan el voltaje de la hoja de datos.
     validacion: (p) =>
       !p.color || p.color === 'rojo'
-        ? validado('Comparado con el multímetro el 7 oct 2026 (LED rojo con 220, 330 y 1 kΩ: 11 de 12 dentro del criterio; la que queda en el límite cumple con la incertidumbre del multímetro).')
-        : porValidar(`Voltaje de la hoja de datos: se midió solo el LED rojo (7 oct 2026); falta medir el ${p.color}.`),
+        ? validado('Comparado con el multímetro el 7 oct 2026 (LED rojo con 220, 330 y 1 kΩ: 11 de 12 dentro del criterio; la que queda en el límite cumple con la incertidumbre del multímetro). Dibujo medido por TecnoDiseñador desde los del kit (27 oct).')
+        : porValidar(`Voltaje de la hoja de datos: se midió solo el LED rojo (7 oct 2026); falta medir el ${p.color}. Dibujo medido por TecnoDiseñador desde los del kit (27 oct).`),
   },
   pulsador: {
     nombre: 'Botón',
@@ -86,22 +89,24 @@ export const FICHAS = {
     pines: '1i y 1d unidas por dentro; 2i y 2d unidas por dentro. Al presionar, el 1 se une con el 2',
     datos: (p) => [
       ['Color', p.color || 'rojo'],
+      ['Tamaño', '6 × 6 mm; patas a 3 pasos de lado a lado y a 2 en el mismo lado'],
       ['Lectura', 'digitalRead(): ALTO o BAJO'],
       ['Sin pull-down', 'la entrada queda al aire (lee al azar)'],
     ],
-    validacion: () => validado('La entrada al aire se midió con la placa real el 9 oct 2026 (se queda en su nivel; con la mano capta los 60 Hz).'),
+    validacion: () => validado('La entrada al aire se midió con la placa real el 9 oct 2026 (se queda en su nivel; con la mano capta los 60 Hz). Las uniones de las patas se midieron con el multímetro el 27 oct. Dibujo medido por TecnoDiseñador desde el del kit (27 oct).'),
   },
   potenciometro: {
     nombre: 'Potenciómetro',
     descripcion: 'Resistencia con perilla: la pata del medio (SIG) da un voltaje entre 0 y 5 V según el giro. Con analogRead() se lee de 0 a 1023.',
     palabras: ['perilla', 'knob', 'regulador', 'variable', 'analogico', 'analogread', 'trimmer'],
-    pines: 'GND, SIG (el cursor, al pin analógico) y VCC (5V)',
+    pines: 'GND, SIG (el cursor, al pin analógico) y VCC (5V), a 2 pasos',
     datos: (p) => [
       ['Valor', ohmios(Number(p.ohmios) || 10000)],
       ['Perilla', `${Math.round((Number(p.posicion) || 0) * 100)} %`],
+      ['Giro', '270°: a la derecha sube el voltaje'],
       ['Lectura', 'analogRead(): 0 a 1023 (5 V / 1024 por paso)'],
     ],
-    validacion: () => validado('Lectura analógica revisada el 7 oct 2026. El ruido del ADC (unos 0,1 pasos) es una estimación del 9 oct: falta repetirlo con el programa corregido.'),
+    validacion: () => validado('Lectura analógica revisada el 7 oct 2026. El ruido del ADC (unos 0,1 pasos) es una estimación del 9 oct: falta repetirlo con el programa corregido. El del kit es lineal (10,28 kΩ; 5,13 kΩ en el medio, 27 oct). Dibujo medido por TecnoDiseñador (27 oct).'),
   },
   servo: {
     nombre: 'Servo',

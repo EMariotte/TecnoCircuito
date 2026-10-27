@@ -199,8 +199,21 @@ const conProbador = fuera(
 );
 revisar(Object.keys(conProbador.piezas).join(',') === 'J1,J2,J3,J4,J5', `batería al VIN con el probador en el balance: solo la bornera de la batería (${Object.keys(conProbador.piezas).join(', ')})`);
 
+// La potencia de la resistencia elige su huella: ½ W, la de 9 mm a 15,24 mm; ¼ W y una guardada sin `vatios`, la de
+// siempre (PIEZA-001).
+const R_025 = 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal';
+const R_05 = 'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal';
+const potencias = fuera(
+  [{ id: 'r1', tipo: 'resistencia', props: { ohmios: 220, vatios: 0.5 } }, { id: 'r2', tipo: 'resistencia', props: { ohmios: 220, vatios: 0.25 } },
+    { id: 'r3', tipo: 'resistencia', props: { ohmios: 220 } }],
+  [{ de: 'r1.1', a: 'placa.D2' }, { de: 'r1.2', a: 'r2.1' }, { de: 'r2.2', a: 'r3.1' }, { de: 'r3.2', a: 'placa.GND1' }],
+);
+revisar(potencias.piezas.R1 === R_05 && potencias.piezas.R2 === R_025 && potencias.piezas.R3 === R_025,
+  `la resistencia de ½ W lleva la huella de 15,24 mm; la de ¼ W y la guardada sin vatios, la de 10,16 mm (${potencias.piezas.R1}, ${potencias.piezas.R2}, ${potencias.piezas.R3})`);
+
 // La tabla de huellas y pads, para que probar_kicad_pcb.py la compare con las librerías de KiCad
 const tabla = Object.entries(PIEZAS_KICAD).map(([tipo, d]) => [tipo, { lib: d.lib, parte: d.parte, huella: d.huella, pads: d.pads }]);
+tabla.push(['resistencia de ½ W', { ...tabla.find(([tipo]) => tipo === 'resistencia')[1], huella: PIEZAS_KICAD.resistencia.otraHuella({ vatios: 0.5 }) }]);
 for (const d of SHIELD_KICAD) tabla.push([`shield ${d.valor} ${d.nota || ''}`.trim(), { lib: d.lib, parte: d.parte, huella: d.huella, pads: Object.fromEntries(Object.keys(d.pads).map((pad) => [pad, pad])) }]);
 for (const [tipo, grupos] of Object.entries(FUERA_KICAD)) for (const g of grupos) tabla.push([`${tipo} ${g.valor()}`, { lib: g.lib, parte: g.parte, huella: g.huella, pads: g.pines }]);
 fs.writeFileSync(path.join(SALIDA, 'piezas.json'), JSON.stringify({ piezas: Object.fromEntries(tabla), conectores: CONECTORES_SHIELD }, null, 2));

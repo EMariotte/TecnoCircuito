@@ -14,6 +14,12 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri() + f'?semilla={SEMILLA}'
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+# El LED (Pieza Tecno, PIEZA-001): `data-brillo` es su brillo de 0 a 1; `data-encendido`, si prende.
+LED_SVG = RAIZ + '.querySelector(\'.tc-comp[data-tipo="led"] svg\')'
+LED_BRILLO = f'Number({LED_SVG}.dataset.brillo || 0)'
+LED_PRENDE = f'{LED_SVG}.querySelector("[data-led]").hasAttribute("data-encendido")'
+# El botón (Pieza Tecno, PIEZA-002): `data-presionado` mientras está abajo.
+BOTON_ABAJO = RAIZ + '.querySelector(\'.tc-comp[data-tipo="pulsador"] svg\').hasAttribute("data-presionado")'
 CLAVE = 'tecnocircuito-prototipo-0'
 fallos = []
 
@@ -26,13 +32,14 @@ def revisar(condicion, texto):
 
 # Muestrea el LED del circuito cada 20 ms y cuenta cuántas veces cambia.
 MUESTREO = f'''async (segundos) => {{
-  const led = {RAIZ}.querySelector('wokwi-led');
-  let cambios = 0, prendido = 0, muestras = 0, antes = led.value;
+  const led = {RAIZ}.querySelector('.tc-comp[data-tipo="led"] [data-led]');
+  const prende = () => led.hasAttribute('data-encendido');
+  let cambios = 0, prendido = 0, muestras = 0, antes = prende();
   const fin = performance.now() + segundos * 1000;
   while (performance.now() < fin) {{
     await new Promise(r => setTimeout(r, 20));
-    muestras++; if (led.value) prendido++;
-    if (led.value !== antes) {{ cambios++; antes = led.value; }}
+    muestras++; if (prende()) prendido++;
+    if (prende() !== antes) {{ cambios++; antes = prende(); }}
   }}
   return {{ cambios, prendido: prendido / muestras }};
 }}'''
@@ -53,7 +60,7 @@ with sync_playwright() as p:
         return caja['x'] + caja['width'] / 2, caja['y'] + caja['height'] / 2
 
     def led():
-        return pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").value')
+        return pg.evaluate(LED_PRENDE)
 
     def fila(texto):
         return pg.evaluate('(t) => [...document.querySelectorAll("#mediciones tbody tr")].map(r => r.textContent).find(x => x.includes(t)) || ""', texto)
@@ -64,15 +71,17 @@ with sync_playwright() as p:
     pg.wait_for_timeout(300)
     revisar(pg.locator('#programa').input_value() == 'boton_pulldown', 'el ejemplo elige el programa del botón con pull-down')
 
-    # Detenido, el botón se mueve como cualquier pieza
+    # Detenido, el botón se mueve como cualquier pieza (al soltarlo, su x queda en un píxel entero)
+    x_btn = pg.evaluate('lienzo.circuito().componentes.find(c => c.id === "btn1").x')
     bx, by = centro_de('.tc-comp[data-id="btn1"]')
     pg.mouse.move(bx, by)
     pg.mouse.down()
     pg.mouse.move(bx + 30, by, steps=5)
     pg.mouse.move(bx, by, steps=5)
     pg.mouse.up()
-    revisar(pg.evaluate('lienzo.circuito().componentes.find(c => c.id === "btn1").x') == 330,
-            'detenido, el botón se arrastra como cualquier pieza (y volvió a su lugar)')
+    x_vuelto = pg.evaluate('lienzo.circuito().componentes.find(c => c.id === "btn1").x')
+    revisar(abs(x_vuelto - x_btn) < 1,
+            f'detenido, el botón se arrastra como cualquier pieza (y volvió a su lugar: {x_btn} → {x_vuelto})')
 
     pg.locator('#iniciar').click()
     pg.wait_for_timeout(500)
@@ -83,18 +92,18 @@ with sync_playwright() as p:
     pg.mouse.move(bx, by)
     pg.mouse.down()
     pg.wait_for_timeout(300)
-    presionado = {'led': led(), 'dibujo': pg.evaluate(f'{RAIZ}.querySelector("wokwi-pushbutton").pressed'), 'fila': fila('Pin 2')}
+    presionado = {'led': led(), 'dibujo': pg.evaluate(BOTON_ABAJO), 'fila': fila('Pin 2')}
     pg.screenshot(path=str(SALIDA / 't1_presionado.png'))
     pg.mouse.up()
     pg.wait_for_timeout(300)
     revisar(presionado['led'] and presionado['dibujo'] and 'lee ALTO' in presionado['fila'],
             f'mantener presionado el botón con el mouse prende el LED (tabla: «{presionado["fila"]}»)')
-    revisar(not led() and not pg.evaluate(f'{RAIZ}.querySelector("wokwi-pushbutton").pressed'), 'al soltarlo el LED se apaga y el botón sube')
+    revisar(not led() and not pg.evaluate(BOTON_ABAJO), 'al soltarlo el LED se apaga y el botón sube')
     serial = pg.locator('#serial').inner_text()
     revisar('Presionado' in serial and 'Suelto' in serial, 'el monitor serial dice «Presionado» y «Suelto»')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent).filter(t => t.includes("boton_pulsado"))')
     revisar(len(eventos) == 1 and '"id":"btn1"' in eventos[0], f'queda el evento boton_pulsado con su duración: {eventos[:1]}')
-    revisar(pg.evaluate('lienzo.circuito().componentes.find(c => c.id === "btn1").x') == 330, 'simulando, presionar el botón no lo mueve')
+    revisar(pg.evaluate('lienzo.circuito().componentes.find(c => c.id === "btn1").x') == x_vuelto, 'simulando, presionar el botón no lo mueve')
 
     # ---- T1: sin la pull-down, el pin 2 queda al aire
     def sin_pulldown(modo):
@@ -123,7 +132,7 @@ with sync_playwright() as p:
     # salta entre ~7 y ~50 %; el promedio es el ~35 % del tiempo en ALTO. (Pendiente: suavizar el promedio en el núcleo.)
     brillo = pg.evaluate(f'''async () => {{
       let suma = 0;
-      for (let i = 0; i < 25; i++) {{ suma += {RAIZ}.querySelector("wokwi-led").brightness; await new Promise(r => setTimeout(r, 40)); }}
+      for (let i = 0; i < 25; i++) {{ suma += {LED_BRILLO}; await new Promise(r => setTimeout(r, 40)); }}
       return suma / 25;
     }}''')
     revisar(0.15 < brillo < 0.55, f'con el mouse sobre el botón (la mano), el LED brilla a medias: {brillo * 100:.0f} % en promedio (60 Hz, ~35 % del tiempo en ALTO)')

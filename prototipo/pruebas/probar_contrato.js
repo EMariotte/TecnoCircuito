@@ -28,19 +28,36 @@ for (const placa of ['uno', 'nano', 'nano_old']) {
   const esquema = PINES_PLACA[placa].filter((p) => placa === 'uno' || !ALIAS_NANO.includes(p));
   revisar(mismo(pines, esquema), `los ${pines.length} contactos del dibujo de ${PLACAS[placa].nombre} son los del esquema`);
 }
-const DIBUJO = { resistencia: ['1', '2'], led: ['A', 'C'], potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1.l', '1.r', '2.l', '2.r'] };
-for (const [tipo, nombres] of Object.entries(DIBUJO)) {
-  revisar(mismo(nombres.map(TIPOS[tipo].nombrePin), PINES[tipo]), `${tipo}: los pines del catálogo (${nombres.map(TIPOS[tipo].nombrePin).join(', ')}) son los del esquema`);
+// El dibujo antiguo de wokwi que conserva un potenciómetro o un botón guardado sin `modelo` tiene los mismos pines.
+const DIBUJO_ANTIGUO = { potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1.l', '1.r', '2.l', '2.r'] };
+for (const [tipo, nombres] of Object.entries(DIBUJO_ANTIGUO)) {
+  const enCatalogo = nombres.map(TIPOS[tipo].antiguo.nombrePin);
+  revisar(mismo(enCatalogo, PINES[tipo]), `${tipo}: los pines del dibujo antiguo de wokwi (${enCatalogo.join(', ')}) son los del esquema`);
 }
-// Una pieza Tecno cuyo dibujo depende de sus propiedades (el motor y sus vistas) se revisa con cada valor de sus campos.
+revisar(Object.entries(TIPOS).every(([, d]) => d.dibujo), 'todas las piezas del catálogo son Piezas Tecno, con su dibujo (PIEZA-001 y PIEZA-002)');
+// Una pieza Tecno cuyo dibujo depende de sus propiedades (el motor y sus vistas, la resistencia y su potencia) se revisa
+// con cada valor de sus campos, y sin la prop cuando el campo tiene una opción para los circuitos guardados sin ella.
+const sin = (props, prop) => Object.fromEntries(Object.entries(props).filter(([k]) => k !== prop));
 for (const [tipo, def] of Object.entries(TIPOS).filter(([, d]) => d.dibujo)) {
-  const variantes = def.dibujo.marco ? (def.campos || []).flatMap((c) => c.opciones.map(([v]) => ({ ...def.props, [c.prop]: v }))) : [def.props];
+  const variantes = def.dibujo.marco
+    ? (def.campos || []).flatMap((c) => [...c.opciones.map(([v]) => ({ ...def.props, [c.prop]: v })), ...(c.sinValor ? [sin(def.props, c.prop)] : [])])
+    : [def.props];
   for (const props of variantes) {
     const pines = Object.keys((def.dibujo.marco ? def.dibujo.marco(props) : def.dibujo).pines);
     const nombres = tipo === 'shield_nano_io' ? [...pines, ...Object.keys(ALIASES_EXPANSION)] : pines;
     revisar(mismo(nombres, PINES[tipo]), `${tipo} (pieza Tecno${def.dibujo.marco ? ', ' + JSON.stringify(props) : ''}): los contactos físicos y aliases documentados coinciden con el esquema`);
   }
 }
+// Las props nuevas de PIEZA-001 y PIEZA-002 en una pieza recién agregada: la resistencia trae una de las potencias del
+// esquema, y el potenciómetro y el botón, el modelo del esquema (la ficha no lo ofrece: marca el dibujo medido).
+{
+  const propsDe = (tipo) => D.componente.allOf.find((r) => r.if.properties.tipo.const === tipo).then.properties.props.properties;
+  revisar(propsDe('resistencia').vatios.enum.includes(TIPOS.resistencia.props.vatios), `resistencia: una nueva trae vatios ${TIPOS.resistencia.props.vatios}, del esquema`);
+  for (const tipo of ['potenciometro', 'pulsador']) {
+    revisar(mismo([TIPOS[tipo].props.modelo], propsDe(tipo).modelo.enum), `${tipo}: el modelo de una pieza nueva («${TIPOS[tipo].props.modelo}») es el del esquema`);
+  }
+}
+
 // La biblioteca de piezas: cada tipo del catálogo (y la protoboard) está en una sola categoría y tiene su ficha completa.
 {
   const enCategorias = CATEGORIAS.flatMap((c) => c.piezas);
@@ -96,7 +113,9 @@ for (const [tipo, def] of Object.entries(TIPOS)) {
   for (const campo of def.campos || []) {
     const esquema = regla && regla.then.properties.props.properties[campo.prop];
     const valores = campo.opciones.map((o) => o[0]);
-    const ok = esquema && (esquema.enum ? mismo(valores, esquema.enum) : esquema.type === 'boolean' && valores.every((v) => typeof v === 'boolean'));
+    const ok = esquema && (esquema.enum ? mismo(valores, esquema.enum)
+      : esquema.type === 'boolean' ? valores.every((v) => typeof v === 'boolean')
+      : esquema.type === 'number' && valores.every((v) => typeof v === 'number' && !(v <= esquema.exclusiveMinimum)));
     revisar(!!ok, `${tipo}.${campo.prop}: los valores del catálogo (${valores.join(', ')}) son los del esquema`);
   }
 }
@@ -127,7 +146,7 @@ const p1 = revisarCircuito(delContrato);
 revisar(!p1.length, 'el ejemplo de CONTRATO.md, sección 4' + (p1.length ? ': ' + p1.join(' | ') : ''));
 const pagina = fs.readFileSync(path.join(__dirname, '..', 'pagina.html'), 'utf8');
 const bloque = pagina.slice(pagina.indexOf('const INICIAL = {'), pagina.indexOf('const $ = (id)'));
-const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS, EJEMPLO_CARRO, EJEMPLO_PROBADOR };')();
+const ejemplos = new Function(bloque + '\nreturn { INICIAL, EJEMPLO, EJEMPLO_T1, EJEMPLO_T2, EJEMPLO_PB, EJEMPLO_PB_ANTIGUO, EJEMPLO_SERVO, EJEMPLO_SERVOS, EJEMPLO_SEIS, EJEMPLO_CARRO, EJEMPLO_PROBADOR };')();
 for (const [nombre, circuito] of Object.entries(ejemplos)) {
   const p = revisarCircuito(circuito);
   revisar(!p.length, `${nombre} de la página de prueba` + (p.length ? ': ' + p.join(' | ') : ''));
@@ -178,6 +197,13 @@ const casos = [
   ['un cable a la pata «PWM» del servo (se llama SIG)', (c) => { c.componentes.push({ id: 's1', tipo: 'servo', x: 0, y: 0, props: { modelo: 'sg90' } }); c.cables.push({ de: 'placa.D9', a: 's1.PWM' }); }, /no tiene el pin «PWM»/],
   ['potenciómetro con la perilla en 1,5', (c) => c.componentes.push({ id: 'p', tipo: 'potenciometro', x: 0, y: 0, props: { posicion: 1.5 } }), /posicion/],
   ['resistencia de 0 Ω', (c) => { c.componentes[0].props.ohmios = 0; }, /ohmios/],
+  // PIEZA-001 y PIEZA-002 (27 oct): `vatios` en la resistencia y `modelo` en el potenciómetro y el botón.
+  ['una resistencia de ½ W', (c) => { c.componentes[0].props.vatios = 0.5; }, null],
+  ['una resistencia de 2 W (el kit no tiene)', (c) => { c.componentes[0].props.vatios = 2; }, /vatios/],
+  ['un potenciómetro del kit (modelo 16mm)', (c) => c.componentes.push({ id: 'p', tipo: 'potenciometro', x: 0, y: 0, props: { ohmios: 10000, posicion: 0.5, modelo: '16mm' } }), null],
+  ['un potenciómetro de un modelo que no existe', (c) => c.componentes.push({ id: 'p', tipo: 'potenciometro', x: 0, y: 0, props: { modelo: '9mm' } }), /modelo/],
+  ['un botón del kit (modelo 6x6)', (c) => { c.componentes[2].props.modelo = '6x6'; }, null],
+  ['un botón de un modelo que no existe', (c) => { c.componentes[2].props.modelo = '12x12'; }, /modelo/],
   ['una pieza llamada «placa»', (c) => { c.componentes[0].id = 'placa'; }, /id/],
   ['un id con punto', (c) => { c.componentes[0].id = 'r.1'; }, /id/],
   ['un doblez con tres números', (c) => { c.cables[0].puntos = [[1, 2, 3]]; }, /puntos/],

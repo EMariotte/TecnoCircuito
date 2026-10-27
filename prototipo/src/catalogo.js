@@ -1,6 +1,7 @@
-// Catálogo del prototipo: qué dibujo de @wokwi/elements usa cada pieza, cómo se llaman sus pines
-// en el contrato y qué lee el aprendiz al pasar el mouse por un pin.
-// Las piezas Tecno (dibujo propio, sin Wokwi) traen `dibujo` en vez de `etiqueta`: ver src/piezas/.
+// Catálogo del prototipo: el dibujo de cada pieza, cómo se llaman sus pines en el contrato y qué lee el aprendiz al
+// pasar el mouse por un pin. Todas son Piezas Tecno (dibujo propio, `dibujo`): ver src/piezas/.
+// `antiguo`: el dibujo de @wokwi/elements (`etiqueta`) que conserva un potenciómetro o un botón guardado sin `modelo`,
+// porque sus patas estaban a otros pasos. El lienzo lo usa hasta que el aprendiz mueve la pieza.
 
 import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
 import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, TAPA_SHIELD, dibujarShield, mostrarShield, aplicarShield } from './piezas/shield_l293d.js';
@@ -10,6 +11,10 @@ import { PROBADOR, TAMANO_PROBADOR, PINES_PROBADOR, dibujarProbador, mostrarProb
 import { TAMANO_NANO, PINES_NANO, dibujarNano, mostrarNano } from './piezas/nano.js';
 import { TAMANO_EXPANSION, pinesExpansion, dibujarExpansion, mostrarExpansion, ROTULOS_EXPANSION } from './piezas/shield_nano_io.js';
 import { TAMANO_UNO, PINES_UNO, dibujarUno, mostrarUno } from './piezas/uno.js';
+import { TAMANO_LED, PINES_LED, dibujarLed, aplicarLed, mostrarLed } from './piezas/led.js';
+import { marcoResistencia, dibujarResistencia, aplicarResistencia } from './piezas/resistencia.js';
+import { TAMANO_POT, PINES_POT, dibujarPotenciometro, aplicarPotenciometro } from './piezas/potenciometro.js';
+import { TAMANO_PULSADOR, PINES_PULSADOR, dibujarPulsador, aplicarPulsador, presionarPulsador } from './piezas/pulsador.js';
 
 const rotuloNano = (pin) => {
   if (/^A[67]$/.test(pin)) return `${pin} · solo entrada analógica (sin salida digital)`;
@@ -91,46 +96,54 @@ export const TIPOS = {
       { prop: 'voltajeJack', etiqueta: 'Fuente en el jack', opciones: [[0, '0 V'], [5, '5 V'], [7, '7 V'], [9, '9 V'], [12, '12 V']] },
     ],
   },
+  // Tarea T1 (PIEZA-001). Pieza Tecno: resistencia axial del kit (src/piezas/resistencia.js). La potencia cambia el
+  // dibujo (¼ W con las patas a 4 pasos, ½ W a 6) y lo que aguanta antes de calentarse (motor/red.js).
   resistencia: {
     nombre: 'Resistencia',
-    etiqueta: 'wokwi-resistor',
     prefijo: 'r',
-    props: { ohmios: 220 },
-    nombrePin: (n) => ({ 1: '1', 2: '2' })[n],
+    props: { ohmios: 220, vatios: 0.25 },
+    noCompletar: ['vatios'], // una guardada sin `vatios` abre como antes: ¼ W con las patas a 6 pasos
+    dibujo: { marco: marcoResistencia, svg: dibujarResistencia },
+    soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
+    ancla: '1', // al cambiar la potencia, la pata 1 se queda en su hueco y la 2 va al que le toque
     rotulo: (pin) => 'pata ' + pin,
-    campo: {
-      prop: 'ohmios',
-      etiqueta: 'Valor',
-      opciones: [[220, '220 Ω'], [330, '330 Ω'], [1000, '1 kΩ'], [10000, '10 kΩ']],
-    },
-    aplicar(el, props) {
-      el.value = String(props.ohmios);
-    },
+    campos: [
+      { prop: 'ohmios', etiqueta: 'Valor', opciones: [[220, '220 Ω'], [330, '330 Ω'], [1000, '1 kΩ'], [10000, '10 kΩ']] },
+      // Sin `vatios` (guardada antes de que hubiera dos potencias) es la de ¼ W con las patas abiertas a 6 pasos.
+      { prop: 'vatios', etiqueta: 'Potencia', opciones: [[0.25, '¼ W'], [0.5, '½ W']], sinValor: '¼ W, patas abiertas' },
+    ],
+    aplicar: aplicarResistencia,
   },
+  // Tarea T1 (PIEZA-001). Pieza Tecno: LED de 5 mm del kit (src/piezas/led.js). Brilla según la corriente que le pasa
+  // y se ve quemado si pasa de lo que aguanta.
   led: {
     nombre: 'LED',
-    etiqueta: 'wokwi-led',
     prefijo: 'led',
     props: { color: 'rojo' },
-    nombrePin: (n) => ({ A: 'anodo', C: 'catodo' })[n],
+    dibujo: { ...TAMANO_LED, pines: PINES_LED, svg: dibujarLed },
+    soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
     rotulo: (pin) => ({ anodo: 'ánodo (+), pata larga', catodo: 'cátodo (−), pata corta' })[pin] || pin,
     campo: {
       prop: 'color',
       etiqueta: 'Color',
       opciones: [['rojo', 'Rojo'], ['verde', 'Verde'], ['amarillo', 'Amarillo'], ['azul', 'Azul'], ['blanco', 'Blanco']],
     },
-    aplicar(el, props) {
-      el.color = { rojo: 'red', verde: 'green', amarillo: 'yellow', azul: 'blue', blanco: 'white' }[props.color] || 'red';
+    aplicar: aplicarLed,
+    // estado: { brillo de 0 a 1, quemado }.
+    mostrar(el, estado, props) {
+      mostrarLed(el, props, estado || {});
     },
   },
-  // Tarea T1. Botón de 4 patas: las dos patas con el mismo número están unidas por dentro (1i con 1d, 2i con 2d)
-  // y al presionar se une la 1 con la 2. Se presiona con el mouse mientras la simulación corre.
+  // Tarea T1 (PIEZA-002). Pieza Tecno: pulsador de 6 × 6 mm del kit (src/piezas/pulsador.js). Las dos patas con el
+  // mismo número están unidas por dentro (1i con 1d, 2i con 2d) y al presionar se une la 1 con la 2. Se presiona con
+  // el mouse mientras la simulación corre.
   pulsador: {
     nombre: 'Botón',
-    etiqueta: 'wokwi-pushbutton',
     prefijo: 'btn',
-    props: { color: 'rojo' },
-    nombrePin: (n) => ({ '1.l': '1i', '1.r': '1d', '2.l': '2i', '2.r': '2d' })[n],
+    props: { color: 'rojo', modelo: '6x6' },
+    noCompletar: ['modelo'], // uno guardado sin `modelo` abre con el dibujo antiguo
+    dibujo: { ...TAMANO_PULSADOR, pines: PINES_PULSADOR, svg: dibujarPulsador },
+    soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
     rotulo: (pin) =>
       ({
         '1i': 'pata 1 · unida por dentro con la otra pata 1',
@@ -143,8 +156,18 @@ export const TIPOS = {
       etiqueta: 'Color',
       opciones: [['rojo', 'Rojo'], ['verde', 'Verde'], ['azul', 'Azul'], ['amarillo', 'Amarillo'], ['blanco', 'Blanco'], ['negro', 'Negro']],
     },
-    aplicar(el, props) {
-      el.color = { rojo: 'red', verde: 'green', azul: 'blue', amarillo: 'yellow', blanco: 'white', negro: 'black' }[props.color] || 'red';
+    aplicar: aplicarPulsador,
+    presionar: presionarPulsador,
+    // Guardado sin `modelo`: el botón de wokwi, con las patas a 7 × 2 pasos.
+    antiguo: {
+      etiqueta: 'wokwi-pushbutton',
+      nombrePin: (n) => ({ '1.l': '1i', '1.r': '1d', '2.l': '2i', '2.r': '2d' })[n],
+      aplicar(el, props) {
+        el.color = { rojo: 'red', verde: 'green', azul: 'blue', amarillo: 'yellow', blanco: 'white', negro: 'black' }[props.color] || 'red';
+      },
+      presionar(el, presionado) {
+        el.pressed = presionado;
+      },
     },
   },
   // Tarea T3. Pieza Tecno: microservo SG90 o MG90S (src/piezas/servo.js). El núcleo lee el ancho del pulso del pin
@@ -266,24 +289,38 @@ export const TIPOS = {
       mostrarProbador(el, props || {}, estado);
     },
   },
-  // Prototipo 3 (tarea T2). «posicion» va de 0 (perilla hacia GND) a 1 (hacia VCC).
+  // Tarea T2 (PIEZA-002). Pieza Tecno: potenciómetro de 16 mm del kit (src/piezas/potenciometro.js). «posicion» va de
+  // 0 (perilla hacia GND) a 1 (hacia VCC).
   potenciometro: {
     nombre: 'Potenciómetro',
-    etiqueta: 'wokwi-potentiometer',
     prefijo: 'pot',
-    props: { ohmios: 10000, posicion: 0.5 },
-    nombrePin: (n) => ({ GND: 'GND', SIG: 'SIG', VCC: 'VCC' })[n],
+    props: { ohmios: 10000, posicion: 0.5, modelo: '16mm' },
+    noCompletar: ['modelo'], // uno guardado sin `modelo` abre con el dibujo antiguo
+    dibujo: { ...TAMANO_POT, pines: PINES_POT, svg: dibujarPotenciometro },
+    soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
     rotulo: (pin) => ({ GND: 'GND · va a tierra (−)', SIG: 'SIG · pata del medio: la señal', VCC: 'VCC · va a 5V (+)' })[pin] || pin,
     campo: {
       prop: 'ohmios',
       etiqueta: 'Valor',
       opciones: [[1000, '1 kΩ'], [10000, '10 kΩ'], [100000, '100 kΩ']],
     },
-    perilla: { prop: 'posicion', etiqueta: 'Perilla' }, // también se gira con el mouse sobre el dibujo
-    aplicar(el, props) {
-      el.min = 0;
-      el.max = 100;
-      el.value = Math.round((Number(props.posicion) || 0) * 100);
+    perilla: { prop: 'posicion', etiqueta: 'Perilla' }, // también se gira con el mouse sobre el eje
+    aplicar: aplicarPotenciometro,
+    // Guardado sin `modelo`: el potenciómetro de wokwi, con las patas a 1 paso. Su dibujo gira la perilla solo.
+    antiguo: {
+      etiqueta: 'wokwi-potentiometer',
+      nombrePin: (n) => ({ GND: 'GND', SIG: 'SIG', VCC: 'VCC' })[n],
+      aplicar(el, props) {
+        el.min = 0;
+        el.max = 100;
+        el.value = Math.round((Number(props.posicion) || 0) * 100);
+      },
     },
   },
 };
+
+// ¿La pieza conserva el dibujo antiguo de wokwi? Un potenciómetro o un botón guardado sin `modelo`.
+export const esAntiguo = (tipo, props) => !!(TIPOS[tipo] && TIPOS[tipo].antiguo && !(props && props.modelo));
+// La definición con la que se dibuja la pieza: la de siempre o, con el dibujo antiguo, la misma sin `dibujo` y con la
+// `etiqueta`, los pines y el `aplicar` de wokwi.
+export const definicionDe = (tipo, props) => (esAntiguo(tipo, props) ? { ...TIPOS[tipo], dibujo: null, ...TIPOS[tipo].antiguo } : TIPOS[tipo]);

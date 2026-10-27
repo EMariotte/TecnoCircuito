@@ -316,7 +316,13 @@ with sync_playwright() as p:
                 'el Worker sigue ejecutando la misma corrida tras cambiar la variante')
 
         # Perilla mediante teclado sobre el control real de la ficha, sin editar el circuito.
-        pg.locator('.tc-comp[data-id="pot6"]').click(position={'x': 10, 'y': 20})
+        # La ficha abierta de la expansión puede tapar el potenciómetro (el medido es más grande y la vista se encuadra
+        # distinto): un clic en el lienzo vacío la cierra. Después se toma por su cuerpo, fuera del eje.
+        area = pg.locator('main .tc-area').bounding_box()
+        pg.mouse.click(area['x'] + area['width'] - 30, area['y'] + area['height'] - 60)
+        pot = pg.locator('.tc-comp[data-id="pot6"]')
+        caja = pot.bounding_box()
+        pot.click(position={'x': caja['width'] * 0.25, 'y': caja['height'] * 0.25})
         antes = next(c for c in pg.evaluate('lienzo.circuito().componentes') if c['id'] == 'pot6')
         perilla = pg.locator('main .tc-ficha input[data-perilla]')
         perilla.focus()

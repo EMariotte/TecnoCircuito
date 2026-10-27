@@ -22,6 +22,12 @@ export function svgDe(vista, { titulo, descripcion, encima = '' }) {
     `<title>${titulo}</title><desc>${descripcion}</desc>${vista.cuerpo}${encima}</svg>`;
 }
 
+// Cambia el `fill` de la forma que lleva `atributo="valor"` en el texto del dibujo (la cápsula de un LED, una banda,
+// el capuchón de un botón). Se pinta antes de crear el SVG: así la miniatura de «+ Agregar», el lienzo y la imagen
+// exportada salen con los colores de la ficha. Un cambio posterior en la ficha pinta el SVG ya creado.
+export const rellenar = (texto, atributo, valor, color) =>
+  texto.replace(new RegExp(`<[^>]*\\s${atributo}="${valor}"[^>]*>`), (etiqueta) => etiqueta.replace(/\sfill="[^"]*"/, ` fill="${color}"`));
+
 // Enciende o apaga cada `data-led` con sus colores de la entrega. El estado admite la foto del núcleo
 // ({ledPower, led13, ledRX, ledTX}), {pwr, l, rx, tx} o {leds: {PWR, L, RX, TX}}; null o vacío los apaga.
 // Cada valor es true/false o un brillo de 0 a 1 (el LED L sigue al promedio del pin 13). Encendido, el LED toma un

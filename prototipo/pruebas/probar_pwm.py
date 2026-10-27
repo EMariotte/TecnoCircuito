@@ -10,6 +10,10 @@ PAGINA = Path(sys.argv[1]).resolve().as_uri()
 SALIDA = Path(sys.argv[2])
 SALIDA.mkdir(parents=True, exist_ok=True)
 RAIZ = 'document.querySelector("main .tecnocircuito").shadowRoot'
+# El LED (Pieza Tecno, PIEZA-001): `data-brillo` es su brillo de 0 a 1; `data-encendido`, si prende.
+LED_SVG = RAIZ + '.querySelector(\'.tc-comp[data-tipo="led"] svg\')'
+LED_BRILLO = f'Number({LED_SVG}.dataset.brillo || 0)'
+LED_PRENDE = f'{LED_SVG}.querySelector("[data-led]").hasAttribute("data-encendido")'
 fallos = []
 
 
@@ -25,9 +29,9 @@ ULTIMA = '''() => { const r = document.getElementById('serial').textContent.spli
 POT = '() => lienzo.circuito().componentes.find(c => c.id === "pot1")'
 # Muestrea el brillo del LED cada 20 ms durante `segundos`.
 BRILLOS = f'''async (segundos) => {{
-  const led = {RAIZ}.querySelector('wokwi-led');
+  const led = {RAIZ}.querySelector('.tc-comp[data-tipo="led"] svg');
   const b = []; const fin = performance.now() + segundos * 1000;
-  while (performance.now() < fin) {{ await new Promise(r => setTimeout(r, 20)); b.push(led.value ? led.brightness : 0); }}
+  while (performance.now() < fin) {{ await new Promise(r => setTimeout(r, 20)); b.push(Number(led.dataset.brillo || 0)); }}
   return b;
 }}'''
 
@@ -55,7 +59,7 @@ with sync_playwright() as p:
     m = pg.evaluate('sim._mediciones()')
     util = (m.get('pwm') or {}).get('D9', 0)
     revisar(abs(util - (lectura // 4) / 255) < 0.01, f'el pin 9 tiene PWM al {util * 100:.0f} % (analogWrite {lectura // 4} de 255)')
-    brillo = pg.evaluate(f'{RAIZ}.querySelector("wokwi-led").brightness')
+    brillo = pg.evaluate(LED_BRILLO)
     revisar(0.3 < brillo < 0.55, f'el LED brilla a medias: {brillo * 100:.0f} %')
     filas = pg.evaluate('[...document.querySelectorAll("#mediciones tbody tr")].map(t => t.textContent)')
     revisar(any('PWM' in f for f in filas) and any('perilla 50 %' in f for f in filas), 'la tabla muestra el PWM del pin 9 y la perilla del potenciómetro')
@@ -63,7 +67,8 @@ with sync_playwright() as p:
 
     # 2. Girar la perilla con el mouse: cambia la lectura y la pieza no se mueve
     antes = pg.evaluate(POT)
-    caja = pg.evaluate(f'''() => {{ const k = {RAIZ}.querySelector('wokwi-potentiometer').shadowRoot.querySelector('#knob').getBoundingClientRect();
+    # El eje del potenciómetro (Pieza Tecno, PIEZA-002): se toma y se gira con el reloj, hacia VCC.
+    caja = pg.evaluate(f'''() => {{ const k = {RAIZ}.querySelector('.tc-comp[data-id="pot1"] [data-parte="eje"]').getBoundingClientRect();
       return {{ x: k.x, y: k.y, w: k.width, h: k.height }}; }}''')
     cx, cy = caja['x'] + caja['w'] / 2, caja['y'] + caja['h'] / 2
     pg.mouse.move(cx + caja['w'] * 0.3, cy - caja['h'] * 0.3)  # arriba a la derecha de la perilla
@@ -88,8 +93,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(600)
     lectura3 = pg.evaluate(ULTIMA)
     revisar(lectura3 is not None and abs(lectura3 - 205) <= 3, f'con el deslizador en 20 %, analogRead da {lectura3} (≈ 205)')
-    dibujo = pg.evaluate(f'{RAIZ}.querySelector("wokwi-potentiometer").value')
-    revisar(dibujo == 20, f'el dibujo de la perilla también gira: {dibujo}')
+    dibujo = pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="pot1"] [data-parte="eje"]\').getAttribute("transform")')
+    revisar(dibujo.startswith('rotate(-81 '), f'el dibujo de la perilla también gira: «{dibujo}» (20 % = −81°)')
     pg.wait_for_timeout(500)
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(l => l.textContent).filter(t => t.includes("pot1") && t.includes("posicion"))')
     revisar(1 <= len(eventos) <= 3, f'el giro se anota como pocos eventos, no uno por grado ({len(eventos)})')
