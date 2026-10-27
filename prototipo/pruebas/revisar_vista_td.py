@@ -34,8 +34,21 @@ ALIAS_NANO = {'SDA', 'SCL', 'MISO', 'MOSI', 'SCK', 'SS'}
 # Expansión: SPI_* y OUT_5V/OUT_5V_2 son nombres heredados que terminan en pines del Nano (contrato, sección 4).
 ALIAS_EXPANSION = {'SPI_MISO', 'SPI_MOSI', 'SPI_SCK', 'SPI_SS', 'SPI_V', 'SPI_G', 'OUT_5V', 'OUT_5V_2'}
 # Lo que cada pieza debe traer además de sus contactos (sección 6 de la especificación).
-LEDS = {'nano': {'PWR', 'L', 'RX', 'TX'}, 'uno': {'PWR', 'L', 'RX', 'TX'}, 'shield_l293d': {'PWR'}}
-PARTES = {'shield_l293d': {'puente-pwr'}}
+LEDS = {'nano': {'PWR', 'L', 'RX', 'TX'}, 'uno': {'PWR', 'L', 'RX', 'TX'}, 'shield_l293d': {'PWR'}, 'led': {'LED'}}
+PARTES = {'shield_l293d': {'puente-pwr'}, 'led': {'quemado'}}
+VARIANTES = {'shield_nano_io': ('roja', 'azul'), 'resistencia': ('025w', '05w', '2w')}
+# LED y resistencia (secciones 6.6 y 6.7): marco y contactos fijos, en mm. La de 2 W tiene las patas a 6 pasos, como el
+# dibujo de wokwi, para que los circuitos guardados no se muevan; ¼ W y ½ W, a 4 pasos.
+CHICA = {'marco': (12.70, 5.08), 'pines': {'1': (1.27, 2.54), '2': (11.43, 2.54)}}
+FIJAS = {
+    ('led', None): {'marco': (7.62, 12.70), 'pines': {'catodo': (2.54, 11.43), 'anodo': (5.08, 11.43)}},
+    ('resistencia', '025w'): CHICA,
+    ('resistencia', '05w'): CHICA,
+    ('resistencia', '2w'): {'marco': (17.78, 7.62), 'pines': {'1': (1.27, 3.81), '2': (16.51, 3.81)}},
+}
+# Piezas chicas: un circuito tiene muchas a la vez.
+LIMITE_CHICAS = {'led': 15 * 1024, 'resistencia': 15 * 1024}
+FORMAS_BANDA = {'rect', 'path'}
 # Familias que comparten marco (sección 6). La shield, mientras no exista el Uno Tecno, usa el marco del Uno de wokwi.
 FAMILIAS = [{'nano', 'shield_nano_io'}, {'uno', 'shield_l293d'}]
 MARCO_PROVISIONAL = {'shield_l293d': (72.58, 53.34)}
@@ -77,11 +90,22 @@ def nombres_esperados(pieza):
     return set(defs[clave]['enum']) if clave in defs else None
 
 
+def colores_led():
+    """Los colores del LED en el contrato (props.color del componente «led»)."""
+    esquema = json.loads(ESQUEMA.read_text(encoding='utf-8'))
+    for regla in esquema['$defs']['componente']['allOf']:
+        if regla.get('if', {}).get('properties', {}).get('tipo', {}).get('const') == 'led':
+            return regla['then']['properties']['props']['properties']['color']['enum']
+    return []
+
+
 def prefijo_esperado(pieza, variante):
     """Prefijo propio de cada pieza: el Nano y la expansión viven en el mismo documento y no pueden compartir id."""
     fijos = {'nano': 'td-nano-', 'uno': 'td-uno-', 'shield_l293d': 'td-l293d-'}
     if pieza == 'shield_nano_io':
         return f'td-exp-{variante}-'
+    if pieza == 'resistencia':  # dos potencias distintas pueden estar en el mismo circuito
+        return f'td-resistencia-{variante}-'
     return fijos.get(pieza, 'td-' + str(pieza).replace('_', '-') + '-')
 
 
@@ -121,13 +145,14 @@ def revisar_entrega(ruta_json):
     esperados = nombres_esperados(pieza)
     if not revisar(esperados is not None, f'{nombre}: «{pieza}» es una pieza del contrato'):
         return None
-    if pieza == 'shield_nano_io':
-        revisar(variante in ('roja', 'azul'), f'{nombre}: la expansión declara variante «roja» o «azul»')
+    if pieza in VARIANTES:
+        revisar(variante in VARIANTES[pieza], f'{nombre}: declara una variante de {", ".join(f"«{v}»" for v in VARIANTES[pieza])}')
     ruta_svg = Path(ruta_json).parent / str(datos.get('archivo', ''))
     if not revisar(ruta_svg.is_file(), f'{nombre}: existe el SVG «{datos.get("archivo")}»'):
         return None
     crudo = ruta_svg.read_bytes()
-    revisar(len(crudo) <= LIMITE_BYTES, f'{nombre}: pesa {len(crudo) / 1024:.1f} KB (máximo 50 KB)')
+    limite = LIMITE_CHICAS.get(pieza, LIMITE_BYTES)
+    revisar(len(crudo) <= limite, f'{nombre}: pesa {len(crudo) / 1024:.1f} KB (máximo {limite // 1024} KB)')
     try:
         raiz = ET.fromstring(crudo)
     except ET.ParseError as e:
@@ -151,6 +176,10 @@ def revisar_entrega(ruta_json):
         fijo = MARCO_PROVISIONAL[pieza]
         revisar(abs(ancho - fijo[0]) <= TOL_MM and abs(alto - fijo[1]) <= TOL_MM,
                 f'{nombre}: marco fijo {fijo[0]} × {fijo[1]} mm del Uno actual (sección 6.3)')
+    fija = FIJAS.get((pieza, variante))
+    if fija and marco_ok:
+        revisar(abs(ancho - fija['marco'][0]) <= TOL_MM and abs(alto - fija['marco'][1]) <= TOL_MM,
+                f'{nombre}: marco fijo {fija["marco"][0]:.2f} × {fija["marco"][1]:.2f} mm (secciones 6.6 y 6.7)')
 
     # Elementos y atributos permitidos; valores sin datos incrustados, enlaces externos, unidades ni 3 decimales.
     raros, prohibidos, externos, con_unidades, decimales = set(), set(), set(), set(), set()
@@ -233,6 +262,11 @@ def revisar_entrega(ruta_json):
             mal.append(n)
     revisar(not mal, f'{nombre}: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)'
             + (f'; revisar {sorted(mal)[:8]}' if mal else ''))
+    if fija:
+        corridos = [n for n, (x, y) in fija['pines'].items()
+                    if n in pines_ok and (abs(pines_ok[n]['x'] - x) > TOL_MM or abs(pines_ok[n]['y'] - y) > TOL_MM)]
+        revisar(not corridos, f'{nombre}: contactos en sus posiciones fijas (secciones 6.6 y 6.7)'
+                + (f'; corridos: {", ".join(corridos)}' if corridos else ''))
 
     # Paso de 2,54 mm de las placas, con los pines que sí están (los que faltan ya se informaron arriba).
     if pieza in HEADERS:
@@ -275,6 +309,29 @@ def revisar_entrega(ruta_json):
     revisar(PARTES.get(pieza, set()) <= set(partes_svg) and set(partes_svg) == set(partes_json)
             and all(el.tag == NS + 'g' and not el.get('transform') for el in partes_svg.values()),
             f'{nombre}: partes {sorted(partes_svg) or "(ninguna)"} como <g> sin transform propio, también en el JSON')
+
+    # LED: los cinco colores del contrato, y el archivo pintado con el rojo (sección 6.6).
+    if pieza == 'led':
+        colores = datos.get('colores') or {}
+        revisar(set(colores) == set(colores_led()) and all(isinstance(v, dict) and COLOR.match(str(v.get('apagado', '')))
+                                                          and COLOR.match(str(v.get('encendido', ''))) for v in colores.values()),
+                f'{nombre}: «colores» trae {", ".join(colores_led())} con apagado y encendido #rrggbb')
+        revisar(leds_json.get('LED') == colores.get('rojo'), f'{nombre}: leds.LED repite el rojo de «colores»')
+    # Resistencia: data-banda 1…n, cada una una sola forma con fill (sección 6.7).
+    bandas_svg = {}
+    for el in raiz.iter():
+        n = el.get('data-banda')
+        if n is not None:
+            bandas_svg.setdefault(n, []).append(el)
+    if pieza == 'resistencia':
+        cuantas = datos.get('bandas')
+        revisar(cuantas in (4, 5) and set(bandas_svg) == {str(i) for i in range(1, cuantas + 1)},
+                f'{nombre}: «bandas» es 4 o 5 y el SVG tiene data-banda 1 a {cuantas}' + (f' (tiene {sorted(bandas_svg)})' if bandas_svg else ''))
+        revisar(all(len(els) == 1 and els[0].tag.replace(NS, '') in FORMAS_BANDA and COLOR.match(els[0].get('fill') or '')
+                    and not any(x.tag == NS + 'defs' for x in ancestros(els[0])) for els in bandas_svg.values()),
+                f'{nombre}: cada banda es una sola forma (rect o path), fuera de <defs>, con fill #rrggbb')
+    else:
+        revisar(not bandas_svg, f'{nombre}: sin data-banda (solo la resistencia los lleva)')
 
     origen, licencia = datos.get('origen') or {}, datos.get('licencia') or {}
     revisar(bool(origen.get('registro')) and bool(origen.get('generador')) and bool(origen.get('fotos')),
