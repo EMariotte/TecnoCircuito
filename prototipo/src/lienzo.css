@@ -673,14 +673,6 @@
   background: var(--fondo);
 }
 
-/* Un potenciómetro o un botón con el dibujo antiguo: se renueva al moverlo */
-.tc-ficha-aviso {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--aviso);
-}
-
 .tc-ficha-props .tc-campo {
   display: grid;
   gap: 3px;

@@ -2349,6 +2349,42 @@ Se descartaron dos: la huella de ½ W sí se comprobaba en KiCad, y `encajar` re
 **Límites:**
 - La geometría no se ha probado en la protoboard real con aprendices (fase 7 de PIEZA-001, LAB-001 punto 4).
 - El potenciómetro de frente tapa con su cuerpo los huecos de arriba de sus patas, como el real visto de frente.
-- `@wokwi/elements` y Lit siguen en el paquete por el potenciómetro y el pulsador antiguos. Cuando no queden circuitos guardados con ellos, se pueden quitar.
+- `@wokwi/elements` y Lit siguen en el paquete por el potenciómetro y el pulsador antiguos. Cuando no queden circuitos guardados con ellos, se pueden quitar. *(Quitados el 28 oct: sección 75.)*
 - Los `-tc.svg` de TecnoDiseñador traen unos 2,6 KB de degradados que no usan (la plantilla de sus `defs`). Pesan en el paquete y en cada pieza del lienzo; se pueden quitar en el generador de TecnoDiseñador.
-- Un potenciómetro con el dibujo de wokwi que ya está elegido mueve su perilla al volver a presionarlo: el primer clic enfoca un control invisible del dibujo de wokwi y el siguiente lo mueve hasta donde cayó el puntero. Viene de antes de esta entrega y hoy solo les pasa a los guardados sin `modelo`, que toman el dibujo nuevo al primer arrastre.
+- Un potenciómetro con el dibujo de wokwi que ya está elegido mueve su perilla al volver a presionarlo: el primer clic enfoca un control invisible del dibujo de wokwi y el siguiente lo mueve hasta donde cayó el puntero. Viene de antes de esta entrega y hoy solo les pasa a los guardados sin `modelo`, que toman el dibujo nuevo al primer arrastre. *(Desaparece con el dibujo de wokwi: sección 75.)*
+
+## 75. Sin @wokwi/elements: todas las piezas son Piezas Tecno (PIEZA-003, 28 oct 2026, Claude)
+
+Después de PIEZA-001 y PIEZA-002, `@wokwi/elements` (MIT) solo dibujaba el potenciómetro y el botón **guardados antes del 27 oct** sin `modelo`, y arrastraba a Lit (BSD-3-Clause), la librería con que están hechos esos dibujos. Efraín preguntó si ya se podía quitar todo el código de Wokwi y pidió hacerlo antes de la `v0.4.0`. Hoy no hay proyectos de aprendices guardados y los ejemplos de TecnoBloques ya traían las piezas del kit.
+
+**Lo que queda de Wokwi: `avr8js`.** También es de Wokwi (MIT), pero es otra cosa: el emulador del ATmega328P, que ejecuta el `.hex` instrucción por instrucción con los temporizadores, el PWM, el serial, el ADC y las interrupciones (39 KB del Worker). Se queda. Reemplazarlo sería escribir un emulador propio y repetir la validación de T1 a T3 con la placa real. Lo que las reglas del proyecto excluyen es el código GPL, y avr8js no lo es.
+
+**Qué pasa con un circuito guardado sin `modelo`** (decisión de Efraín, 28 oct):
+
+```mermaid
+flowchart TD
+  A["Potenciómetro o botón guardado sin modelo"] --> B["normalizar: completa el modelo y anota dónde estaba<br/>el centro de sus patas (dibujoAnterior del catálogo)"]
+  B --> C["crearVista: el dibujo del kit"]
+  C --> D["colocarRenovadas: lo corre para que el centro<br/>de sus patas nuevas quede donde estaba"]
+  D --> E{"¿Tenía «en»?<br/>(protoboard o enchufado)"}
+  E -->|no: cableado| F["Igual que antes: los cables<br/>siguen a sus pines"]
+  E -->|sí| G{"¿Sus patas caben en esos huecos<br/>con el mismo corrimiento (imán)?"}
+  G -->|sí| H["alinearEnchufesAlAbrir<br/>lo deja justo encima"]
+  G -->|no| I["Queda suelto (sin «en») y se avisa:<br/>«El botón btn1 quedó suelto: ahora tiene el dibujo<br/>del kit y sus patas ya no caben donde estaban.<br/>Ponlo otra vez donde va.»"]
+```
+
+- **`dibujoAnterior`** en el catálogo: el tamaño del dibujo de antes y dónde tenía cada pata. Son medidas tomadas el 28 oct, con la librería todavía puesta, no código: el potenciómetro de 20 × 20 mm con GND, SIG y VCC en (29; 68,5), (39; 68,5) y (49; 68,5) px; el botón de 17,802 × 12 mm con `1i` (0; 13), `2i` (0; 32), `1d` (67; 13) y `2d` (67; 32). El centro se calcula con el mismo giro que usa el lienzo para los pines (`rotarPunto`, que ahora comparte `girarPunto`).
+- **En la práctica, en la protoboard siempre quedan sueltos:** el potenciómetro de antes tenía las patas a 1 paso y el del kit a 2; el botón, a 7 pasos de lado a lado, y el del kit a 3. Pierden esas conexiones de la protoboard; los cables que llegaban a los huecos se quedan.
+- **Abrir no emite eventos:** no es un cambio del aprendiz, como tampoco el LED que se corre. El `modelo` llega a lo guardado con el siguiente cambio y al registro con el circuito de la siguiente `simulacion_iniciada`.
+- **KiCad:** el potenciómetro lleva siempre la Alps RK163, porque se dibuja siempre como el del kit (la huella va con el dibujo).
+
+**Lo que se quitó:** las dos importaciones de `lienzo.js` y su rama del dibujo de wokwi en `crearVista` (`tamanoNatural`, `pinInfo`, `nombrePin`); la renovación al levantar la pieza (`renovar`) y el aviso «Dibujo antiguo» de la ficha; en la imagen exportada, la copia de los estilos del shadow DOM (`estilosDe`), los comentarios de Lit y la perilla por variable CSS; `esPerilla` y la rama del gesto de la perilla de wokwi; `antiguo`, `esAntiguo` y `definicionDe` del catálogo, y `modelo` de `noCompletar`; las filas del dibujo antiguo en la ficha de la biblioteca; la RK09K en KiCad; `@wokwi/elements` de `package.json` (con él, Lit). El pulsador conserva sus dos cuidados al presionarlo: `preventDefault` (sin eventos de mouse de compatibilidad ni selección) y no capturar el puntero (si el mouse se sale con el clic apretado, el botón se suelta). Con eso también desaparece el defecto de la perilla de wokwi ya elegida (sección 74, «Límites»).
+
+**Paquete:** 557 KB → 525 KB; el Worker sigue en 91 KB. Ya no contiene la palabra «wokwi».
+
+**Pruebas:**
+- `probar_piezas.py`: el circuito de antes abre con el LED y las resistencias en sus huecos y el botón suelto con el dibujo del kit, el centro de sus patas en el mismo punto (525,5; 103,3) y el aviso; puesto otra vez en e/f, el LED mide lo mismo que con las piezas del kit. El potenciómetro cableado abre con el dibujo del kit, su perilla y su cable, sin aviso, con el centro de sus patas en (289; 283,5).
+- `probar_svg.py`: el potenciómetro guardado sin `modelo` sale en la imagen con el eje del kit girado, y la imagen no trae `wokwi` ni `<style>`.
+- `probar_contrato.js`: las patas de `dibujoAnterior` son las del esquema. `probar_kicad.js`: el potenciómetro sin `modelo` lleva la RK163.
+
+**Límites:** un circuito guardado sin `modelo` con el potenciómetro o el botón en la protoboard pierde esas conexiones y hay que volver a ponerlos; hoy no hay proyectos así. Una versión anterior de TecnoCircuito sigue abriendo los circuitos nuevos como dice la sección 74.

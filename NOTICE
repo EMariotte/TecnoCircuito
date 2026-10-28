@@ -7,11 +7,10 @@ TecnoAcademia Tolima (SENA, SENNOVA).
 Este producto incluye software de terceros, embebido en el paquete construido:
 
 - avr8js (https://github.com/wokwi/avr8js), Copyright Uri Shaked, licencia MIT.
-- @wokwi/elements (https://github.com/wokwi/wokwi-elements), Copyright Uri Shaked,
-  licencia MIT. Desde el 27 de octubre de 2026 solo dibuja el potenciómetro y el botón
-  de los circuitos guardados antes, hasta que el aprendiz los mueve; todas las piezas
-  nuevas son Piezas Tecno.
-- Lit (https://lit.dev), Copyright Google LLC, licencia BSD-3-Clause.
+
+Hasta la versión 0.3.1, TecnoCircuito incluía también @wokwi/elements (MIT) y Lit
+(BSD-3-Clause) para dibujar algunas piezas. Desde PIEZA-003 (28 de octubre de 2026) todas
+las piezas son Piezas Tecno y ninguno de los dos va en el paquete.
 
 La marca (carpeta marca/) usa la fuente Atkinson Hyperlegible, Copyright 2020 Braille
 Institute of America, Inc., licencia SIL Open Font License 1.1 (marca/fuentes/OFL.txt).

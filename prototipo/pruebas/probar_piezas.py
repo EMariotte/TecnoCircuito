@@ -2,8 +2,8 @@
 
 Dibujo medido por TecnoDiseñador en la biblioteca y en el lienzo, colores, bandas, potencia y su límite, eje, botón,
 encaje en la protoboard al paso exacto (el pulsador cruza el canal central, como el real) y los circuitos guardados
-antes del 27 oct: abren con las mismas conexiones y las mismas mediciones, y el botón y el potenciómetro de wokwi
-toman el dibujo nuevo al moverlos.
+antes del 27 oct: abren con las mismas conexiones y las mismas mediciones; el botón y el potenciómetro sin `modelo`
+abren con el dibujo del kit, cableados igual y, si sus patas no caben en sus huecos, sueltos con aviso (PIEZA-003).
 """
 import json
 import sys
@@ -87,10 +87,7 @@ with sync_playwright() as p:
           const r = {RAIZ}; const div = r.querySelector(`.tc-comp[data-id="${{id}}"]`); const b = div.getBoundingClientRect();
           for (let fy = 0.1; fy < 1; fy += 0.04) for (let fx = 0.3; fx < 0.7; fx += 0.05) {{
             const x = b.left + b.width * fx, y = b.top + b.height * fy; const e = r.elementFromPoint(x, y);
-            // En el dibujo antiguo de wokwi, la perilla está dentro de su shadow DOM (id knob o rotating, o la elipse)
-            const dentro = e && e.shadowRoot && e.shadowRoot.elementFromPoint(x, y);
-            const perillaWokwi = dentro && (dentro.closest('#knob, #rotating') || (dentro.tagName === 'ellipse' && Number(dentro.getAttribute('rx')) > 5));
-            if (e && e.closest('.tc-comp') === div && !perillaWokwi && !e.closest('[data-parte="eje"], [data-parte="capuchon"], .tc-pin')) return [x, y];
+            if (e && e.closest('.tc-comp') === div && !e.closest('[data-parte="eje"], [data-parte="capuchon"], .tc-pin')) return [x, y];
           }}
           return null; }}''', id_)
 
@@ -282,13 +279,17 @@ with sync_playwright() as p:
     pg.locator('#detener').click()
     pg.wait_for_timeout(300)
 
-    # ---- 5. El mismo circuito guardado antes del 27 oct: abre con las mismas conexiones y mediciones
+    # ---- 5. El mismo circuito guardado antes del 27 oct. El LED y las resistencias abren con las mismas conexiones. El
+    # botón, guardado sin `modelo`, abre con el dibujo del kit (PIEZA-003, decisión de Efraín): sus patas nuevas no caben
+    # en los huecos de antes, así que queda suelto, con el centro de sus patas donde estaba, y se avisa.
     abrir(ANTIGUO)
+    aviso = pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')  # antes de tocar nada: un clic lo cambia
     ahora = {k['id']: k for k in pg.evaluate('lienzo.circuito()')['componentes']}
     antes = {k['id']: k for k in ANTIGUO['componentes']}
-    revisar(all(ahora[i]['en'] == antes[i]['en'] and ahora[i]['props'] == antes[i]['props'] for i in antes)
+    otras = [i for i in antes if i != 'btn1']
+    revisar(all(ahora[i]['en'] == antes[i]['en'] and ahora[i]['props'] == antes[i]['props'] for i in otras)
             and pg.evaluate('lienzo.circuito()')['cables'] == ANTIGUO['cables'],
-            'el circuito antiguo abre con los mismos huecos, las mismas props (sin vatios ni modelo) y los mismos cables')
+            'el LED y las resistencias abren con los mismos huecos y las mismas props (sin vatios), y los cables son los mismos')
     revisar((ahora['led1']['x'], ahora['led1']['y']) != (antes['led1']['x'], antes['led1']['y']) and separacion('led1', 'catodo', 'anodo') == pasos(1),
             f'el LED toma el dibujo medido y se corre sobre sus huecos: ({antes["led1"]["x"]}, {antes["led1"]["y"]}) → ({ahora["led1"]["x"]}, {ahora["led1"]["y"]})')
     fuera = pg.evaluate(f'''() => {{ const r = {RAIZ}; const c = lienzo.circuito(); const malas = [];
@@ -298,24 +299,38 @@ with sync_playwright() as p:
       return malas; }}''')
     revisar(not fuera, f'cada pata queda sobre el hueco que dice su «en» ({fuera or "todas"})')
     revisar(separacion('r1', '1', '2') == pasos(6), 'la resistencia sin vatios se dibuja de ¼ W con las patas abiertas a 6 pasos, en sus mismos huecos')
-    revisar((ahora['btn1']['x'], ahora['btn1']['y']) == (antes['btn1']['x'], antes['btn1']['y']),
-            f'el botón con el dibujo de wokwi se queda donde estaba: ({ahora["btn1"]["x"]}, {ahora["btn1"]["y"]})')
     elegir('r1')
     seleccion = pg.evaluate(f'{RAIZ}.querySelector(\'select[data-prop="vatios"]\').selectedOptions[0].textContent')
     revisar(seleccion == '¼ W, patas abiertas' and 'a 6 pasos' in ficha() and '¼ W (0,25 W)' in ficha(),
             f'su ficha dice «{seleccion}», ¼ W y las patas a 6 pasos')
-    revisar(pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="btn1"]\').firstElementChild.tagName') == 'WOKWI-PUSHBUTTON',
-            'el botón sin modelo conserva el dibujo de wokwi')
+    # El botón: dibujo del kit, `modelo` completado, suelto y con el centro de sus patas donde estaba el de las antiguas
+    # (el dibujo anterior, girado 90°, medía 67,28 × 45,35 px con las patas en x 0/67 e y 13/32).
+    btn = ahora['btn1']
+    a = antes['btn1']
+    centro_antes = (a['x'] + 67.28 / 2 - (22.5 - 45.35 / 2), a['y'] + 45.35 / 2 + (33.5 - 67.28 / 2))
+    centro_ahora = [sum(v) / 4 for v in zip(*[donde(f'btn1.{p}') for p in ['1i', '1d', '2i', '2d']])]
+    revisar(btn['props'] == {'color': 'rojo', 'modelo': '6x6'} and 'en' not in btn
+            and pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="btn1"]\').firstElementChild.tagName') == 'svg',
+            f'el botón guardado sin modelo abre con el dibujo del kit y queda suelto: {btn["props"]}, en: {btn.get("en")}')
+    revisar(abs(centro_ahora[0] - centro_antes[0]) < 0.6 and abs(centro_ahora[1] - centro_antes[1]) < 0.6,
+            f'con el centro de sus patas donde estaba el de las anteriores: {[round(v, 1) for v in centro_ahora]} y {[round(v, 1) for v in centro_antes]}')
+    revisar('El botón btn1 quedó suelto: ahora tiene el dibujo del kit y sus patas ya no caben donde estaban. Ponlo otra vez donde va.' in aviso,
+            f'y se avisa: «{aviso}»')
     elegir('btn1')
-    revisar('Dibujo antiguo: muévelo un poco y toma el del kit.' in ficha() and 'a 7 pasos de lado a lado' in ficha() and '6 × 6 mm; patas' not in ficha(),
-            'y su ficha avisa «Dibujo antiguo: muévelo un poco y toma el del kit.» y da las patas del dibujo antiguo')
-    lado = separacion('btn1', '1i', '1d')  # el dibujo de wokwi no cae justo en la rejilla: se cuentan pasos enteros
-    revisar(round(max(lado) / PASO) == 7, f'el dibujo antiguo tiene las patas a 7 pasos de lado a lado {lado}')
+    revisar('6 × 6 mm; patas' in ficha() and 'Dibujo antiguo' not in ficha(), 'su ficha da las medidas del kit')
+    eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent).filter(t => t.includes("btn1"))')
+    revisar(not eventos, f'abrir no emite eventos del botón: no es un cambio del aprendiz ({eventos[:1]})')
 
+    # Puesto otra vez en la protoboard, cruzando el canal en las mismas columnas, el circuito mide lo mismo que con las
+    # piezas del kit.
+    arrastrar('btn1', 0, 2 * PASO)
+    btn = pieza('btn1')
+    revisar(btn.get('en') == {'1i': 'protoboard.e24', '1d': 'protoboard.f24', '2i': 'protoboard.e22', '2d': 'protoboard.f22'},
+            f'al ponerlo otra vez, encaja cruzando el canal en las mismas columnas: {btn.get("en")}')
     pg.locator('#iniciar').click()
     pg.wait_for_timeout(500)
-    caja = pg.locator('.tc-comp[data-id="btn1"]').bounding_box()
-    pg.mouse.move(caja['x'] + caja['width'] / 2, caja['y'] + caja['height'] / 2)
+    x, y = pg.evaluate(f'''() => {{ const b = {RAIZ}.querySelector('.tc-comp[data-id="btn1"] [data-relleno]').getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; }}''')
+    pg.mouse.move(x, y)
     pg.mouse.down()
     pg.wait_for_timeout(400)
     antiguo_i = next(l['i'] for l in pg.evaluate('sim._mediciones()')['leds'] if l['id'] == 'led1')
@@ -326,58 +341,20 @@ with sync_playwright() as p:
     revisar(antiguo_i > 0.005 and abs(antiguo_i - kit_i) < 1e-9,
             f'presionado, el LED mide lo mismo que con las piezas del kit: {antiguo_i * 1000:.3f} mA y {kit_i * 1000:.3f} mA')
 
-    # Al moverlo, el botón antiguo toma el modelo y el dibujo nuevo, y cruza el canal en e/f
-    arrastrar('btn1', 0, 2 * PASO)
-    btn = pieza('btn1')
-    revisar(btn['props'].get('modelo') == '6x6' and pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="btn1"]\').firstElementChild.tagName') == 'svg',
-            f'al moverlo, el botón toma modelo «6x6» y el dibujo medido: {btn["props"]}')
-    revisar(btn.get('en') == {'1i': 'protoboard.e24', '1d': 'protoboard.f24', '2i': 'protoboard.e22', '2d': 'protoboard.f22'},
-            f'y encaja cruzando el canal en las mismas columnas: {btn.get("en")}')
-    elegir('btn1')
-    revisar('Dibujo antiguo' not in ficha() and '6 × 6 mm; patas' in ficha(), 'la ficha ya no avisa del dibujo antiguo y da las medidas del kit')
-    # Cambiar de dibujo no es un cambio del aprendiz: no sale un evento con el modelo (D3 de Efraín, 28 oct). El modelo
-    # sí queda guardado.
-    eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent).filter(t => t.includes("btn1") && t.includes("modelo"))')
-    revisar(not eventos and guardado('btn1')['props'].get('modelo') == '6x6', f'no sale un evento con el modelo, y queda guardado: {eventos[:1]}')
-
-    # Un potenciómetro guardado sin modelo: el de wokwi, hasta moverlo
+    # Un potenciómetro guardado sin modelo y cableado a la placa: abre con el dibujo del kit, el centro de sus patas
+    # donde estaba (el dibujo anterior las tenía en x 29/39/49 e y 68,5), su perilla y su cable; sin aviso.
     abrir({**VACIO, 'componentes': [{'id': 'pot1', 'tipo': 'potenciometro', 'x': 250, 'y': 215, 'rot': 0, 'props': {'ohmios': 10000, 'posicion': 0.3}}],
            'cables': [{'de': 'placa.A0', 'a': 'pot1.SIG', 'color': 'verde'}]})
-    revisar(pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="pot1"]\').firstElementChild.tagName') == 'WOKWI-POTENTIOMETER'
-            and 'modelo' not in pieza('pot1')['props'], 'un potenciómetro guardado sin modelo abre con el dibujo de wokwi')
-    arrastrar('pot1', 30, 0)
     pot = pieza('pot1')
+    centro_pot = [sum(v) / 3 for v in zip(*[donde(f'pot1.{p}') for p in ['GND', 'SIG', 'VCC']])]
+    aviso = pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')
     revisar(pot['props'] == {'ohmios': 10000, 'posicion': 0.3, 'modelo': '16mm'} and attr('pot1', '[data-parte="eje"]', 'transform') == 'rotate(-54 8.89 8.03)'
-            and pg.evaluate('lienzo.circuito()')['cables'] == [{'de': 'placa.A0', 'a': 'pot1.SIG', 'color': 'verde'}],
-            f'al moverlo toma el dibujo medido con su perilla en el 30 % (−54°) y conserva su cable: {pot["props"]}')
+            and pg.evaluate('lienzo.circuito()')['cables'] == [{'de': 'placa.A0', 'a': 'pot1.SIG', 'color': 'verde'}] and 'suelto' not in aviso,
+            f'el potenciómetro guardado sin modelo abre con el dibujo del kit, su perilla en el 30 % (−54°) y su cable, sin aviso: {pot["props"]}')
+    revisar(abs(centro_pot[0] - 289) < 0.6 and abs(centro_pot[1] - 283.5) < 0.6,
+            f'con el centro de sus patas donde estaba el de las anteriores: {[round(v, 1) for v in centro_pot]} y [289, 283.5]')
     elegir('pot1')
     revisar('a 2 pasos (5,08 mm)' in ficha(), 'y su ficha da las patas del kit, a 2 pasos')
-    # Con el dibujo antiguo, la ficha da sus patas (a 1 paso) y no las del kit
-    abrir({**VACIO, 'componentes': [{'id': 'pot1', 'tipo': 'potenciometro', 'x': 250, 'y': 215, 'rot': 0, 'props': {'ohmios': 10000, 'posicion': 0.3}}]})
-    paso_pot = separacion('pot1', 'GND', 'SIG')
-    elegir('pot1')
-    revisar(round(max(paso_pot) / PASO) == 1 and 'a 1 paso' in ficha() and 'a 2 pasos' not in ficha(),
-            f'con el dibujo antiguo, su ficha da sus patas, a 1 paso {paso_pot}')
-
-    # Al levantar el botón antiguo, el dibujo nuevo queda con sus patas centradas donde estaban, y la pieza sigue al
-    # puntero sin saltar (hallazgo CR-2 de la revisión: el centro se medía con la pieza ya corrida por el arrastre).
-    abrir(ANTIGUO)
-    x, y = agarre('btn1')
-    c0 = centro_patas('btn1')
-    pg.mouse.move(x, y)
-    pg.mouse.down()
-    pg.mouse.move(x + 3, y)
-    pg.mouse.move(x + 12, y)  # cruza el umbral del clic: aquí se renueva, en el mismo movimiento que lo corre
-    pg.wait_for_timeout(150)
-    pg.mouse.move(x + 50, y + 40, steps=5)
-    pg.wait_for_timeout(100)
-    c1 = centro_patas('btn1')
-    nuevo = pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="btn1"]\').firstElementChild.tagName') == 'svg'
-    pg.mouse.up()
-    pg.wait_for_timeout(200)
-    salto = (round(c1[0] - 50 - c0[0], 1), round(c1[1] - 40 - c0[1], 1))
-    revisar(nuevo and abs(salto[0]) < 1.5 and abs(salto[1]) < 1.5,
-            f'el dibujo nuevo sigue al puntero con las patas centradas donde estaban, sin salto: {salto} px')
 
     # Elegir una potencia en la resistencia antigua (c13 a c19): lo guardado, y lo que recibe el simulador, tiene los
     # huecos donde quedó el dibujo nuevo (hallazgo A-01 de la revisión: se avisaba el cambio antes de reacomodarla).

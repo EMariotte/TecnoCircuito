@@ -87,12 +87,9 @@ export const FICHAS = {
     descripcion: 'Pulsador de 4 patas: al presionarlo une los dos lados. Con digitalRead() necesita una resistencia pull-down o INPUT_PULLUP; si no, la entrada queda al aire.',
     palabras: ['pulsador', 'interruptor', 'switch', 'tecla', 'boton', 'entrada digital'],
     pines: '1i y 1d unidas por dentro; 2i y 2d unidas por dentro. Al presionar, el 1 se une con el 2',
-    // Sin `modelo` (guardado antes): el dibujo antiguo, con las patas a 7 × 2 pasos, hasta que se mueve.
     datos: (p) => [
       ['Color', p.color || 'rojo'],
-      p.modelo
-        ? ['Tamaño', '6 × 6 mm; patas a 3 pasos de lado a lado y a 2 en el mismo lado']
-        : ['Dibujo', 'el antiguo, con las patas a 7 pasos de lado a lado; al moverlo toma el del kit (6 × 6 mm)'],
+      ['Tamaño', '6 × 6 mm; patas a 3 pasos de lado a lado y a 2 en el mismo lado'],
       ['Lectura', 'digitalRead(): ALTO o BAJO'],
       ['Sin pull-down', 'la entrada queda al aire (lee al azar)'],
     ],
@@ -103,11 +100,10 @@ export const FICHAS = {
     descripcion: 'Resistencia con perilla: la pata del medio (SIG) da un voltaje entre 0 y 5 V según el giro. Con analogRead() se lee de 0 a 1023.',
     palabras: ['perilla', 'knob', 'regulador', 'variable', 'analogico', 'analogread', 'trimmer'],
     pines: 'GND, SIG (el cursor, al pin analógico) y VCC (5V)',
-    // Sin `modelo` (guardado antes): el dibujo antiguo, con las patas a 1 paso, hasta que se mueve.
     datos: (p) => [
       ['Valor', ohmios(Number(p.ohmios) || 10000)],
       ['Perilla', `${Math.round((Number(p.posicion) || 0) * 100)} %`],
-      p.modelo ? ['Patas', 'a 2 pasos (5,08 mm)'] : ['Dibujo', 'el antiguo, con las patas a 1 paso; al moverlo toma el del kit (16 mm)'],
+      ['Patas', 'a 2 pasos (5,08 mm)'],
       ['Giro', '270°: a la derecha sube el voltaje'],
       ['Lectura', 'analogRead(): 0 a 1023 (5 V / 1024 por paso)'],
     ],

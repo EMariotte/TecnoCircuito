@@ -28,11 +28,11 @@ for (const placa of ['uno', 'nano', 'nano_old']) {
   const esquema = PINES_PLACA[placa].filter((p) => placa === 'uno' || !ALIAS_NANO.includes(p));
   revisar(mismo(pines, esquema), `los ${pines.length} contactos del dibujo de ${PLACAS[placa].nombre} son los del esquema`);
 }
-// El dibujo antiguo de wokwi que conserva un potenciómetro o un botón guardado sin `modelo` tiene los mismos pines.
-const DIBUJO_ANTIGUO = { potenciometro: ['GND', 'SIG', 'VCC'], pulsador: ['1.l', '1.r', '2.l', '2.r'] };
-for (const [tipo, nombres] of Object.entries(DIBUJO_ANTIGUO)) {
-  const enCatalogo = nombres.map(TIPOS[tipo].antiguo.nombrePin);
-  revisar(mismo(enCatalogo, PINES[tipo]), `${tipo}: los pines del dibujo antiguo de wokwi (${enCatalogo.join(', ')}) son los del esquema`);
+// Las medidas del dibujo con que se guardaba un potenciómetro o un botón sin `modelo` (PIEZA-003) nombran los mismos
+// pines: con ellas el lienzo pone el dibujo del kit donde estaban sus patas.
+for (const tipo of ['potenciometro', 'pulsador']) {
+  const anteriores = Object.keys(TIPOS[tipo].dibujoAnterior.pines);
+  revisar(mismo(anteriores, PINES[tipo]), `${tipo}: las patas del dibujo anterior (${anteriores.join(', ')}) son las del esquema`);
 }
 revisar(Object.entries(TIPOS).every(([, d]) => d.dibujo), 'todas las piezas del catálogo son Piezas Tecno, con su dibujo (PIEZA-001 y PIEZA-002)');
 // Una pieza Tecno cuyo dibujo depende de sus propiedades (el motor y sus vistas, la resistencia y su potencia) se revisa

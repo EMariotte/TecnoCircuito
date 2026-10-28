@@ -97,10 +97,9 @@ export const PIEZAS_KICAD = {
     valor: (p) => 'Servo ' + (MODELOS_SERVO[p.modelo] || MODELOS_SERVO.sg90).nombre, pads: { SIG: '1', VCC: '2', GND: '3' },
   },
   potenciometro: {
-    // 1 y 3 son los extremos; 2 es el cursor (la pata del medio). El del kit (16 mm, patas a 5 mm) lleva la Alps RK163;
-    // uno guardado sin `modelo`, la RK09K de siempre, con las patas a 2,5 mm (decisión de Efraín, 28 oct).
+    // 1 y 3 son los extremos; 2 es el cursor (la pata del medio). El del kit (16 mm, patas a 5 mm) lleva la Alps RK163
+    // (decisión de Efraín, 28 oct). Uno guardado sin `modelo` también: se dibuja como el del kit (PIEZA-003).
     ref: 'RV', lib: 'Device', parte: 'R_Potentiometer', huella: 'Potentiometer_THT:Potentiometer_Alps_RK163_Single_Horizontal',
-    otraHuella: (p) => (p.modelo === '16mm' ? null : 'Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical'),
     valor: (p) => kOhm(Number(p.ohmios) || 10000), pads: { GND: '1', SIG: '2', VCC: '3' },
   },
 };

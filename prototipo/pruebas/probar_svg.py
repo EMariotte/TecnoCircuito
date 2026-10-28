@@ -30,7 +30,7 @@ with sync_playwright() as p:
     pg.wait_for_selector('.tc-pin[data-ref="led1.anodo"]', state='attached')
     pg.wait_for_timeout(400)
     # La perilla en un ángulo que se note y la resistencia girada, para probar los dos casos difíciles. Y un
-    # potenciómetro guardado sin `modelo`, con el dibujo antiguo de wokwi, que gira su perilla con una variable CSS.
+    # potenciómetro guardado sin `modelo`, que abre con el dibujo del kit (PIEZA-003).
     pg.evaluate('''() => {
       const c = lienzo.circuito();
       for (const k of c.componentes) {
@@ -68,10 +68,10 @@ with sync_playwright() as p:
     placa = re.search(r'<svg id="tc-placa".*?</svg>', svg, re.S)
     textos = re.findall(r'<text\b[^>]*>', placa.group(0)) if placa else []
     revisar(textos and all('font-size=' in t for t in textos), f'los {len(textos)} textos de la placa traen su tamaño, sin depender de estilos')
-    revisar(re.search(r'<g data-parte="eje" transform="rotate\(81 8\.89 8\.03\)"', svg),
-            'el eje del potenciómetro del kit sale girado (81° con la perilla en el 80 %)')
-    revisar(re.search(r'id="tc-pot2-rotating"[^>]*transform="rotate\(', svg) or re.search(r'transform="rotate\([^"]+\)"[^>]*id="tc-pot2-rotating"', svg),
-            'la perilla del potenciómetro antiguo de wokwi queda girada como atributo')
+    revisar(len(re.findall(r'<g data-parte="eje" transform="rotate\(81 8\.89 8\.03\)"', svg)) == 2,
+            'el eje de los dos potenciómetros sale girado (81° con la perilla en el 80 %), también el guardado sin modelo')
+    revisar('wokwi' not in svg.lower() and '<style' not in svg,
+            'la imagen no trae dibujos ni estilos de wokwi')
     revisar('rotate(90)' in svg, 'la resistencia girada sale girada')
     # La marca (MARCA-001): la firma abajo a la derecha y el símbolo de una tinta como marca de agua.
     marca = pg.evaluate('''(texto) => {

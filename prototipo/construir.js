@@ -39,7 +39,7 @@ const { outputFiles } = esbuild.buildSync({
   write: false,
   target: ['chrome120'],
   loader: { '.css': 'text', '.svg': 'text' }, // los .svg son los de marca/svg (src/marca.js)
-  legalComments: 'eof', // conserva los avisos de licencia de Lit y de los dibujos
+  legalComments: 'eof', // conserva los avisos de licencia de lo que se incluye (avr8js)
 });
 const js = outputFiles[0].text;
 // Los «<!--» de los dibujos SVG no molestan. Junto con un «<script» sí: el HTML no cerraría bien el script.

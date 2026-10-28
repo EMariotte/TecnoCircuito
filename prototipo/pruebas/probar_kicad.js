@@ -202,12 +202,12 @@ revisar(Object.keys(conProbador.piezas).join(',') === 'J1,J2,J3,J4,J5', `baterí
 // La huella va con el dibujo (PIEZA-001 y PIEZA-002; D1 y D2 de Efraín, 28 oct). Resistencia: ¼ W, la de 6,3 mm a
 // 10,16 mm; ½ W, la de 9 mm a 15,24 mm; guardada sin `vatios` (se dibuja con las patas abiertas a 6 pasos), la de
 // 6,3 mm a 15,24 mm. Un `vatios` escrito como texto da lo mismo que el número (una sola regla: potenciaDe).
-// Potenciómetro: el del kit, la Alps RK163 (patas a 5 mm); uno guardado sin `modelo`, la RK09K de siempre.
+// Potenciómetro: la Alps RK163 (patas a 5 mm), también uno guardado sin `modelo`, que se dibuja como el del kit
+// (PIEZA-003).
 const R_025 = 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal';
 const R_05 = 'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal';
 const R_025_6 = 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P15.24mm_Horizontal';
 const POT_KIT = 'Potentiometer_THT:Potentiometer_Alps_RK163_Single_Horizontal';
-const POT_ANTIGUO = 'Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical';
 const potencias = fuera(
   [{ id: 'r1', tipo: 'resistencia', props: { ohmios: 220, vatios: 0.5 } }, { id: 'r2', tipo: 'resistencia', props: { ohmios: 220, vatios: 0.25 } },
     { id: 'r3', tipo: 'resistencia', props: { ohmios: 220 } }, { id: 'r4', tipo: 'resistencia', props: { ohmios: 220, vatios: '0.5' } }],
@@ -215,7 +215,7 @@ const potencias = fuera(
 );
 revisar(potencias.piezas.R1 === R_05 && potencias.piezas.R2 === R_025 && potencias.piezas.R3 === R_025_6 && potencias.piezas.R4 === R_05,
   `resistencias: ½ W a 15,24 mm (9 mm), ¼ W a 10,16 mm, sin vatios a 15,24 mm (6,3 mm), "0.5" igual que 0.5 (${['R1', 'R2', 'R3', 'R4'].map((r) => potencias.piezas[r]).join(', ')})`);
-revisar(leer(textoT2).piezas.RV1 === POT_ANTIGUO, `potenciómetro guardado sin modelo: la RK09K de siempre (${leer(textoT2).piezas.RV1})`);
+revisar(leer(textoT2).piezas.RV1 === POT_KIT, `potenciómetro guardado sin modelo: también la RK163 (${leer(textoT2).piezas.RV1})`);
 const conKit = netlistKiCad({ ...t2, componentes: [{ id: 'pot1', tipo: 'potenciometro', props: { ohmios: 10000, posicion: 0.5, modelo: '16mm' } }] }, { fecha: FECHA });
 revisar(leer(conKit).piezas.RV1 === POT_KIT && igual(leer(conKit).redes, r2), `potenciómetro del kit: la RK163, con las mismas redes (${leer(conKit).piezas.RV1})`);
 
@@ -224,7 +224,6 @@ const tabla = Object.entries(PIEZAS_KICAD).map(([tipo, d]) => [tipo, { lib: d.li
 const otra = (tipo, nombre, props) => tabla.push([nombre, { ...tabla.find(([t]) => t === tipo)[1], huella: PIEZAS_KICAD[tipo].otraHuella(props) }]);
 otra('resistencia', 'resistencia de ½ W', { vatios: 0.5 });
 otra('resistencia', 'resistencia guardada sin vatios', {});
-otra('potenciometro', 'potenciometro guardado sin modelo', {});
 for (const d of SHIELD_KICAD) tabla.push([`shield ${d.valor} ${d.nota || ''}`.trim(), { lib: d.lib, parte: d.parte, huella: d.huella, pads: Object.fromEntries(Object.keys(d.pads).map((pad) => [pad, pad])) }]);
 for (const [tipo, grupos] of Object.entries(FUERA_KICAD)) for (const g of grupos) tabla.push([`${tipo} ${g.valor()}`, { lib: g.lib, parte: g.parte, huella: g.huella, pads: g.pines }]);
 fs.writeFileSync(path.join(SALIDA, 'piezas.json'), JSON.stringify({ piezas: Object.fromEntries(tabla), conectores: CONECTORES_SHIELD }, null, 2));

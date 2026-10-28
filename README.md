@@ -58,7 +58,7 @@ La idea era validar con prototipos antes de crear el repositorio. El proyecto cr
 
 ## Licencia
 
-Apache 2.0 (ver [LICENSE](LICENSE) y [NOTICE](NOTICE)). Incluye avr8js y @wokwi/elements (MIT) y Lit (BSD-3-Clause).
+Apache 2.0 (ver [LICENSE](LICENSE) y [NOTICE](NOTICE)). Incluye avr8js (MIT), el emulador del ATmega328P.
 
 - **Piezas Tecno:** las piezas hechas para TecnoCircuito, como la protoboard, tienen dibujos originales y también son Apache 2.0. Para crear las tuyas, sigue la [receta](prototipo/RECETA-COMPONENTE-NUEVO.md).
 - **Tus imágenes son tuyas:** las imágenes que produce TecnoCircuito (por ejemplo, el SVG de un circuito) son de quien las hace. Se pueden usar, compartir y publicar libremente, sin incluir la licencia ni el aviso.

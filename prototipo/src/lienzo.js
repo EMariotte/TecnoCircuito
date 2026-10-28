@@ -1,10 +1,7 @@
 // Lienzo del prototipo 0: la placa, las piezas y los cables, sin simulación.
 // Sigue la API de crearLienzo del contrato 1, para que integrarlo a TecnoBloques sea directo.
-// Solo para el potenciómetro y el botón guardados sin `modelo`, que conservan su dibujo antiguo (catalogo.js).
-import '@wokwi/elements/dist/esm/potentiometer-element.js';
-import '@wokwi/elements/dist/esm/pushbutton-element.js';
 import estilos from './lienzo.css';
-import { PLACAS, TIPOS, COLORES_CABLE, CODIGO_COLORES, NOMBRE_COLOR, colorPorDefecto, esAntiguo, definicionDe } from './catalogo.js';
+import { PLACAS, TIPOS, COLORES_CABLE, CODIGO_COLORES, NOMBRE_COLOR, colorPorDefecto } from './catalogo.js';
 import { netlistKiCad } from './kicad.js';
 import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
@@ -49,7 +46,8 @@ export function crearLienzo(elemento, opciones = {}) {
   const oyentes = [];
   const quitadosAlAbrir = [];
   const sueltasAlAbrir = { n: 0 };
-  const datos = normalizar(opciones.circuito, placa, quitadosAlAbrir, sueltasAlAbrir);
+  const renovadasAlAbrir = [];
+  const datos = normalizar(opciones.circuito, placa, quitadosAlAbrir, sueltasAlAbrir, renovadasAlAbrir);
 
   // El lienzo vive en un shadow DOM para que el CSS de TecnoBloques no lo afecte.
   const host = document.createElement('div');
@@ -151,7 +149,7 @@ export function crearLienzo(elemento, opciones = {}) {
   // ---- Piezas
 
   function crearVista(id, tipo, props) {
-    const def = id === 'placa' ? PLACAS[placa] : definicionDe(tipo, props);
+    const def = id === 'placa' ? PLACAS[placa] : TIPOS[tipo];
     const div = document.createElement('div');
     div.className = 'tc-comp' + (id === 'placa' ? ' tc-placa' : '');
     div.dataset.id = id;
@@ -164,11 +162,6 @@ export function crearLienzo(elemento, opciones = {}) {
       el = plantilla.content.firstElementChild;
       if (def.aplicar) def.aplicar(el, props); // lo que cambia según sus propiedades (el puente de la shield)
       if (def.soloPintado) div.classList.add('tc-solo-pintado'); // su marco transparente no tapa lo de abajo
-    } else if (def) {
-      // El dibujo antiguo de wokwi (un potenciómetro o un botón guardado sin `modelo`).
-      el = document.createElement(def.etiqueta);
-      if (def.aplicar) def.aplicar(el, props);
-      if (def.perilla) el.addEventListener('input', () => girarPerilla(id, Number(el.value) / 100));
     } else {
       // Pieza de una versión más nueva: se muestra y se conserva, pero no se dibuja.
       el = document.createElement('div');
@@ -184,23 +177,12 @@ export function crearLienzo(elemento, opciones = {}) {
     else capaComp.appendChild(div);
     const vista = { id, def, div, el, w: 64, h: 40, pines: new Map(), lista: false };
     vistas.set(id, vista);
-    return Promise.resolve(el.updateComplete).then(() => {
+    return Promise.resolve().then(() => {
       if (vistas.get(id) !== vista) return; // la quitaron mientras se dibujaba
       if (def && def.dibujo) {
         const marco = def.dibujo.marco ? def.dibujo.marco(props) : def.dibujo;
         Object.assign(vista, { w: marco.ancho, h: marco.alto });
         for (const [nombre, p] of Object.entries(marco.pines)) {
-          const marca = document.createElement('div');
-          marca.className = 'tc-pin';
-          marca.dataset.ref = `${id}.${nombre}`;
-          capaPines.appendChild(marca);
-          vista.pines.set(nombre, { px: p.x, py: p.y, div: marca });
-        }
-      } else if (def) {
-        Object.assign(vista, tamanoNatural(el));
-        for (const p of el.pinInfo || []) {
-          const nombre = def.nombrePin(p.name);
-          if (!nombre) continue;
           const marca = document.createElement('div');
           marca.className = 'tc-pin';
           marca.dataset.ref = `${id}.${nombre}`;
@@ -405,8 +387,7 @@ export function crearLienzo(elemento, opciones = {}) {
   // pines: lo que conduce y lo que se ve vuelven a coincidir. Si sus patas ya no caben a la vez en sus pines, o si
   // tiene unas patas en la protoboard y otras en un pin, se queda donde estaba, enchufada como dice el archivo.
   // Lo mismo con una pieza encajada en la protoboard: el LED y la resistencia medidos ponen las patas unos píxeles más
-  // allá que los dibujos de wokwi con que se guardaron, y cada pata vuelve a quedar sobre su hueco. Un potenciómetro o
-  // un botón con el dibujo antiguo de wokwi se queda donde estaba: ese dibujo no cae justo sobre los huecos.
+  // allá que los dibujos de wokwi con que se guardaron, y cada pata vuelve a quedar sobre su hueco.
   function alinearEnchufesAlAbrir() {
     // Varias vueltas: una pieza enchufada en otra que se acaba de correr ya se corrió con ella. Una vuelta sin nada que
     // correr termina.
@@ -416,7 +397,6 @@ export function crearLienzo(elemento, opciones = {}) {
         if (!k.en || montada(k)) continue;
         const enProtoboard = Object.values(k.en).every(esHueco);
         if (!enProtoboard && Object.values(k.en).some(esHueco)) continue;
-        if (enProtoboard && esAntiguo(k.tipo, k.props)) continue;
         const pasos = Object.entries(k.en).map(([pata, ref]) => {
           const a = posicion(k.id + '.' + pata);
           const b = posicion(ref);
@@ -434,6 +414,42 @@ export function crearLienzo(elemento, opciones = {}) {
       if (!corrida) break;
     }
     marcarOcupados();
+  }
+
+  // Un potenciómetro o un botón guardado sin `modelo` (PIEZA-003): abre con el dibujo del kit, corrido para que el
+  // centro de sus patas quede donde estaba el de las anteriores. Cableado, no cambia nada: los cables siguen a sus
+  // pines. Si estaba en la protoboard o enchufado y sus patas nuevas ya no caben en esos huecos o pines (las del kit
+  // van a otra distancia), queda suelto y se avisa. Devuelve las que quedaron sueltas.
+  function colocarRenovadas() {
+    const sueltas = [];
+    for (const r of renovadasAlAbrir) {
+      const k = componente(r.id);
+      const v = vistas.get(r.id);
+      if (!k || !v) continue;
+      const ps = [...v.pines.keys()].map((pata) => posicion(k.id + '.' + pata)).filter(Boolean);
+      if (ps.length) moverGrupo(k, redondear(r.x - ps.reduce((s, q) => s + q.x, 0) / ps.length), redondear(r.y - ps.reduce((s, q) => s + q.y, 0) / ps.length));
+      if (!k.en) continue;
+      const pasos = Object.entries(k.en).map(([pata, ref]) => {
+        const a = posicion(k.id + '.' + pata);
+        const b = posicion(ref);
+        return a && b ? { dx: b.x - a.x, dy: b.y - a.y } : null;
+      });
+      const caben = pasos.every(Boolean) && pasos.every((q) => Math.hypot(q.dx - pasos[0].dx, q.dy - pasos[0].dy) <= ENCHUFE_TOL)
+        && Math.hypot(pasos[0].dx, pasos[0].dy) <= ENCHUFE_TOL;
+      if (caben) continue; // alinearEnchufesAlAbrir la deja justo sobre ellos
+      delete k.en;
+      sueltas.push(k);
+    }
+    if (sueltas.length) marcarOcupados();
+    return sueltas;
+  }
+
+  function avisoRenovadas(sueltas) {
+    if (!sueltas.length) return '';
+    const nombres = sueltas.map((k) => `el ${TIPOS[k.tipo].nombre.toLowerCase()} ${k.id}`);
+    const lista = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
+    const muchas = sueltas.length > 1;
+    return `${lista[0].toUpperCase() + lista.slice(1)} ${muchas ? 'quedaron sueltos' : 'quedó suelto'}: ${muchas ? 'ahora tienen' : 'ahora tiene'} el dibujo del kit y sus patas ya no caben donde estaban. ${muchas ? 'Ponlos otra vez donde van' : 'Ponlo otra vez donde va'}.`;
   }
 
   // Corre una pieza y todo lo que cuelga de ella.
@@ -550,13 +566,6 @@ export function crearLienzo(elemento, opciones = {}) {
     }
   }
 
-  // Tamaño del dibujo sin depender del diseño de la página: así funciona aunque el panel esté oculto.
-  function tamanoNatural(el) {
-    const svg = el.shadowRoot && el.shadowRoot.querySelector('svg');
-    const w = svg && medida(svg.getAttribute('width'));
-    const h = svg && medida(svg.getAttribute('height'));
-    return w && h ? { w, h } : { w: el.offsetWidth || 64, h: el.offsetHeight || 40 };
-  }
 
   function ubicar(v) {
     if (!v) return;
@@ -579,16 +588,7 @@ export function crearLienzo(elemento, opciones = {}) {
 
   // Posición de un pin en el mundo. CSS gira la pieza alrededor de su centro; aquí se hace lo mismo.
   function girarPunto(v, c, p) {
-    const rot = (((c.rot || 0) % 360) + 360) % 360;
-    if (!rot) return { x: c.x + p.px, y: c.y + p.py };
-    const a = (rot * Math.PI) / 180;
-    const cos = Math.round(Math.cos(a) * 1e9) / 1e9;
-    const sin = Math.round(Math.sin(a) * 1e9) / 1e9;
-    const cx = v.w / 2;
-    const cy = v.h / 2;
-    const dx = p.px - cx;
-    const dy = p.py - cy;
-    return { x: redondear(c.x + cx + dx * cos - dy * sin), y: redondear(c.y + cy + dx * sin + dy * cos) };
+    return rotarPunto(v.w, v.h, c, p.px, p.py);
   }
 
   function partirRef(ref) {
@@ -880,8 +880,6 @@ export function crearLienzo(elemento, opciones = {}) {
     const v = c && vistas.get(c.id);
     let props = '';
     if (c && def && !soloLectura) {
-      // Un potenciómetro o un botón guardado sin `modelo` conserva el dibujo de wokwi hasta que se mueve.
-      if (esAntiguo(c.tipo, c.props)) props += '<p class="tc-ficha-aviso">Dibujo antiguo: muévelo un poco y toma el del kit.</p>';
       for (const campo of def.campos || (def.campo ? [def.campo] : [])) {
         const actual = String(c.props[campo.prop]);
         // Sin la prop (un circuito guardado antes de que existiera), la opción `sinValor` dice cómo se ve hoy.
@@ -1135,41 +1133,6 @@ export function crearLienzo(elemento, opciones = {}) {
     });
   }
 
-  // Un potenciómetro o un botón con el dibujo antiguo de wokwi (guardado sin `modelo`): al levantarlo toma el `modelo`
-  // y el dibujo medido, con sus patas centradas donde estaban las de antes, y al soltarlo encaja con las patas nuevas
-  // (decisión de Efraín, 27 oct). Mientras se arrastra ya se ve el dibujo nuevo, con los huecos donde quedaría.
-  // No emite un evento propio: no es un cambio del aprendiz, como tampoco lo es una pieza que se corre al abrir. El
-  // `modelo` llega a lo guardado al soltarla (`cambio`) y al registro con el circuito de la siguiente simulación.
-  function renovar(c, g) {
-    // El centro de las patas respecto de la pieza: mientras llega el dibujo nuevo la pieza sigue al puntero, y eso no
-    // debe contar como corrimiento.
-    const centro = () => {
-      const v = vistas.get(c.id);
-      const ps = v ? [...v.pines.keys()].map((pata) => posicion(c.id + '.' + pata)).filter(Boolean) : [];
-      if (!ps.length) return null;
-      return { x: ps.reduce((s, q) => s + q.x, 0) / ps.length - c.x, y: ps.reduce((s, q) => s + q.y, 0) / ps.length - c.y };
-    };
-    const antes = centro();
-    c.props = { ...c.props, modelo: TIPOS[c.tipo].props.modelo };
-    quitarVista(c.id);
-    crearVista(c.id, c.tipo, c.props).then(() => {
-      const despues = centro();
-      if (antes && despues) {
-        const dx = redondear(antes.x - despues.x);
-        const dy = redondear(antes.y - despues.y);
-        c.x = redondear(c.x + dx);
-        c.y = redondear(c.y + dy);
-        if (gesto === g) {
-          g.dx -= dx; // así sigue al puntero desde donde quedó
-          g.dy -= dy;
-          mostrarDestino(c);
-        }
-        ubicar(vistas.get(c.id));
-      }
-      dibujarCables();
-      if (sel && sel.id === c.id) pintarFicha(); // sin el aviso del dibujo antiguo
-    });
-  }
 
   function girar() {
     if (!sel || sel.tipo !== 'comp' || sel.id === 'protoboard') return;
@@ -1422,11 +1385,11 @@ export function crearLienzo(elemento, opciones = {}) {
       const id = comp.dataset.id;
       const c = pieza(id);
       if (c.tipo === 'pulsador') {
-        // Sin los eventos de mouse de compatibilidad: así el dibujo de Wokwi no se presiona ni se queda pegado solo.
+        // Sin los eventos de mouse de compatibilidad ni la selección de texto o el arrastre del dibujo.
         e.preventDefault();
         if (vistaSim.simulando) {
           // Mientras corre la simulación, el botón se presiona (no se mueve), como en la placa.
-          // Sin capturar el puntero: si se captura, el dibujo de Wokwi cree que el mouse salió y se suelta solo.
+          // Sin capturar el puntero: así, si el mouse se sale del botón con el clic apretado, el botón se suelta.
           pulsar(id, true);
           gesto = { tipo: 'pulsar', id, x0: e.clientX, y0: e.clientY, movido: false, desde: performance.now() };
           return;
@@ -1434,11 +1397,9 @@ export function crearLienzo(elemento, opciones = {}) {
       }
       seleccionar({ tipo: 'comp', id });
       if (montada(c)) return iniciarPaneo(e); // la shield no se mueve: arrastrarla mueve la vista
-      // Sobre la perilla del potenciómetro, el arrastre la gira: no se mueve la pieza. El dibujo antiguo de Wokwi la
-      // gira solo; el medido, con el gesto «perilla» (su eje).
+      // Sobre el eje del potenciómetro, el arrastre lo gira (gesto «perilla»): no se mueve la pieza.
       const vista = vistas.get(id);
-      if (TIPOS[c.tipo] && TIPOS[c.tipo].perilla && vista && e.composedPath().some(vista.def.dibujo ? esEje : esPerilla)) {
-        if (!vista.def.dibujo) return;
+      if (TIPOS[c.tipo] && TIPOS[c.tipo].perilla && vista && e.composedPath().some(esEje)) {
         e.preventDefault();
         gesto = { tipo: 'perilla', id, x0: e.clientX, y0: e.clientY, movido: false, angulo: anguloPerilla(vista, e), posicion: Number(c.props.posicion) || 0 };
         return capturar(e);
@@ -1465,8 +1426,6 @@ export function crearLienzo(elemento, opciones = {}) {
       if (!gesto.movido && Math.hypot(e.clientX - gesto.x0, e.clientY - gesto.y0) > UMBRAL_CLIC) {
         gesto.movido = true;
         ficha.classList.add('tc-ficha-quieta'); // mientras se arrastra, la ficha se aparta (casi transparente)
-        const c = gesto.tipo === 'mover' && componente(gesto.id);
-        if (c && esAntiguo(c.tipo, c.props)) renovar(c, gesto);
       }
       if (gesto.movido && gesto.tipo === 'mover') {
         const c = pieza(gesto.id);
@@ -1711,7 +1670,7 @@ export function crearLienzo(elemento, opciones = {}) {
   // ---- Imagen SVG del circuito (para la documentación del proyecto o una evidencia en TecnoRuta)
 
   // Arma un SVG que se abre igual en el navegador, Word, LibreOffice o Inkscape: fondo blanco, cada pieza con
-  // su dibujo de Wokwi (con sus estilos y sus identificadores renombrados) y los cables encima, como en pantalla.
+  // su dibujo (con sus identificadores renombrados) y los cables encima, como en pantalla.
   // Encima, el símbolo de TecnoCircuito como marca de agua; abajo a la derecha, la firma, en una franja propia para
   // no tapar nada. Las dos son trazados: se ven igual sin la fuente instalada.
   function exportarSVG() {
@@ -1772,18 +1731,8 @@ export function crearLienzo(elemento, opciones = {}) {
         `<text x="${v.w / 2}" y="${v.h / 2 + 3}" font-family="sans-serif" font-size="10" text-anchor="middle" fill="#5a6673">¿${tipo}?</text></g>`
       );
     }
-    const original = v.el.shadowRoot ? v.el.shadowRoot.querySelector('svg') : v.el.tagName && v.el.tagName.toLowerCase() === 'svg' ? v.el : null;
-    if (!original) return '';
-    const clon = original.cloneNode(true);
-    // Lit deja comentarios de marca dentro del dibujo: en el archivo no hacen falta.
-    const marcas = [];
-    const caminante = document.createTreeWalker(clon, NodeFilter.SHOW_COMMENT);
-    while (caminante.nextNode()) marcas.push(caminante.currentNode);
-    marcas.forEach((n) => n.remove());
-    // La perilla del potenciómetro gira con una variable CSS: se deja también como atributo, que todos entienden.
-    const angulo = /--knob-angle:\s*(-?[\d.]+)deg/.exec(clon.getAttribute('style') || '');
-    const rotador = clon.querySelector('#rotating');
-    if (angulo && rotador) rotador.setAttribute('transform', `rotate(${angulo[1]} 10 8)`);
+    if (!v.el.tagName || v.el.tagName.toLowerCase() !== 'svg') return '';
+    const clon = v.el.cloneNode(true);
     clon.setAttribute('width', redondear(v.w));
     clon.setAttribute('height', redondear(v.h));
     clon.removeAttribute('id');
@@ -1792,8 +1741,7 @@ export function crearLienzo(elemento, opciones = {}) {
     const ids = [...new Set([...clon.querySelectorAll('[id]')].map((n) => n.id))];
     let texto = renombrarIds(new XMLSerializer().serializeToString(clon), prefijo, ids);
     texto = texto.replace(/^<svg\b/, `<svg id="${prefijo}"`);
-    const css = v.el.shadowRoot ? estilosDe(v.el, prefijo, ids) : '';
-    return `<g transform="${t}">${css ? `<style><![CDATA[\n${css}\n]]></style>` : ''}${texto}</g>`;
+    return `<g transform="${t}">${texto}</g>`;
   }
 
   // ---- Rótulos y ayuda
@@ -1991,11 +1939,13 @@ export function crearLienzo(elemento, opciones = {}) {
   Promise.all([vistaPlaca, ...(datos.protoboard ? [crearVistaProtoboard()] : []), ...datos.componentes.map((c) => crearVista(c.id, c.tipo, c.props))]).then(() => {
     if (destruido) return;
     listo = true;
+    const renovadasSueltas = colocarRenovadas();
     alinearEnchufesAlAbrir();
     dibujarCables();
     encuadrado = encuadrar();
     const aviso = [
       quitadosAlAbrir.length ? `Se quitó lo que no va en ${PLACAS[placa].nombre}: ${quitadosAlAbrir.join(' y ')}.` : '',
+      avisoRenovadas(renovadasSueltas),
       sueltasAlAbrir.n === 1 ? 'Se soltó 1 conexión directa sin destino.' : sueltasAlAbrir.n ? `Se soltaron ${sueltasAlAbrir.n} conexiones directas sin destino.` : '',
       avisoTapados(),
     ].filter(Boolean).join(' ');
@@ -2007,7 +1957,8 @@ export function crearLienzo(elemento, opciones = {}) {
 // Copia el circuito y completa lo que falte. Los campos desconocidos se conservan tal cual.
 // Al cambiar de placa, lo que no va en la nueva (una shield de otra placa, un cable a un pin que no tiene) se
 // quita en vez de impedir que el lienzo abra: el aprendiz no tendría cómo arreglarlo. `quitados` dice qué salió.
-function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }) {
+// `renovadas` dice qué potenciómetros y botones se guardaron sin `modelo` y dónde estaba el centro de sus patas.
+function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }, renovadas = []) {
   const c = circuito && typeof circuito === 'object' ? copia(circuito) : {};
   c.formato = c.formato || 1;
   c.placa = placa; // manda la placa que elige TecnoBloques
@@ -2035,8 +1986,15 @@ function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }) {
     k.y = Number(k.y) || 0;
     k.rot = Number(k.rot) || 0;
     // Lo que falte se completa con lo de una pieza nueva, salvo `noCompletar`: sin ella, la pieza se guardó antes de que
-    // existiera y abre con el dibujo y el límite de entonces (la resistencia sin `vatios`, el botón sin `modelo`).
+    // existiera y abre con el dibujo y el límite de entonces (la resistencia sin `vatios`).
     const def = TIPOS[k.tipo];
+    // Un potenciómetro o un botón guardado sin `modelo` toma el dibujo del kit (PIEZA-003, decisión de Efraín). Se
+    // anota dónde estaba el centro de sus patas con el dibujo anterior, para poner ahí el de las nuevas.
+    if (def?.dibujoAnterior && !(k.props && k.props.modelo)) {
+      const d = def.dibujoAnterior;
+      const ps = Object.values(d.pines).map((q) => rotarPunto(d.ancho, d.alto, k, q.x, q.y));
+      renovadas.push({ id: k.id, x: ps.reduce((s, q) => s + q.x, 0) / ps.length, y: ps.reduce((s, q) => s + q.y, 0) / ps.length });
+    }
     const base = def ? Object.fromEntries(Object.entries(def.props).filter(([prop]) => !(def.noCompletar || []).includes(prop))) : {};
     k.props = { ...base, ...(k.props && typeof k.props === 'object' ? k.props : {}) };
     if (TIPOS[k.tipo]?.montada) {
@@ -2096,7 +2054,7 @@ function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }) {
 }
 
 // ¿Existe el pin «<id>.<pin>» en el circuito? La placa, por su perfil; una pieza conocida, por su dibujo (pines de la
-// vista o de su marco según sus props; el dibujo antiguo de wokwi tiene los mismos nombres); una pieza de una versión
+// vista o de su marco según sus props); una pieza de una versión
 // más nueva se acepta tal cual.
 function pinExiste(c, ref, pinesPlaca) {
   const i = ref.indexOf('.');
@@ -2110,6 +2068,21 @@ function pinExiste(c, ref, pinesPlaca) {
   if (!def) return true;
   const marco = def.dibujo.marco ? def.dibujo.marco(k.props || {}) : def.dibujo;
   return !marco.pines || pin in marco.pines;
+}
+
+// Un punto (px, py) de un dibujo de ancho × alto, en el mundo, con la pieza en (c.x, c.y) girada c.rot alrededor de su
+// centro.
+function rotarPunto(ancho, alto, c, px, py) {
+  const rot = (((c.rot || 0) % 360) + 360) % 360;
+  if (!rot) return { x: c.x + px, y: c.y + py };
+  const a = (rot * Math.PI) / 180;
+  const cos = Math.round(Math.cos(a) * 1e9) / 1e9;
+  const sin = Math.round(Math.sin(a) * 1e9) / 1e9;
+  const cx = ancho / 2;
+  const cy = alto / 2;
+  const dx = px - cx;
+  const dy = py - cy;
+  return { x: redondear(c.x + cx + dx * cos - dy * sin), y: redondear(c.y + cy + dx * sin + dy * cos) };
 }
 
 const escaparRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -2126,46 +2099,10 @@ function renombrarIds(texto, prefijo, ids = [...new Set([...texto.matchAll(/\sid
     .replace(new RegExp(`href="#(${alt})"`, 'g'), (_, id) => `href="#${prefijo}-${id}"`);
 }
 
-// Los estilos del dibujo de Wokwi viven en su shadow DOM: se copian, limitados a esa pieza (#prefijo …).
-function estilosDe(el, prefijo, ids) {
-  const raizSombra = el.shadowRoot;
-  const hojas = [...(raizSombra.adoptedStyleSheets || [])];
-  raizSombra.querySelectorAll('style').forEach((s) => s.sheet && hojas.push(s.sheet));
-  const reglas = [];
-  for (const hoja of hojas) {
-    let lista;
-    try {
-      lista = hoja.cssRules;
-    } catch {
-      continue;
-    }
-    for (const r of lista) {
-      if (!r.selectorText || !r.style) continue; // solo reglas simples: lo demás no cambia el dibujo
-      const selectores = r.selectorText
-        .split(',')
-        .map((s) => s.trim())
-        .filter((s) => !/:host|\binput\b|:focus|\.hide-input/.test(s));
-      if (!selectores.length) continue;
-      const limitados = selectores.map((s) => {
-        let x = s;
-        for (const id of ids) x = x.replace(new RegExp(`#${escaparRegex(id)}(?![\\w-])`, 'g'), () => `#${prefijo}-${id}`);
-        return /^svg\b/.test(x) ? x.replace(/^svg\b/, `#${prefijo}`) : `#${prefijo} ${x}`;
-      });
-      reglas.push(`${limitados.join(', ')} { ${r.style.cssText} }`);
-    }
-  }
-  return reglas.join('\n');
-}
-
 // Tinta legible sobre una muestra de color: oscura sobre los colores claros y blanca sobre los oscuros.
 function tintaSobre(hex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.55 ? '#1d2733' : '#ffffff';
-}
-
-function medida(valor) {
-  const m = /^([\d.]+)\s*(mm|px)?$/.exec(String(valor || '').trim());
-  return m ? parseFloat(m[1]) * (m[2] === 'mm' ? 96 / 25.4 : 1) : 0;
 }
 
 function trazo(pts) {
@@ -2197,10 +2134,3 @@ function proyectar(p, a, b) {
 
 // ¿El puntero está sobre el eje del potenciómetro medido?
 const esEje = (n) => !!(n && n.getAttribute && n.getAttribute('data-parte') === 'eje');
-
-// ¿El puntero está sobre la perilla del potenciómetro de Wokwi? (sus partes tienen estos id y tamaños)
-function esPerilla(n) {
-  if (!n || !n.getAttribute) return false;
-  if (n.id === 'knob' || n.id === 'rotating') return true;
-  return n.tagName === 'ellipse' && Number(n.getAttribute('rx')) > 5;
-}

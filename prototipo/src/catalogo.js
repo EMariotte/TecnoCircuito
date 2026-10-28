@@ -1,7 +1,8 @@
 // Catálogo del prototipo: el dibujo de cada pieza, cómo se llaman sus pines en el contrato y qué lee el aprendiz al
 // pasar el mouse por un pin. Todas son Piezas Tecno (dibujo propio, `dibujo`): ver src/piezas/.
-// `antiguo`: el dibujo de @wokwi/elements (`etiqueta`) que conserva un potenciómetro o un botón guardado sin `modelo`,
-// porque sus patas estaban a otros pasos. El lienzo lo usa hasta que el aprendiz mueve la pieza.
+// `dibujoAnterior`: dónde tenía las patas el dibujo con que se guardaba un potenciómetro o un botón sin `modelo` (el
+// de @wokwi/elements, que ya no está en el paquete: PIEZA-003). Solo son medidas: al abrir, el lienzo pone el dibujo
+// medido con el centro de sus patas donde estaba el de las antiguas.
 
 import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
 import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, TAPA_SHIELD, dibujarShield, mostrarShield, aplicarShield } from './piezas/shield_l293d.js';
@@ -144,7 +145,6 @@ export const TIPOS = {
     nombre: 'Botón',
     prefijo: 'btn',
     props: { color: 'rojo', modelo: '6x6' },
-    noCompletar: ['modelo'], // uno guardado sin `modelo` abre con el dibujo antiguo
     dibujo: { ...TAMANO_PULSADOR, pines: PINES_PULSADOR, svg: dibujarPulsador },
     soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
     rotulo: (pin) =>
@@ -161,17 +161,8 @@ export const TIPOS = {
     },
     aplicar: aplicarPulsador,
     presionar: presionarPulsador,
-    // Guardado sin `modelo`: el botón de wokwi, con las patas a 7 × 2 pasos.
-    antiguo: {
-      etiqueta: 'wokwi-pushbutton',
-      nombrePin: (n) => ({ '1.l': '1i', '1.r': '1d', '2.l': '2i', '2.r': '2d' })[n],
-      aplicar(el, props) {
-        el.color = { rojo: 'red', verde: 'green', azul: 'blue', amarillo: 'yellow', blanco: 'white', negro: 'black' }[props.color] || 'red';
-      },
-      presionar(el, presionado) {
-        el.pressed = presionado;
-      },
-    },
+    // Guardado sin `modelo`: 17,802 × 12 mm, con las patas a 7 × 2 pasos (medido el 28 oct).
+    dibujoAnterior: { ancho: 67.28, alto: 45.35, pines: { '1i': { x: 0, y: 13 }, '2i': { x: 0, y: 32 }, '1d': { x: 67, y: 13 }, '2d': { x: 67, y: 32 } } },
   },
   // Tarea T3. Pieza Tecno: microservo SG90 o MG90S (src/piezas/servo.js). El núcleo lee el ancho del pulso del pin
   // al que va la señal y gira el brazo; el modelo cambia el dibujo, el consumo y la velocidad.
@@ -298,7 +289,6 @@ export const TIPOS = {
     nombre: 'Potenciómetro',
     prefijo: 'pot',
     props: { ohmios: 10000, posicion: 0.5, modelo: '16mm' },
-    noCompletar: ['modelo'], // uno guardado sin `modelo` abre con el dibujo antiguo
     dibujo: { ...TAMANO_POT, pines: PINES_POT, svg: dibujarPotenciometro },
     soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
     rotulo: (pin) => ({ GND: 'GND · va a tierra (−)', SIG: 'SIG · pata del medio: la señal', VCC: 'VCC · va a 5V (+)' })[pin] || pin,
@@ -309,21 +299,7 @@ export const TIPOS = {
     },
     perilla: { prop: 'posicion', etiqueta: 'Perilla' }, // también se gira con el mouse sobre el eje
     aplicar: aplicarPotenciometro,
-    // Guardado sin `modelo`: el potenciómetro de wokwi, con las patas a 1 paso. Su dibujo gira la perilla solo.
-    antiguo: {
-      etiqueta: 'wokwi-potentiometer',
-      nombrePin: (n) => ({ GND: 'GND', SIG: 'SIG', VCC: 'VCC' })[n],
-      aplicar(el, props) {
-        el.min = 0;
-        el.max = 100;
-        el.value = Math.round((Number(props.posicion) || 0) * 100);
-      },
-    },
+    // Guardado sin `modelo`: 20 × 20 mm, con las patas a 1 paso (medido el 28 oct).
+    dibujoAnterior: { ancho: 75.59, alto: 75.59, pines: { GND: { x: 29, y: 68.5 }, SIG: { x: 39, y: 68.5 }, VCC: { x: 49, y: 68.5 } } },
   },
 };
-
-// ¿La pieza conserva el dibujo antiguo de wokwi? Un potenciómetro o un botón guardado sin `modelo`.
-export const esAntiguo = (tipo, props) => !!(TIPOS[tipo] && TIPOS[tipo].antiguo && !(props && props.modelo));
-// La definición con la que se dibuja la pieza: la de siempre o, con el dibujo antiguo, la misma sin `dibujo` y con la
-// `etiqueta`, los pines y el `aplicar` de wokwi.
-export const definicionDe = (tipo, props) => (esAntiguo(tipo, props) ? { ...TIPOS[tipo], dibujo: null, ...TIPOS[tipo].antiguo } : TIPOS[tipo]);

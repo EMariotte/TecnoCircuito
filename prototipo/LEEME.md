@@ -1,6 +1,6 @@
 # Prototipos 0 a 4 · cableado, chip, circuito eléctrico, PWM, tareas T1 y T2, y protoboard
 
-Sirven para validar TecnoCircuito antes de crear el repositorio, con las piezas reales: los dibujos de @wokwi/elements, avr8js, un solucionador eléctrico propio, la API del contrato 1 (`crearLienzo` y `crearSimulador`) y el empaquetado en un solo archivo.
+Sirven para validar TecnoCircuito antes de crear el repositorio, con las piezas reales: los dibujos de las piezas (al principio, los de @wokwi/elements; hoy, todas son Piezas Tecno), avr8js, un solucionador eléctrico propio, la API del contrato 1 (`crearLienzo` y `crearSimulador`) y el empaquetado en un solo archivo.
 
 - **Prototipo 0:** cableado de una placa, una resistencia y un LED.
 - **Prototipo 1:** avr8js ejecuta el `.hex` real compilado con arduino-cli, con un reloj común entre el chip y la pantalla.
