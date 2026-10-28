@@ -1,0 +1,64 @@
+[
+  {
+    "nombre": "diagnostico-2808fd8",
+    "comando": [
+      "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-I",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\diagnostico.py",
+      "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-pieza-2808fd8-6cm2ndoi\\prototipo.html",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\baseline-2808fd8"
+    ],
+    "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito",
+    "salida": 1,
+    "segundos": 10.11
+  },
+  {
+    "nombre": "revisor-vistas",
+    "comando": [
+      "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "-I",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo\\pruebas\\revisar_vista_td.py",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\led-5mm\\entrega\\tecnocircuito\\led-tc.json",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\resistencia-axial\\entrega\\tecnocircuito\\resistencia-025w-tc.json",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\resistencia-axial\\entrega\\tecnocircuito\\resistencia-025w6-tc.json",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\resistencia-axial\\entrega\\tecnocircuito\\resistencia-05w-tc.json",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\potenciometro-16mm\\entrega\\tecnocircuito\\potenciometro-tc.json",
+      "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\pulsador-6mm\\entrega\\tecnocircuito\\pulsador-tc.json"
+    ],
+    "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito",
+    "salida": 0,
+    "segundos": 0.09
+  },
+  {
+    "nombre": "tb-simulador",
+    "comando": [
+      "npm.cmd",
+      "run",
+      "test:simulador"
+    ],
+    "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+    "salida": 0,
+    "segundos": 47.54
+  },
+  {
+    "nombre": "tb-registro-app",
+    "comando": [
+      "npm.cmd",
+      "run",
+      "test:registro-app"
+    ],
+    "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+    "salida": 0,
+    "segundos": 152.92
+  },
+  {
+    "nombre": "tb-test",
+    "comando": [
+      "npm.cmd",
+      "test"
+    ],
+    "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+    "salida": 0,
+    "segundos": 21.98
+  }
+]

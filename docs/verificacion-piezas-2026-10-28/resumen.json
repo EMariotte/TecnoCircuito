@@ -1,0 +1,162 @@
+{
+  "fecha": "2026-10-28T10:24:33.120733-05:00",
+  "dictamen": "PIEZA-001 devuelta por F01; PIEZA-002 software conforme, físico/uso pendiente externo",
+  "archivos_TC_identificados": 89,
+  "sin_cambio_antes_del_hito": true,
+  "hermanos_identificados": 54,
+  "hermanos_sin_cambio": true,
+  "bitacora_prefijo_preservado": {
+    "bytes": 235751,
+    "sha256": "43bba93cd8ab4f2ef4d5949cc36a6bd8d4949ace920c8064011f4f9cd57d2938"
+  },
+  "suite_TC_salida_observada": 0,
+  "logs": {
+    "comparacion-instrumento-inicial.log": {
+      "sha256_original": "e0fa32c4350f3aa24d0ac9f23e5507a795cadef610bdf21691f6f4ffd7612a77",
+      "codificacion_original": "utf-16",
+      "OK": 0,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "comparacion-nucleo.log": {
+      "sha256_original": "f61971912cd80a7f612520c921ac06f195063baa0cfa442edf84a243903cca82",
+      "codificacion_original": "utf-16",
+      "OK": 74,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "diagnostico-2808fd8.log": {
+      "sha256_original": "8741f44c927197ef9303d9fed15b98092044d67debd36700790c499c4e13e1b6",
+      "codificacion_original": "utf-8 o cp1252 por línea",
+      "OK": 12,
+      "FALLA": 0,
+      "FALLO": 8,
+      "ERRORES_y_siguiente": []
+    },
+    "diagnostico.log": {
+      "sha256_original": "aa367d1dfbf9cc229fe91d92f156c11489a20253cd6aa2a64df2b1679d219834",
+      "codificacion_original": "utf-16",
+      "OK": 18,
+      "FALLA": 0,
+      "FALLO": 2,
+      "ERRORES_y_siguiente": []
+    },
+    "revisor-vistas.log": {
+      "sha256_original": "1f271af7e15fd43ab8f027d54ce1a8e54330fb5bb8af04babb802fb678a5ec4e",
+      "codificacion_original": "utf-8 o cp1252 por línea",
+      "OK": 202,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "suite-elevada.log": {
+      "sha256_original": "ab7ea30530f5092088398d7af154448acf1faaab154a752724fefe5949c5942b",
+      "codificacion_original": "utf-16",
+      "OK": 1391,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "suite.log": {
+      "sha256_original": "a84f00818c2aebb4cf4b35e61aa783b0b4f670668a081440a7ad47c9078e0385",
+      "codificacion_original": "utf-16",
+      "OK": 0,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "tb-registro-app.log": {
+      "sha256_original": "4e4b9e00bad2c9663ee02c2e924db73a9c8a05a9497559cfa7fe5d1b7c68035c",
+      "codificacion_original": "utf-8 o cp1252 por línea",
+      "OK": 134,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "tb-simulador.log": {
+      "sha256_original": "933142f3f6bee081a637a03c7b456a625eebe53d131e949d5912abccf9be817d",
+      "codificacion_original": "utf-8 o cp1252 por línea",
+      "OK": 58,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": []
+    },
+    "tb-test.log": {
+      "sha256_original": "4349a3cf07066d2afb9a2de34733c28c196c2efd3055de78aab27e1188fd03ba",
+      "codificacion_original": "utf-8 o cp1252 por línea",
+      "OK": 0,
+      "FALLA": 0,
+      "FALLO": 0,
+      "ERRORES_y_siguiente": [
+        "ERRORES:\r\nBloques sin nivel asignado (debe estar vacío): []\r\nuno omitidos: ['controls_flow_statement",
+        "ERRORES:\r\n"
+      ]
+    }
+  },
+  "ejecuciones": [
+    {
+      "nombre": "diagnostico-2808fd8",
+      "comando": [
+        "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+        "-I",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\diagnostico.py",
+        "C:\\Users\\ACER\\AppData\\Local\\Temp\\codex-pieza-2808fd8-6cm2ndoi\\prototipo.html",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\baseline-2808fd8"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito",
+      "salida": 1,
+      "segundos": 10.11
+    },
+    {
+      "nombre": "revisor-vistas",
+      "comando": [
+        "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+        "-I",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo\\pruebas\\revisar_vista_td.py",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\led-5mm\\entrega\\tecnocircuito\\led-tc.json",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\resistencia-axial\\entrega\\tecnocircuito\\resistencia-025w-tc.json",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\resistencia-axial\\entrega\\tecnocircuito\\resistencia-025w6-tc.json",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\resistencia-axial\\entrega\\tecnocircuito\\resistencia-05w-tc.json",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\potenciometro-16mm\\entrega\\tecnocircuito\\potenciometro-tc.json",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoDiseñador\\componentes\\pulsador-6mm\\entrega\\tecnocircuito\\pulsador-tc.json"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito",
+      "salida": 0,
+      "segundos": 0.09
+    },
+    {
+      "nombre": "tb-simulador",
+      "comando": [
+        "npm.cmd",
+        "run",
+        "test:simulador"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+      "salida": 0,
+      "segundos": 47.54
+    },
+    {
+      "nombre": "tb-registro-app",
+      "comando": [
+        "npm.cmd",
+        "run",
+        "test:registro-app"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+      "salida": 0,
+      "segundos": 152.92
+    },
+    {
+      "nombre": "tb-test",
+      "comando": [
+        "npm.cmd",
+        "test"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+      "salida": 0,
+      "segundos": 21.98
+    }
+  ]
+}

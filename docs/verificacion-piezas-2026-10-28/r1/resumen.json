@@ -1,0 +1,105 @@
+{
+  "fecha": "2026-10-28 11:07",
+  "resultado": "F01 verificado en software; dos PIEZA pendientes externas de geometría/uso",
+  "cuentas": {
+    "diagnostico": 20,
+    "piezas": 54,
+    "enchufe": 26,
+    "contrato": 212,
+    "tb-simulador": 58,
+    "tb-registro-app": 134
+  },
+  "fuentes_TC_conservadas": 89,
+  "hermanos_conservados": 54,
+  "evidencias_anteriores_conservadas": 44,
+  "bitacora_prefijo_preservado": {
+    "bytes": 238189,
+    "sha256": "c319c03297d185d0077a21372992add2d4fd48b3425efef96c92fcd58badd8ef"
+  },
+  "ejecuciones": [
+    {
+      "nombre": "construir",
+      "comando": [
+        "npm.cmd",
+        "run",
+        "construir"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito",
+      "salida": 0,
+      "segundos": 1.16
+    },
+    {
+      "nombre": "diagnostico",
+      "comando": [
+        "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+        "-I",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\diagnostico.py",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo\\dist\\prototipo.html",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\r1\\propio"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito",
+      "salida": 0,
+      "segundos": 10.33
+    },
+    {
+      "nombre": "piezas",
+      "comando": [
+        "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+        "-I",
+        "pruebas/probar_piezas.py",
+        "dist/prototipo.html",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\r1\\capturas"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo",
+      "salida": 0,
+      "segundos": 21.08
+    },
+    {
+      "nombre": "enchufe",
+      "comando": [
+        "C:\\Users\\ACER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+        "-I",
+        "pruebas/probar_enchufe.py",
+        "dist/prototipo.html",
+        "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-piezas-2026-10-28\\r1\\capturas"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo",
+      "salida": 0,
+      "segundos": 9.81
+    },
+    {
+      "nombre": "contrato",
+      "comando": [
+        "npm.cmd",
+        "run",
+        "probar:contrato"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo",
+      "salida": 0,
+      "segundos": 0.86
+    },
+    {
+      "nombre": "tb-simulador",
+      "comando": [
+        "npm.cmd",
+        "run",
+        "test:simulador"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+      "salida": 0,
+      "segundos": 47.06
+    },
+    {
+      "nombre": "tb-registro-app",
+      "comando": [
+        "npm.cmd",
+        "run",
+        "test:registro-app"
+      ],
+      "cwd": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoBloques",
+      "salida": 0,
+      "segundos": 134.5
+    }
+  ],
+  "informe_sha256": "bc3cb21158cb792fe8fdf7985c4bbf1498716ac40c7ce9617add643e5068b870"
+}

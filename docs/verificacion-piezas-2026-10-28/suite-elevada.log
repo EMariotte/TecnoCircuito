@@ -1,0 +1,1611 @@
+
+> tecnocircuito@0.3.1 probar
+> npm --prefix prototipo run probar
+
+
+> tecnocircuito-prototipo@0.0.1 probar
+> npm run construir && npm run probar:motor && npm run probar:nucleo && npm run probar:nano && npm run probar:kicad && npm run probar:contrato && npm run probar:fotos && npm run probar:corte && node pruebas/probar_fixtures.js && python -I pruebas/probar_kicad_pcb.py && python -I pruebas/probar_kicad_nano_pcb.py && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_svg.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_t1t2.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_protoboard.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_servo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_carro.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_biblioteca.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_probador.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_nano_ui.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_enchufe.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_vistas.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_piezas.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_registro.py dist/prototipo.html pruebas/capturas
+
+
+> tecnocircuito-prototipo@0.0.1 construir
+> node construir.js
+
+dist/tecnocircuito.js 0.3.1-dev · 557 KB (Worker: 91 KB) · dist/prototipo.html listo
+
+> tecnocircuito-prototipo@0.0.1 probar:motor
+> esbuild src/motor/index.js --bundle --format=cjs --platform=node --outfile=pruebas/motor.cjs --log-level=warning && node pruebas/probar_motor.js
+
+OK    divisor 1 kΩ + 1 kΩ: 2,500 V (lineal: 1 vuelta)
+OK    220 Ω converge en 13 vueltas
+OK    misma corriente en pin, resistencia y LED: 12,50 mA
+OK    corriente con 220 Ω entre 10 y 14 mA: 12,50 mA
+OK    LED rojo a 20,00 mA: 2,000 V (hoja de datos: 2,0 V a 20 mA)
+OK    sin resistencia: 100,57 mA → fallas: corriente_pin, led_quemado
+OK    en modo ideal, las mismas corrientes no dan fallas
+OK    LED al revés: -1.7e-18 A, sin fallas
+OK    pin en BAJO recibe 12,65 mA; en ALTO el LED se apaga
+OK    pin 13 en ALTO unido a GND: 200,00 mA, falla del pin
+OK    5V a GND: «El pin 5V está unido directo a GND: es un cortocircuito.»
+OK    la medición dice los vatios de cada resistencia (sin vatios: 0,25)
+OK    68 Ω (0.37 W): la de ¼ W se calienta y la falla sugiere una de ½ W; la de ½ W no («La resistencia r1 se calienta: disipa 0,37 W y aguanta 0,25 W. Usa una de más ohmios o una de ½ W.»)
+OK    una resistencia guardada sin vatios aguanta 0,25 W, como siempre
+OK    33 Ω en la de ½ W: se calienta, sin sugerir otra potencia («La resistencia r1 se calienta: disipa 0,76 W y aguanta 0,5 W. Usa una de más ohmios.»)
+OK    en modo ideal, la de ¼ W con 0,37 W no da falla
+OK    "0.5" aguanta como la de ½ W; 2 (fuera del esquema) como una guardada sin vatios (0.5 y 0.25)
+OK    potenciaDe: 0.25 y 0.5 (número o texto); lo demás, sin vatios
+OK    converge en los 60 casos (5 colores × 12 resistencias), peor caso: 21 vueltas
+OK    en la protoboard el LED con 220 Ω da lo mismo que con cables: 12,50 mA
+OK    con la resistencia en la otra mitad (f–j) no pasa corriente: el canal central separa las tiras (0,00 mA)
+OK    1 kΩ en el + y el − del conector de servo de la shield: 5,00 mA, lo mismo que con cables al 5V y GND (5,00 mA)
+OK    LED con 220 Ω en la señal S2 de la shield con D9 en ALTO: 12,50 mA y el pin 9 a 4,688 V, igual que con el cable al pin 9
+OK    un cable del + al − del conector de servo es un corto del 5V a GND, como en la placa
+OK    la shield sola, sin nada en sus conectores, no conecta ningún pin
+OK    diez LED con 100 Ω: cada pin da 23,78 mA (bajo 40 mA), pero entre todos 237,78 mA: corriente_chip «Entre todos, los pines entregan 238 mA y el chip aguanta 200 mA en total: en la placa real se puede dañar. Usa resistencias más grandes o menos pines a la vez.»
+OK    con ocho de ellos en ALTO (190,22 mA) no hay falla
+OK    ocho pines en BAJO que reciben 30 mA cada uno (240 mA) pasan del límite de GND
+OK    seis pines que entregan y seis que reciben 30 mA (180 mA por cada lado) no pasan del límite
+OK    sin la no idealidad limitePin, el límite del chip tampoco se revisa
+OK    una solución tarda 8.4 µs arrancando de la anterior y 75.4 µs desde cero
+
+Valores esperados con el pin 13 en ALTO, resistencia y LED rojo a GND:
+  Resistencia │ Corriente │ V del LED │ V de la resistencia │ V del pin 13
+      220 Ω   │  12,50 mA │   1,938 V │             2,749 V │      4,688 V
+      330 Ω   │   8,73 mA │   1,901 V │             2,881 V │      4,782 V
+     1000 Ω   │   3,10 mA │   1,820 V │             3,103 V │      4,922 V
+OK    placa real con 215 Ω: voltajes hasta 5,01 % y corriente a 5,01 % de la medida (criterio 5 % y 10 %); 5,01 % queda en el límite: cumple con la incertidumbre del multímetro (±0,033 V)
+OK    placa real con 326 Ω: voltajes hasta 1,45 % y corriente a 0,25 % de la medida (criterio 5 % y 10 %)
+OK    placa real con 1000 Ω: voltajes hasta 2,16 % y corriente a 0,09 % de la medida (criterio 5 % y 10 %)
+OK    LED rojo del 7 oct: 11 de 12 comparaciones dentro del criterio y 12 de 12 sumando la incertidumbre del UT33B+
+
+TODO BIEN
+
+> tecnocircuito-prototipo@0.0.1 probar:nucleo
+> esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_nucleo.js && node pruebas/probar_potencia.js
+
+OK    ciclo útil del pin 9: 25.0 % (programa: 64/255 = 25,1 %)
+OK    corriente promedio del LED: 3,12 mA (esperado 3,12 mA)
+OK    brillo según el promedio: 21 %
+OK    el circuito se resolvió solo 3 veces en 0,3 s, con unos 150 cambios del pin
+OK    con 220 Ω no hay fallas
+OK    voltaje promedio del pin 9 (lo que mide un multímetro): 1.17 V
+OK    perilla al 25 %: analogRead da 256 (esperado ≈ 256)
+OK      y el pin 9 queda en 25.1 % (esperado 25.1 %)
+OK      voltaje en la pata del medio: 1.25 V
+OK    perilla al 75 %: analogRead da 768 (esperado ≈ 768)
+OK      y el pin 9 queda en 75.3 % (esperado 75.3 %)
+OK      voltaje en la pata del medio: 3.75 V
+OK    perilla al 0 %: analogRead da 0 (esperado ≈ 0)
+OK      y el pin 9 queda en 0.0 % (esperado 0.0 %)
+OK      voltaje en la pata del medio: 0.00 V
+OK    perilla al 100 %: analogRead da 1023 (esperado ≈ 1023)
+OK      y el pin 9 queda en 100.0 % (esperado 100.0 %)
+OK      voltaje en la pata del medio: 5.00 V
+OK    al girar la perilla de 20 % a 80 % con el programa andando, la lectura pasa a 819
+OK    con PWM al 25 % y sin resistencia, el LED se quema igual (el daño lo hace el pico): led_quemado, corriente_pin
+OK    el LED quemado queda abierto
+OK    en modo ideal, el mismo circuito no avisa fallas
+OK    pull-down: suelto el LED queda apagado, presionado prendido y al soltar se apaga (0, 1, 0)
+OK    presionado, el pin 2 está a 5.00 V
+OK    el monitor serial dice «Presionado» y «Suelto»
+OK    realista, sin la mano: el pin al aire se queda en su nivel (0 cambios en 3 s; la placa real: 0)
+OK    el pin 2 figura «al aire» y sin voltaje medible
+OK    con la mano sobre el botón, validar_flotante dice «cambios 240 alto 35.1 % | cambios 240 alto 35.1 %» (la placa real con la mano: 225 a 269 cambios y ~35 %)
+OK    con la mano en otro pin, el pin 2 vuelve a quedarse quieto (0 cambios en 1 s)
+OK    al presionar deja de flotar: el LED queda prendido y quieto
+OK    ideal: sin pull-down el pin 2 lee BAJO y el LED queda apagado y quieto
+OK    pull-up interna: suelto apagado, presionado prendido (0, 1)
+OK    suelto, la pull-up deja el pin 2 a 5.00 V
+OK    realista, en el borde (perilla al 50 %): 42 lecturas que alternan entre 511 y 512, como en la placa real
+OK    realista, en medio de un valor: las 42 lecturas dan 300, quietas como en la placa real
+OK    ideal: siempre 512
+OK    realista: A0 al aire deambula entre 660 y 864
+OK    realista, con la mano sobre A0 al aire, validar_adc capta la red de 60 Hz: «min 0 max 1023 promedio 505.95 desviacion 362.35»
+OK    ideal: A0 al aire lee 0
+OK    sin GND la perilla no hace nada: lee 1023 (pegado a 5V)
+OK    write(0): pulso de 544 µs → 7° (el SG90 del kit: 7°)
+OK    write(90): pulso de 1471 µs → 89.9° (el SG90 del kit: 90°)
+OK    write(180): pulso de 2400 µs → 175° (el SG90 del kit: 175°)
+OK    de 90° a 175° tarda 0,14 s (hoja de datos: 0,1 s por 60° a 4,8 V)
+OK    consumo del SG90: 6 mA quieto, 208 mA moviéndose y 615 mA de pico al arrancar
+OK    el 5V de la placa entrega lo que pide el servo (6.3 mA)
+OK    y su ciclo útil: entre 6.3 y 7.6 % (1,47 ms de 20 ms = 7,4 %)
+OK    el pin 9 del servo en la tabla: entre 0,31 y 0,38 V, como un multímetro (~0,37 V)
+OK    barrido continuo: 100 mA en promedio (la placa real: ~100 mA)
+OK    el MG90S pide más al moverse que el SG90 (260 frente a 208 mA)
+OK    sin el cable de GND el servo no se mueve ni consume
+OK    alimentado desde el pin 7 no se mueve y avisa: «El servo servo1 toma la corriente del pin 7: un pin da hasta 40 mA y el servo pide unos 200 mA al moverse. Conecta el cable rojo a 5V.»
+OK    a 3,3 V gira más lento: 0,21 s frente a 0,14 s
+OK    cuatro servos moviéndose a la vez piden 2382 mA al 5V: más de los 500 mA del USB
+OK    con 1, 2, 3 y 4 SG90 moviéndose a la vez desde el USB, la placa no se reinicia (igual que la placa real)
+OK    el 5V promedio baja como en el multímetro: 4,56 V con 3 (real 4,55) y 4,42 V con 4 (real 4,30)
+OK    con 6 SG90, como un Otto, la placa se reinicia una y otra vez (299 veces en 8 s, 300 arranques): «La placa se reinició: los servos arrancaron a la vez y el 5V bajó a 2,5 V; por debajo de 2,7 V el Arduino se reinicia. Alimenta los servos con una fuente aparte y une su GND con el del Arduino.»
+OK    el aviso sale una sola vez, aunque se reinicie muchas
+OK    el tiempo simulado no retrocede con los reinicios (8000 ms)
+OK    en modo ideal (USB sin límite), los seis servos no reinician la placa
+OK    a 1 A sostenido, el fusible se abre a los 12,8 s (se dispara desde 1 A; 0,15 s a 8 A)
+OK    sin carga se enfría y se cierra a los 3,0 s
+OK    a 8 A se abre a los 150 ms (hoja de datos: 150 ms)
+OK    con 1 A sostenido, la placa se apaga a los 9,7 s: «La placa se apagó: el fusible del USB se calentó porque se le pidieron 1114 mA por varios segundos y aguanta 500 mA. Vuelve a encender cuando se enfríe. Alimenta los servos y motores con una fuente aparte.»
+OK    y vuelve a encender 3,0 s después, cuando el fusible se enfría
+OK    apagada, vuelve a encender a los 2991 ms avanzando de a 1 ms, 2991 y 2995 ms con pedazos de 4801 ciclos o mezclados
+OK    el USB entrega 93,14 mA: 50 mA de la placa, 22,73 mA del pin 5V y 20,41 mA que entrega el pin 13
+OK    L con el pin 13 a 1 kHz y 25 %: brillo estable de 0.25 a 0.25, sin parpadear
+OK    L con parpadeo13 (medio segundo prendido): se ve apagado y prendido del todo
+OK    RX apagado si el monitor no envía nada
+OK    RX se prende cuando el monitor serial le envía datos a la placa (aunque el programa no los lea)
+OK    y se apaga después del destello
+OK    shield: el potenciómetro en +5/Gnd/A3 de la shield da 1.500 V en A3, igual que directo a la placa
+      parpadeo13: 5 s simulados en 2179 ms → 2.30 veces más rápido que el chip real
+      pwm9: 5 s simulados en 1496 ms → 3.34 veces más rápido que el chip real
+      potenciometro: 5 s simulados en 2202 ms → 2.27 veces más rápido que el chip real
+      con PWM el chip va al 146 % de la velocidad sin PWM (mismo PC, misma corrida)
+
+Todo bien.
+OK    el programa de AFMotor_R4 corre: «Carro listo», «adelante 200», «quieto», «atras 255»
+OK    adelante a 200 (78 %): el motor 1 gira a 174 RPM (sin carga, con 8,4 V − caída del L293D)
+OK    los dos motores van igual: 174 y 173 RPM
+OK    el multímetro marca 6,20 V en el motor (el PWM y lo que genera el motor mientras el puente está apagado)
+OK    motor 1 (izquierdo) con FORWARD: avanza (60 cm/s)
+OK    sin carga pide 128 mA
+OK    atrás a 255: gira al revés a -216 RPM
+OK    a 255 le llegan 6,48 V: la caída del L293D es de 1,46 V (medida el 15 oct: 1,43 a 1,47 V)
+OK    con RELEASE se detiene solo en menos de 1 s (6 RPM a los 0,9 s)
+OK    con el puente PWR y 8,4 V, el Uno toma la energía del VIN: el USB no entrega nada
+OK    la batería baja a 7,94 V con los motores (resistencia interna de 1,2 Ω, medida el 15 oct)
+OK    sin fallas: ninguna
+OK    la shield está habilitada (pin 7 en BAJO) con 8,09 V para los motores
+OK    ideal: a 255 al motor le llegan 8,40 V, los 8,4 V de la batería (sin caída del L293D ni de la batería)
+OK    sin resistenciaBateria la batería queda en 8,40 V y el L293D sigue comiendo (6,93 V al motor)
+OK    ideal: gira más rápido, -280 RPM
+OK    descargada: avisa en la primera foto: «La batería bateria1 está descargada: 6,4 V, 3,20 V por celda. Corre el riesgo de perder sus celdas: por debajo de 3,0 V por celda una LiPo se daña y puede inflarse. Cárgala antes de seguir.»
+OK    descargada: el motor va a 126 RPM
+OK    con 6,4 V en el VIN el Uno sigue tomando la energía del USB
+OK    sin batería los motores no giran y se avisa: «El programa manda a girar los motores, pero la shield no tiene energía para ellos: el USB no alimenta los bornes M1 a M4. Conecta la batería a EXT_PWR (rojo en +, negro en −).»
+OK    batería al revés: se avisa y los motores no giran
+OK    motor en el pin 9: «El motor motor1 está conectado al pin 9: un pin da hasta 40 mA y el motor pide 150 mA o más (más de 1 A al arrancar). Conéctalo a los bornes M1 a M4 de la shield.»
+OK    motor directo al 5V: gira a 161 RPM y el USB entrega 171 mA
+OK    al arrancar, el motor pide un golpe de 1050 mA al USB
+OK    el motor derecho en M4 con el mismo cableado va hacia atrás: hay que invertir sus cables o su sentido
+OK    órdenes sin pausa: M1 atrás (-216 RPM) y M2 adelante (216 RPM)
+      2 s simulados en 1680 ms → 1.19 veces el chip real
+OK    la pantalla dice una vez «2CS» y repite: «ALL», total, «2S», «-1-», celda 1, «-2-», celda 2 (2CS | ALL | 7.40 |  2S | -1- | 3.70 | -2- | 3.70 | ALL | 7.40)
+OK    con 12,6 V muestra «12.6»
+OK    con 3 celdas empieza con «3CS»
+OK    sin batería, la pantalla queda apagada
+OK    nominal: el probador ve 2 celdas de 3,70 y 3,70 V y no pita
+OK    la tabla de mediciones trae el probador
+OK    desbalanceada (3,95 y 3,45 V) con alarma en 3,5 V: pita por la celda 2 («El probador probador1 pita: la celda 2 está en 3,45 V, por debajo de 3,5 V. Desconecta la batería y cárgala con un cargador de balance.»)
+OK    y la batería avisa que está desbalanceada
+OK    descargada (3,2 V por celda) con la alarma de fábrica (3,3 V): pita
+OK    con la alarma apagada no pita, pero sigue midiendo
+OK    cables cruzados (1 al + y 2 al medio): la celda 1 sale en 7,40 V y la 2 en 0,00: pita, como el real
+OK    sin el − conectado, el probador no enciende
+OK    con solo el − y el 1: ve una celda (1S) y se alimenta de ella
+OK    el − y el + del balance son los mismos de los cables de potencia
+OK    probador enchufado directo en el balance (sin cables): igual que con cables (3,70 y 3,70 V)
+OK    enchufado con las celdas cruzadas: la celda 1 sale en 7,40 V y pita, igual que con cables cruzados
+OK    probador enchufado al revés: no enciende, como el real
+OK    servo enchufado directo en SERVO_2 se mueve igual que con cables (7.0° y 7.0°)
+OK    LED enchufado directo en D13 y GND, sin resistencia: se quema, como en la placa real
+OK    en pedazos de 4801 ciclos la rueda gira lo mismo que de a 1 ms (72.4° y 72.4°)
+OK    con la shield agregada en medio de «atras 255», el motor gira (-216 RPM)
+
+Todo bien.
+
+> tecnocircuito-prototipo@0.0.1 probar:nano
+> esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && esbuild src/motor/index.js --bundle --format=cjs --platform=node --outfile=pruebas/motor.cjs --log-level=warning && node pruebas/probar_nano.js
+
+OK    nano/nano_old comparten la familia ATmega328P
+OK    el cargador antiguo no añade un segundo chip ni cambia el mapa
+OK    Nano expone ocho canales ADC y Uno conserva seis
+OK    A6/A7 están fuera del mapa digital y del promedio PWM
+OK    Nano tiene dos tierras; no hereda GND3 del Uno
+OK    RESET y RESET2 comparten nodo
+OK    nano/suelto: HEX real lee A6≈256 y A7≈768
+OK    nano/suelto: voltajes ADC disponibles en el núcleo
+OK    nano/suelto: estados inventados no crean GPIO ni pull-up en ADC6/7
+OK    nano/roja: HEX real lee A6≈256 y A7≈768
+OK    nano/roja: voltajes ADC disponibles en el núcleo
+OK    nano/roja: estados inventados no crean GPIO ni pull-up en ADC6/7
+OK    nano/azul: HEX real lee A6≈256 y A7≈768
+OK    nano/azul: voltajes ADC disponibles en el núcleo
+OK    nano/azul: estados inventados no crean GPIO ni pull-up en ADC6/7
+OK    nano_old/suelto: HEX real lee A6≈256 y A7≈768
+OK    nano_old/suelto: voltajes ADC disponibles en el núcleo
+OK    nano_old/suelto: estados inventados no crean GPIO ni pull-up en ADC6/7
+OK    nano_old/roja: HEX real lee A6≈256 y A7≈768
+OK    nano_old/roja: voltajes ADC disponibles en el núcleo
+OK    nano_old/roja: estados inventados no crean GPIO ni pull-up en ADC6/7
+OK    nano_old/azul: HEX real lee A6≈256 y A7≈768
+OK    nano_old/azul: voltajes ADC disponibles en el núcleo
+OK    nano_old/azul: estados inventados no crean GPIO ni pull-up en ADC6/7
+OK    ADC6/7 al aire: modo ideal lee cero
+OK    ADC6/7 al aire siguen el modelo realista y aceptan la mano en el conector equivalente
+OK    la red reconoce ADC6/7 flotantes sin exigir estado GPIO
+OK    nano/roja: SCK es D13; salida digital con resistencia interna
+OK    nano/roja: analogWrite(9,64) mantiene el PWM del AVR
+OK    nano/azul: SCK es D13; salida digital con resistencia interna
+OK    nano/azul: analogWrite(9,64) mantiene el PWM del AVR
+OK    nano_old/roja: SCK es D13; salida digital con resistencia interna
+OK    nano_old/roja: analogWrite(9,64) mantiene el PWM del AVR
+OK    nano_old/azul: SCK es D13; salida digital con resistencia interna
+OK    nano_old/azul: analogWrite(9,64) mantiene el PWM del AVR
+OK    la caída de alimentación aparece en MNA y en las mediciones
+OK    ADC6/7 leen la perilla respecto de AVCC real, sin falsa caída del valor digital
+OK    ADC7 alimentado por 3,3 V externa responde a la caída de AVCC
+OK    roja: USB nominal sin fusible PTC del Uno
+OK    roja: jack externo9 V regula 5V y conserva VIN del módulo separado
+OK    roja: reposo y caída usan supuestos Nano explícitos
+OK    roja: alimentación insuficiente distingue salida3.3 externa y móduloNano
+OK    roja: sin fuente, los rieles privados y Nano muestran cero
+OK    roja: apagada conserva reloj simulado en pasos parciales sin ejecutar el HEX
+OK    roja: cargar salida3.3 externa no une la salida3V3 del módulo
+OK    roja: aviso3.3 sobrecargada de referencia sin simular PTC del Uno
+OK    roja: la carga3.3 cuenta una vez en la corriente de alimentación
+OK    azul: USB nominal sin fusible PTC del Uno
+OK    azul: jack externo9 V regula 5V y conserva VIN del módulo separado
+OK    azul: reposo y caída usan supuestos Nano explícitos
+OK    azul: alimentación insuficiente distingue salida3.3 externa y móduloNano
+OK    azul: sin fuente, los rieles privados y Nano muestran cero
+OK    azul: apagada conserva reloj simulado en pasos parciales sin ejecutar el HEX
+OK    azul: cargar salida3.3 externa no une la salida3V3 del módulo
+OK    azul: aviso3.3 sobrecargada de referencia sin simular PTC del Uno
+OK    azul: la carga3.3 cuenta una vez en la corriente de alimentación
+OK    la LiPo cableada reemplaza voltajeJack y la caída interna llega a MNA (7.07 V con 0.272 A)
+OK    corriente del jack registrada en batería sin añadir60mA del Uno
+OK    jack con batería sin retornoGND no inventa alimentación desde la propiedad
+OK    batería invertida no se convierte en una fuente positiva
+OK    roja/ideal: corto en el jack anula la fuente de la propiedad y detiene el Nano
+OK    roja/ideal: el jack en corto conserva su diagnóstico eléctrico
+OK    roja/realista: corto en el jack anula la fuente de la propiedad y detiene el Nano
+OK    roja/realista: el jack en corto conserva su diagnóstico eléctrico
+OK    azul/ideal: corto en el jack anula la fuente de la propiedad y detiene el Nano
+OK    azul/ideal: el jack en corto conserva su diagnóstico eléctrico
+OK    azul/realista: corto en el jack anula la fuente de la propiedad y detiene el Nano
+OK    azul/realista: el jack en corto conserva su diagnóstico eléctrico
+OK    jack externo: carga directa de entrada incluida una vez en fuente y batería
+OK    jack externo: carga de entrada no provoca una falsa caída en el regulador de5V
+OK    con selecciónUSB la carga directa del jack sigue en la batería y no se atribuye al USB
+OK    VIN Nano suelto: carga directa de entrada incluida una vez en fuente y batería
+OK    VIN Nano suelto: carga de entrada no provoca una falsa caída en el regulador de5V
+OK    nano: libreríaServo conserva Timer1/pulso544µs por expansión
+OK    nano: modelos temporales coinciden al avanzar con pasos parciales
+OK    nano_old: libreríaServo conserva Timer1/pulso544µs por expansión
+OK    nano_old: modelos temporales coinciden al avanzar con pasos parciales
+OK    el servo gira más lento cuando el jack insuficiente reduce la alimentación real
+OK    servo alimentado por expansión apagada no se mueve ni consume
+OK    motorTT directo al 5V del Nano consume corriente y su carga reduce el riel
+OK    Nano suelto porVIN usa consumo propio de referencia sin incorporar60mA del Uno
+OK    Nano suelto: servo sin VCC no aparece conectado ni consume
+OK    quitar y reconectar la fuente reinicia el HEX y conserva el tiempo simulado
+OK    desconectar y reconectar a mano no cuenta como reinicio por energía (es un cambio del circuito) ni retrocede el reloj
+OK    el modelo de referencia no se avisa como falla en cada corrida
+OK    carga de 6 Ω con jack de 4 V: el 5V baja de 2,7 V, la placa se reinicia una vez y lo avisa (2.68 V)
+OK    bajo umbral de referencia la CPU espera; las salidas nunca superan alimentación
+OK    CPU detenida por bajo voltaje conserva la tensión residual real en MNA
+OK    Uno conserva USB5.11V/R1.66Ω/reposo50mA y su fusible original
+OK    batería invertida al jack: CPU apagada y diagnóstico de polaridad explícito
+OK    placa.3V3: motor TT reconoce el riel y su consumo reduce la salida
+OK    placa.3V3: consumo del motor también cuenta en la alimentación común
+OK    módulo Nano: aviso de 50mA separado del límite supuesto de la expansión
+OK    exp.OUT_3V3: motor TT reconoce el riel y su consumo reduce la salida
+OK    exp.OUT_3V3: consumo del motor también cuenta en la alimentación común
+OK    roja: OUT_5V_2 alimenta la carga y comparte la red de OUT_5V
+OK    roja: elegir OUT_5V o OUT_5V_2 conserva caída y consumo
+OK    roja: OUT_3V3_2 alimenta la carga y comparte la red de OUT_3V3
+OK    roja: elegir OUT_3V3 o OUT_3V3_2 conserva caída y consumo
+OK    roja: GND_OUT_2 alimenta la carga y comparte la red de GND_OUT
+OK    roja: elegir GND_OUT o GND_OUT_2 conserva caída y consumo
+OK    roja: OUT_3V3_3 alimenta la carga y comparte la red de OUT_3V3
+OK    roja: elegir OUT_3V3 o OUT_3V3_3 conserva caída y consumo
+OK    roja: GND_OUT_3 alimenta la carga y comparte la red de GND_OUT
+OK    roja: elegir GND_OUT o GND_OUT_3 conserva caída y consumo
+OK    azul: OUT_5V_2 alimenta la carga y comparte la red de OUT_5V
+OK    azul: elegir OUT_5V o OUT_5V_2 conserva caída y consumo
+OK    azul: OUT_3V3_2 alimenta la carga y comparte la red de OUT_3V3
+OK    azul: elegir OUT_3V3 o OUT_3V3_2 conserva caída y consumo
+OK    azul: GND_OUT_2 alimenta la carga y comparte la red de GND_OUT
+OK    azul: elegir GND_OUT o GND_OUT_2 conserva caída y consumo
+OK    azul: OUT_3V3_3 alimenta la carga y comparte la red de OUT_3V3
+OK    azul: elegir OUT_3V3 o OUT_3V3_3 conserva caída y consumo
+OK    azul: GND_OUT_3 alimenta la carga y comparte la red de GND_OUT
+OK    azul: elegir GND_OUT o GND_OUT_3 conserva caída y consumo
+OK    Nano suelto: 5V→LED→VIN: sin entrada no hay camino a GND; el LED queda apagado
+OK    expansión: OUT_5V→LED→VIN: sin entrada no hay camino a GND; el LED queda apagado
+OK    expansión: OUT_5V→LED→jack sin fuente: sin entrada no hay camino a GND; el LED queda apagado
+OK    unir 5V con VIN por USB no es un cortocircuito
+OK    corto del jack: un solo aviso claro, sin el falso «el jack recibe 0 V»
+OK    corto de la salida 3,3V con nombre legible: «La salida 3,3V de la expansión está unida directo a GND: es un cortocircuito. Quita ese cable.»
+OK    PWM en realista: 3 resoluciones del circuito en 1 s (antes 1016), 5V = 4.9937 V
+
+Nano: 122 comprobaciones aprobadas; hardware pendiente.
+
+> tecnocircuito-prototipo@0.0.1 probar:kicad
+> esbuild src/kicad.js --bundle --format=cjs --platform=node --outfile=pruebas/kicad.cjs --log-level=warning && node pruebas/probar_kicad.js && node pruebas/probar_kicad_nano.js
+
+(export
+	(version "E")
+	(design
+		(source "T1 en protoboard")
+		(date "2026-10-08T00:00:00")
+		(tool "TecnoCircuito")
+	)
+	(components
+…
+OK    es una netlist «export» versión E, con los paréntesis cerrados
+OK    los 4 conectores del shield y las 4 piezas, con su huella; ni el Uno ni la protoboard son piezas: J1, J2, J3, J4, R1, D1, SW1, R2
+OK    los valores: R1 220 y R2 10k
+OK    cinco redes: +5V, D2, D13, GND, Net-(D1-Pad2)
+OK    D2: J4.6, R2.1, SW1.1
+OK    D13: J2.5, R1.2
+OK    GND: D1.1, J1.6, R2.2
+OK    Net-(D1-Pad2): D1.2, R1.1
+OK    +5V: J1.5, SW1.2
+OK    en las redes no queda ningún hueco de la protoboard
+OK    los conectores llevan las referencias y los UUID de la plantilla «Arduino Uno Shield» de KiCad (así se reconocen al importar)
+OK    exportar dos veces da el mismo texto (KiCad reconoce las mismas huellas)
+OK    con cables y sin protoboard salen las mismas cinco redes
+OK    T2: {"+5V":["J1.5","RV1.3"],"A0":["J3.1","RV1.2"],"GND":["J2.4","RV1.1"]}
+OK    el potenciómetro es RV1, de 10k
+OK    una pieza sin cables entra a las piezas, sin redes
+OK    un corto de D13 a GND queda en la red GND: {"GND":["J2.4","J2.5"]}
+OK    LED enchufado directo en D13 y GND: las mismas redes que con cables {"D13":["D1.2","J2.5"],"GND":["D1.1","J2.4"]}
+OK    las comillas del nombre se escapan como en KiCad
+OK    la shield sale desarmada: U1 y U2 (L293D), U3 (74HC595), borneras J5 a J7, servos J8 y J9, headers analógicos J10 a J12, puente JP1, C1 a C4 y el LED con su R
+OK    huellas: DIP-16 para los integrados y borneras de 5 mm
+OK    un servo cableado a A0, 5V y GND, con la shield puesta, conserva su conector de 3 pines en la netlist
+OK    headers analógicos de la shield: J10 en A0–A5 (junto a J3 del Uno), J11 en +5V y J12 en GND
+OK    cada motor: su PWM llega a la habilitación de su canal y su sentido sale de la Q del 74HC595 que usa AFMotor_R4
+OK    74HC595: datos D8 (pata 14), reloj D4 (11), cierre D12 (12) y habilitación D7 (13)
+OK    el 74HC595 (pata 10, borrado) y la lógica de los L293D (pata 16) van a +5V
+OK    VMOT: EXT_PWR, los motores de los L293D (pata 8), C4 y el LED; el puente PWR une VMOT con VIN
+OK    SERVO_1 va al pin 10 y SERVO_2 al 9
+OK    GND: los integrados, las borneras, EXT_PWR, C4 y el LED
+OK    los motores y la batería usan las borneras de la shield: no agregan conectores
+OK    exportar dos veces da el mismo texto
+OK    un motor directo al 5V (sin shield) llega por una bornera de 2 (J5)
+OK    un servo enchufado en SERVO_1 no repite su conector: usa J8
+OK    sin shield, el servo sigue siendo su conector de 3 pines (M1)
+OK    un servo sin cables entra a las piezas, como cualquier pieza
+OK    la batería con el probador no tocan la placa: no aparecen
+OK    la batería al VIN llega por una bornera de 2; su balance, que no toca la placa, no agrega conector
+OK    batería al VIN con el probador en el balance: solo la bornera de la batería (J1, J2, J3, J4, J5)
+OK    resistencias: ½ W a 15,24 mm (9 mm), ¼ W a 10,16 mm, sin vatios a 15,24 mm (6,3 mm), "0.5" igual que 0.5 (Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal, Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal, Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P15.24mm_Horizontal, Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal)
+OK    potenciómetro guardado sin modelo: la RK09K de siempre (Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical)
+OK    potenciómetro del kit: la RK163, con las mismas redes (Potentiometer_THT:Potentiometer_Alps_RK163_Single_Horizontal)
+
+TODO BIEN
+OK    los 30 pads del Nano conservan el mapa físico independiente, incluidos A6/A7 y RESET/GND repetidos
+OK    D1: pad 1 del módulo unido a su resistencia externa
+OK    D0: pad 2 del módulo unido a su resistencia externa
+OK    RESET2: pad 3 del módulo unido a su resistencia externa
+OK    GND2: pad 4 del módulo unido a su resistencia externa
+OK    D2: pad 5 del módulo unido a su resistencia externa
+OK    D3: pad 6 del módulo unido a su resistencia externa
+OK    D4: pad 7 del módulo unido a su resistencia externa
+OK    D5: pad 8 del módulo unido a su resistencia externa
+OK    D6: pad 9 del módulo unido a su resistencia externa
+OK    D7: pad 10 del módulo unido a su resistencia externa
+OK    D8: pad 11 del módulo unido a su resistencia externa
+OK    D9: pad 12 del módulo unido a su resistencia externa
+OK    D10: pad 13 del módulo unido a su resistencia externa
+OK    D11: pad 14 del módulo unido a su resistencia externa
+OK    D12: pad 15 del módulo unido a su resistencia externa
+OK    D13: pad 16 del módulo unido a su resistencia externa
+OK    3V3: pad 17 del módulo unido a su resistencia externa
+OK    AREF: pad 18 del módulo unido a su resistencia externa
+OK    A0: pad 19 del módulo unido a su resistencia externa
+OK    A1: pad 20 del módulo unido a su resistencia externa
+OK    A2: pad 21 del módulo unido a su resistencia externa
+OK    A3: pad 22 del módulo unido a su resistencia externa
+OK    A4: pad 23 del módulo unido a su resistencia externa
+OK    A5: pad 24 del módulo unido a su resistencia externa
+OK    A6: pad 25 del módulo unido a su resistencia externa
+OK    A7: pad 26 del módulo unido a su resistencia externa
+OK    5V: pad 27 del módulo unido a su resistencia externa
+OK    RESET: pad 28 del módulo unido a su resistencia externa
+OK    GND1: pad 29 del módulo unido a su resistencia externa
+OK    VIN: pad 30 del módulo unido a su resistencia externa
+OK    Nano sin expansión: un módulo y las 30 piezas externas; ningún header del Uno
+OK    la electrónica del módulo no se desarma ni aparecen los cuatro conectores del Uno
+OK    nano_old conserva exactamente los pads, redes, huellas y UUID de nano
+OK    dos expansiones se rechazan antes de exportar: no se repiten nombres de redes privadas que KiCad fusionaría
+OK    conjunto: módulo Nano, dos reguladores, cinco condensadores y solo jack/I2C/SPI
+OK    no se agregan todos los GVS, UART ni un módulo opaco de expansión
+OK    jack centro +, filtro de entrada y VIN del regulador 5V comparten JACK_VIN
+OK    Nano.VIN queda sin red: jack no paraleliza el regulador interno del módulo
+OK    salida 5V externa alimenta pad27 del Nano y entrada del regulador 3V3
+OK    3V3 de expansión tiene filtro propio y permanece separada del pad17 del Nano
+OK    GND reúne ambos GND del módulo, reguladores, sleeve del jack y negativos de todos los filtros
+OK    contacto conmutado del jack (pad3) sin red; no se confunde con center o sleeve
+OK    A4 llega al pad de comunicación J2.1
+OK    A5 llega al pad de comunicación J2.2
+OK    D12 llega al pad de comunicación J3.1
+OK    D11 llega al pad de comunicación J3.2
+OK    D13 llega al pad de comunicación J3.3
+OK    D10 llega al pad de comunicación J3.4
+OK    I2C y SPI incluyen alimentación5V y masa con su orden de referencia
+OK    cada componente de expansión declara que es circuito de referencia por validar
+OK    variantes roja/azul tienen las mismas redes eléctricas de referencia
+OK    selección de alimentación del simulador no altera las conexiones físicas exportadas
+OK    las entradas y salidas de ambos reguladores quedan en redes diferentes
+OK    cargas externas de Nano3V3 y expansión3V3 conservan dos redes independientes
+OK    LED/resistencia exportan su circuito habitual al llegar por GVS; la señal equivale al pin directo del Nano
+OK    alias SDA/SCL llegan al módulo por pads23/24; no generan pads inexistentes
+OK    servo por GVS conserva su conector propio porque el alcance no exporta todos los headersGVS
+OK    pieza externa en salida3V3 conserva su bornera cuando no existe un conector exportado que la cubra
+
+59 comprobaciones; 0 falla(s)
+
+> tecnocircuito-prototipo@0.0.1 probar:contrato
+> esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && node pruebas/probar_contrato.js
+
+— El código y el contrato dicen lo mismo
+OK    los 31 contactos del dibujo de Arduino Uno son los del esquema
+OK    los 30 contactos del dibujo de Arduino Nano son los del esquema
+OK    los 30 contactos del dibujo de Arduino Nano (bootloader antiguo) son los del esquema
+OK    potenciometro: los pines del dibujo antiguo de wokwi (GND, SIG, VCC) son los del esquema
+OK    pulsador: los pines del dibujo antiguo de wokwi (1i, 1d, 2i, 2d) son los del esquema
+OK    todas las piezas del catálogo son Piezas Tecno, con su dibujo (PIEZA-001 y PIEZA-002)
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"azul","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"jack","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"apagada","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":0}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":5}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":7}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":9}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_nano_io (pieza Tecno, {"variante":"roja","alimentacion":"usb","voltajeJack":12}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":220,"vatios":0.25}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":330,"vatios":0.25}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":1000,"vatios":0.25}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":10000,"vatios":0.25}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":220,"vatios":0.25}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":220,"vatios":0.5}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia (pieza Tecno, {"ohmios":220}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    led (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    pulsador (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    servo (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    shield_l293d (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"eje","lado":"izquierdo"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"rueda","lado":"izquierdo"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"eje","lado":"izquierdo"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    motor_tt (pieza Tecno, {"vista":"eje","lado":"derecho"}): los contactos físicos y aliases documentados coinciden con el esquema
+OK    bateria_lipo (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    probador_lipo (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    potenciometro (pieza Tecno): los contactos físicos y aliases documentados coinciden con el esquema
+OK    resistencia: una nueva trae vatios 0.25, del esquema
+OK    potenciometro: el modelo de una pieza nueva («16mm») es el del esquema
+OK    pulsador: el modelo de una pieza nueva («6x6») es el del esquema
+OK    biblioteca: cada pieza está en una sola categoría (Básicas: 3, Entradas: 2, Actuadores: 2, Potencia y energía: 4)
+OK    biblioteca: cada pieza tiene su ficha (descripción, pines, palabras y datos sin «undefined»)
+OK    biblioteca: el nombre de la ficha es el del catálogo
+OK    ficha del LED: validado solo el rojo (el único medido); los otros colores, por validar
+OK    ficha del LED rojo: 11 de 12 dentro del criterio (el porcentaje va respecto de la medida)
+OK    ficha del SG90: la corriente quieto se midió como «menos de 10 mA»; los 6 mA son de la hoja de datos
+OK    ficha del potenciómetro: el ruido del ADC (0,1 pasos) dice que es una estimación
+OK    un .hex correcto se lee (fijo13 y una línea de 2 bytes)
+OK    una línea que dice 2 bytes y trae 1 (con la suma correcta) se rechaza
+OK    una línea que dice 1 byte y trae 2 (con la suma correcta) se rechaza
+OK    una dirección de segmento de 1 byte, un fin con datos y un tipo que no existe se rechazan
+OK    shield_nano_io.variante: los valores del catálogo (roja, azul) son los del esquema
+OK    shield_nano_io.alimentacion: los valores del catálogo (usb, jack, apagada) son los del esquema
+OK    shield_nano_io.voltajeJack: los valores del catálogo (0, 5, 7, 9, 12) son los del esquema
+OK    resistencia.ohmios: los valores del catálogo (220, 330, 1000, 10000) son los del esquema
+OK    resistencia.vatios: los valores del catálogo (0.25, 0.5) son los del esquema
+OK    shield_l293d.puentePWR: los valores del catálogo (true, false) son los del esquema
+OK    motor_tt.vista: los valores del catálogo (eje, rueda) son los del esquema
+OK    motor_tt.lado: los valores del catálogo (izquierdo, derecho) son los del esquema
+OK    bateria_lipo.carga: los valores del catálogo (llena, nominal, descargada, desbalanceada) son los del esquema
+OK    probador_lipo.umbral: los valores del catálogo (0, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8) son los del esquema
+OK    servo: los modelos del catálogo (sg90, mg90s) son los del esquema
+OK    cada tipo del catálogo tiene sus pines en el esquema (shield_nano_io, resistencia, led, pulsador, servo, shield_l293d, motor_tt, bateria_lipo, probador_lipo, potenciometro)
+OK    los 10 colores de cable, en el mismo orden del código de colores
+OK    led: los colores del catálogo son los del esquema
+OK    pulsador: los colores del catálogo son los del esquema
+OK    los 400 huecos de protoboard.js cumplen el patrón del esquema, y a0, a31, k1, s+1, s-7, i+13, i-19, s+25, x+3, a, s+ no
+OK    KiCad: la tabla de pads de resistencia tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de led tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de pulsador tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de servo tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: la tabla de pads de potenciometro tiene todos los pines del esquema, ni más ni menos
+OK    KiCad: los conectores J1 a J4 del shield tienen cada pin del Uno una sola vez (31)
+— Los ejemplos cumplen el contrato
+OK    el ejemplo de CONTRATO.md, sección 4
+OK    INICIAL de la página de prueba
+OK    EJEMPLO de la página de prueba
+OK    EJEMPLO_T1 de la página de prueba
+OK    EJEMPLO_T2 de la página de prueba
+OK    EJEMPLO_PB de la página de prueba
+OK    EJEMPLO_PB_ANTIGUO de la página de prueba
+OK    EJEMPLO_SERVO de la página de prueba
+OK    EJEMPLO_SERVOS de la página de prueba
+OK    EJEMPLO_SEIS de la página de prueba
+OK    EJEMPLO_CARRO de la página de prueba
+OK    EJEMPLO_PROBADOR de la página de prueba
+OK    nano + expansión roja: el ejemplo A6/A7 cumple el contrato
+OK    nano + expansión azul: el ejemplo A6/A7 cumple el contrato
+OK    nano_old + expansión roja: el ejemplo A6/A7 cumple el contrato
+OK    nano_old + expansión azul: el ejemplo A6/A7 cumple el contrato
+OK    se rechaza dos expansiones montadas
+OK    se rechaza expansión del Nano sobre Uno
+OK    se rechaza shield L293D del Uno sobre Nano
+OK    se rechaza expansión encajada en protoboard
+OK    se rechaza tercer GND del Uno en Nano
+OK    se rechaza GPIO D20 inexistente en Nano
+OK    se rechaza una pata enchufada en SDA, otro nombre de A4 del Nano
+OK    se rechaza una pata enchufada en SPI_MOSI, alias de la expansión
+OK    aliases de I2C y SPI del Nano aceptados como conexiones de los pines físicos
+— Lo que está mal se rechaza con su motivo
+OK    se acepta un tipo de pieza que esta versión no conoce
+OK    se acepta un campo que esta versión no conoce
+OK    se acepta un cable sin color ni dobleces
+OK    se rechaza formato 2: esquema: /formato must be equal to constant
+OK    se rechaza placa «leonardo»: esquema: /placa must be equal to one of the allowed values ["uno","nano","nano_old","mega"]
+OK    se rechaza giro de 45°: esquema: /componentes/0/rot must be equal to one of the allowed values [0,90,180,270]
+OK    se rechaza cable «fucsia»: esquema: /cables/0/color must be equal to one of the allowed values ["negro","marron","rojo","naranja","amarillo","verde","azul","morado","gris","blanco"]
+OK    se rechaza LED «morado»: esquema: /componentes/1/props/color must be equal to one of the allowed values ["rojo","verde","amarillo","azul","blanco"]
+OK    se rechaza un servo de un modelo que no existe: esquema: /componentes/4/props/modelo must be equal to one of the allowed values ["sg90","mg90s"]
+OK    se rechaza un cable a la pata «PWM» del servo (se llama SIG): cable 6 (placa.D9 → s1.PWM): la pieza «s1» (servo) no tiene el pin «PWM»
+OK    se rechaza potenciómetro con la perilla en 1,5: esquema: /componentes/4/props/posicion must be <= 1
+OK    se rechaza resistencia de 0 Ω: esquema: /componentes/0/props/ohmios must be > 0
+OK    se acepta una resistencia de ½ W
+OK    se rechaza una resistencia de 2 W (el kit no tiene): esquema: /componentes/0/props/vatios must be equal to one of the allowed values [0.25,0.5]
+OK    se acepta un potenciómetro del kit (modelo 16mm)
+OK    se rechaza un potenciómetro de un modelo que no existe: esquema: /componentes/4/props/modelo must be equal to one of the allowed values ["16mm"]
+OK    se acepta un botón del kit (modelo 6x6)
+OK    se rechaza un botón de un modelo que no existe: esquema: /componentes/2/props/modelo must be equal to one of the allowed values ["6x6"]
+OK    se rechaza una pieza llamada «placa»: esquema: /componentes/0/id must NOT be valid
+OK    se rechaza un id con punto: esquema: /componentes/0/id must match pattern "^[^.\s]+$"
+OK    se rechaza un doblez con tres números: esquema: /cables/0/puntos/0 must NOT have more than 2 items
+OK    se rechaza la pata «pata» en el «en» del LED: esquema: /componentes/1/en must be equal to one of the allowed values ["anodo","catodo"]
+OK    se rechaza dos piezas con el mismo id: la pieza «r1» está repetida
+OK    se rechaza un cable a una pieza que no existe: cable 0 (placa.D13 → led9.anodo): no hay ninguna pieza «led9»
+OK    se rechaza un cable a un pin que la pieza no tiene: cable 0 (placa.D13 → r1.3): la pieza «r1» (resistencia) no tiene el pin «3»
+OK    se rechaza un cable a un pin que el Uno no tiene: cable 0 (placa.D14 → protoboard.a17): la placa uno no tiene el pin «D14»
+OK    se rechaza un cable al hueco a31: cable 0 (placa.D13 → protoboard.a31): la protoboard no tiene el hueco «a31»
+OK    se rechaza una pata en el hueco s+7 (no existe en el riel): «en» de «r1», pata 1: la protoboard no tiene el hueco «s+7»
+OK    se rechaza «en» sin protoboard: la pieza «r1» tiene «en» en la protoboard, pero no hay protoboard
+OK    se acepta un LED enchufado directo en D13 y GND1 de la placa
+OK    se acepta una pata enchufada en el pin de otra pieza
+OK    se rechaza una pata enchufada en una pieza que no existe: «en» de «led1», pata anodo: no hay ninguna pieza «led9»
+OK    se rechaza una pata enchufada en un pin que el Uno no tiene: «en» de «led1», pata anodo: la placa uno no tiene el pin «D14»
+OK    se rechaza una pieza enchufada en sí misma: «en» de «led1», pata anodo: una pieza no se enchufa en sí misma
+OK    se rechaza una pata enchufada en «placa.D13.x» (un punto de más): esquema: /componentes/1/en/anodo must match pattern "^[^.\s]+\.[^.\s]+$"
+OK    se rechaza dos patas en el mismo pin: «placa.D13» recibe dos patas: r1.1 y led1.anodo
+OK    se rechaza un cable que empieza y termina en el mismo pin: el cable 6 empieza y termina en placa.D4
+— Los eventos del registro cumplen el contrato
+OK    las 22 fallas que avisa el código están en el esquema
+OK    cada falla conocida está explicada en CONTRATO.md, sección 6
+OK    las 7 claves de «activas» son las del simulador
+OK    las placas de los eventos son las del circuito
+OK    los 2 ejemplos de CONTRATO.md, sección 6
+OK    el ejemplo del sobre de CONTRATO.md, sección 6.1
+OK    evento componente_agregado: emitido y en el archivo
+OK    evento componente_quitado: emitido y en el archivo
+OK    evento componente_cambiado: emitido y en el archivo
+OK    evento componente_cambiado (giro): emitido y en el archivo
+OK    evento componente_cambiado (props): emitido y en el archivo
+OK    evento cable_agregado: emitido y en el archivo
+OK    evento cable_quitado: emitido y en el archivo
+OK    evento boton_pulsado: emitido y en el archivo
+OK    evento simulacion_iniciada: emitido y en el archivo
+OK    evento simulacion_pausada: emitido y en el archivo
+OK    evento simulacion_reanudada: emitido y en el archivo
+OK    evento simulacion_detenida: emitido y en el archivo
+OK    evento simulacion_detenida (sin fallas): emitido y en el archivo
+OK    evento falla: emitido y en el archivo
+OK    evento reinicio_placa: emitido y en el archivo
+OK    evento reinicio_placa (botón): emitido y en el archivo
+OK    evento sesion_iniciada: emitido y en el archivo
+OK    evento proyecto_abierto: emitido y en el archivo
+OK    evento ejemplo_cargado: emitido y en el archivo
+OK    evento placa_cambiada: emitido y en el archivo
+OK    evento bloques_cambiados: emitido y en el archivo
+OK    evento codigo_compilado: emitido y en el archivo
+OK    evento codigo_compilado (con error): emitido y en el archivo
+OK    evento programa_subido: emitido y en el archivo
+OK    evento sesion_terminada: emitido y en el archivo
+OK    evento registro_interrumpido: emitido y en el archivo
+OK    evento evento_descartado: emitido y en el archivo
+OK    evento evento_descartado (de la página, solo el motivo): emitido y en el archivo
+OK    cada tipo de evento de la sección 6 tiene su ejemplo aquí (22)
+OK    se acepta un tipo de evento que esta versión no conoce
+OK    se acepta un campo que esta versión no conoce
+OK    se acepta una falla que esta versión no conoce
+OK    se rechaza sin «v»: esquema: (raíz) must have required property 'v'
+OK    se rechaza «v» 2: esquema: /v must be equal to constant
+OK    se rechaza la hora como texto: esquema: /t must be integer
+OK    se rechaza origen «otro»: esquema: /origen must be equal to constant
+OK    se rechaza registro_interrumpido sin «perdidos»: esquema: /datos must have required property 'perdidos'
+OK    se rechaza registro_interrumpido con «perdidos» negativo: esquema: /datos/perdidos must be >= 0
+OK    se rechaza registro_interrumpido que dice venir del simulador: esquema: /origen must be equal to constant
+OK    se rechaza un evento del simulador sin «corrida»: esquema: (raíz) must have required property 'corrida'
+OK    se rechaza la corrida 0: esquema: /corrida must be >= 1
+OK    se acepta una falla con su tramo del reloj (21 oct)
+OK    se rechaza el tramo negativo: esquema: /tramo must be >= 0
+OK    se rechaza el tramo con decimales: esquema: /tramo must be integer
+OK    se rechaza una falla con el mensaje en pantalla: esquema: /datos/mensaje boolean schema is false
+OK    se rechaza una falla sin componente: esquema: /datos must have required property 'componente'
+OK    se rechaza una falla que dice venir del lienzo: esquema: /origen must be equal to constant
+OK    se rechaza simulacion_detenida sin la lista de fallas: esquema: /datos must have required property 'fallas'
+OK    se acepta un cierre sin la confirmación del Worker (confirmado: false, 22 oct)
+OK    se rechaza confirmado que no es sí o no: esquema: /datos/confirmado must be boolean
+OK    se rechaza simulacion_iniciada sin el circuito: esquema: /datos must have required property 'circuito'
+OK    se rechaza simulacion_iniciada en modo «medio»: esquema: /datos/modo must be equal to one of the allowed values ["realista","ideal"]
+OK    se rechaza simulacion_iniciada con un cable a una pieza que no existe: circuito: cable 0 (placa.D13 → led9.anodo): no hay ninguna pieza «led9»
+OK    se rechaza una no idealidad «a medias»: esquema: /datos/activas/limiteUSB must be boolean
+OK    se rechaza un cable sin su punta «a»: esquema: /datos must have required property 'a'
+OK    se rechaza un cable a «D13» sin la pieza: esquema: /datos/de must match pattern "^[^.\s]+\.[^.\s]+$"
+OK    se rechaza un giro de 45°: esquema: /datos/rot must be equal to one of the allowed values [0,90,180,270]
+OK    se rechaza proyecto_abierto con el nombre que escribió el aprendiz: esquema: /datos/nombre boolean schema is false
+OK    se rechaza codigo_compilado sin el código: esquema: /datos must have required property 'codigo'
+OK    se rechaza sesion_iniciada en la placa «leonardo»: esquema: /datos/placa must be equal to one of the allowed values ["uno","nano","nano_old","mega"]
+OK    se rechaza placa_cambiada sin «de»: esquema: /datos must have required property 'de'
+OK    se rechaza placa_cambiada a la placa «leonardo»: esquema: /datos/a must be equal to one of the allowed values ["uno","nano","nano_old","mega"]
+OK    se rechaza placa_cambiada que dice venir del simulador: esquema: /origen must be equal to constant
+OK    se rechaza evento_descartado sin motivo: esquema: /datos must have required property 'motivo'
+OK    se rechaza evento_descartado que dice venir del simulador: esquema: /origen must be equal to constant
+OK    se rechaza evento_descartado con la corrida 0: esquema: /datos/corrida must be >= 1
+OK    se rechaza evento_descartado con un tipo de más de 64 caracteres: esquema: /datos/tipo must NOT have more than 64 characters
+OK    se rechaza evento_descartado con el largo negativo: esquema: /datos/largo must be >= 0
+OK    se rechaza bloques_cambiados con el XML en vez del resumen: esquema: /datos must have required property 'bloques'
+OK    se rechaza una línea del archivo sin «equipo»: esquema: (raíz) must have required property 'equipo'
+OK    se rechaza una línea del archivo sin «sesion»: esquema: (raíz) must have required property 'sesion'
+OK    se rechaza una línea del archivo sin «version_tb»: esquema: (raíz) must have required property 'version_tb'
+OK    se rechaza una línea del archivo sin «version_tc»: esquema: (raíz) must have required property 'version_tc'
+OK    se rechaza una línea con el código de equipo vacío
+
+TODO BIEN
+
+> tecnocircuito-prototipo@0.0.1 probar:fotos
+> esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && esbuild pruebas/entrada_contrato.js --bundle --format=cjs --platform=node --outfile=pruebas/codigo.cjs --log-level=warning && esbuild src/trabajador.js --bundle --format=iife --target=chrome120 --outfile=pruebas/trabajador.cjs --log-level=warning && node pruebas/probar_fotos.js
+
+OK    la foto pendiente trae fallas nuevas (corriente_pin,led_quemado)
+OK    pausa: las fallas de la foto que llegó tarde se avisan igual
+OK    pausa: con su corrida y el tiempo simulado de la foto (ms_sim 20, 20)
+OK    pausa: la vista vieja no se dibuja y el tiempo mostrado no cambia
+OK    al reanudar, el LED sigue quemado y el núcleo no repite la falla
+OK    el cierre de la corrida trae las fallas (corriente_pin,led_quemado)
+OK    cada falla se avisa una sola vez
+OK    pausa y detener: el cierre trae las fallas de la foto que llegó en la pausa
+OK    reiniciar: las fallas de la foto de antes del reinicio se avisan
+OK    reiniciar: lo que imprimió el programa antes del reinicio llega al monitor
+OK    reiniciar: y van en el cierre
+OK    pausa: el texto del monitor serial de la foto que llegó tarde se muestra
+OK    recablear: la foto se dibuja y sus fallas se avisan
+OK    otra corrida: las fallas y el texto de la foto de la corrida anterior no entran
+OK    el cierre de la corrida nueva no trae fallas de la anterior
+OK    RESET después de un reinicio por energía: ese reinicio se avisa una sola vez (1)
+OK    la foto de antes del RESET llega antes: sus hechos quedan en el tramo 0 con su tiempo, el RESET en el 0 y lo del reloj nuevo en el 1 (fallas led1:0,placa.D13:0,led2:1; reinicios energia_usb:0,boton:0)
+OK    la foto de antes del RESET llega después: sus hechos quedan en el tramo 0 con su tiempo, el RESET en el 0 y lo del reloj nuevo en el 1 (fallas led1:0,placa.D13:0,led2:1; reinicios boton:0,energia_usb:0)
+OK    espera: el cierre sin confirmar dice confirmado false y su tiempo (16 ms) no queda antes de la falla (16 ms)
+OK    sinEsperar: el cierre sin confirmar dice confirmado false y su tiempo (16 ms) no queda antes de la falla (16 ms)
+OK    con la confirmación del Worker: confirmado true y su tiempo
+OK    una confirmación sin la última foto: confirmado false
+OK    la segunda pausa y el RESET dicen 16 y 16 ms (la falla tardía fue a los 16)
+OK    después del RESET, la pausa es del tramo nuevo y empieza en 0 ms
+OK    activas: solo claves conocidas y booleanas ({"danoComponentes":true,"limitePin":true,"entradaFlotante":true,"ruidoADC":true,"limiteUSB":false,"caidaL293D":true,"resistenciaBateria":true})
+OK    RESET: la foto con lo pendiente sale con el turno anterior (turno 1, corriente_pin,led_quemado, 15 ms) y la del reloj nuevo sin ello
+OK    detener con una foto que falla: el Worker confirma igual, sin msSimulados (detenido,error)
+OK    RESET con una foto que falla: se avisa y el chip vuelve a cero igual (0 ms al detener)
+OK    detener normal: la última foto y la confirmación con su tiempo, entera
+OK    control AUD-16: sin fallo, el RESET entrega las fallas y el cierre confirma (corriente_pin,led_quemado)
+npm.cmd : TecnoCircuito: la foto no se pudo mandar
+En línea: 2 Carácter: 1
++ npm.cmd run probar *> docs/verificacion-piezas-2026-10-28/suite-eleva ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (TecnoCircuito: la foto no se pudo mandar:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+TecnoCircuito: la foto no se pudo mandar
+OK    AUD-16: se perdió la foto de antes del RESET con sus fallas: el cierre dice confirmado false (2 errores avisados)
+TecnoCircuito: la foto no se pudo mandar
+OK    AUD-16: la foto periódica falla 40 ms: el reloj sigue (5 fotos después), un error avisado y el cierre sin confirmar
+OK    AUD-16: la corrida nueva después de la pérdida empieza entera y se confirma
+TecnoCircuito: la foto no se pudo mandar
+OK    AUD-16: falla la primera foto: el reloj arranca igual (3 fotos) y el cierre no confirma
+OK    AUD-16: con la última foto fallida, el Worker confirma sin tiempo y sin decir entera
+TecnoCircuito: avanzar: falla sintética del núcleo
+OK    AUD-26, avanzar falla una vez: el Worker para y lo avisa una vez, la página cierra la corrida sin confirmar (1 error, estado detenido)
+OK    control AUD-26, avanzar falla una vez: la corrida siguiente empieza entera y se confirma
+TecnoCircuito: avanzar: falla sintética del núcleo
+OK    AUD-26, avanzar falla siempre: el Worker para y lo avisa una vez, la página cierra la corrida sin confirmar (1 error, estado detenido)
+OK    control AUD-26, avanzar falla siempre: la corrida siguiente empieza entera y se confirma
+TecnoCircuito: reiniciarChip: falla sintética del núcleo
+OK    AUD-26, reiniciarChip falla al pulsar RESET: el Worker para y lo avisa una vez, la página cierra la corrida sin confirmar (1 error, estado detenido)
+OK    control AUD-26, reiniciarChip falla al pulsar RESET: la corrida siguiente empieza entera y se confirma
+TecnoCircuito: ponerCircuito: falla sintética del núcleo
+OK    AUD-26, ponerCircuito falla al recablear: el Worker para y lo avisa una vez, la página cierra la corrida sin confirmar (1 error, estado detenido)
+OK    control AUD-26, ponerCircuito falla al recablear: la corrida siguiente empieza entera y se confirma
+TecnoCircuito: avanzar: falla sintética del núcleo
+TecnoCircuito: avanzar: falla sintética del núcleo
+TecnoCircuito: avanzar: falla sintética del núcleo
+OK    AUD-26: con el núcleo fallando siempre, tres intentos dan tres errores y tres cierres sin confirmar (3)
+OK    control AUD-26: sin errores, la corrida se confirma con sus fallas
+TecnoCircuito: error sintético del Worker
+OK    AUD-26: un error del Worker después de cargar cierra la corrida
+OK    AUD-26: y su cierre sale sin confirmar, aunque el Worker confirme que paró
+TecnoCircuito: un mensaje del simulador no se pudo leer
+OK    AUD-26: un mensaje que no se pudo leer deja la corrida sin confirmar
+OK    control AUD-26: un error con el turno de una corrida anterior no detiene la nueva
+TecnoCircuito: tarde
+OK    control AUD-26: y la nueva se confirma
+TecnoCircuito: avanzar: falla sintética del núcleo
+OK    AUD-26 sin Worker: el núcleo falla, el reloj de la página para y el cierre sale sin confirmar (0 vueltas después)
+OK    AUD-23: en 300 ms de pausa el reloj del Worker no avanza (49 ms al pausar, 49 después, 49 al seguir)
+OK    AUD-23: la foto tardía sube la reanudación de 0 a 33 ms, sin que el Worker avance en la pausa (su primera foto al seguir: 39 ms)
+OK    AUD-23: el RESET después de la foto tardía es del tramo 0 (56 ms) y la pausa siguiente empieza en el tramo 1 (0 ms)
+OK    detener: se ve detenida al instante, pero el cierre espera al Worker
+OK    detener: la foto en camino entrega sus fallas, el cierre las trae (corriente_pin,led_quemado) con el ms del Worker, y la promesa se cumple
+OK    detener: después del cierre ya no entra nada
+OK    pausa y detener: se ve detenida al instante, pero el cierre espera al Worker
+OK    pausa y detener: la foto en camino entrega sus fallas, el cierre las trae (corriente_pin,led_quemado) con el ms del Worker, y la promesa se cumple
+OK    pausa y detener: después del cierre ya no entra nada
+OK    la última foto del Worker al parar: sus fallas van en el cierre
+OK    destruir: el Worker sigue hasta el cierre
+OK    destruir: el cierre trae las fallas de la foto en camino y después se libera el Worker
+OK    destruir: después ya no acepta órdenes
+OK    sin respuesta del Worker: el cierre sale a los 500 ms, con las fallas que llegaron
+OK    una confirmación tardía no repite el cierre
+OK    sinEsperar: el cierre sale en el mismo instante (límite al cerrar la ventana)
+OK    sinEsperar: una foto que llega después no agrega eventos
+OK    iniciar antes de la confirmación: el cierre de la anterior sale antes del inicio nuevo (simulacion_iniciada,simulacion_detenida,simulacion_iniciada)
+OK    destruir: suelta sus oyentes del lienzo (antes 1,1,1)
+OK    sin Worker: destruir sin esperar detiene el reloj de la página (38 vueltas antes; 0 después)
+
+TODO BIEN
+
+> tecnocircuito-prototipo@0.0.1 probar:corte
+> esbuild src/nucleo.js --bundle --format=cjs --platform=node --outfile=pruebas/nucleo.cjs --log-level=warning && node pruebas/probar_corte.js
+
+OK    Nano sin energía, pasos de 16 ms: corte en el ciclo 16000, 0 instrucciones sin energía
+OK    Nano sin energía, pasos de 1 ms: corte en el ciclo 16000, 0 instrucciones sin energía
+OK    Nano sin energía, pasos de pedazos de 7919 ciclos: corte en el ciclo 16000, 0 instrucciones sin energía
+OK    Nano sin energía: con los tres tamaños de paso, el mismo corte, tiempo, serial, energía y fallas (2.496874999999251 V, 1 reinicio)
+OK    Nano, vuelve la energía: el mismo serial (15 líneas), tiempo y energía con los tres tamaños de paso
+OK    Uno con seis servos: cada reinicio arranca el programa una vez (16 ms: 110 reinicios, 111 arranques; 1 ms: 110 reinicios, 111 arranques; pedazos de 7919 ciclos: 110 reinicios, 111 arranques)
+OK    Uno con seis servos: el mismo serial, tiempo, energía y fallas con los tres tamaños de paso
+
+TODO BIEN
+OK    hay fixtures de TecnoBloques: 17 casos
+OK    carro (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    carro_mega (mega, TecnoBloques 0.2.5): sin circuito · el .hex no se corre: la Mega todavía no se simula
+OK    carro_nano_old (nano_old, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    eco (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip · serial: «Escribe on u off»
+OK    i2c_mega (mega, TecnoBloques 0.2.5): sin circuito · el .hex no se corre: la Mega todavía no se simula
+OK    i2c_uno (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    listas (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    matriz (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    misbloques (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    otto (nano, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    otto_calibrado (nano, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    otto_calibrar (nano, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    otto_todo (nano, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    pines (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    t1_protoboard (uno, TecnoBloques 0.2.5): circuito con 4 piezas · corre 1008 ms en el chip
+OK    todo_mega (mega, TecnoBloques 0.2.5): sin circuito · el .hex no se corre: la Mega todavía no se simula
+OK    todo_uno (uno, TecnoBloques 0.2.5): sin circuito · corre 1008 ms en el chip
+OK    el eco responde «Recibí: on» (con la tilde) y prende el LED (brillo 83 %)
+OK    t1_protoboard con su circuito: LED 0 % con el botón suelto, 83 % presionado y 0 % al soltar
+
+TODO BIEN
+Adding duplicate image handler for 'PNG file'
+Adding duplicate image handler for 'JPEG file'
+Adding duplicate image handler for 'TIFF file'
+Adding duplicate image handler for 'GIF file'
+Adding duplicate image handler for 'PNM file'
+Adding duplicate image handler for 'PCX file'
+Adding duplicate image handler for 'IFF file'
+Adding duplicate image handler for 'Windows icon file'
+Adding duplicate image handler for 'Windows cursor file'
+Adding duplicate image handler for 'Windows animated cursor file'
+Adding duplicate image handler for 'TGA file'
+Adding duplicate image handler for 'XPM file'
+Adding duplicate image handler for 'WebP file'
+Adding duplicate image handler for 'PNG file'
+Adding duplicate image handler for 'JPEG file'
+Adding duplicate image handler for 'TIFF file'
+Adding duplicate image handler for 'GIF file'
+Adding duplicate image handler for 'PNM file'
+Adding duplicate image handler for 'PCX file'
+Adding duplicate image handler for 'IFF file'
+Adding duplicate image handler for 'Windows icon file'
+Adding duplicate image handler for 'Windows cursor file'
+Adding duplicate image handler for 'Windows animated cursor file'
+Adding duplicate image handler for 'TGA file'
+Adding duplicate image handler for 'XPM file'
+Adding duplicate image handler for 'WebP file'
+KiCad 10.0.3
+OK    resistencia: la huella Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal existe
+OK    resistencia: tiene los pads ['1', '2']
+OK    resistencia: los pads son pines del símbolo Device:R ['1', '2']
+OK    led: la huella LED_THT:LED_D5.0mm existe
+OK    led: tiene los pads ['1', '2']
+OK    led: cátodo = pad 1 (K) y ánodo = pad 2 (A), como en el símbolo
+OK    pulsador: la huella Button_Switch_THT:SW_PUSH_6mm existe
+OK    pulsador: tiene los pads ['1', '2']
+OK    pulsador: los pads son pines del símbolo Switch:SW_Push ['1', '2']
+OK    servo: la huella Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical existe
+OK    servo: tiene los pads ['1', '2', '3']
+OK    servo: los pads son pines del símbolo Motor:Motor_Servo ['1', '2', '3']
+OK    potenciometro: la huella Potentiometer_THT:Potentiometer_Alps_RK163_Single_Horizontal existe
+OK    potenciometro: tiene los pads ['1', '2', '3']
+OK    potenciometro: los pads son pines del símbolo Device:R_Potentiometer ['1', '2', '3']
+OK    resistencia de ½ W: la huella Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal existe
+OK    resistencia de ½ W: tiene los pads ['1', '2']
+OK    resistencia de ½ W: los pads son pines del símbolo Device:R ['1', '2']
+OK    resistencia guardada sin vatios: la huella Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P15.24mm_Horizontal existe
+OK    resistencia guardada sin vatios: tiene los pads ['1', '2']
+OK    resistencia guardada sin vatios: los pads son pines del símbolo Device:R ['1', '2']
+OK    potenciometro guardado sin modelo: la huella Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical existe
+OK    potenciometro guardado sin modelo: tiene los pads ['1', '2', '3']
+OK    potenciometro guardado sin modelo: los pads son pines del símbolo Device:R_Potentiometer ['1', '2', '3']
+OK    shield L293D M1 y M2: la huella Package_DIP:DIP-16_W7.62mm existe
+OK    shield L293D M1 y M2: tiene los pads ['1', '10', '11', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    shield L293D M1 y M2: los pads son pines del símbolo Driver_Motor:L293D ['1', '10', '11', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    shield L293D M4 y M3: la huella Package_DIP:DIP-16_W7.62mm existe
+OK    shield L293D M4 y M3: tiene los pads ['1', '10', '11', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    shield L293D M4 y M3: los pads son pines del símbolo Driver_Motor:L293D ['1', '10', '11', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    shield 74HC595 sentido de los motores: la huella Package_DIP:DIP-16_W7.62mm existe
+OK    shield 74HC595 sentido de los motores: tiene los pads ['1', '10', '11', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8']
+OK    shield 74HC595 sentido de los motores: los pads son pines del símbolo 74xx:74HC595 ['1', '10', '11', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    shield M1 GND M2: la huella TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-05P_1x05_P5.00mm existe
+OK    shield M1 GND M2: tiene los pads ['1', '2', '3', '4', '5']
+OK    shield M1 GND M2: los pads son pines del símbolo Connector_Generic:Conn_01x05 ['1', '2', '3', '4', '5']
+OK    shield M4 GND M3: la huella TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-05P_1x05_P5.00mm existe
+OK    shield M4 GND M3: tiene los pads ['1', '2', '3', '4', '5']
+OK    shield M4 GND M3: los pads son pines del símbolo Connector_Generic:Conn_01x05 ['1', '2', '3', '4', '5']
+OK    shield EXT_PWR: la huella TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm existe
+OK    shield EXT_PWR: tiene los pads ['1', '2']
+OK    shield EXT_PWR: los pads son pines del símbolo Connector_Generic:Conn_01x02 ['1', '2']
+OK    shield SERVO_1: la huella Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical existe
+OK    shield SERVO_1: tiene los pads ['1', '2', '3']
+OK    shield SERVO_1: los pads son pines del símbolo Connector_Generic:Conn_01x03 ['1', '2', '3']
+OK    shield SERVO_2: la huella Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical existe
+OK    shield SERVO_2: tiene los pads ['1', '2', '3']
+OK    shield SERVO_2: los pads son pines del símbolo Connector_Generic:Conn_01x03 ['1', '2', '3']
+OK    shield A0-5: la huella Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical existe
+OK    shield A0-5: tiene los pads ['1', '2', '3', '4', '5', '6']
+OK    shield A0-5: los pads son pines del símbolo Connector_Generic:Conn_01x06 ['1', '2', '3', '4', '5', '6']
+OK    shield +5: la huella Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical existe
+OK    shield +5: tiene los pads ['1', '2', '3', '4', '5', '6']
+OK    shield +5: los pads son pines del símbolo Connector_Generic:Conn_01x06 ['1', '2', '3', '4', '5', '6']
+OK    shield Gnd: la huella Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical existe
+OK    shield Gnd: tiene los pads ['1', '2', '3', '4', '5', '6']
+OK    shield Gnd: los pads son pines del símbolo Connector_Generic:Conn_01x06 ['1', '2', '3', '4', '5', '6']
+OK    shield PWR: la huella Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical existe
+OK    shield PWR: tiene los pads ['1', '2']
+OK    shield PWR: los pads son pines del símbolo Jumper:Jumper_2_Open ['1', '2']
+OK    shield 100nF junto a U1: la huella Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm existe
+OK    shield 100nF junto a U1: tiene los pads ['1', '2']
+OK    shield 100nF junto a U1: los pads son pines del símbolo Device:C ['1', '2']
+OK    shield 100nF junto a U2: la huella Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm existe
+OK    shield 100nF junto a U2: tiene los pads ['1', '2']
+OK    shield 100nF junto a U2: los pads son pines del símbolo Device:C ['1', '2']
+OK    shield 100nF junto a U3: la huella Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm existe
+OK    shield 100nF junto a U3: tiene los pads ['1', '2']
+OK    shield 100nF junto a U3: los pads son pines del símbolo Device:C ['1', '2']
+OK    shield 100uF 25V voltaje de motores: la huella Capacitor_THT:CP_Radial_D6.3mm_P2.50mm existe
+OK    shield 100uF 25V voltaje de motores: tiene los pads ['1', '2']
+OK    shield 100uF 25V voltaje de motores: los pads son pines del símbolo Device:C_Polarized ['1', '2']
+OK    shield 1k LED PWR: la huella Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal existe
+OK    shield 1k LED PWR: tiene los pads ['1', '2']
+OK    shield 1k LED PWR: los pads son pines del símbolo Device:R ['1', '2']
+OK    shield LED verde 5 mm PWR (LED1 de la shield del kit): la huella LED_THT:LED_D5.0mm existe
+OK    shield LED verde 5 mm PWR (LED1 de la shield del kit): tiene los pads ['1', '2']
+OK    shield LED verde 5 mm PWR (LED1 de la shield del kit): los pads son pines del símbolo Device:LED ['1', '2']
+OK    motor_tt Motor TT: la huella TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm existe
+OK    motor_tt Motor TT: tiene los pads ['1', '2']
+OK    motor_tt Motor TT: los pads son pines del símbolo Connector:Screw_Terminal_01x02 ['1', '2']
+OK    bateria_lipo LiPo 2S: la huella TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm existe
+OK    bateria_lipo LiPo 2S: tiene los pads ['1', '2']
+OK    bateria_lipo LiPo 2S: los pads son pines del símbolo Connector:Screw_Terminal_01x02 ['1', '2']
+OK    bateria_lipo Balance LiPo: la huella Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical existe
+OK    bateria_lipo Balance LiPo: tiene los pads ['1', '2', '3']
+OK    bateria_lipo Balance LiPo: los pads son pines del símbolo Connector_Generic:Conn_01x03 ['1', '2', '3']
+OK    probador_lipo Probador de celdas: la huella Connector_PinSocket_2.54mm:PinSocket_1x09_P2.54mm_Vertical existe
+OK    probador_lipo Probador de celdas: tiene los pads ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    probador_lipo Probador de celdas: los pads son pines del símbolo Connector_Generic:Conn_01x09 ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+OK    KiCad trae la plantilla «Arduino Uno Shield» (Arduino_Uno)
+OK    J1 (Power): misma referencia, huella y UUID que en la plantilla
+OK    J1: IOREF, RESET, 3V3, 5V, GND2, GND3, VIN caen en el pin que les da la plantilla
+OK    J2 (Digital/PWM): misma referencia, huella y UUID que en la plantilla
+OK    J2: SCL, SDA, AREF, GND1, D13, D12, D11, D10, D9, D8 caen en el pin que les da la plantilla
+OK    J3 (Analog): misma referencia, huella y UUID que en la plantilla
+OK    J3: A0, A1, A2, A3, A4, A5 caen en el pin que les da la plantilla
+OK    J4 (Digital/PWM): misma referencia, huella y UUID que en la plantilla
+OK    J4: D7, D6, D5, D4, D3, D2, D1, D0 caen en el pin que les da la plantilla
+OK    t1_protoboard.net: KiCad la leería como «export» versión E
+OK    t1_protoboard.net: J1 es la huella que ya está en la plantilla
+OK    t1_protoboard.net: J2 es la huella que ya está en la plantilla
+OK    t1_protoboard.net: J3 es la huella que ya está en la plantilla
+OK    t1_protoboard.net: J4 es la huella que ya está en la plantilla
+OK    t1_protoboard.net: 4 piezas nuevas y 5 redes; cada nodo encontró su pad
+OK    t1_protoboard.net: las piezas caben dentro del contorno del Uno
+OK    t1_protoboard.net: el DRC de KiCad ve 9 conexiones por trazar (esperadas 9, una menos que los pads de cada red)
+OK    t1_protoboard.net: el DRC no ve solapes de huellas sobre el shield
+OK    t2_potenciometro.net: KiCad la leería como «export» versión E
+OK    t2_potenciometro.net: J1 es la huella que ya está en la plantilla
+OK    t2_potenciometro.net: J2 es la huella que ya está en la plantilla
+OK    t2_potenciometro.net: J3 es la huella que ya está en la plantilla
+OK    t2_potenciometro.net: J4 es la huella que ya está en la plantilla
+OK    t2_potenciometro.net: 1 piezas nuevas y 3 redes; cada nodo encontró su pad
+OK    t2_potenciometro.net: las piezas caben dentro del contorno del Uno
+OK    t2_potenciometro.net: el DRC de KiCad ve 3 conexiones por trazar (esperadas 3, una menos que los pads de cada red)
+OK    t2_potenciometro.net: el DRC no ve solapes de huellas sobre el shield
+OK    t3_carro.net: KiCad la leería como «export» versión E
+OK    t3_carro.net: J1 es la huella que ya está en la plantilla
+OK    t3_carro.net: J2 es la huella que ya está en la plantilla
+OK    t3_carro.net: J3 es la huella que ya está en la plantilla
+OK    t3_carro.net: J4 es la huella que ya está en la plantilla
+OK    t3_carro.net: 18 piezas nuevas y 37 redes; cada nodo encontró su pad
+OK    t3_carro.net: las piezas caben dentro del contorno del Uno
+OK    t3_carro.net: el DRC de KiCad ve 83 conexiones por trazar (esperadas 83, una menos que los pads de cada red)
+OK    t3_carro.net: el DRC no ve solapes de huellas sobre el shield
+
+TODO BIEN
+Adding duplicate image handler for 'PNG file'
+Adding duplicate image handler for 'JPEG file'
+Adding duplicate image handler for 'TIFF file'
+Adding duplicate image handler for 'GIF file'
+Adding duplicate image handler for 'PNM file'
+Adding duplicate image handler for 'PCX file'
+Adding duplicate image handler for 'IFF file'
+Adding duplicate image handler for 'Windows icon file'
+Adding duplicate image handler for 'Windows cursor file'
+Adding duplicate image handler for 'Windows animated cursor file'
+Adding duplicate image handler for 'TGA file'
+Adding duplicate image handler for 'XPM file'
+Adding duplicate image handler for 'WebP file'
+Adding duplicate image handler for 'PNG file'
+Adding duplicate image handler for 'JPEG file'
+Adding duplicate image handler for 'TIFF file'
+Adding duplicate image handler for 'GIF file'
+Adding duplicate image handler for 'PNM file'
+Adding duplicate image handler for 'PCX file'
+Adding duplicate image handler for 'IFF file'
+Adding duplicate image handler for 'Windows icon file'
+Adding duplicate image handler for 'Windows cursor file'
+Adding duplicate image handler for 'Windows animated cursor file'
+Adding duplicate image handler for 'TGA file'
+Adding duplicate image handler for 'XPM file'
+Adding duplicate image handler for 'WebP file'
+KiCad 10.0.3
+OK    Module:Arduino_Nano existe en la biblioteca instalada
+OK    huella Nano tiene exactamente 30 pads físicos
+OK    cada pin del mapa Nano corresponde al nombre del símbolo MCU_Module:Arduino_Nano_v3.x
+OK    Nano pad1: filas separadas15.24mm y paso2.54mm (0.00,0.00)
+OK    Nano pad2: filas separadas15.24mm y paso2.54mm (0.00,2.54)
+OK    Nano pad3: filas separadas15.24mm y paso2.54mm (0.00,5.08)
+OK    Nano pad4: filas separadas15.24mm y paso2.54mm (0.00,7.62)
+OK    Nano pad5: filas separadas15.24mm y paso2.54mm (0.00,10.16)
+OK    Nano pad6: filas separadas15.24mm y paso2.54mm (0.00,12.70)
+OK    Nano pad7: filas separadas15.24mm y paso2.54mm (0.00,15.24)
+OK    Nano pad8: filas separadas15.24mm y paso2.54mm (0.00,17.78)
+OK    Nano pad9: filas separadas15.24mm y paso2.54mm (0.00,20.32)
+OK    Nano pad10: filas separadas15.24mm y paso2.54mm (0.00,22.86)
+OK    Nano pad11: filas separadas15.24mm y paso2.54mm (0.00,25.40)
+OK    Nano pad12: filas separadas15.24mm y paso2.54mm (0.00,27.94)
+OK    Nano pad13: filas separadas15.24mm y paso2.54mm (0.00,30.48)
+OK    Nano pad14: filas separadas15.24mm y paso2.54mm (0.00,33.02)
+OK    Nano pad15: filas separadas15.24mm y paso2.54mm (0.00,35.56)
+OK    Nano pad16: filas separadas15.24mm y paso2.54mm (15.24,35.56)
+OK    Nano pad17: filas separadas15.24mm y paso2.54mm (15.24,33.02)
+OK    Nano pad18: filas separadas15.24mm y paso2.54mm (15.24,30.48)
+OK    Nano pad19: filas separadas15.24mm y paso2.54mm (15.24,27.94)
+OK    Nano pad20: filas separadas15.24mm y paso2.54mm (15.24,25.40)
+OK    Nano pad21: filas separadas15.24mm y paso2.54mm (15.24,22.86)
+OK    Nano pad22: filas separadas15.24mm y paso2.54mm (15.24,20.32)
+OK    Nano pad23: filas separadas15.24mm y paso2.54mm (15.24,17.78)
+OK    Nano pad24: filas separadas15.24mm y paso2.54mm (15.24,15.24)
+OK    Nano pad25: filas separadas15.24mm y paso2.54mm (15.24,12.70)
+OK    Nano pad26: filas separadas15.24mm y paso2.54mm (15.24,10.16)
+OK    Nano pad27: filas separadas15.24mm y paso2.54mm (15.24,7.62)
+OK    Nano pad28: filas separadas15.24mm y paso2.54mm (15.24,5.08)
+OK    Nano pad29: filas separadas15.24mm y paso2.54mm (15.24,2.54)
+OK    Nano pad30: filas separadas15.24mm y paso2.54mm (15.24,0.00)
+OK    pad1 cuadrado identifica TX; serigrafíaUSB está junto al extremo de pads15/16
+OK    REG_5V: huella instalada Package_TO_SOT_SMD:SOT-223-3_TabPin2
+OK    REG_5V: todos los pads exportados existen en huella y símbolo
+OK    REG_5V: 1GND/2VOUT/3VIN; TAB comparte número2 y salida
+OK    REG_3V3: huella instalada Package_TO_SOT_SMD:SOT-223-3_TabPin2
+OK    REG_3V3: todos los pads exportados existen en huella y símbolo
+OK    REG_3V3: 1GND/2VOUT/3VIN; TAB comparte número2 y salida
+OK    FILTRO_JACK: huella instalada Capacitor_THT:CP_Radial_D6.3mm_P2.50mm
+OK    FILTRO_JACK: todos los pads exportados existen en huella y símbolo
+OK    FILTRO_5V: huella instalada Capacitor_THT:CP_Radial_D6.3mm_P2.50mm
+OK    FILTRO_5V: todos los pads exportados existen en huella y símbolo
+OK    FILTRO_3V3: huella instalada Capacitor_THT:CP_Radial_D6.3mm_P2.50mm
+OK    FILTRO_3V3: todos los pads exportados existen en huella y símbolo
+OK    DESACOPLE_JACK: huella instalada Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm
+OK    DESACOPLE_JACK: todos los pads exportados existen en huella y símbolo
+OK    DESACOPLE_5V: huella instalada Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm
+OK    DESACOPLE_5V: todos los pads exportados existen en huella y símbolo
+OK    JACK: huella instalada Connector_BarrelJack:BarrelJack_CUI_PJ-102AH_Horizontal
+OK    JACK: todos los pads exportados existen en huella y símbolo
+OK    jack tiene 3 pads físicos; solo centro1 y sleeve2 llevan red, contacto3 sin conectar
+OK    I2C: huella instalada Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
+OK    I2C: todos los pads exportados existen en huella y símbolo
+OK    SPI: huella instalada Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical
+OK    SPI: todos los pads exportados existen en huella y símbolo
+OK    existen netlists del Nano30pads y expansión de ambas variantes
+OK    nano_30_pads.net: formato E leído y cerrado
+OK    nano_30_pads.net: todos los nodos encuentran pads reales (incluido TAB de reguladores)
+OK    nano_30_pads.net: KiCad guarda y abre la PCB conservando todas las redes
+OK    nano_30_pads.net: kicad-cli DRC ejecutado (Encontradas 0 infracciones
+Se encontraron 32 elementos no conectados
+Informe de DRC guardado a C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\pruebas\capturas\kicad_nano\nano_30_pads_drc.json)
+OK    nano_30_pads.net: las huellas separadas no se solapan en la PCB de comprobación
+OK    nano_30_pads.net: DRC reconoce las redes pendientes de trazar
+OK    nano_expansion_azul.net: formato E leído y cerrado
+OK    nano_expansion_azul.net: todos los nodos encuentran pads reales (incluido TAB de reguladores)
+OK    nano_expansion_azul.net: KiCad guarda y abre la PCB conservando todas las redes
+OK    nano_expansion_azul.net: PCB conserva aislamientoNanoVIN/3V3 frente a alimentación de expansión
+OK    nano_expansion_azul.net: salida5V llega al Nano; contacto conmutado del jack no conectado
+OK    nano_expansion_azul.net: kicad-cli DRC ejecutado (Encontradas 0 infracciones
+Se encontraron 30 elementos no conectados
+Informe de DRC guardado a C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\pruebas\capturas\kicad_nano\nano_expansion_azul_drc.json)
+OK    nano_expansion_azul.net: las huellas separadas no se solapan en la PCB de comprobación
+OK    nano_expansion_azul.net: DRC reconoce las redes pendientes de trazar
+OK    nano_expansion_roja.net: formato E leído y cerrado
+OK    nano_expansion_roja.net: todos los nodos encuentran pads reales (incluido TAB de reguladores)
+OK    nano_expansion_roja.net: KiCad guarda y abre la PCB conservando todas las redes
+OK    nano_expansion_roja.net: PCB conserva aislamientoNanoVIN/3V3 frente a alimentación de expansión
+OK    nano_expansion_roja.net: salida5V llega al Nano; contacto conmutado del jack no conectado
+OK    nano_expansion_roja.net: kicad-cli DRC ejecutado (Encontradas 0 infracciones
+Se encontraron 30 elementos no conectados
+Informe de DRC guardado a C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\pruebas\capturas\kicad_nano\nano_expansion_roja_drc.json)
+OK    nano_expansion_roja.net: las huellas separadas no se solapan en la PCB de comprobación
+OK    nano_expansion_roja.net: DRC reconoce las redes pendientes de trazar
+
+80 comprobaciones; 0 falla(s)
+OK    API del contrato: {'v': '0.3.1-dev', 'c': 1, 'p': ['uno', 'nano', 'nano_old']}
+OK    pines dibujados: 35 (31 de la placa + 2 + 2)
+OK    cada dibujo ocupa justo su espacio (desfase máximo en px: [['placa', 0], ['r1', 0], ['led1', 0]])
+OK    rótulo al pasar por D13: «Pin 13»
+OK    modo dibujar al hacer clic en un pin
+   cables: [["placa.D13", "r1.1", "verde", [[124.61, -20.35]]], ["r1.2", "led1.anodo", "verde", [[405, -20.35]]], ["led1.catodo", "placa.GND1", "negro", null]]
+OK    3 cables creados
+OK    cable 1 con el doblez enderezado en (124,61, -20,35)
+OK    cable 2 con el doblez enderezado en (405, -20,35)
+OK    cable 3 por arrastre, negro porque va a GND
+OK    cable de señal verde por defecto
+OK    LED movido a (415, -116) y el cable lo sigue
+OK    resistencia girada: rot = 90
+OK    tras girar, las patas quedan una arriba de la otra
+OK    valor de la resistencia (de ¼ W): {'ohmios': 1000, 'vatios': 0.25}
+OK    al elegir un cable aparecen los 10 colores en el orden del código, con su número: ['0negro', '1marron', '2rojo', '3naranja', '4amarillo', '5verde', '6azul', '7morado', '8gris', '9blanco']
+OK    cable 1 pasa a naranja con la muestra
+OK    la tecla 2 lo pone rojo (código de colores)
+OK    Supr borra el cable elegido
+OK    + LED agrega led2: ['r1', 'led1', 'led2']
+   eventos: ['cable_agregado', 'cable_agregado', 'cable_agregado', 'componente_cambiado', 'componente_cambiado', 'componente_cambiado', 'cable_quitado', 'componente_agregado']
+OK    eventos en el orden esperado
+OK    al recargar, el circuito sigue ahí
+OK    pieza desconocida y campo nuevo se conservan
+OK    sin desplazamiento horizontal en el celular (ancho 390)
+OK    prototipo: los 8 eventos cumplen contrato/evento.schema.json (cable_agregado, cable_quitado, componente_agregado, componente_cambiado)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    doble clic agrega un doblez sobre el cable, sin torcerlo: [[125, -20.35], [212.2, -20.35]]
+OK    el cable elegido muestra sus 2 dobleces (2)
+OK    doblez arrastrado hacia arriba: [212.2, -39.95]
+OK    doble clic en un doblez lo quita
+OK    la vista previa muestra 2 dobleces (2)
+OK    Supr quita el último doblez mientras se dibuja (1)
+OK    Esc cancela el cable a medio dibujar
+OK    tecla 6 mientras se dibuja: el cable nuevo sale azul (azul), no rojo como pide la convención para 5V
+OK    Supr borra el cable y las teclas del lienzo no llegan a la página (Blockly): []
+OK    clic en el mismo pin cancela el cable
+OK    cable repetido: «Esos dos pines ya están unidos.»
+OK    Ver encendido prende el dibujo sin tocar el circuito
+OK    cambiar el color del LED: la cápsula se pinta verde y sigue encendida
+OK    la rueda acerca: 2.04 → 3.06
+OK    «Ver todo» vuelve a encuadrar (2.04)
+OK    arrastrar el fondo mueve la vista (70 → 170)
+OK    borrar el LED quita también sus 2 cables
+OK    extras: los 6 eventos cumplen contrato/evento.schema.json (cable_agregado, cable_quitado, componente_cambiado, componente_quitado)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    API con crearSimulador: {'v': '0.3.1-dev', 's': 'function'}
+   intervalos (ms): [541, 434, 538, 460, 546, 457]
+OK    el LED cambia varias veces en 3 s (7 cambios)
+OK    el LED cambia cada 499 ms (programa: 500 ms, tolerancia ±10 %)
+OK    prendido el 57 % del tiempo
+OK    el LED «L» de la placa sigue al pin 13
+OK    el circuito se evaluó 4 veces en 3.2 s (unos 192 cuadros): solo cuando cambió un pin
+OK    reloj: 3206 ms simulados en 3206 ms reales (velocidad 100 %)
+OK    monitor serial: 'Hola desde el Uno simulado\r\nPrendido\r\nApagado\r\nPrendido\r\nApa'…
+OK    sin cable a GND el LED no prende (cables: ['r1.1', 'led1.anodo'])
+OK    el LED «L» de la placa sigue parpadeando: el programa no se detuvo
+OK    al cambiar de circuito, la simulación vuelve a empezar detenida
+OK    con el programa del pin 8 el LED (cableado al 13) no prende; serial: 'Parpadeo en el pin 8'
+OK    cableado al pin 8: el LED cambia cada 207 ms (programa: 200 ms)
+OK    en pausa, el tiempo simulado no avanza
+OK    reiniciar vuelve el programa al principio
+OK    al detener, todo se apaga (también el LED ON de la placa)
+OK    eventos de la simulación (con la pausa y el reinicio por el botón): ['simulacion_detenida', 'reinicio_placa', 'simulacion_reanudada', 'simulacion_pausada', 'simulacion_iniciada']
+OK    .hex dañado: «El .hex está dañado (línea 1).»
+OK    simulacion: los 9 eventos cumplen contrato/evento.schema.json (cable_quitado, reinicio_placa, simulacion_detenida, simulacion_iniciada, simulacion_pausada, simulacion_reanudada)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    220 Ω: LED 12.50 mA a 1.938 V, pin 13 a 4.688 V (Node: 12,50 mA, 1,938 V, 4,688 V)
+OK    misma corriente en la resistencia y en el LED
+OK    el LED brilla al 83 %
+OK    la tabla de mediciones muestra pin, resistencia y LED (3 filas)
+OK    rótulo de la pata 2 de la resistencia: «Resistencia: pata 2 · 1,94 V»
+OK    1 kΩ: 3.10 mA (Node: 3,10 mA), brillo 21 %
+   fallas: ['El LED led1 se quemó: le pasaron 101 mA y aguanta unos 20 mA. Ponle una resistencia en serie (220 Ω sirve).', 'El pin 13 entrega 101 mA y aguanta 40 mA: en la placa real se puede dañar. Revisa que haya una resistencia.']
+OK    avisa el LED quemado y el exceso de corriente del pin 13
+OK    el LED se ve quemado (la cápsula oscurecida), con el rótulo «quemado» y apagado
+OK    un LED quemado queda abierto: ya no pasa corriente
+OK    eventos de falla: ['10:11:17 falla {"tipo":"corriente_pin","componente":"placa.D13","corriente_mA":100.6}', '10:11:17 falla {"tipo":"led_quemado","componente":"led1","corriente_mA":100.6}']
+OK    al detener, el LED vuelve a verse normal
+OK    al iniciar otra vez, el LED se quema de nuevo
+OK    modo ideal: sin fallas y el LED prendido con 101 mA
+OK    electrico: los 10 eventos cumplen contrato/evento.schema.json (componente_cambiado, falla, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    el ejemplo T2 elige el programa del potenciómetro
+OK    el chip corre en un Web Worker
+OK    con la perilla en la mitad, analogRead da 512 (≈ 512)
+OK    el pin 9 tiene PWM al 50 % (analogWrite 128 de 255)
+OK    el LED brilla a medias: 42 %
+OK    la tabla muestra el PWM del pin 9 y la perilla del potenciómetro
+OK    girar la perilla no mueve el potenciómetro
+OK    la perilla giró: de 50 % a 85 %
+OK    la lectura sigue a la perilla: 870 (≈ 870)
+OK    tocar la perilla también selecciona la pieza
+OK    con el deslizador en 20 %, analogRead da 204 (≈ 205)
+OK    el dibujo de la perilla también gira: «rotate(-81 8.89 8.03)» (20 % = −81°)
+OK    el giro se anota como pocos eventos, no uno por grado (3)
+OK    el brillo va de 0 % a 78 %
+OK    el 71 % de las muestras son brillos intermedios
+OK    con la página bloqueada 1,5 s, el chip avanzó 1818 ms de 1800 (sin Worker serían unos 50 ms)
+OK    el avance concuerda con la velocidad que informa el Worker (99 % en este PC ahora)
+OK    pwm: los 5 eventos cumplen contrato/evento.schema.json (componente_cambiado, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+OK    sin Worker, la simulación corre en la página
+OK    y funciona igual: analogRead da 511
+OK    sin errores en la página sin Worker
+
+Todo bien.
+OK    empieza como un SVG (108 KB)
+    {'error': None, 'ids': 69, 'repetidos': [], 'rotas': [], 'piezas': 6}
+OK    es XML válido (lo abre cualquier programa)
+OK    sin identificadores repetidos entre piezas (69 en total)
+OK    todas las referencias url(#…) y href apuntan a algo: []
+OK    tiene los 6 cables
+OK    los 54 textos de la placa traen su tamaño, sin depender de estilos
+OK    el eje del potenciómetro del kit sale girado (81° con la perilla en el 80 %)
+OK    la perilla del potenciómetro antiguo de wokwi queda girada como atributo
+OK    la resistencia girada sale girada
+   marca: {'ancho': 439, 'alto': 508, 'circuito': {'x0': 1.7962160110473633, 'y0': 12.755905151367188, 'x1': 423.160626411438, 'y1': 433.1999969482422, 'escala': 1}, 'firma': {'x0': 159.4566408227539, 'y0': 450.1600012779236, 'x1': 425.3181015824513, 'y1': 499.0710426501846, 'escala': 0.36000001430511475}, 'etiqueta': 'Hecho con TecnoCircuito, TecnoAcademia Tolima · SENA. Prueba tu idea antes de armarla en la placa.', 'agua': {'x0': 144.05000066757202, 'y0': 133.8300004005432, 'x1': 294.9700036048889, 'y1': 302.9290010747909, 'escala': 3.430000066757202}, 'opacidad': 0.1, 'textoSuelto': 0, 'ultimo': 'tc-firma', 'capas': ['title', 'rect', 'g', 'g.tc-marca-agua', 'g.tc-firma'], 'sobrePlaca': 24230.119123831275}
+OK    lleva la firma de TecnoCircuito en lugar del texto de antes
+OK    la firma dice «Hecho con TecnoCircuito, TecnoAcademia Tolima · SENA. Prueba tu idea antes de armarla en la placa.» (los lectores de pantalla la leen)
+OK    la firma cabe entera en la imagen
+OK    la firma está en la esquina inferior derecha
+OK    la firma va debajo del circuito, sin tapar nada
+OK    las letras chicas de la firma se leen (8.6 px)
+OK    lleva la marca de agua, tenue (opacidad 0.1)
+OK    la marca de agua queda dentro del circuito, sin tocar la firma
+OK    la marca de agua está centrada en el circuito (220, 218)
+OK    capas en orden: fondo, circuito, marca de agua encima y firma (title > rect > g > g.tc-marca-agua > g.tc-firma)
+OK    la marca de agua pisa la placa, que es opaca (24230 px² en común)
+OK    TecnoCircuito.MARCA trae nombre, frase, símbolo y cabeza, y no se puede cambiar: {'nombre': 'TecnoCircuito', 'frase': 'Prueba tu idea antes de armarla en la placa.', 'simbolo': '<svg xmlns="http://www.w3.org/2000/svg" ', 'cabeza': '<svg xmlns="http://www.w3.org/2000/svg" ', 'congelada': True}
+OK    la imagen se carga sola como archivo (439 × 508 px)
+OK    el botón descarga «circuito.svg»
+OK    «Guardar netlist (KiCad)» descarga «circuito.net» con los conectores del shield y 5 redes
+OK    sin errores en la consola
+
+TODO BIEN
+OK    el ejemplo elige el programa del botón con pull-down
+OK    detenido, el botón se arrastra como cualquier pieza (y volvió a su lugar: 325.2 → 325)
+OK    simulando, con el botón suelto el LED está apagado
+OK    la tabla dice que el pin 2 lee BAJO («Pin 2 (entrada)0,00 Vlee BAJO»)
+OK    mantener presionado el botón con el mouse prende el LED (tabla: «Pin 2 (entrada)5,00 Vlee ALTO»)
+OK    al soltarlo el LED se apaga y el botón sube
+OK    el monitor serial dice «Presionado» y «Suelto»
+OK    queda el evento boton_pulsado con su duración: ['10:11:39 boton_pulsado {"id":"btn1","ms":607}']
+OK    simulando, presionar el botón no lo mueve
+OK    realista, sin pull-down y sin acercar el mouse: el pin al aire se queda en su nivel (0 cambios en 3 s)
+OK    la tabla dice que el pin 2 está al aire («Pin 2 (entrada)al aireal aire: lee BAJO; acércale el mouse»)
+OK    con el mouse sobre el botón (la mano), el LED brilla a medias: 41 % en promedio (60 Hz, ~35 % del tiempo en ALTO)
+OK    ideal, sin pull-down: el LED queda apagado y quieto
+OK    realista: la lectura del potenciómetro baila un poco (23 lecturas entre 511 y 512)
+OK    ideal: la lectura no se mueve (23 lecturas, mínimo 15; valores [512])
+OK    t1t2: los 7 eventos cumplen contrato/evento.schema.json (boton_pulsado, componente_cambiado, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    la media protoboard tiene 400 huecos (400)
+OK    los 10 huecos con una pata encajada quedan marcados (no reciben clics)
+OK    el chip de TecnoCircuito va en el canal central, a la derecha, al 80 % de su alto, en azul ['#00304D', '#e2dfd4']
+OK    al pasar por b15 se ilumina su tira: ['a15', 'b15', 'c15', 'd15', 'e15']
+OK    rótulo: «Protoboard: hueco b15 · unido por dentro con a15–e15»
+OK    al pasar por un riel se ilumina el riel completo (25 huecos)
+OK    una pata encajada dice su hueco e ilumina su tira («LED: ánodo (+), pata larga · en el hueco a13»)
+OK    a través de la protoboard: suelto el LED está apagado, presionado se prende y al soltar se apaga
+OK    el riel − de abajo marca 0 V: «Protoboard: riel − de abajo · todo el riel está unido · 0,00 V»
+OK    mientras se arrastra, los huecos donde quedaría se ven en verde: ['b27', 'b28']
+OK    al soltarlo queda encajado: {'catodo': 'protoboard.b27', 'anodo': 'protoboard.b28'}
+OK    la pata quedó justo sobre el hueco (el encaje corrigió el corrimiento)
+OK    sobre huecos ocupados, el LED 3 queda suelto (sin «en»)
+OK    girar re-encaja o deja suelto el LED (rot 90, en: None)
+OK    mover la protoboard (40, 20) mueve la resistencia igual y conserva sus huecos
+OK    la pata de la resistencia sigue sobre su hueco
+OK    la imagen SVG lleva la protoboard con sus 400 huecos y es válida
+OK    y su chip de TecnoCircuito en el canal
+OK    borrar la protoboard deja las piezas sueltas y quita sus cables (0 cables quedan)
+OK    en el menú «+ Agregar» vuelve a estar «Protoboard»
+OK    «Protoboard» agrega una y queda apagada en el menú
+OK    quitar y agregar la protoboard quedan en los eventos
+OK    despues_de_la_prueba.json
+OK    ejemplo.json
+OK    ejemploT1.json
+OK    ejemploPB.json
+OK    ejemploT2.json
+OK    ejemploServo.json
+OK    ejemploServos.json
+OK    los 7 circuitos que guarda el lienzo cumplen el contrato (esquema y referencias)
+OK    protoboard: los 19 eventos cumplen contrato/evento.schema.json (boton_pulsado, cable_quitado, componente_agregado, componente_cambiado, componente_quitado, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    «+ Agregar → Servo» agrega servo1 con el modelo SG90
+OK    tiene sus 3 pines para cablear: ['servo1.GND', 'servo1.VCC', 'servo1.SIG']
+OK    el dibujo dice SG90
+OK    al elegir MG90S el dibujo cambia y el circuito guarda «mg90s»
+OK    la imagen SVG lleva el servo con su brazo
+OK    la netlist de KiCad lleva el conector de 3 pines del servo
+OK    el ejemplo elige el programa del barrido
+OK    antes de simular, el brazo está a 90° (rotate(-90 55.6 57.6))
+OK    con write(90) el brazo queda a 89.9°
+OK    la tabla muestra el servo: «servo1 (SG90)6,27 mA90° · pulso 1471 µs»
+OK    y lo que entrega el 5V: «5V de la placa (USB)6,27 mAel USB da hasta 500 mA»
+OK    con write(180) el brazo queda a 175.0° (el SG90 del kit llega a 175°)
+OK    al detener, el dibujo vuelve a 90° (lo que se guarda no cambia)
+OK    con los seis arrancando a la vez, el USB llega a un pico de 1717 mA
+OK    en modo realista la placa se reinicia y lo explica: «La placa se reinició: los servos arrancaron a la vez y el 5V bajó a 2,5 V; por debajo de 2,7 V el Arduino se reinicia. A…»
+OK    la tabla cuenta los reinicios: «USB (placa y circuito)2,26 V1673,7 mApico 1716,8 mA · fusible 0 % · 122 reinicios»
+OK    los reinicios quedan en los eventos (reinicio_placa, motivo energia_usb)
+OK    servo: los 24 eventos cumplen contrato/evento.schema.json (componente_agregado, componente_cambiado, falla, reinicio_placa, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    «+ Agregar → Shield L293D» la monta sobre el Uno: {'id': 'shield1', 'tipo': 'shield_l293d', 'x': 0, 'y': 0, 'rot': 0, 'props': {'puentePWR': True}}
+OK    el dibujo tiene los nombres de los tres integrados: 74HC595 y dos L293D
+OK    tiene 36 pines para cablear (bornes, EXT_PWR, servos y headers analógicos): 36
+OK    se dibuja justo encima de la placa: ['placa', 'shield1', 'r1', 'led1']
+OK    el menú no deja agregar una segunda shield
+OK    la shield no tiene «Girar»
+OK    arrastrarla no la mueve: sigue sobre el Uno
+OK    el campo «Puente PWR» guarda «quitado» (false, no el texto)
+OK    y el dibujo muestra los dos pines del puente sin su capuchón
+OK    «+ Agregar → Motor TT» lo agrega con la vista del eje: {'vista': 'eje', 'lado': 'izquierdo'}
+OK    con la rueda el dibujo crece (275 → 665 px)
+OK    después de rehacer el dibujo sigue seleccionado, con sus campos
+OK    del lado derecho el dibujo se refleja: los cables salen por la izquierda
+OK    rehacer el dibujo no deja pines repetidos
+OK    la batería aparece nominal (7,4 V)
+OK    descargada, el dibujo dice 6,4 V
+OK    el ejemplo elige el programa del carro
+OK    motor 1: «motor1 (M1)6,21 V135,6 mA174 RPM · adelante 60 cm/s»
+OK    motor 2, del lado derecho y cableado igual: va hacia atrás «motor2 (M4)6,19 V131,6 mA173 RPM · atrás 60 cm/s»
+OK    debajo de la flecha de la rueda izquierda: «adelante · 60 cm/s»
+OK    batería con los motores andando: «bateria1 (LiPo 2S)8,00 V270,7 mAceldas 4,00 y 4,00 V»
+OK    shield: «shield1: motores (EXT_PWR)8,08 Vpuente PWR puesto · el Uno toma la energía del VIN»
+OK    la rueda gira en el dibujo
+OK    motor1: la rueda gira contra el reloj y la flecha apunta a la izquierda
+OK    motor2: la rueda gira a favor del reloj y la flecha apunta a la derecha
+OK    a 255 hacia atrás: «motor1 (M1)6,48 V161,9 mA216 RPM · atrás 75 cm/s»
+OK    carro: los 8 eventos cumplen contrato/evento.schema.json (componente_agregado, componente_cambiado, simulacion_iniciada)
+OK    sin errores en la consola
+
+Todo bien.
+OK    cuatro categorías: ['Básicas', 'Entradas', 'Actuadores', 'Potencia y energía']
+OK    diez piezas: ['Protoboard', 'Resistencia', 'LED', 'Botón', 'Potenciómetro', 'Servo', 'Motor TT', 'Shield L293D', 'Batería LiPo 2S', 'Probador de celdas']
+OK    cada pieza tiene su dibujo en chico: ['svg', 'svg', 'svg', 'svg', 'svg', 'svg', 'svg', 'svg', 'svg', 'svg', 'svg']
+OK    al abrir, el cursor queda en el buscador
+OK    con el panel de piezas abierto, la ficha no tapa más el lienzo
+OK    «luz» → ['LED']
+OK    «pila» → ['Batería LiPo 2S']
+OK    «POTENCIOMETRO» (sin tilde) → ['Potenciómetro']
+OK    «motor» → ['Servo', 'Motor TT', 'Shield L293D', 'Batería LiPo 2S']
+OK    «rueda carro» (las dos palabras) → ['Motor TT']
+OK    sin resultados lo dice: «No hay piezas con «xyz». Prueba con otra palabra: motor, luz, pila…»
+OK    Enter agrega la primera (el servo) y cierra el panel
+OK    arrastrado al lienzo, el LED queda donde se soltó (centro a 0 y 0 px)
+OK    y el fantasma desaparece
+OK    soltada sobre el panel, no se agrega nada
+OK    Esc cierra el panel
+OK    la ficha del servo SG90: para qué sirve, ángulo, pines y «✓ Probado con la placa real»
+OK    el modelo se elige en la ficha (la barra queda con el nombre, Girar y Borrar)
+OK    con el MG90S la ficha cambia sus datos y avisa «◐ Por probar con la placa real»
+OK    la ficha no tapa la pieza elegida
+OK    plegada, la ficha oculta los detalles y deja a la vista el modelo
+OK    y sigue plegada al elegir el LED
+OK    la ficha del LED dice qué resistencia usar con 5 V (150 Ω o más)
+OK    sin nada elegido, la ficha se esconde
+OK    la protoboard se arrastra y queda en el lienzo
+OK    su ficha explica las tiras (sin aviso de validación: no tiene modelo eléctrico)
+OK    sin errores en la consola
+
+Todo bien.
+OK    el probador tiene 9 pines (− y 1 a 8): 9
+OK    la batería tiene los 3 pines del cable de balance: ['bateria1.BAL0', 'bateria1.BAL1', 'bateria1.BAL2']
+OK    sin simular, la pantalla está apagada («   »)
+OK    la pantalla repite «ALL», total, «2S», «-1-», celda y «-2-»: [' 25', '-1-', '-2-', '2C5', '3.70', '7.40', 'ALL']
+OK    con la batería nominal no pita
+OK    la tabla: «probador1 (probador)7,40 V2S · 1: 3,70 V · 2: 3,70 V»
+OK    desbalanceada (3,95 y 3,45 V) con alarma en 3,5 V: pita y lo dice en las fallas
+OK    el dibujo dice «alarma 3,5 V»
+OK    al detener, la pantalla se apaga
+OK    probador: los 6 eventos cumplen contrato/evento.schema.json (componente_cambiado, falla, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+Todo bien.
+OK    el ejemplo abre Nano en circuito y selector
+OK    el ejemplo elige el programa compilado para A6/A7
+OK    el ejemplo monta expansión, dos potenciómetros y seis cables
+OK    el Nano muestra treinta terminales físicos
+OK    la expansión muestra ochenta y dos terminales
+OK    I2C está junto a UART, al final del Nano y fuera del cuerpo del módulo
+OK    el bloque de seis contactos son tres 3V3 y tres GND, como la placa medida, sin falso SPI ni 5V
+OK    A6/A7 tienen contactos analógicos propios, sin GPIO adicionales ni IOREF del Uno
+OK    Nano y expansión comparten el marco medido por TecnoDiseñador, 60 × 53,5 mm
+OK    la expansión va debajo del Nano, como en la mesa, y sin imágenes incrustadas
+OK    los 82 puntos de cableado coinciden con los contactos dibujados
+OK    el Nano tiene sus cuatro LED actualizables
+OK    la ficha explica A6/A7 y declara el modelo pendiente de validar físicamente
+OK    la ficha permite elegir variante, alimentación y voltaje del jack
+OK    la biblioteca Nano tiene diez piezas compatibles y oculta la shield del Uno
+OK    la expansión ya montada no se puede agregar dos veces
+OK    el controlador conserva una sola expansión aunque reciba otro clic
+OK    una expansión duplicada se quita y se conserva la primera con sus cables
+OK    sobre el Uno se quita la expansión Nano y los cables a ella o a A6/A7
+OK    la expansión va montada: se ignora un «en» de protoboard
+OK    los seis aliases SPI antiguos dibujan sus cables sobre los pines reales del Nano
+OK    la reapertura conserva referencias SPI antiguas sin crear contactos físicos ni cambiar redes
+OK    el único programa del Nano corre en el Worker
+OK    los cursores A6=25 % y A7=75 % llegan al ADC del AVR: [256, 768] (≈ 256,768, margen 2 pasos)
+OK    PWR se enciende al alimentar el Nano
+OK    el LED TX muestra la actividad del monitor serial
+OK    la medición y el ADC ven los mismos nodos A6/A7 a través de la expansión
+OK    el Worker conserva A6/A7 fuera de las entradas digitales
+OK    los tres contactos de cada salida comparten el voltaje de su red, y los alias OUT_5V siguen en el 5V
+OK    roja → azul conserva las seis referencias de cables
+OK    cambiar la variante redibuja la tarjeta y conserva sus contactos y la posición del módulo
+OK    las puntas dibujadas siguen en sus conectores
+OK    los contactos azules y la capa de pines siguen coincidiendo
+OK    el cambio de variante conserva el ADC: [256, 768] (≈ 256,768, margen 2 pasos)
+OK    el Worker sigue ejecutando la misma corrida tras cambiar la variante
+OK    la perilla de A6 pasa de 25 % a 80 % con el teclado
+OK    girar la perilla mantiene el potenciómetro en su sitio
+OK    A6 responde al giro y A7 conserva su lectura: [819, 768] (≈ 819,768, margen 2 pasos)
+OK    jack de 12 V conserva VIN separado y da las salidas ideales 5V/3,3V del modelo
+OK    cambiar la fuente y el voltaje no pierde los cursores: [819, 768] (≈ 819,768, margen 2 pasos)
+OK    al desconectar, el Worker apaga PWR y las salidas
+OK    al volver al USB, el ADC vuelve a responder: [819, 768] (≈ 819,768, margen 2 pasos)
+OK    desconectar a mano no se registra como reinicio por energía, y el modelo de referencia no aparece como falla
+OK    el botón descarga la imagen SVG
+OK    la imagen exportada es XML SVG válido
+OK    el SVG tiene identificadores únicos y referencias completas
+OK    el SVG conserva el Nano inferior y todos los contactos de la expansión
+OK    el SVG incluye los seis cables del circuito
+OK    la imagen exportada se puede abrir por sí sola
+OK    el botón descarga la netlist KiCad
+OK    KiCad usa el módulo montable Module:Arduino_Nano
+OK    KiCad exporta un solo módulo Nano
+OK    KiCad no sustituye el Nano por los headers del Uno
+OK    KiCad exporta regulación, filtros, jack, I2C y SPI: ['DESACOPLE_5V', 'DESACOPLE_JACK', 'FILTRO_3V3', 'FILTRO_5V', 'FILTRO_JACK', 'I2C', 'JACK', 'REG_3V3', 'REG_5V', 'SPI']
+OK    los dos potenciómetros conservan su exportación normal
+OK    la netlist identifica los componentes de referencia pendientes de validar
+OK    I2C pin 1 llega al pad 23 del Nano
+OK    I2C pin 2 llega al pad 24 del Nano
+OK    SPI pin 1 llega al pad 15 del Nano
+OK    SPI pin 2 llega al pad 14 del Nano
+OK    SPI pin 3 llega al pad 16 del Nano
+OK    SPI pin 4 llega al pad 13 del Nano
+OK    A6/A7 mantienen sus pads 25/26 y sus cursores en KiCad
+OK    el jack alimenta la regulación externa y conserva separado VIN del Nano
+OK    la salida regulada 5V llega al Nano y a I2C/SPI
+OK    3,3V externo tiene filtro y permanece separado del pad 17 del Nano
+OK    al detener, PWR vuelve a su estado apagado
+OK    localStorage guarda variante, fuente, perilla y referencias completas
+OK    recargar recupera exactamente el montaje Nano guardado
+OK    recargar mantiene coherentes los selectores de placa y programa Nano
+OK    el circuito guardado vuelve a ejecutar sus entradas en el Worker: [819, 768] (≈ 819,768, margen 2 pasos)
+OK    elegir Nano antiguo crea un conjunto nuevo con una sola expansión
+OK    Nano antiguo elige el mismo programa de lectura A6/A7
+OK    un montaje guardado Nano antiguo conserva la misma vista y terminales físicos
+OK    Nano antiguo ejecuta el mismo HEX y devuelve las mismas lecturas del AVR: [819, 768] (≈ 819,768, margen 2 pasos)
+OK    Nano antiguo también ejecuta el chip en el Worker
+OK    el LED L del Nano antiguo sigue a digitalWrite(13, HIGH)
+OK    al volver al Uno su biblioteca conserva diez piezas y oculta la expansión Nano incompatible
+OK    la expansión Nano está oculta y deshabilitada sobre Uno
+OK    el controlador no agrega una expansión incompatible al Uno
+OK    Nano → Uno abre el lienzo, quita la expansión y lo avisa: «Se quitó lo que no va en Arduino Uno: Expansión E/S del Nano.»
+OK    Uno con shield → Nano quita la shield, sus cables y los pines GND3/IOREF: «Se quitó lo que no va en Arduino Nano: Shield L293D y 3 cables.»
+OK    el mismo circuito en el Uno se abre completo, con IOREF, sin quitar nada
+OK    nano_ui: los 13 eventos cumplen contrato/evento.schema.json (componente_cambiado, simulacion_detenida, simulacion_iniciada)
+OK    sin errores ni avisos de consola
+
+85 comprobaciones; todo bien.
+OK    mientras se arrastra, los tres pines del balance se ven en verde: ['bat1.BAL0', 'bat1.BAL1', 'bat1.BAL2']
+OK    al soltarlo queda enchufado: {'NEG': 'bat1.BAL0', 'C1': 'bat1.BAL1', 'C2': 'bat1.BAL2'}
+OK    el imán corrigió el corrimiento: cada pata quedó justo sobre su pin
+OK    los pines del balance que reciben una pata quedan marcados (se cablea la pata, que está encima)
+OK    el rótulo de la pata dice dónde está enchufada: «Probador de celdas: celda 1 · al + de la celda 1 · enchufada en bat1 · BAL1»
+OK    el evento componente_cambiado lleva el «en» con los pines (lo guarda el registro)
+OK    al mover la batería, el probador enchufado se mueve con ella y sigue enchufado
+OK    al alejar el probador se desenchufa (queda sin «en»)
+OK    se vuelve a enchufar
+OK    al girar la batería, sus pines se mueven y el probador queda suelto
+OK    con la batería derecha, se enchufa otra vez
+OK    al borrar la batería, el probador queda suelto en su lugar
+OK    el LED queda enchufado en D13 (ánodo) y GND (cátodo): {'catodo': 'placa.GND1', 'anodo': 'placa.D13'}
+OK    la vista previa marcó D13 y GND: ['placa.D13', 'placa.GND1']
+OK    sobre D13 se ve la pata del LED (está encima) y dice dónde va enchufada: «LED: ánodo (+), pata larga · enchufada en D13 de Arduino Uno»
+OK    recargar recupera el LED enchufado, en el mismo lugar
+OK    soltado lejos de cualquier pin, el probador queda suelto
+OK    una pata en VIN y la otra sobre un hueco: quedan conectadas las dos ({'catodo': 'placa.VIN', 'anodo': 'protoboard.a1'})
+OK    la protoboard se lleva el LED: la pata de VIN se suelta y VIN se puede volver a cablear ({'anodo': 'protoboard.a1'})
+OK    al abrir, el «en» del archivo manda (aunque el dibujo no esté encima)
+OK    al cambiar el lado del motor, sus pines se mueven y lo que quedó lejos se suelta
+OK    al abrir se sueltan una pata inventada, la segunda pata en el mismo pin y una pieza enchufada en sí misma: {'l1': None, 'l2': {'anodo': 'placa.D11'}, 'l3': None, 'l4': None}
+OK    el aviso no culpa a la placa: «Se soltaron 3 conexiones directas sin destino.»
+OK    en el Nano, SDA es otro nombre de A4: una pata no se enchufa en el alias ({'catodo': 'placa.GND1'})
+OK    enchufe: los 20 eventos cumplen contrato/evento.schema.json (componente_cambiado, componente_quitado)
+OK    sin errores ni avisos de consola
+
+26 comprobaciones; todo bien.
+— Contactos del dibujo y puntos de conexión
+OK    uno · placa: 31 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+OK    nano/roja · placa: 30 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+OK    nano/roja · exp1: 82 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+OK    nano/azul · placa: 30 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+OK    nano/azul · exp1: 82 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+OK    nano_old/roja · placa: 30 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+OK    nano_old/roja · exp1: 82 contactos del dibujo, cada uno sobre su punto de conexión (±0,05 px)
+— La shield L293D medida sobre el Uno
+OK    shield: 36 contactos del dibujo, cada uno sobre su punto de conexión
+OK    servos como en la placa: SERVO_1 arriba y los pines «− + S» de izquierda a derecha
+OK    headers analógicos: A0 a A5 de izquierda a derecha y las filas +5, Gnd y A0-5 de arriba abajo
+OK    con la shield, SCL, SDA e IOREF quedan tapados (['none', 'none', 'none', 'block', 'block']); el cable que ya llegaba a SCL se conserva
+OK    y se avisa que la shield tapa SCL (solo lo que tiene algo): «La shield tapa SCL: lo que llega ahí sigue conectado, pero en la placa real no se podría. Pásalo a otro pin.»
+OK    el LED de la shield, sin batería, se ve apagado (verde oscuro): #2b6a3a
+OK    la shield tiene su LED PWR y, con el puente puesto, el capuchón a la vista
+OK    con el puente quitado, el capuchón no se ve
+OK    sin la shield, SCL, SDA e IOREF se pueden cablear (['block', 'block', 'block'])
+— La placa es Pieza Tecno, sin el dibujo de wokwi
+OK    el Uno es el dibujo de TecnoDiseñador: sin wokwi-arduino-uno ni imágenes incrustadas
+OK    el Uno tiene sus cuatro LED con data-led: ['L', 'PWR', 'RX', 'TX']
+— Los LED siguen a la simulación
+OK    uno: sin simular, todos los LED apagados
+OK    uno: con parpadeo13 se encienden placa.L, placa.PWR
+OK    uno: el LED L encendido tiene halo (drop-shadow(rgba(255, 200, 61, 0.85) 0px 0px 0.4px) drop-shadow(rgba(255, 200, 61, 0.72) 0px 0px 1.38px))
+OK    uno: el LED RX destella cuando el monitor serial envía datos a la placa
+OK    uno: el LED L se apaga y se prende con el pin 13
+OK    uno: al detener, todos los LED apagados (también PWR)
+OK    nano: sin simular, todos los LED apagados
+OK    nano: con parpadeo13 se encienden placa.L, placa.PWR, exp1.PWR
+OK    nano: el LED L encendido tiene halo (drop-shadow(rgb(255, 200, 61) 0px 0px 0.4px) drop-shadow(rgba(255, 200, 61, 0.85) 0px 0px 1.38px))
+OK    nano: el LED RX destella cuando el monitor serial envía datos a la placa
+OK    nano: el LED L se apaga y se prende con el pin 13
+OK    nano: al detener, todos los LED apagados (también PWR)
+— El Nano va encima de la expansión y su marco transparente deja pasar el clic
+OK    la expansión va debajo del Nano en las capas: ['exp1', 'placa']
+OK    un clic en la expansión, dentro del marco del Nano, elige la expansión (elegido: exp1)
+OK    un clic en el cuerpo del Nano no elige la expansión de abajo (elegido: None)
+— Los nombres heredados siguen conectados
+OK    el circuito con OUT_5V, OUT_5V_2 y SPI_G conserva sus 4 cables dibujados (4)
+OK    los cables de OUT_5V y OUT_5V_2 terminan sobre el 5V del Nano, y el de SPI_G sobre su GND
+OK    una pata enchufada en OUT_5V se suelta al abrir y se avisa; la de GND_OUT_3 se queda ({'catodo': 'exp1.GND_OUT_3'})
+— Al abrir, una pieza enchufada se corre a sus pines si el dibujo cambió desde que se guardó
+OK    el LED guardado lejos queda sobre D13 y 3V3, con su en (distancias [0.0, 0.0] px)
+OK    el que ya no cabe en sus pines se queda donde estaba y sigue enchufado, sin aviso de soltar
+— Los id del documento no se repiten (miniaturas de la biblioteca incluidas)
+OK    nano/roja: 148 id en el lienzo, ninguno repetido 
+OK    nano/azul: 148 id en el lienzo, ninguno repetido 
+OK    uno: 123 id en el lienzo, ninguno repetido 
+OK    uno/shield: 147 id en el lienzo, ninguno repetido 
+— La marca de TecnoCircuito en la serigrafía (MARCA-002): un chip por placa, sin tocar nada
+OK    uno (td-uno): un chip de 4.19 mm (esperado 4.2) que no toca contactos, LEDs ni textos 
+OK    nano (td-nano): sin marca, como decidió Efraín
+OK    nano/roja (td-exp-roja): un chip de 2.81 mm (esperado 2.8) que no toca contactos, LEDs ni textos 
+OK    nano/roja (td-nano): sin marca, como decidió Efraín
+OK    nano/azul (td-exp-azul): un chip de 2.81 mm (esperado 2.8) que no toca contactos, LEDs ni textos 
+OK    nano/azul (td-nano): sin marca, como decidió Efraín
+OK    uno/shield (td-uno): un chip de 4.19 mm (esperado 4.2) que no toca contactos, LEDs ni textos 
+OK    uno/shield (td-l293d): un chip de 2.81 mm (esperado 2.8) que no toca contactos, LEDs ni textos 
+— La imagen exportada conserva los dibujos
+OK    uno: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos
+OK    uno: el chip de la serigrafía sigue en la imagen exportada
+OK    nano: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos
+OK    nano/azul: el chip de la serigrafía sigue en la imagen exportada
+OK    uno: el SVG exportado es XML válido, con el dibujo de TecnoDiseñador y sin id repetidos
+OK    uno/shield: el chip de la serigrafía sigue en la imagen exportada
+OK    sin errores en la consola
+
+57 comprobaciones; todo bien.
+OK    la biblioteca muestra los cuatro dibujos medidos, sin wokwi: {'led': {'svg': True, 'wokwi': False}, 'resistencia': {'svg': True, 'wokwi': False}, 'pulsador': {'svg': True, 'wokwi': False}, 'potenciometro': {'svg': True, 'wokwi': False}}
+OK    una pieza nueva trae vatios o modelo: [{'ohmios': 220, 'vatios': 0.25}, {'color': 'rojo'}, {'color': 'rojo', 'modelo': '6x6'}, {'ohmios': 10000, 'posicion': 0.5, 'modelo': '16mm'}]
+OK    las cuatro son SVG propios y solo reciben el clic donde están pintadas: ['svg+pintado', 'svg+pintado', 'svg+pintado', 'svg+pintado']
+OK    LED: el cátodo y el ánodo a 1 paso (9.6, 0.0)
+OK    resistencia de ¼ W: las patas a 4 pasos (38.4, 0.0)
+OK    potenciómetro: GND, SIG y VCC a 2 pasos (38.4, 0.0)
+OK    pulsador: 3 pasos de lado a lado y 2 en el mismo lado (28.8, 0.0), (0.0, 19.2)
+OK    220 Ω: rojo, rojo, marrón y oro ['#d0312d', '#d0312d', '#7b4a2a', '#c9a040']
+OK    10 kΩ: marrón, negro, naranja y oro ['#7b4a2a', '#1c1c1c', '#ee6a1e', '#c9a040']
+OK    otro valor solo pinta otra vez las bandas: el dibujo no se rehace
+OK    ½ W: las patas pasan a 6 pasos y las bandas siguen en 10 kΩ (57.6, 0.0)
+OK    la ficha dice ½ W, el cuerpo de 8,7 mm y las patas a 6 pasos
+OK    LED azul: la cápsula toma el azul apagado de la foto; la parte «quemado» no se ve
+OK    el potenciómetro dice «B10K», como el del kit
+OK    el rótulo sigue a los ohmios: ['B1K', 'B100K']
+OK    en la mitad, la ranura del eje queda vertical
+OK    el botón negro toma el negro del kit
+OK    girar el eje con el mouse más de una vuelta lo deja en el tope: 1 (rotate(135 8.89 8.03))
+OK    la resistencia de ¼ W encaja de c5 a c9: {'1': 'protoboard.c5', '2': 'protoboard.c9'}
+OK    cambiarla por una de ½ W deja la pata 1 en c5 y la 2 va a c11: {'1': 'protoboard.c5', '2': 'protoboard.c11'}
+OK    y la pata 2 queda justo sobre c11
+OK    lo guardado tiene los huecos y el lugar del lienzo: {'1': 'protoboard.c5', '2': 'protoboard.c11'} (348, 74.6) y {'1': 'protoboard.c5', '2': 'protoboard.c11'} (348, 74.6)
+OK    el potenciómetro encaja con las patas a 2 pasos: {'GND': 'protoboard.j3', 'SIG': 'protoboard.j5', 'VCC': 'protoboard.j7'}
+OK    el pulsador girado cruza el canal central, como el real: {'1i': 'protoboard.e22', '1d': 'protoboard.f22', '2i': 'protoboard.e20', '2d': 'protoboard.f20'}
+OK    el LED encaja en a27 y a28: {'catodo': 'protoboard.a27', 'anodo': 'protoboard.a28'}
+OK    el marco transparente del LED no tapa los huecos a26 y a29 (con la clase: {'a26': 'protoboard.a26', 'a29': 'protoboard.a29'}; sin ella, del LED: {'a26': 'led1', 'a29': 'led1'})
+OK    presionado, el capuchón se hunde y el LED prende (translate(5.08 3.81) scale(0.86) translate(-5.08 -3.81))
+OK    al soltarlo, el capuchón sube
+OK    el circuito antiguo abre con los mismos huecos, las mismas props (sin vatios ni modelo) y los mismos cables
+OK    el LED toma el dibujo medido y se corre sobre sus huecos: (405, 27.8) → (410.4, 26.6)
+OK    cada pata queda sobre el hueco que dice su «en» (todas)
+OK    la resistencia sin vatios se dibuja de ¼ W con las patas abiertas a 6 pasos, en sus mismos huecos
+OK    el botón con el dibujo de wokwi se queda donde estaba: (491.68, 80.76)
+OK    su ficha dice «¼ W, patas abiertas», ¼ W y las patas a 6 pasos
+OK    el botón sin modelo conserva el dibujo de wokwi
+OK    y su ficha avisa «Dibujo antiguo: muévelo un poco y toma el del kit.» y da las patas del dibujo antiguo
+OK    el dibujo antiguo tiene las patas a 7 pasos de lado a lado (0.0, 67.0)
+OK    presionado, el LED mide lo mismo que con las piezas del kit: 12.497 mA y 12.497 mA
+OK    al moverlo, el botón toma modelo «6x6» y el dibujo medido: {'color': 'rojo', 'modelo': '6x6'}
+OK    y encaja cruzando el canal en las mismas columnas: {'1i': 'protoboard.e24', '1d': 'protoboard.f24', '2i': 'protoboard.e22', '2d': 'protoboard.f22'}
+OK    la ficha ya no avisa del dibujo antiguo y da las medidas del kit
+OK    no sale un evento con el modelo, y queda guardado: []
+OK    un potenciómetro guardado sin modelo abre con el dibujo de wokwi
+OK    al moverlo toma el dibujo medido con su perilla en el 30 % (−54°) y conserva su cable: {'ohmios': 10000, 'posicion': 0.3, 'modelo': '16mm'}
+OK    y su ficha da las patas del kit, a 2 pasos
+OK    con el dibujo antiguo, su ficha da sus patas, a 1 paso (10.0, 0.0)
+OK    el dibujo nuevo sigue al puntero con las patas centradas donde estaban, sin salto: (-0.2, 0.3) px
+OK    la resistencia antigua pasa a ¼ W y lo guardado coincide con el lienzo: {'1': 'protoboard.c13', '2': 'protoboard.c19'} → {'1': 'protoboard.c13', '2': 'protoboard.c17'} ({'1': 'protoboard.c13', '2': 'protoboard.c17'})
+OK    «vatios»: "0.25" es la de ¼ W en el dibujo y en la ficha, con las patas a 4 pasos (38.4, 0.0)
+OK    la imagen SVG es válida, sin id repetidos, con el LED, las 8 bandas y el botón medidos (144 KB)
+OK    piezas: los 28 eventos cumplen contrato/evento.schema.json (boton_pulsado, componente_agregado, componente_cambiado, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN
+OK    registro: los 10 eventos cumplen contrato/evento.schema.json (componente_cambiado, falla, reinicio_placa, simulacion_detenida, simulacion_iniciada, simulacion_pausada, simulacion_reanudada)
+OK    la historia de la simulación, en orden: ['simulacion_iniciada', 'simulacion_detenida', 'simulacion_iniciada', 'simulacion_pausada', 'simulacion_reanudada', 'reinicio_placa', 'simulacion_detenida']
+OK    cada evento lleva «v»: 1, también los del lienzo
+OK    la corrida sigue contando con un simulador nuevo: [1, 2]
+OK    cada evento del simulador lleva la corrida en la que pasó
+OK    simulacion_detenida de la corrida 1 trae sus fallas, una vez cada una: [('corriente_pin', 'placa.D13'), ('led_quemado', 'led1')]
+OK    las fallas de la lista son las que se avisaron durante la corrida 1
+OK    las fallas van sin el mensaje en pantalla
+OK    simulacion_detenida de la corrida 2: sin fallas (se corrigió)
+OK    la corrida 1 empezó con el LED solo
+OK    la corrida 2 empezó con la resistencia de 330 Ω que eligió el equipo ({'ohmios': 330, 'vatios': 0.25})
+OK    modo realista: las 7 no idealidades encendidas (danoComponentes, limitePin, entradaFlotante, ruidoADC, limiteUSB, caidaL293D, resistenciaBateria)
+OK    simulacion_iniciada lleva ms_sim 0
+OK    el tiempo simulado avanza: pausa en 535 ms, reinicio en 858 ms
+OK    la pausa duró 307 ms reales y el reloj del simulador no avanzó: se sabía 535 ms al pausar y 535 al seguir, y su primera foto dice 542 ms
+OK    simulacion_detenida: ms_sim (y ms_simulados, el nombre de antes) cuenta desde el reinicio (330 ms)
+OK    el cambio de la resistencia queda como evento del lienzo, sin corrida
+OK    sin errores en la consola
+
+TODO BIEN

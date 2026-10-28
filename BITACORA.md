@@ -1789,3 +1789,41 @@ Efraín pidió integrar las dos fichas a la vez y probar las cuatro piezas; los 
 - COMO-FUNCIONA 74; NOTICE y especificación de entrega al día. En TecnoBloques: los ejemplos `val_adc` y `val_nano_adc67` con el potenciómetro del kit y `test/simulador.js` con el LED medido (su bitácora).
 
 Pruebas (una tras otra, con cargador, 27 oct): suite completa (`npm --prefix prototipo run probar`, KiCad real y Chromium) 1372 OK y ninguna falla (antes 1298), con `probar_piezas.py` nueva (43). Antes y después contra HEAD: los 22 circuitos de referencia abren con las mismas conexiones, props y giros (solo se corren el LED y las resistencias encajados) y 126 corridas del núcleo dan fotos idénticas cuadro a cuadro, salvo el campo `vatios`. Paquete 527 → 556 KB; Worker 91 KB. TecnoBloques: `test:simulador` 58 y `test:registro-app` 134 sin fallas, `npm test` y `test:app` sin errores. Sin commit. Falta: auditor estricto y `/code-review`, la verificación de Codex, la versión `v0.4.0` con el sí de Efraín y la prueba en la protoboard real.
+
+## 2026-10-28 — Revisión de PIEZA-001 y PIEZA-002, corregida en un lote
+
+Por pedido de Efraín, un auditor estricto aparte y `/code-review` revisaron la entrega del 27 oct (`2808fd8`). Efraín aprobó corregir todo en un lote y aceptó mis cuatro recomendaciones. Detalle en COMO-FUNCIONA 74, «Revisión».
+
+- **Lo alto (A-01, lo vieron los dos):** cambiar la potencia de una resistencia encajada dejaba guardados, y en el simulador, los huecos viejos: el lienzo avisaba el cambio antes de que el dibujo nuevo llegara y la pieza volviera a encajar. Ahora `cambio()` va al final de `rehacerVista`.
+- **Lienzo:** el dibujo se rehace solo si cambian su tamaño o sus pines (otro valor solo pinta las bandas); `renovar` mide el centro de las patas respecto de la pieza (antes saltaba unos 12 px) y no emite `componente_cambiado {modelo}` (D3); al abrir, las piezas de wokwi en la protoboard no se corren y una vuelta sin corrimiento termina; aviso «Dibujo antiguo: muévelo un poco y toma el del kit.»
+- **Una sola regla de vatios:** `potenciaDe` en `motor/red.js` (0.25 o 0.5, número o texto; lo demás, sin `vatios`), que usan el dibujo, la ficha, el calor y KiCad.
+- **KiCad (D1 y D2):** la resistencia sin `vatios` lleva la DIN0207 a 15,24 mm, como se dibuja; el potenciómetro del kit, la Alps RK163 Single Horizontal (patas a 5 mm), y el guardado sin `modelo`, la RK09K de siempre.
+- **Ficha:** con el dibujo antiguo, da las patas de ese dibujo (potenciómetro a 1 paso, botón a 7 de lado a lado).
+- **Documentos:** contrato 4 (la resistencia antigua también se corre; el cambio de dibujo sin evento propio; D4: lo que ve una versión anterior, solo redacción); `validacion/2026-10-27-piezas-kit-medidas.md` con las medidas del 27 oct que cita la biblioteca, traídas de TecnoDiseñador; precisiones en las fichas de TecnoSuite.
+- **Visto de paso, anterior a la entrega y sin tocar:** un potenciómetro de wokwi ya elegido mueve su perilla al volver a presionarlo (el dibujo de wokwi enfoca un control invisible). Solo queda en los guardados sin `modelo`.
+
+Pruebas (28 oct): `probar_piezas.py` 43 → 52, con una regresión por hallazgo; contra `2808fd8` fallan 9, y las dos que pasan en los dos están explicadas en COMO-FUNCIONA. `probar_motor.js` y `probar_kicad.js` +2 cada una; `probar_kicad_pcb.py` encuentra las huellas nuevas en KiCad 10.0.3. Suite completa 1391 OK y ninguna falla, con batería y otra vez con cargador. TecnoBloques con este paquete: `test:simulador` 58 y `test:registro-app` 134, sin fallas. Sin commit: por decisión de Efraín, espera la verificación de Codex y su revisión.
+
+
+## 2026-10-28 10:23 · Codex · Revisión profunda conjunta de PIEZA-001 y PIEZA-002
+
+Verificada la entrega CLA-20261028-001 (TC `2808fd8` más diff identificado): suite completa 1391 OK/0 fallas, KiCad 10.0.3 ejecutado; integración local de TecnoBloques 58 y registro Electron 134 sin fallas. Comparación propia de 74 corridas del núcleo, 60 cuadros y dos referencias: ninguna diferencia inesperada; el control 220/330 Ω sí difiere. A-01 de guardado/Worker y sus ramas, conformes.
+
+**PIEZA-001 devuelta solo por F01 (media):** al elegir ½ W en una resistencia guardada sin `vatios`, ficha y valor cambian pero lienzo e imagen exportada conservan el cuerpo beige de ¼ W; reabrir lo corrige. Regresión de CR-8 demostrada contra `2808fd8`. **PIEZA-002 conforme en software e integración**, con geometría física y uso pendientes de Efraín. [Informe, reproducción y límites](docs/verificacion-piezas-2026-10-28/INFORME.md). Corrección funcional a cargo de Claude; siguiente revisión acotada a F01 y regresiones afectadas. No se modificó código de producto ni memorias ajenas; sin commit/push. Batería observada: no se acredita rendimiento con cargador. El commit del lote y la revisión humana siguen pendientes.
+
+## 2026-10-28 — F01 de Codex: la potencia siempre rehace el dibujo de la resistencia
+
+Codex verificó la revisión (COD-20261028-002, profunda única; su informe en `docs/verificacion-piezas-2026-10-28/`): PIEZA-002 conforme en software e integración, y PIEZA-001 devuelta solo por **F01** (media). Una resistencia guardada sin `vatios` que pasaba directo a ½ W seguía con el cuerpo beige en el lienzo y en la imagen exportada, hasta reabrir. Lo causó mi optimización de CR-8: comparaba solo los marcos, y la ¼ W abierta y la ½ W tienen el mismo marco y las patas a 6 pasos. Ahora el catálogo dice qué props cambian el dibujo aunque el marco no cambie (`rehacerCon: ['vatios']`), y los ohmios siguen pintando solo las bandas.
+
+Pruebas: la regresión nueva de `probar_piezas.py` (sin `vatios` → ½ W: la variante `05w` en el lienzo, la exportación y al reabrir, con las patas quietas) falló antes de corregir y pasa después; `probar_piezas.py` 54. Suite completa 1393 OK y ninguna falla (empezó con batería, terminó con cargador). TecnoBloques con este paquete: `test:simulador` 58 y `test:registro-app` 134. Sin commit: espera la verificación acotada de Codex y la revisión de Efraín.
+
+
+## 2026-10-28 11:07 · Codex · F01 de PIEZA-001 verificado
+
+Verificación acotada de CLA-20261028-002: antigua sin `vatios` → ½ W ya cambia al cuerpo azul en lienzo e imagen exportada; reapertura y regresiones de A-01/ancla/guardado/Worker conformes. Propio 20/20, piezas 54, enchufe 26, contrato 212, TB simulador 58 y registro-app 134 sin fallas. [Dictamen y evidencia](docs/verificacion-piezas-2026-10-28/r1/INFORME.md). Software/integración de PIEZA-001/002 conformes; fase física/uso pendientes de Efraín, que también revisa y decide el commit/versión. Sin implementación de producto, memorias ajenas ni operaciones Git de escritura por Codex.
+
+## 2026-10-28 — PIEZA-001 y PIEZA-002 verificadas por Codex; ficha PIEZA-003
+
+Codex verificó y cerró F01 (COD-20261028-003, acotada; `docs/verificacion-piezas-2026-10-28/r1/`): su diagnóstico pasa 20/20, con A-01, el ancla en cuatro giros, guardado y Worker conformes. Software e integración de las dos fichas, verificados; quedan en `pendiente_externo` por la geometría en la protoboard real y el uso. Efraín autorizó commit y push. Este commit lleva también la evidencia de las dos verificaciones de Codex.
+
+Efraín preguntó si ya se puede quitar todo el código de Wokwi. `@wokwi/elements` y Lit (unos 29 KB del paquete) solo dibujan el potenciómetro y el botón guardados sin `modelo`: se pueden quitar, y queda abierta la ficha **PIEZA-003**, antes de la `v0.4.0`, con su decisión para los circuitos viejos (abren con el dibujo del kit; en la protoboard, si no caben, quedan sueltos con aviso). `avr8js` también es de Wokwi, pero es el emulador del ATmega328P que ejecuta el `.hex`: se queda (MIT; reemplazarlo sería escribir un emulador propio y repetir la validación de T1 a T3).

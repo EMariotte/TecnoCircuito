@@ -1,0 +1,56 @@
+OK    la biblioteca muestra los cuatro dibujos medidos, sin wokwi: {'led': {'svg': True, 'wokwi': False}, 'resistencia': {'svg': True, 'wokwi': False}, 'pulsador': {'svg': True, 'wokwi': False}, 'potenciometro': {'svg': True, 'wokwi': False}}
+OK    una pieza nueva trae vatios o modelo: [{'ohmios': 220, 'vatios': 0.25}, {'color': 'rojo'}, {'color': 'rojo', 'modelo': '6x6'}, {'ohmios': 10000, 'posicion': 0.5, 'modelo': '16mm'}]
+OK    las cuatro son SVG propios y solo reciben el clic donde están pintadas: ['svg+pintado', 'svg+pintado', 'svg+pintado', 'svg+pintado']
+OK    LED: el cátodo y el ánodo a 1 paso (9.6, 0.0)
+OK    resistencia de ¼ W: las patas a 4 pasos (38.4, 0.0)
+OK    potenciómetro: GND, SIG y VCC a 2 pasos (38.4, 0.0)
+OK    pulsador: 3 pasos de lado a lado y 2 en el mismo lado (28.8, 0.0), (0.0, 19.2)
+OK    220 Ω: rojo, rojo, marrón y oro ['#d0312d', '#d0312d', '#7b4a2a', '#c9a040']
+OK    10 kΩ: marrón, negro, naranja y oro ['#7b4a2a', '#1c1c1c', '#ee6a1e', '#c9a040']
+OK    otro valor solo pinta otra vez las bandas: el dibujo no se rehace
+OK    ½ W: las patas pasan a 6 pasos y las bandas siguen en 10 kΩ (57.6, 0.0)
+OK    la ficha dice ½ W, el cuerpo de 8,7 mm y las patas a 6 pasos
+OK    LED azul: la cápsula toma el azul apagado de la foto; la parte «quemado» no se ve
+OK    el potenciómetro dice «B10K», como el del kit
+OK    el rótulo sigue a los ohmios: ['B1K', 'B100K']
+OK    en la mitad, la ranura del eje queda vertical
+OK    el botón negro toma el negro del kit
+OK    girar el eje con el mouse más de una vuelta lo deja en el tope: 1 (rotate(135 8.89 8.03))
+OK    la resistencia de ¼ W encaja de c5 a c9: {'1': 'protoboard.c5', '2': 'protoboard.c9'}
+OK    cambiarla por una de ½ W deja la pata 1 en c5 y la 2 va a c11: {'1': 'protoboard.c5', '2': 'protoboard.c11'}
+OK    y la pata 2 queda justo sobre c11
+OK    lo guardado tiene los huecos y el lugar del lienzo: {'1': 'protoboard.c5', '2': 'protoboard.c11'} (348, 74.6) y {'1': 'protoboard.c5', '2': 'protoboard.c11'} (348, 74.6)
+OK    el potenciómetro encaja con las patas a 2 pasos: {'GND': 'protoboard.j3', 'SIG': 'protoboard.j5', 'VCC': 'protoboard.j7'}
+OK    el pulsador girado cruza el canal central, como el real: {'1i': 'protoboard.e22', '1d': 'protoboard.f22', '2i': 'protoboard.e20', '2d': 'protoboard.f20'}
+OK    el LED encaja en a27 y a28: {'catodo': 'protoboard.a27', 'anodo': 'protoboard.a28'}
+OK    el marco transparente del LED no tapa los huecos a26 y a29 (con la clase: {'a26': 'protoboard.a26', 'a29': 'protoboard.a29'}; sin ella, del LED: {'a26': 'led1', 'a29': 'led1'})
+OK    presionado, el capuchón se hunde y el LED prende (translate(5.08 3.81) scale(0.86) translate(-5.08 -3.81))
+OK    al soltarlo, el capuchón sube
+OK    el circuito antiguo abre con los mismos huecos, las mismas props (sin vatios ni modelo) y los mismos cables
+OK    el LED toma el dibujo medido y se corre sobre sus huecos: (405, 27.8) → (410.4, 26.6)
+OK    cada pata queda sobre el hueco que dice su «en» (todas)
+OK    la resistencia sin vatios se dibuja de ¼ W con las patas abiertas a 6 pasos, en sus mismos huecos
+OK    el botón con el dibujo de wokwi se queda donde estaba: (491.68, 80.76)
+OK    su ficha dice «¼ W, patas abiertas», ¼ W y las patas a 6 pasos
+OK    el botón sin modelo conserva el dibujo de wokwi
+OK    y su ficha avisa «Dibujo antiguo: muévelo un poco y toma el del kit.» y da las patas del dibujo antiguo
+OK    el dibujo antiguo tiene las patas a 7 pasos de lado a lado (0.0, 67.0)
+OK    presionado, el LED mide lo mismo que con las piezas del kit: 12.497 mA y 12.497 mA
+OK    al moverlo, el botón toma modelo «6x6» y el dibujo medido: {'color': 'rojo', 'modelo': '6x6'}
+OK    y encaja cruzando el canal en las mismas columnas: {'1i': 'protoboard.e24', '1d': 'protoboard.f24', '2i': 'protoboard.e22', '2d': 'protoboard.f22'}
+OK    la ficha ya no avisa del dibujo antiguo y da las medidas del kit
+OK    no sale un evento con el modelo, y queda guardado: []
+OK    un potenciómetro guardado sin modelo abre con el dibujo de wokwi
+OK    al moverlo toma el dibujo medido con su perilla en el 30 % (−54°) y conserva su cable: {'ohmios': 10000, 'posicion': 0.3, 'modelo': '16mm'}
+OK    y su ficha da las patas del kit, a 2 pasos
+OK    con el dibujo antiguo, su ficha da sus patas, a 1 paso (10.0, 0.0)
+OK    el dibujo nuevo sigue al puntero con las patas centradas donde estaban, sin salto: (-0.2, 0.3) px
+OK    la resistencia antigua pasa a ¼ W y lo guardado coincide con el lienzo: {'1': 'protoboard.c13', '2': 'protoboard.c19'} → {'1': 'protoboard.c13', '2': 'protoboard.c17'} ({'1': 'protoboard.c13', '2': 'protoboard.c17'})
+OK    sin vatios → ½ W: el dibujo y la imagen exportada pasan a la de ½ W, guardada y con las patas quietas (['Resistencia de ½ W', True, False])
+OK    y al reabrir sigue la de ½ W (['Resistencia de ½ W', True, False])
+OK    «vatios»: "0.25" es la de ¼ W en el dibujo y en la ficha, con las patas a 4 pasos (38.4, 0.0)
+OK    la imagen SVG es válida, sin id repetidos, con el LED, las 8 bandas y el botón medidos (144 KB)
+OK    piezas: los 29 eventos cumplen contrato/evento.schema.json (boton_pulsado, componente_agregado, componente_cambiado, simulacion_detenida, simulacion_iniciada)
+OK    sin errores en la consola
+
+TODO BIEN

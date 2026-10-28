@@ -741,10 +741,10 @@ Cada pin nuestro tiene que caer en **el número de pad correcto** de la huella. 
 | | J2 Digital/PWM | `…PinSocket_1x10…` | SCL → 1 · SDA → 2 · AREF → 3 · GND1 → 4 · D13 … D8 → 5 … 10 |
 | | J3 Analog | `…PinSocket_1x06…` | A0 … A5 → 1 … 6 |
 | | J4 Digital/PWM | `…PinSocket_1x08…` | D7 … D0 → 1 … 8 |
-| Resistencia | R | `Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal` | 1 → 1 · 2 → 2 |
+| Resistencia | R | `Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal` (la de ¼ W; la de ½ W y la guardada sin `vatios`, en la sección 74) | 1 → 1 · 2 → 2 |
 | LED | D | `LED_THT:LED_D5.0mm` | cátodo → 1 (el pad cuadrado) · ánodo → 2 |
 | Botón | SW | `Button_Switch_THT:SW_PUSH_6mm` | 1i, 1d → 1 · 2i, 2d → 2 (la huella repite los números, como nuestras patas unidas por dentro) |
-| Potenciómetro | RV | `Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical` | GND → 1 · SIG → 2 (el cursor) · VCC → 3 |
+| Potenciómetro | RV | `Potentiometer_THT:Potentiometer_Alps_RK163_Single_Horizontal` (el del kit; el guardado sin `modelo`, la RK09K: sección 74) | GND → 1 · SIG → 2 (el cursor) · VCC → 3 |
 
 - **De dónde salió:**
   - las piezas, de sus símbolos y huellas oficiales de KiCad 10;
@@ -2275,15 +2275,23 @@ Una pieza nueva las trae. El LED no necesita prop: sus patas siguen a 1 paso.
 |---|---|---|
 | LED | Dibujo medido, corrido unos píxeles (5,4; −1,2) para que cada pata quede sobre el hueco que dice su `en`. | — |
 | Resistencia sin `vatios` | ¼ W con las patas abiertas a 6 pasos (variante `025w6`): los mismos huecos y el límite de 0,25 W. La ficha dice «¼ W, patas abiertas». | Elegir ¼ W o ½ W la cambia. |
-| Potenciómetro o pulsador sin `modelo` | El dibujo de wokwi de antes, con la ficha que avisa «Dibujo antiguo: vuelve a ponerlo en la protoboard». | Al levantarlo toma el `modelo` y el dibujo medido, con sus patas centradas donde estaban las de antes; al soltarlo encaja con las patas nuevas. |
+| Potenciómetro o pulsador sin `modelo` | El dibujo de wokwi de antes, en el mismo lugar, con la ficha que avisa «Dibujo antiguo: muévelo un poco y toma el del kit.» y da las patas de ese dibujo (a 1 paso; a 7 de lado a lado). | Al levantarlo toma el `modelo` y el dibujo medido, con sus patas centradas donde estaban las de antes; al soltarlo encaja con las patas nuevas. No emite un evento propio (ver «Revisión», abajo). |
 
 Para esto hicieron falta dos cosas en el lienzo:
 - **`noCompletar`.** Al abrir, `normalizar` completa las props que faltan con las de una pieza nueva. Eso le ponía `vatios` y `modelo` a todo lo guardado, y borraba justo la marca de «guardada antes». Ahora cada tipo dice qué props no se completan.
-- **El encaje al abrir también en la protoboard.** `alinearEnchufesAlAbrir` ya corría las piezas enchufadas en pines (sección 63). Ahora corre también la pieza encajada en la protoboard cuyas patas no caen justo en sus huecos, si todas piden el mismo corrimiento. En la protoboard la tolerancia es 0,01 px, porque cada pata debe quedar justo sobre su hueco, como cuando se suelta ahí. Con tolerancia de imán (3,5 px), el LED corrido 5,5 px no se habría movido.
+- **El encaje al abrir también en la protoboard.** `alinearEnchufesAlAbrir` ya corría las piezas enchufadas en pines (sección 63). Ahora corre también la pieza encajada en la protoboard cuyas patas no caen justo en sus huecos, si todas piden el mismo corrimiento. En la protoboard la tolerancia es 0,01 px, porque cada pata debe quedar justo sobre su hueco, como cuando se suelta ahí. Con tolerancia de imán (3,5 px), el LED corrido 5,5 px no se habría movido. El potenciómetro y el pulsador con el dibujo de wokwi no se corren: ese dibujo no cae justo en la rejilla y se quedan donde estaban. Una vuelta sin nada que correr termina.
 
 **LED.** La cápsula toma el color apagado de la foto y, con la corriente, `mostrarLeds` la lleva hacia el encendido con su halo (el mismo de los LED de las placas, sección 63). `data-brillo` en el SVG deja el brillo sin redondear: lo leen las pruebas y TecnoBloques, que antes leían `brightness` del elemento de wokwi. Quemado, se ve la parte `quemado` (la cápsula oscurecida y una grieta) y sigue el rótulo; ya no se pone gris.
 
-**Resistencia.** Las bandas siguen el código de colores de los ohmios: dos cifras, el multiplicador (oro ×0,1, plata ×0,01) y la tolerancia en oro. Un valor con más de dos cifras significativas se redondea a dos. El límite de calor sale de `vatiosDe(props)` en `motor/red.js` (sin `vatios`, 0,25 W), y `mediciones()` da los `vatios` de cada una. Si una de ½ W alcanzaría, la falla lo sugiere: «… aguanta 0,25 W. Usa una de más ohmios o una de ½ W.» Al cambiar la potencia con la pieza encajada, la pata 1 se queda en su hueco (`ancla`) y la pieza vuelve a encajar con la pata 2 donde le toque; si ya no cabe, queda suelta y se avisa. En KiCad, la de ½ W lleva la huella `R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal`; la de ¼ W y la guardada sin `vatios`, la de siempre (10,16 mm).
+**Resistencia.** Las bandas siguen el código de colores de los ohmios: dos cifras, el multiplicador (oro ×0,1, plata ×0,01) y la tolerancia en oro. Un valor con más de dos cifras significativas se redondea a dos. La potencia sale de una sola regla, `potenciaDe(props)` en `motor/red.js`: `0.25` o `0.5` (número o texto), y cualquier otra cosa cuenta como guardada sin `vatios`. La usan el dibujo, la ficha, el límite de calor (`vatiosDe`: sin `vatios`, 0,25 W) y KiCad, así nunca dicen cosas distintas. `mediciones()` da los `vatios` de cada una. Si una de ½ W alcanzaría, la falla lo sugiere: «… aguanta 0,25 W. Usa una de más ohmios o una de ½ W.» Al cambiar la potencia con la pieza encajada, la pata 1 se queda en su hueco (`ancla`) y la pieza vuelve a encajar con la pata 2 donde le toque; si ya no cabe, queda suelta y se avisa. Otro valor solo pinta otra vez las bandas: el dibujo se rehace solo si cambian su tamaño o sus pines. En KiCad, la huella va con el dibujo:
+
+| Resistencia | Huella |
+|---|---|
+| ¼ W (patas a 4 pasos) | `R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal`, la de siempre |
+| ½ W (6 pasos) | `R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal` |
+| guardada sin `vatios` (¼ W con las patas abiertas a 6 pasos) | `R_Axial_DIN0207_L6.3mm_D2.5mm_P15.24mm_Horizontal` (decisión de Efraín, 28 oct; antes, la de 10,16 mm) |
+
+El potenciómetro del kit (16 mm, patas a 5 mm) lleva `Potentiometer_Alps_RK163_Single_Horizontal`, con los pads 1, 2 y 3 a 5 mm; uno guardado sin `modelo`, la `Alps_RK09K_Single_Vertical` de siempre (decisión de Efraín, 28 oct). El pulsador sigue con `SW_PUSH_6mm`, que ya era la del de 6 × 6 mm.
 
 **Potenciómetro.** El eje gira de −135° (`posicion` 0, el cursor en GND) a +135° (`posicion` 1). Con el mouse, el lienzo suma lo que giró el puntero alrededor del eje por el camino corto (pasar por abajo no salta de un extremo al otro) y se detiene en los topes. El rótulo impreso sigue a los ohmios: «B1K», «B10K», «B100K».
 
@@ -2293,6 +2301,39 @@ Para esto hicieron falta dos cosas en el lienzo:
 
 **El clic, solo donde hay dibujo.** El marco de rejilla de estas piezas es más grande que su cuerpo; el de la resistencia de ¼ W llega hasta las filas b y d. Como la placa (sección 62), solo reciben el clic donde están pintadas (`tc-solo-pintado`), y los huecos bajo el marco transparente se siguen alcanzando. No se aplica al dibujo de wokwi, que maneja sus propios eventos.
 
+**Revisión (28 oct).** Antes de la entrega a Codex, un auditor estricto aparte y `/code-review` revisaron las dos fichas; Efraín aprobó corregir todo en un lote y aceptó las recomendaciones (D1 a D4). Lo más importante: **cambiar la potencia de una resistencia encajada dejaba guardados los huecos viejos** (A-01, lo vieron los dos). El lienzo avisaba el cambio (`cambio`) antes de que el dibujo nuevo llegara y la pieza volviera a encajar. Lo guardado y el simulador quedaban con la pata 2 en c19 mientras el lienzo la mostraba en c17, y al reabrir se conectaba en c19.
+
+```mermaid
+sequenceDiagram
+  participant F as Ficha (vatios)
+  participant L as lienzo.js
+  participant V as crearVista (asíncrono)
+  participant G as Guardado y simulador
+  F->>L: alCambiarPropiedad
+  L->>V: rehacerVista: quita el dibujo y pide el nuevo
+  Note over L,G: Antes: cambio() aquí → se guardaba c13–c19
+  V-->>L: dibujo nuevo listo
+  L->>L: pata 1 en su hueco (ancla) · encajarPieza → c13–c17
+  L->>G: Ahora: cambio() aquí → se guarda c13–c17
+```
+
+| Hallazgo | Qué pasaba | Corrección |
+|---|---|---|
+| A-01 (alto) | Lo de arriba. | `cambio()` al final de `rehacerVista`, cuando la pieza ya quedó en su lugar. |
+| CR-8 | Cambiar solo los ohmios también rehacía el dibujo (y pasaba por el mismo camino). | Se rehace si cambia el marco (tamaño o pines), si la prop está en `rehacerCon` del catálogo o si la pieza no tiene `aplicar`; si no, `aplicar` pinta las bandas. |
+| F01 (Codex, media) | La primera versión de CR-8 solo comparaba marcos. La resistencia guardada sin `vatios` (¼ W abierta) y la de ½ W tienen el mismo marco y las patas a 6 pasos: al elegir ½ W seguía el cuerpo beige en el lienzo y en la imagen exportada, hasta reabrir. | `rehacerCon: ['vatios']` en la resistencia: la potencia siempre rehace el dibujo; los ohmios no. |
+| A-02 | La prueba «el marco del LED no tapa b29» pasaba sin `soloPintado`: b29 está fuera del marco. | La prueba mira a26 y a29, y comprueba que sin la clase el clic sería del LED. |
+| CR-2 | Al levantar una pieza antigua, el dibujo nuevo saltaba unos 12 px: el centro de las patas se medía antes y después de que el arrastre corriera la pieza. | El centro se mide respecto de la pieza (`c.x`, `c.y`). |
+| CR-3 | Con piezas de wokwi en la protoboard, `alinearEnchufesAlAbrir` daba hasta una vuelta por pieza sin mover nada. | Las de wokwi se saltan y una pieza sin corrimiento no cuenta como corrida. |
+| CR-6 | `vatios: "0.25"` daba la de ¼ W en el dibujo y «a 6 pasos» en la ficha. | Una sola regla, `potenciaDe`. |
+| A-03 | Documentos: el contrato no decía que la resistencia antigua se corre; las fichas de TecnoSuite decían «nada se mueve» y «al soltarla»; las medidas del 27 oct estaban solo en TecnoDiseñador. | Contrato 4 y fichas corregidos; `validacion/2026-10-27-piezas-kit-medidas.md`. |
+| A-04 | El aviso «vuelve a ponerlo en la protoboard» salía también para una pieza cableada sin protoboard; con el dibujo antiguo, la ficha daba las medidas del nuevo. | «Dibujo antiguo: muévelo un poco y toma el del kit.»; la ficha da las patas del dibujo que se ve. |
+| D1 y D2 (Efraín) | Huellas de KiCad que no correspondían al dibujo. | Las tablas de arriba. |
+| D3 (Efraín) | `renovar` emitía `componente_cambiado {modelo}`, que la historia del registro podía contar como un cambio del aprendiz. | Ya no lo emite, como tampoco una pieza que se corre al abrir. El `modelo` llega a lo guardado al soltarla y al registro con el circuito de la siguiente `simulacion_iniciada`. |
+| D4 (Efraín) | Una versión anterior que abre un circuito nuevo lo conecta bien, pero con los dibujos de wokwi sobre los huecos nuevos. | Documentado en el contrato, sección 4; no tiene arreglo en esas versiones. |
+
+Se descartaron dos: la huella de ½ W sí se comprobaba en KiCad, y `encajar` recorre las patas dos veces, lo que no pesa con 2 a 4 patas.
+
 **Pruebas:**
 - `probar_piezas.py` (nueva, 43): biblioteca sin wokwi; props de una pieza nueva; paso exacto de las cuatro; bandas de 220 Ω y 10 kΩ; ½ W a 6 pasos con su ficha; colores del LED y del botón; rótulos «B1K» y «B100K»; el eje con el mouse hasta el tope; encaje al paso (resistencia de c5 a c9 y, al pasarla a ½ W, a c11 con la pata 1 fija; potenciómetro en j3/j5/j7; pulsador girado en e/f; LED en a27/a28 sin tapar b29); el botón que baja y prende el LED; el circuito antiguo con sus mismos huecos, props y cables, el LED corrido, la resistencia a 6 pasos, el botón de wokwi con su aviso y la misma corriente del LED que con las piezas del kit; el botón y el potenciómetro antiguos que se renuevan al moverlos; la imagen exportada.
 - Adaptadas al dibujo nuevo: `probar_electrico`, `probar_extras`, `probar_protoboard`, `probar_simulacion`, `probar_t1t2`, `probar_pwm` (leían el `wokwi-led`), `probar_svg` (el eje medido y la perilla antigua), `probar_prototipo` (la resistencia trae `vatios`) y `probar_nano_ui` (el potenciómetro más grande quedaba bajo la ficha).
@@ -2301,10 +2342,13 @@ Para esto hicieron falta dos cosas en el lienzo:
 - Suite completa con cargador: 1372 OK y ninguna falla (antes 1298). TecnoBloques: `test:simulador` 58 y `test:registro-app` 134 sin fallas; `npm test` y `test:app` sin errores.
 - **Antes y después:** 22 circuitos de referencia (los ejemplos de la página y de TecnoBloques de HEAD, `t1_protoboard` y su fixture) abren en el lienzo con las mismas conexiones, props y giros que con HEAD; solo se corren el LED y las resistencias encajados. En el núcleo, 126 corridas (cada circuito con 3 a 6 programas, 60 cuadros, los botones presionados del 20 al 35) dan fotos idénticas cuadro a cuadro, salvo el campo nuevo `vatios`. La comparación sí detecta un cambio: con 330 Ω en vez de 220, las seis corridas difieren desde el primer cuadro.
 - Paquete: 527 KB → 556 KB (los seis dibujos); el Worker sigue en 91 KB.
+- **Revisión (28 oct):** `probar_piezas.py` pasa de 43 a 52, con una regresión por hallazgo: lo guardado igual que el lienzo tras cambiar la potencia (nueva y antigua), el dibujo que no se rehace con otro valor, a26/a29 con y sin la clase, la pieza antigua que no salta al levantarla (antes, 11,7 px) ni emite `{modelo}`, el botón antiguo que se queda en su lugar, las fichas del dibujo antiguo y `vatios: "0.25"`. Contra el código de `2808fd8` fallan 9 de ellas; pasan en los dos la de a26/a29 (refuerza la prueba, no corrige código) y la del botón quieto (CR-3 eran vueltas sin efecto visible). `probar_motor.js` (+2: `potenciaDe` y el límite con `"0.5"` y con 2) y `probar_kicad.js` (+2: las tres huellas de la resistencia, `"0.5"` y las dos del potenciómetro); `probar_kicad_pcb.py` encuentra en KiCad 10.0.3 la RK163 y la DIN0207 de 15,24 mm con sus pads.
+- **F01 (Codex, 28 oct):** `probar_piezas.py` 54, con la resistencia sin `vatios` suelta que pasa a ½ W: la variante `05w` en el lienzo y en `exportarSVG()`, guardada, con las patas quietas y otra vez al reabrir. Falló con la primera corrección (reproducción) y pasa con `rehacerCon`.
+- Suite completa tras la revisión (28 oct), con batería y otra vez con cargador: 1391 OK y ninguna falla las dos veces. TecnoBloques con este paquete: `test:simulador` 58 y `test:registro-app` 134, sin fallas.
 
 **Límites:**
 - La geometría no se ha probado en la protoboard real con aprendices (fase 7 de PIEZA-001, LAB-001 punto 4).
 - El potenciómetro de frente tapa con su cuerpo los huecos de arriba de sus patas, como el real visto de frente.
 - `@wokwi/elements` y Lit siguen en el paquete por el potenciómetro y el pulsador antiguos. Cuando no queden circuitos guardados con ellos, se pueden quitar.
 - Los `-tc.svg` de TecnoDiseñador traen unos 2,6 KB de degradados que no usan (la plantilla de sus `defs`). Pesan en el paquete y en cada pieza del lienzo; se pueden quitar en el generador de TecnoDiseñador.
-- La huella de KiCad del potenciómetro (Alps RK09K) y la del pulsador no cambiaron.
+- Un potenciómetro con el dibujo de wokwi que ya está elegido mueve su perilla al volver a presionarlo: el primer clic enfoca un control invisible del dibujo de wokwi y el siguiente lo mueve hasta donde cayó el puntero. Viene de antes de esta entrega y hoy solo les pasa a los guardados sin `modelo`, que toman el dibujo nuevo al primer arrastre.

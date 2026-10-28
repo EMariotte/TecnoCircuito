@@ -1,0 +1,18 @@
+node : evalmachine.<anonymous>:1
+En línea: 2 Carácter: 1
++ node docs/verificacion-piezas-2026-10-28/comparar-nucleo.cjs *> docs/ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (evalmachine.<anonymous>:1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  const EJEMPLO = {
+                  ^
+
+ReferenceError: INICIAL is not defined
+    at evalmachine.<anonymous>:1:19
+    at Script.runInContext (node:vm:149:12)
+    at Script.runInNewContext (node:vm:154:17)
+    at Object.runInNewContext (node:vm:310:38)
+    at main (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\docs\verificacion-piezas-2026-10-28\comparar-nucleo.cjs:37:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

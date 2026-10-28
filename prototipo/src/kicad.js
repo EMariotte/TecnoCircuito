@@ -14,6 +14,7 @@ import { calcularNodos } from './conexiones.js';
 import { MODELOS_SERVO } from './piezas/servo.js';
 import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
 import { esNano } from './placas.js';
+import { potenciaDe } from './motor/red.js';
 
 // Los 4 conectores de la plantilla «Arduino Uno Shield» de KiCad (share/kicad/template/Arduino_Uno), con sus mismas
 // referencias y sus mismos UUID: al importar, KiCad reconoce los que ya están en la placa de la plantilla, sobre el
@@ -68,10 +69,15 @@ const kOhm = (ohmios) => (ohmios >= 1000 ? +(ohmios / 1000).toFixed(2) + 'k' : S
 // Los números de pad se comprobaron con las huellas de KiCad 10 (pruebas/probar_kicad_pcb.py).
 export const PIEZAS_KICAD = {
   resistencia: {
-    // La de ½ W (8,7 mm, patas a 6 pasos) lleva la huella de 9 mm a 15,24 mm (`otraHuella`). La de ¼ W, y una guardada
-    // sin `vatios`, la de 6,3 mm a 10,16 mm, como siempre.
+    // La huella va con el dibujo (`otraHuella`): la de ¼ W, de 6,3 mm a 10,16 mm (4 pasos); la de ½ W, de 9 mm a
+    // 15,24 mm (6 pasos), y una guardada sin `vatios`, la de 6,3 mm con las patas abiertas a 15,24 mm, como se dibuja
+    // (decisión de Efraín, 28 oct).
     ref: 'R', lib: 'Device', parte: 'R', huella: 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal',
-    otraHuella: (p) => (Number(p.vatios) === 0.5 ? 'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal' : null),
+    otraHuella: (p) => {
+      const w = potenciaDe(p);
+      if (w === 0.25) return null;
+      return w === 0.5 ? 'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P15.24mm_Horizontal' : 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P15.24mm_Horizontal';
+    },
     valor: (p) => kOhm(Number(p.ohmios) || 220), pads: { 1: '1', 2: '2' },
   },
   led: {
@@ -91,8 +97,10 @@ export const PIEZAS_KICAD = {
     valor: (p) => 'Servo ' + (MODELOS_SERVO[p.modelo] || MODELOS_SERVO.sg90).nombre, pads: { SIG: '1', VCC: '2', GND: '3' },
   },
   potenciometro: {
-    // 1 y 3 son los extremos; 2 es el cursor (la pata del medio).
-    ref: 'RV', lib: 'Device', parte: 'R_Potentiometer', huella: 'Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical',
+    // 1 y 3 son los extremos; 2 es el cursor (la pata del medio). El del kit (16 mm, patas a 5 mm) lleva la Alps RK163;
+    // uno guardado sin `modelo`, la RK09K de siempre, con las patas a 2,5 mm (decisión de Efraín, 28 oct).
+    ref: 'RV', lib: 'Device', parte: 'R_Potentiometer', huella: 'Potentiometer_THT:Potentiometer_Alps_RK163_Single_Horizontal',
+    otraHuella: (p) => (p.modelo === '16mm' ? null : 'Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical'),
     valor: (p) => kOhm(Number(p.ohmios) || 10000), pads: { GND: '1', SIG: '2', VCC: '3' },
   },
 };

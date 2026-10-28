@@ -1,0 +1,15 @@
+{
+  "TC_sin_cambio_salvo_anexo_bitacora": true,
+  "TC_cambios_inesperados": [],
+  "hermanos_cambios_inesperados": [],
+  "bitacora_prefijo_preservado": true,
+  "enlaces_informe": 11,
+  "enlaces_ausentes": [],
+  "proceso_salida": 0,
+  "proceso_resultado": "52 fichas, 101 documentos comprobados; 0 errores, 0 avisos. Estructura comprobada; no acredita pruebas de producto ni acuses.",
+  "informe_sha256": "6b22a3243b1091f4d62bd565d090a00d53b25293ad87786a1698505ddf97173d",
+  "diff_check": {
+    "salida": 1,
+    "alcance": "Espacios finales en artefactos minificados previamente entregados, sin cambio por hash; BITACORA propia pasa"
+  }
+}

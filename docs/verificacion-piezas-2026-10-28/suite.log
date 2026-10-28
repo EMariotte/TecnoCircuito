@@ -1,0 +1,67 @@
+
+> tecnocircuito@0.3.1 probar
+> npm --prefix prototipo run probar
+
+
+> tecnocircuito-prototipo@0.0.1 probar
+> npm run construir && npm run probar:motor && npm run probar:nucleo && npm run probar:nano && npm run probar:kicad && npm run probar:contrato && npm run probar:fotos && npm run probar:corte && node pruebas/probar_fixtures.js && python -I pruebas/probar_kicad_pcb.py && python -I pruebas/probar_kicad_nano_pcb.py && python -I pruebas/probar_prototipo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_extras.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_simulacion.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_electrico.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_pwm.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_svg.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_t1t2.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_protoboard.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_servo.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_carro.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_biblioteca.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_probador.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_nano_ui.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_enchufe.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_vistas.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_piezas.py dist/prototipo.html pruebas/capturas && python -I pruebas/probar_registro.py dist/prototipo.html pruebas/capturas
+
+
+> tecnocircuito-prototipo@0.0.1 construir
+> node construir.js
+
+npm.cmd : X [ERROR] Cannot read directory "../../../..": Acceso denegado.
+En línea: 2 Carácter: 1
++ npm.cmd run probar *> docs/verificacion-piezas-2026-10-28/suite.log
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (X [ERROR] Canno...cceso denegado.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+X [ERROR] Could not resolve "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo\\src\\trabajador.js"
+
+C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:2440
+      throw reject;
+      ^
+
+Error: Build failed with 2 errors:
+error: Cannot read directory "../../../..": Acceso denegado.
+error: Could not resolve "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\prototipo\\src\\trabajador.js"
+    at failureErrorWithLog (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:1752:15)
+    at C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:1211:25
+    at C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:1163:52
+    at buildResponseToResult (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:1209:7)
+    at C:\Users\ACER\Documents\Proyectos Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:1236:16
+    at responseCallbacks.<computed> (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:886:9)
+    at handleIncomingPacket (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:941:12)
+    at Socket.readFromStdout (C:\Users\ACER\Documents\Proyectos 
+Tecno\TecnoCircuito\prototipo\node_modules\esbuild\lib\main.js:864:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12) {
+  errors: [
+    {
+      detail: undefined,
+      id: '',
+      location: null,
+      notes: [],
+      pluginName: '',
+      text: 'Cannot read directory "../../../..": Acceso denegado.'
+    },
+    {
+      detail: undefined,
+      id: '',
+      location: null,
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "C:\\\\Users\\\\ACER\\\\Documents\\\\Proyectos 
+Tecno\\\\TecnoCircuito\\\\prototipo\\\\src\\\\trabajador.js"'
+    }
+  ],
+  warnings: []
+}
+
+Node.js v24.15.0

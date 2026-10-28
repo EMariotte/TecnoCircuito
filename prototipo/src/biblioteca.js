@@ -4,7 +4,7 @@
 //
 // Una pieza nueva se agrega aquí con su ficha: { nombre, descripcion, palabras, pines, datos(props), validacion(props) }.
 //   validacion → { estado: 'validado' | 'por_validar', texto }: si su modelo ya se comparó con la placa real.
-import { LED, vatiosDe } from './motor/red.js';
+import { LED, potenciaDe } from './motor/red.js';
 import { MODELOS_SERVO } from './piezas/servo.js';
 import { MOTOR_TT } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, LIPO } from './piezas/bateria_lipo.js';
@@ -58,9 +58,9 @@ export const FICHAS = {
     // Sin `vatios` (guardada antes de que hubiera dos potencias): ¼ W con las patas abiertas a 6 pasos.
     datos: (p) => [
       ['Valor', ohmios(Number(p.ohmios) || 220)],
-      ['Potencia máxima', vatiosDe(p) === 0.5 ? '½ W (0,5 W): más, se calienta' : '¼ W (0,25 W): más, se calienta'],
-      ['Cuerpo', vatiosDe(p) === 0.5 ? '8,7 mm, azul (la de ½ W del kit)' : '6,3 mm, beige (la de ¼ W del kit)'],
-      ['Patas', p.vatios === 0.25 ? 'a 4 pasos (10,16 mm)' : 'a 6 pasos (15,24 mm)'],
+      ['Potencia máxima', potenciaDe(p) === 0.5 ? '½ W (0,5 W): más, se calienta' : '¼ W (0,25 W): más, se calienta'],
+      ['Cuerpo', potenciaDe(p) === 0.5 ? '8,7 mm, azul (la de ½ W del kit)' : '6,3 mm, beige (la de ¼ W del kit)'],
+      ['Patas', potenciaDe(p) === 0.25 ? 'a 4 pasos (10,16 mm)' : 'a 6 pasos (15,24 mm)'],
       ['Tolerancia', '±5 % (franja dorada)'],
     ],
     validacion: () => validado('Comparada con el multímetro el 7 oct 2026 (220, 330 y 1 kΩ con un LED rojo). Dibujo medido por TecnoDiseñador desde las del kit (27 oct); falta probar sus pasos en la protoboard real.'),
@@ -87,9 +87,12 @@ export const FICHAS = {
     descripcion: 'Pulsador de 4 patas: al presionarlo une los dos lados. Con digitalRead() necesita una resistencia pull-down o INPUT_PULLUP; si no, la entrada queda al aire.',
     palabras: ['pulsador', 'interruptor', 'switch', 'tecla', 'boton', 'entrada digital'],
     pines: '1i y 1d unidas por dentro; 2i y 2d unidas por dentro. Al presionar, el 1 se une con el 2',
+    // Sin `modelo` (guardado antes): el dibujo antiguo, con las patas a 7 × 2 pasos, hasta que se mueve.
     datos: (p) => [
       ['Color', p.color || 'rojo'],
-      ['Tamaño', '6 × 6 mm; patas a 3 pasos de lado a lado y a 2 en el mismo lado'],
+      p.modelo
+        ? ['Tamaño', '6 × 6 mm; patas a 3 pasos de lado a lado y a 2 en el mismo lado']
+        : ['Dibujo', 'el antiguo, con las patas a 7 pasos de lado a lado; al moverlo toma el del kit (6 × 6 mm)'],
       ['Lectura', 'digitalRead(): ALTO o BAJO'],
       ['Sin pull-down', 'la entrada queda al aire (lee al azar)'],
     ],
@@ -99,10 +102,12 @@ export const FICHAS = {
     nombre: 'Potenciómetro',
     descripcion: 'Resistencia con perilla: la pata del medio (SIG) da un voltaje entre 0 y 5 V según el giro. Con analogRead() se lee de 0 a 1023.',
     palabras: ['perilla', 'knob', 'regulador', 'variable', 'analogico', 'analogread', 'trimmer'],
-    pines: 'GND, SIG (el cursor, al pin analógico) y VCC (5V), a 2 pasos',
+    pines: 'GND, SIG (el cursor, al pin analógico) y VCC (5V)',
+    // Sin `modelo` (guardado antes): el dibujo antiguo, con las patas a 1 paso, hasta que se mueve.
     datos: (p) => [
       ['Valor', ohmios(Number(p.ohmios) || 10000)],
       ['Perilla', `${Math.round((Number(p.posicion) || 0) * 100)} %`],
+      p.modelo ? ['Patas', 'a 2 pasos (5,08 mm)'] : ['Dibujo', 'el antiguo, con las patas a 1 paso; al moverlo toma el del kit (16 mm)'],
       ['Giro', '270°: a la derecha sube el voltaje'],
       ['Lectura', 'analogRead(): 0 a 1023 (5 V / 1024 por paso)'],
     ],

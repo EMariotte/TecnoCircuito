@@ -14,8 +14,9 @@ import R025 from './vistas/resistencia_025w.js';
 import R025_6 from './vistas/resistencia_025w6.js';
 import R05 from './vistas/resistencia_05w.js';
 import { tamanoDe, pinesDe, svgDe, rellenar } from './vista_td.js';
+import { potenciaDe } from '../motor/red.js';
 
-const vistaDe = (props) => ({ 0.25: R025, 0.5: R05 })[props && props.vatios] || R025_6;
+const vistaDe = (props) => ({ 0.25: R025, 0.5: R05 })[potenciaDe(props)] || R025_6;
 
 // El marco y los pines dependen de la potencia: el lienzo rehace el dibujo al cambiarla (dibujo.marco).
 export const marcoResistencia = (props) => ({ ...tamanoDe(vistaDe(props)), pines: pinesDe(vistaDe(props)) });
@@ -42,7 +43,7 @@ const TITULO = { 0.25: 'Resistencia de ¼ W', 0.5: 'Resistencia de ½ W' };
 
 export function dibujarResistencia(props) {
   let svg = svgDe(vistaDe(props), {
-    titulo: TITULO[props && props.vatios] || 'Resistencia de ¼ W con las patas abiertas',
+    titulo: TITULO[potenciaDe(props)] || 'Resistencia de ¼ W con las patas abiertas',
     descripcion: 'Resistencia axial del kit, vista desde arriba. Dibujo medido por TecnoDiseñador.',
   });
   bandas(props && props.ohmios).forEach((color, i) => (svg = rellenar(svg, 'data-banda', i + 1, color)));

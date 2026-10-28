@@ -405,15 +405,18 @@ export function crearLienzo(elemento, opciones = {}) {
   // pines: lo que conduce y lo que se ve vuelven a coincidir. Si sus patas ya no caben a la vez en sus pines, o si
   // tiene unas patas en la protoboard y otras en un pin, se queda donde estaba, enchufada como dice el archivo.
   // Lo mismo con una pieza encajada en la protoboard: el LED y la resistencia medidos ponen las patas unos píxeles más
-  // allá que los dibujos de wokwi con que se guardaron, y cada pata vuelve a quedar sobre su hueco.
+  // allá que los dibujos de wokwi con que se guardaron, y cada pata vuelve a quedar sobre su hueco. Un potenciómetro o
+  // un botón con el dibujo antiguo de wokwi se queda donde estaba: ese dibujo no cae justo sobre los huecos.
   function alinearEnchufesAlAbrir() {
-    // Varias vueltas: una pieza enchufada en otra que se acaba de correr ya se corrió con ella.
+    // Varias vueltas: una pieza enchufada en otra que se acaba de correr ya se corrió con ella. Una vuelta sin nada que
+    // correr termina.
     for (let vuelta = 0; vuelta <= datos.componentes.length; vuelta++) {
       let corrida = false;
       for (const k of datos.componentes) {
         if (!k.en || montada(k)) continue;
         const enProtoboard = Object.values(k.en).every(esHueco);
         if (!enProtoboard && Object.values(k.en).some(esHueco)) continue;
+        if (enProtoboard && esAntiguo(k.tipo, k.props)) continue;
         const pasos = Object.entries(k.en).map(([pata, ref]) => {
           const a = posicion(k.id + '.' + pata);
           const b = posicion(ref);
@@ -424,7 +427,7 @@ export function crearLienzo(elemento, opciones = {}) {
         const tolerancia = enProtoboard ? 0.01 : ENCHUFE_TOL;
         if (pasos.some((p) => !p) || pasos.every((p) => Math.hypot(p.dx, p.dy) <= tolerancia)) continue;
         const { dx, dy } = pasos[0];
-        if (pasos.some((p) => Math.hypot(p.dx - dx, p.dy - dy) > ENCHUFE_TOL)) continue;
+        if (pasos.some((p) => Math.hypot(p.dx - dx, p.dy - dy) > ENCHUFE_TOL) || Math.hypot(dx, dy) <= 0.01) continue;
         moverGrupo(k, dx, dy);
         corrida = true;
       }
@@ -878,7 +881,7 @@ export function crearLienzo(elemento, opciones = {}) {
     let props = '';
     if (c && def && !soloLectura) {
       // Un potenciómetro o un botón guardado sin `modelo` conserva el dibujo de wokwi hasta que se mueve.
-      if (esAntiguo(c.tipo, c.props)) props += '<p class="tc-ficha-aviso">Dibujo antiguo: vuelve a ponerlo en la protoboard.</p>';
+      if (esAntiguo(c.tipo, c.props)) props += '<p class="tc-ficha-aviso">Dibujo antiguo: muévelo un poco y toma el del kit.</p>';
       for (const campo of def.campos || (def.campo ? [def.campo] : [])) {
         const actual = String(c.props[campo.prop]);
         // Sin la prop (un circuito guardado antes de que existiera), la opción `sinValor` dice cómo se ve hoy.
@@ -1104,7 +1107,8 @@ export function crearLienzo(elemento, opciones = {}) {
   // Rehace el dibujo de una pieza cuyo tamaño o pines dependen de sus propiedades (la vista del motor, la potencia de
   // la resistencia). Con `ancla`, esa pata se queda donde estaba y, si las demás se movieron, la pieza vuelve a encajar
   // con su dibujo nuevo: cambiar una resistencia de ¼ W por una de ½ W deja la pata 1 en su hueco y la 2 en el que le
-  // toque, como en la mesa. Si ya no cabe, queda suelta y se avisa.
+  // toque, como en la mesa. Si ya no cabe, queda suelta y se avisa. El cambio se avisa (`cambio`) cuando el dibujo
+  // nuevo ya quedó en su lugar: lo que se guarda y lo que recibe el simulador tienen los huecos donde quedó.
   function rehacerVista(c, { ancla } = {}) {
     const v = vistas.get(c.id);
     const antes = ancla && v ? new Map([...v.pines.keys()].map((pata) => [pata, posicion(c.id + '.' + pata)])) : null;
@@ -1127,17 +1131,23 @@ export function crearLienzo(elemento, opciones = {}) {
       revisarEnchufes(); // sus pines pudieron moverse: lo que quedó lejos se suelta
       dibujarCables();
       if (sel && sel.id === c.id) seleccionar({ tipo: 'comp', id: c.id });
+      cambio();
     });
   }
 
   // Un potenciómetro o un botón con el dibujo antiguo de wokwi (guardado sin `modelo`): al levantarlo toma el `modelo`
   // y el dibujo medido, con sus patas centradas donde estaban las de antes, y al soltarlo encaja con las patas nuevas
   // (decisión de Efraín, 27 oct). Mientras se arrastra ya se ve el dibujo nuevo, con los huecos donde quedaría.
+  // No emite un evento propio: no es un cambio del aprendiz, como tampoco lo es una pieza que se corre al abrir. El
+  // `modelo` llega a lo guardado al soltarla (`cambio`) y al registro con el circuito de la siguiente simulación.
   function renovar(c, g) {
+    // El centro de las patas respecto de la pieza: mientras llega el dibujo nuevo la pieza sigue al puntero, y eso no
+    // debe contar como corrimiento.
     const centro = () => {
       const v = vistas.get(c.id);
       const ps = v ? [...v.pines.keys()].map((pata) => posicion(c.id + '.' + pata)).filter(Boolean) : [];
-      return ps.length ? { x: ps.reduce((s, q) => s + q.x, 0) / ps.length, y: ps.reduce((s, q) => s + q.y, 0) / ps.length } : null;
+      if (!ps.length) return null;
+      return { x: ps.reduce((s, q) => s + q.x, 0) / ps.length - c.x, y: ps.reduce((s, q) => s + q.y, 0) / ps.length - c.y };
     };
     const antes = centro();
     c.props = { ...c.props, modelo: TIPOS[c.tipo].props.modelo };
@@ -1159,7 +1169,6 @@ export function crearLienzo(elemento, opciones = {}) {
       dibujarCables();
       if (sel && sel.id === c.id) pintarFicha(); // sin el aviso del dibujo antiguo
     });
-    emitir('componente_cambiado', { id: c.id, props: copia(c.props) });
   }
 
   function girar() {
@@ -1291,15 +1300,21 @@ export function crearLienzo(elemento, opciones = {}) {
     if (!prop || !def || e.target.value === '') return; // '': la opción sin valor de un circuito guardado
     const tipoProp = typeof def.props[prop];
     const valor = tipoProp === 'number' ? Number(e.target.value) : tipoProp === 'boolean' ? e.target.value === 'true' : e.target.value;
+    const antes = c.props;
     c.props = { ...c.props, [prop]: valor };
-    if (v.def.dibujo && v.def.dibujo.marco) rehacerVista(c, { ancla: def.ancla }); // cambia el tamaño o los pines del dibujo
+    // El dibujo se rehace si cambian su tamaño o sus pines (la vista del motor), si la prop cambia el dibujo aunque el
+    // marco sea el mismo (`rehacerCon`: la potencia de la resistencia) o si la pieza no sabe repintarse sola. Otro valor
+    // de la resistencia solo pinta otra vez las bandas.
+    const marco = v.def.dibujo && v.def.dibujo.marco;
+    const rehacer = marco && (!v.def.aplicar || (def.rehacerCon || []).includes(prop) || JSON.stringify(marco(antes)) !== JSON.stringify(marco(c.props)));
+    if (rehacer) rehacerVista(c, { ancla: def.ancla }); // avisa el cambio cuando el dibujo nuevo quedó en su lugar
     else {
       v.def.aplicar(v.el, c.props);
       if (v.def === TIPOS.led) aplicarSim(v); // el LED de otro color vuelve a prender, con su brillo
     }
     pintarDatosFicha();
     emitir('componente_cambiado', { id: c.id, props: copia(c.props) });
-    cambio();
+    if (!rehacer) cambio();
   }
 
   function alMoverPerilla(e) {

@@ -1,0 +1,28 @@
+OK    mientras se arrastra, los tres pines del balance se ven en verde: ['bat1.BAL0', 'bat1.BAL1', 'bat1.BAL2']
+OK    al soltarlo queda enchufado: {'NEG': 'bat1.BAL0', 'C1': 'bat1.BAL1', 'C2': 'bat1.BAL2'}
+OK    el imán corrigió el corrimiento: cada pata quedó justo sobre su pin
+OK    los pines del balance que reciben una pata quedan marcados (se cablea la pata, que está encima)
+OK    el rótulo de la pata dice dónde está enchufada: «Probador de celdas: celda 1 · al + de la celda 1 · enchufada en bat1 · BAL1»
+OK    el evento componente_cambiado lleva el «en» con los pines (lo guarda el registro)
+OK    al mover la batería, el probador enchufado se mueve con ella y sigue enchufado
+OK    al alejar el probador se desenchufa (queda sin «en»)
+OK    se vuelve a enchufar
+OK    al girar la batería, sus pines se mueven y el probador queda suelto
+OK    con la batería derecha, se enchufa otra vez
+OK    al borrar la batería, el probador queda suelto en su lugar
+OK    el LED queda enchufado en D13 (ánodo) y GND (cátodo): {'catodo': 'placa.GND1', 'anodo': 'placa.D13'}
+OK    la vista previa marcó D13 y GND: ['placa.D13', 'placa.GND1']
+OK    sobre D13 se ve la pata del LED (está encima) y dice dónde va enchufada: «LED: ánodo (+), pata larga · enchufada en D13 de Arduino Uno»
+OK    recargar recupera el LED enchufado, en el mismo lugar
+OK    soltado lejos de cualquier pin, el probador queda suelto
+OK    una pata en VIN y la otra sobre un hueco: quedan conectadas las dos ({'catodo': 'placa.VIN', 'anodo': 'protoboard.a1'})
+OK    la protoboard se lleva el LED: la pata de VIN se suelta y VIN se puede volver a cablear ({'anodo': 'protoboard.a1'})
+OK    al abrir, el «en» del archivo manda (aunque el dibujo no esté encima)
+OK    al cambiar el lado del motor, sus pines se mueven y lo que quedó lejos se suelta
+OK    al abrir se sueltan una pata inventada, la segunda pata en el mismo pin y una pieza enchufada en sí misma: {'l1': None, 'l2': {'anodo': 'placa.D11'}, 'l3': None, 'l4': None}
+OK    el aviso no culpa a la placa: «Se soltaron 3 conexiones directas sin destino.»
+OK    en el Nano, SDA es otro nombre de A4: una pata no se enchufa en el alias ({'catodo': 'placa.GND1'})
+OK    enchufe: los 20 eventos cumplen contrato/evento.schema.json (componente_cambiado, componente_quitado)
+OK    sin errores ni avisos de consola
+
+26 comprobaciones; todo bien.

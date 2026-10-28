@@ -24,9 +24,16 @@ export const LED = {
   quemamA: 30, // por encima de esto se quema
   plenomA: 15, // corriente a la que el dibujo brilla al máximo
 };
-// Lo que aguanta una resistencia sin calentarse: su prop `vatios` (¼ o ½ W, las del kit). Una guardada sin `vatios`
-// (antes de que la pieza tuviera dos potencias) es de ¼ W, como siempre.
-export const vatiosDe = (props) => (Number(props && props.vatios) > 0 ? Number(props.vatios) : 0.25);
+// La potencia de una resistencia: 0.25 o 0.5 (las del kit), o null si se guardó sin `vatios` (antes de que la pieza
+// tuviera dos potencias: la de ¼ W con las patas abiertas a 6 pasos). Es la única regla: la usan el dibujo, la ficha,
+// el límite de calor y KiCad, así nunca dicen cosas distintas. Otro valor (el esquema no lo admite) cuenta como sin
+// `vatios`.
+export const potenciaDe = (props) => {
+  const w = Number(props && props.vatios);
+  return w === 0.25 || w === 0.5 ? w : null;
+};
+// Lo que aguanta sin calentarse: su potencia; una guardada sin `vatios` es de ¼ W, como siempre.
+export const vatiosDe = (props) => potenciaDe(props) || 0.25;
 // Potenciómetro: la perilla parte la resistencia total en dos. En los extremos queda un mínimo (como el real),
 // así el solucionador nunca recibe 0 Ω.
 export const POT = { minimo: 1 };

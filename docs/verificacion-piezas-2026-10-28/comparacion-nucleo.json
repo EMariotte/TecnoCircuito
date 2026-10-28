@@ -1,0 +1,707 @@
+{
+  "referencias": [
+    "HEAD^",
+    "HEAD",
+    "arbol identificado en inicio.json"
+  ],
+  "casos": [
+    {
+      "caso": "pagina/EJEMPLO/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T2/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T2/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T2/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T2/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T2/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T2/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T1/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T1/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T1/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T1/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T1/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_T1/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PB/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PB/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PB/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PB/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PB/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PB/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVO/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVO/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVO/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVO/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVO/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVO/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVOS/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVOS/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVOS/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVOS/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVOS/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SERVOS/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SEIS/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SEIS/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SEIS/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SEIS/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SEIS/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_SEIS/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_CARRO/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_CARRO/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_CARRO/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_CARRO/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_CARRO/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_CARRO/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PROBADOR/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PROBADOR/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PROBADOR/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PROBADOR/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PROBADOR/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_PROBADOR/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_NANO/parpadeo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_NANO/pwm9",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_NANO/potenciometro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_NANO/boton_pulldown",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_NANO/servo_barrido",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "pagina/EJEMPLO_NANO/fijo13",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/carro",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/carro_nano_old",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/eco",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/i2c_uno",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/listas",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/matriz",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/misbloques",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/otto",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/otto_calibrado",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/otto_calibrar",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/otto_todo",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/pines",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/t1_protoboard",
+      "conforme": true,
+      "diferencias": []
+    },
+    {
+      "caso": "fixture/todo_uno",
+      "conforme": true,
+      "diferencias": []
+    }
+  ],
+  "cuadrosPorCaso": 60,
+  "controlDetectado": true,
+  "control": [
+    {
+      "msSimulados": 32.000062500000006,
+      "servos": {},
+      "piezas": {},
+      "evaluaciones": 3,
+      "leds": {
+        "led1": 0.8302469426101905
+      },
+      "quemados": [],
+      "voltajes": {
+        "placa.D13": 4.671469929878639,
+        "r1.1": 4.671469929878639,
+        "r1.2": 1.931655018428803,
+        "led1.anodo": 1.931655018428803,
+        "led1.catodo": 0,
+        "placa.GND1": 0
+      },
+      "entradas": {
+        "D2": {
+          "alto": false,
+          "alAire": true
+        },
+        "D3": {
+          "alto": false,
+          "alAire": true
+        },
+        "D4": {
+          "alto": false,
+          "alAire": true
+        },
+        "D5": {
+          "alto": false,
+          "alAire": true
+        },
+        "D6": {
+          "alto": false,
+          "alAire": true
+        },
+        "D7": {
+          "alto": false,
+          "alAire": true
+        },
+        "D8": {
+          "alto": false,
+          "alAire": true
+        },
+        "D9": {
+          "alto": false,
+          "alAire": true
+        },
+        "D10": {
+          "alto": false,
+          "alAire": true
+        },
+        "D11": {
+          "alto": false,
+          "alAire": true
+        },
+        "D12": {
+          "alto": false,
+          "alAire": true
+        },
+        "A0": {
+          "alto": false,
+          "alAire": true
+        },
+        "A1": {
+          "alto": false,
+          "alAire": true
+        },
+        "A2": {
+          "alto": false,
+          "alAire": true
+        },
+        "A3": {
+          "alto": false,
+          "alAire": true
+        },
+        "A4": {
+          "alto": false,
+          "alAire": true
+        },
+        "A5": {
+          "alto": false,
+          "alAire": true
+        }
+      },
+      "placa": {
+        "led13": true,
+        "brilloL": 1,
+        "ledTX": true,
+        "ledRX": false
+      },
+      "serial": "Pin 13 en ALTO: listo para medi",
+      "fallas": [],
+      "medicion": {
+        "convergio": true,
+        "iteraciones": 13,
+        "voltajes": {
+          "placa.D13": 4.671469929878639,
+          "r1.1": 4.671469929878639,
+          "r1.2": 1.931655018428803,
+          "led1.anodo": 1.931655018428803,
+          "led1.catodo": 0,
+          "placa.GND1": 0
+        },
+        "leds": [
+          {
+            "id": "led1",
+            "quemado": false,
+            "v": 1.931655018428803,
+            "i": 0.012453704139152859,
+            "brillo": 0.8302469426101905
+          }
+        ],
+        "resistencias": [
+          {
+            "id": "r1",
+            "ohmios": 220,
+            "vatios": 0.25,
+            "v": 2.7398149114498365,
+            "i": 0.012453704142953801,
+            "w": 0.034238539061801826
+          }
+        ],
+        "pines": [
+          {
+            "pin": "D13",
+            "v": 4.687234386615544,
+            "i": 0.012453704147625241
+          }
+        ],
+        "fuentes": [],
+        "potenciometros": [],
+        "pwm": {
+          "D13": 0.997
+        },
+        "usb": {
+          "amperios": 0.050000000000000024,
+          "pico": 0.05,
+          "voltios": 5,
+          "fusible": 0,
+          "apagada": false,
+          "reinicios": 0
+        },
+        "servos": [],
+        "consumo5V": 0,
+        "motores": [],
+        "baterias": [],
+        "shield": null,
+        "probadores": [],
+        "porVin": false
+      },
+      "energia": {
+        "amperios": 0.050000000000000024,
+        "pico": 0.05,
+        "voltios": 5,
+        "fusible": 0,
+        "apagada": false,
+        "reinicios": 0
+      }
+    },
+    {
+      "msSimulados": 32.000062500000006,
+      "servos": {},
+      "piezas": {},
+      "evaluaciones": 3,
+      "leds": {
+        "led1": 0.579962571238541
+      },
+      "quemados": [],
+      "voltajes": {
+        "placa.D13": 4.7653265691420446,
+        "r1.1": 4.7653265691420446,
+        "r1.2": 1.8945118402752166,
+        "led1.anodo": 1.8945118402752166,
+        "led1.catodo": 0,
+        "placa.GND1": 0
+      },
+      "entradas": {
+        "D2": {
+          "alto": false,
+          "alAire": true
+        },
+        "D3": {
+          "alto": false,
+          "alAire": true
+        },
+        "D4": {
+          "alto": false,
+          "alAire": true
+        },
+        "D5": {
+          "alto": false,
+          "alAire": true
+        },
+        "D6": {
+          "alto": false,
+          "alAire": true
+        },
+        "D7": {
+          "alto": false,
+          "alAire": true
+        },
+        "D8": {
+          "alto": false,
+          "alAire": true
+        },
+        "D9": {
+          "alto": false,
+          "alAire": true
+        },
+        "D10": {
+          "alto": false,
+          "alAire": true
+        },
+        "D11": {
+          "alto": false,
+          "alAire": true
+        },
+        "D12": {
+          "alto": false,
+          "alAire": true
+        },
+        "A0": {
+          "alto": false,
+          "alAire": true
+        },
+        "A1": {
+          "alto": false,
+          "alAire": true
+        },
+        "A2": {
+          "alto": false,
+          "alAire": true
+        },
+        "A3": {
+          "alto": false,
+          "alAire": true
+        },
+        "A4": {
+          "alto": false,
+          "alAire": true
+        },
+        "A5": {
+          "alto": false,
+          "alAire": true
+        }
+      },
+      "placa": {
+        "led13": true,
+        "brilloL": 1,
+        "ledTX": true,
+        "ledRX": false
+      },
+      "serial": "Pin 13 en ALTO: listo para medi",
+      "fallas": [],
+      "medicion": {
+        "convergio": true,
+        "iteraciones": 15,
+        "voltajes": {
+          "placa.D13": 4.7653265691420446,
+          "r1.1": 4.7653265691420446,
+          "r1.2": 1.8945118402752166,
+          "led1.anodo": 1.8945118402752166,
+          "led1.catodo": 0,
+          "placa.GND1": 0
+        },
+        "leds": [
+          {
+            "id": "led1",
+            "quemado": false,
+            "v": 1.8945118402752166,
+            "i": 0.008699438568578115,
+            "brillo": 0.579962571238541
+          }
+        ],
+        "resistencias": [
+          {
+            "id": "r1",
+            "ohmios": 330,
+            "vatios": 0.25,
+            "v": 2.870814728866828,
+            "i": 0.00869943857232372,
+            "w": 0.02506062210653701
+          }
+        ],
+        "pines": [
+          {
+            "pin": "D13",
+            "v": 4.781407756790493,
+            "i": 0.008699438577089037
+          }
+        ],
+        "fuentes": [],
+        "potenciometros": [],
+        "pwm": {
+          "D13": 0.997
+        },
+        "usb": {
+          "amperios": 0.050000000000000024,
+          "pico": 0.05,
+          "voltios": 5,
+          "fusible": 0,
+          "apagada": false,
+          "reinicios": 0
+        },
+        "servos": [],
+        "consumo5V": 0,
+        "motores": [],
+        "baterias": [],
+        "shield": null,
+        "probadores": [],
+        "porVin": false
+      },
+      "energia": {
+        "amperios": 0.050000000000000024,
+        "pico": 0.05,
+        "voltios": 5,
+        "fusible": 0,
+        "apagada": false,
+        "reinicios": 0
+      }
+    }
+  ]
+}

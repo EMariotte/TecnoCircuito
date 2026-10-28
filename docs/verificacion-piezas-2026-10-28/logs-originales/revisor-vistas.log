@@ -1,0 +1,222 @@
+
+== C:\Users\ACER\Documents\Proyectos Tecno\TecnoDiseñador\componentes\led-5mm\entrega\tecnocircuito\led-tc.json
+OK    led: formato 1 y unidades en mm
+OK    led: «led» es una pieza del contrato
+OK    led: existe el SVG «led-tc.svg»
+OK    led: pesa 4.3 KB (máximo 15 KB)
+OK    led: la raíz es un <svg> con el espacio de nombres SVG
+OK    led: viewBox «0 0 ancho alto» igual al marco del JSON (0 0 7.62 12.7)
+OK    led: width y height de la raíz en mm, iguales al marco
+OK    led: marco fijo 7.62 × 12.70 mm (secciones 6.6 y 6.7)
+OK    led: solo elementos permitidos
+OK    led: sin class, style, eventos ni atributos de otros programas
+OK    led: sin datos incrustados ni enlaces externos
+OK    led: posiciones y tamaños sin unidades (mm del viewBox)
+OK    led: números con máximo 2 decimales
+OK    led: 13 id únicos con el prefijo de la pieza «td-led-»
+OK    led: cada url(#…) y href="#…" apunta a un id del archivo
+OK    led: 0 textos con font-family Arial
+OK    led: cada pin del JSON tiene «x» e «y» numéricos
+OK    led: ningún data-contacto inventado ni repetido
+OK    led: 2 de 2 contactos del contrato
+OK    led: el JSON trae los mismos nombres que el SVG
+OK    led: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)
+OK    led: contactos en sus posiciones fijas (secciones 6.6 y 6.7)
+OK    led: cada data-led y data-parte aparece una sola vez
+OK    led: tiene los LED ['LED']
+OK    led: cada data-led está en el JSON con color apagado y encendido #rrggbb
+OK    led: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado
+OK    led: partes ['quemado'] como <g> sin transform propio, también en el JSON
+OK    led: «colores» trae rojo, verde, amarillo, azul, blanco con apagado y encendido #rrggbb
+OK    led: leds.LED repite el rojo de «colores»
+OK    led: sin data-valor (solo el potenciómetro lo lleva)
+OK    led: sin data-relleno (solo el pulsador lo lleva)
+OK    led: sin data-banda (solo la resistencia los lleva)
+OK    led: origen con registro, generador y fotos
+OK    led: licencia publicable y sin material «compartir igual»
+      diferencias informadas: El LED blanco del kit es transparente (cristal), no difuso: se ven la copa y el poste por dentro. Su color apagado y encendido se fijaron a mano, porque en la foto se ve la madera y el reflejo de la regla. | Las patas del kit están cortadas y dobladas: la pata larga del ánodo es la del LED estándar, dibujada con un codo para que llegue a la misma altura que el cátodo.
+
+== C:\Users\ACER\Documents\Proyectos Tecno\TecnoDiseñador\componentes\resistencia-axial\entrega\tecnocircuito\resistencia-025w-tc.json
+OK    resistencia/025w: formato 1 y unidades en mm
+OK    resistencia/025w: «resistencia» es una pieza del contrato
+OK    resistencia/025w: declara una variante de «025w», «025w6», «05w»
+OK    resistencia/025w: existe el SVG «resistencia-025w-tc.svg»
+OK    resistencia/025w: pesa 4.4 KB (máximo 15 KB)
+OK    resistencia/025w: la raíz es un <svg> con el espacio de nombres SVG
+OK    resistencia/025w: viewBox «0 0 ancho alto» igual al marco del JSON (0 0 12.7 5.08)
+OK    resistencia/025w: width y height de la raíz en mm, iguales al marco
+OK    resistencia/025w: marco fijo 12.70 × 5.08 mm (secciones 6.6 y 6.7)
+OK    resistencia/025w: solo elementos permitidos
+OK    resistencia/025w: sin class, style, eventos ni atributos de otros programas
+OK    resistencia/025w: sin datos incrustados ni enlaces externos
+OK    resistencia/025w: posiciones y tamaños sin unidades (mm del viewBox)
+OK    resistencia/025w: números con máximo 2 decimales
+OK    resistencia/025w: 13 id únicos con el prefijo de la pieza «td-resistencia-025w-»
+OK    resistencia/025w: cada url(#…) y href="#…" apunta a un id del archivo
+OK    resistencia/025w: 0 textos con font-family Arial
+OK    resistencia/025w: cada pin del JSON tiene «x» e «y» numéricos
+OK    resistencia/025w: ningún data-contacto inventado ni repetido
+OK    resistencia/025w: 2 de 2 contactos del contrato
+OK    resistencia/025w: el JSON trae los mismos nombres que el SVG
+OK    resistencia/025w: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)
+OK    resistencia/025w: contactos en sus posiciones fijas (secciones 6.6 y 6.7)
+OK    resistencia/025w: cada data-led y data-parte aparece una sola vez
+OK    resistencia/025w: tiene los LED (ninguno obligatorio)
+OK    resistencia/025w: cada data-led está en el JSON con color apagado y encendido #rrggbb
+OK    resistencia/025w: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado
+OK    resistencia/025w: partes (ninguna) como <g> sin transform propio, también en el JSON
+OK    resistencia/025w: sin data-valor (solo el potenciómetro lo lleva)
+OK    resistencia/025w: sin data-relleno (solo el pulsador lo lleva)
+OK    resistencia/025w: «bandas» es 4 o 5 y el SVG tiene data-banda 1 a 4 (tiene ['1', '2', '3', '4'])
+OK    resistencia/025w: cada banda es una sola forma (rect o path), fuera de <defs>, con fill #rrggbb
+OK    resistencia/025w: origen con registro, generador y fotos
+OK    resistencia/025w: licencia publicable y sin material «compartir igual»
+      diferencias informadas: El kit trae dos resistencias de ¼ W del mismo tamaño: beige de 4 bandas (película de carbón) y azul de 5 bandas (película metálica). Se dibuja la beige; la azul está en la colección de la App. | En la beige, el espacio antes de la banda de tolerancia no es mayor que los otros: se dibuja como en la foto.
+
+== C:\Users\ACER\Documents\Proyectos Tecno\TecnoDiseñador\componentes\resistencia-axial\entrega\tecnocircuito\resistencia-025w6-tc.json
+OK    resistencia/025w6: formato 1 y unidades en mm
+OK    resistencia/025w6: «resistencia» es una pieza del contrato
+OK    resistencia/025w6: declara una variante de «025w», «025w6», «05w»
+OK    resistencia/025w6: existe el SVG «resistencia-025w6-tc.svg»
+OK    resistencia/025w6: pesa 4.5 KB (máximo 15 KB)
+OK    resistencia/025w6: la raíz es un <svg> con el espacio de nombres SVG
+OK    resistencia/025w6: viewBox «0 0 ancho alto» igual al marco del JSON (0 0 17.78 7.62)
+OK    resistencia/025w6: width y height de la raíz en mm, iguales al marco
+OK    resistencia/025w6: marco fijo 17.78 × 7.62 mm (secciones 6.6 y 6.7)
+OK    resistencia/025w6: solo elementos permitidos
+OK    resistencia/025w6: sin class, style, eventos ni atributos de otros programas
+OK    resistencia/025w6: sin datos incrustados ni enlaces externos
+OK    resistencia/025w6: posiciones y tamaños sin unidades (mm del viewBox)
+OK    resistencia/025w6: números con máximo 2 decimales
+OK    resistencia/025w6: 13 id únicos con el prefijo de la pieza «td-resistencia-025w6-»
+OK    resistencia/025w6: cada url(#…) y href="#…" apunta a un id del archivo
+OK    resistencia/025w6: 0 textos con font-family Arial
+OK    resistencia/025w6: cada pin del JSON tiene «x» e «y» numéricos
+OK    resistencia/025w6: ningún data-contacto inventado ni repetido
+OK    resistencia/025w6: 2 de 2 contactos del contrato
+OK    resistencia/025w6: el JSON trae los mismos nombres que el SVG
+OK    resistencia/025w6: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)
+OK    resistencia/025w6: contactos en sus posiciones fijas (secciones 6.6 y 6.7)
+OK    resistencia/025w6: cada data-led y data-parte aparece una sola vez
+OK    resistencia/025w6: tiene los LED (ninguno obligatorio)
+OK    resistencia/025w6: cada data-led está en el JSON con color apagado y encendido #rrggbb
+OK    resistencia/025w6: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado
+OK    resistencia/025w6: partes (ninguna) como <g> sin transform propio, también en el JSON
+OK    resistencia/025w6: sin data-valor (solo el potenciómetro lo lleva)
+OK    resistencia/025w6: sin data-relleno (solo el pulsador lo lleva)
+OK    resistencia/025w6: «bandas» es 4 o 5 y el SVG tiene data-banda 1 a 4 (tiene ['1', '2', '3', '4'])
+OK    resistencia/025w6: cada banda es una sola forma (rect o path), fuera de <defs>, con fill #rrggbb
+OK    resistencia/025w6: origen con registro, generador y fotos
+OK    resistencia/025w6: licencia publicable y sin material «compartir igual»
+      diferencias informadas: El kit trae dos resistencias de ¼ W del mismo tamaño: beige de 4 bandas (película de carbón) y azul de 5 bandas (película metálica). Se dibuja la beige; la azul está en la colección de la App. | En la beige, el espacio antes de la banda de tolerancia no es mayor que los otros: se dibuja como en la foto. | Es la de ¼ W con las patas abiertas a 6 pasos: el dibujo de una resistencia guardada sin «vatios» (decisión de Efraín, 27 oct).
+
+== C:\Users\ACER\Documents\Proyectos Tecno\TecnoDiseñador\componentes\resistencia-axial\entrega\tecnocircuito\resistencia-05w-tc.json
+OK    resistencia/05w: formato 1 y unidades en mm
+OK    resistencia/05w: «resistencia» es una pieza del contrato
+OK    resistencia/05w: declara una variante de «025w», «025w6», «05w»
+OK    resistencia/05w: existe el SVG «resistencia-05w-tc.svg»
+OK    resistencia/05w: pesa 4.4 KB (máximo 15 KB)
+OK    resistencia/05w: la raíz es un <svg> con el espacio de nombres SVG
+OK    resistencia/05w: viewBox «0 0 ancho alto» igual al marco del JSON (0 0 17.78 7.62)
+OK    resistencia/05w: width y height de la raíz en mm, iguales al marco
+OK    resistencia/05w: marco fijo 17.78 × 7.62 mm (secciones 6.6 y 6.7)
+OK    resistencia/05w: solo elementos permitidos
+OK    resistencia/05w: sin class, style, eventos ni atributos de otros programas
+OK    resistencia/05w: sin datos incrustados ni enlaces externos
+OK    resistencia/05w: posiciones y tamaños sin unidades (mm del viewBox)
+OK    resistencia/05w: números con máximo 2 decimales
+OK    resistencia/05w: 13 id únicos con el prefijo de la pieza «td-resistencia-05w-»
+OK    resistencia/05w: cada url(#…) y href="#…" apunta a un id del archivo
+OK    resistencia/05w: 0 textos con font-family Arial
+OK    resistencia/05w: cada pin del JSON tiene «x» e «y» numéricos
+OK    resistencia/05w: ningún data-contacto inventado ni repetido
+OK    resistencia/05w: 2 de 2 contactos del contrato
+OK    resistencia/05w: el JSON trae los mismos nombres que el SVG
+OK    resistencia/05w: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)
+OK    resistencia/05w: contactos en sus posiciones fijas (secciones 6.6 y 6.7)
+OK    resistencia/05w: cada data-led y data-parte aparece una sola vez
+OK    resistencia/05w: tiene los LED (ninguno obligatorio)
+OK    resistencia/05w: cada data-led está en el JSON con color apagado y encendido #rrggbb
+OK    resistencia/05w: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado
+OK    resistencia/05w: partes (ninguna) como <g> sin transform propio, también en el JSON
+OK    resistencia/05w: sin data-valor (solo el potenciómetro lo lleva)
+OK    resistencia/05w: sin data-relleno (solo el pulsador lo lleva)
+OK    resistencia/05w: «bandas» es 4 o 5 y el SVG tiene data-banda 1 a 4 (tiene ['1', '2', '3', '4'])
+OK    resistencia/05w: cada banda es una sola forma (rect o path), fuera de <defs>, con fill #rrggbb
+OK    resistencia/05w: origen con registro, generador y fotos
+OK    resistencia/05w: licencia publicable y sin material «compartir igual»
+      diferencias informadas: La tercera banda de la foto se ve marrón muy oscuro o negro (dudosa); TecnoCircuito pinta las bandas según los ohmios.
+
+== C:\Users\ACER\Documents\Proyectos Tecno\TecnoDiseñador\componentes\potenciometro-16mm\entrega\tecnocircuito\potenciometro-tc.json
+OK    potenciometro: formato 1 y unidades en mm
+OK    potenciometro: «potenciometro» es una pieza del contrato
+OK    potenciometro: existe el SVG «potenciometro-tc.svg»
+OK    potenciometro: pesa 7.3 KB (máximo 15 KB)
+OK    potenciometro: la raíz es un <svg> con el espacio de nombres SVG
+OK    potenciometro: viewBox «0 0 ancho alto» igual al marco del JSON (0 0 17.78 25.4)
+OK    potenciometro: width y height de la raíz en mm, iguales al marco
+OK    potenciometro: marco fijo 17.78 × 25.40 mm (secciones 6.6 y 6.7)
+OK    potenciometro: solo elementos permitidos
+OK    potenciometro: sin class, style, eventos ni atributos de otros programas
+OK    potenciometro: sin datos incrustados ni enlaces externos
+OK    potenciometro: posiciones y tamaños sin unidades (mm del viewBox)
+OK    potenciometro: números con máximo 2 decimales
+OK    potenciometro: 13 id únicos con el prefijo de la pieza «td-potenciometro-»
+OK    potenciometro: cada url(#…) y href="#…" apunta a un id del archivo
+OK    potenciometro: 1 textos con font-family Arial
+OK    potenciometro: cada pin del JSON tiene «x» e «y» numéricos
+OK    potenciometro: ningún data-contacto inventado ni repetido
+OK    potenciometro: 3 de 3 contactos del contrato
+OK    potenciometro: el JSON trae los mismos nombres que el SVG
+OK    potenciometro: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)
+OK    potenciometro: contactos en sus posiciones fijas (secciones 6.6 y 6.7)
+OK    potenciometro: cada data-led y data-parte aparece una sola vez
+OK    potenciometro: tiene los LED (ninguno obligatorio)
+OK    potenciometro: cada data-led está en el JSON con color apagado y encendido #rrggbb
+OK    potenciometro: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado
+OK    potenciometro: partes ['eje'] como <g> sin transform propio, también en el JSON
+OK    potenciometro: la parte «eje» declara pivote {x, y} y angulo_dibujado
+OK    potenciometro: un <text data-valor> con el valor impreso
+OK    potenciometro: sin data-relleno (solo el pulsador lo lleva)
+OK    potenciometro: sin data-banda (solo la resistencia los lleva)
+OK    potenciometro: origen con registro, generador y fotos
+OK    potenciometro: licencia publicable y sin material «compartir igual»
+      diferencias informadas: Las patas están a 5,0 mm (pie de rey): se dibujan a 5,08, dos pasos de la rejilla (el estándar manda). | El kit no trae perilla: se dibuja el eje estriado con su ranura, que es lo que gira. | El kit solo trae «B10K»; el simulador ofrece 1 kΩ, 10 kΩ y 100 kΩ (los componentes se comparten con Electrónica), así que el texto «B10K» es un data-valor que TecnoCircuito cambia.
+
+== C:\Users\ACER\Documents\Proyectos Tecno\TecnoDiseñador\componentes\pulsador-6mm\entrega\tecnocircuito\pulsador-tc.json
+OK    pulsador: formato 1 y unidades en mm
+OK    pulsador: «pulsador» es una pieza del contrato
+OK    pulsador: existe el SVG «pulsador-tc.svg»
+OK    pulsador: pesa 4.4 KB (máximo 15 KB)
+OK    pulsador: la raíz es un <svg> con el espacio de nombres SVG
+OK    pulsador: viewBox «0 0 ancho alto» igual al marco del JSON (0 0 10.16 7.62)
+OK    pulsador: width y height de la raíz en mm, iguales al marco
+OK    pulsador: marco fijo 10.16 × 7.62 mm (secciones 6.6 y 6.7)
+OK    pulsador: solo elementos permitidos
+OK    pulsador: sin class, style, eventos ni atributos de otros programas
+OK    pulsador: sin datos incrustados ni enlaces externos
+OK    pulsador: posiciones y tamaños sin unidades (mm del viewBox)
+OK    pulsador: números con máximo 2 decimales
+OK    pulsador: 13 id únicos con el prefijo de la pieza «td-pulsador-»
+OK    pulsador: cada url(#…) y href="#…" apunta a un id del archivo
+OK    pulsador: 0 textos con font-family Arial
+OK    pulsador: cada pin del JSON tiene «x» e «y» numéricos
+OK    pulsador: ningún data-contacto inventado ni repetido
+OK    pulsador: 4 de 4 contactos del contrato
+OK    pulsador: el JSON trae los mismos nombres que el SVG
+OK    pulsador: cada contacto es un circle/rect visible (fuera de <defs>, sin transform), centrado en su coordenada (±0,01 mm)
+OK    pulsador: contactos en sus posiciones fijas (secciones 6.6 y 6.7)
+OK    pulsador: cada data-led y data-parte aparece una sola vez
+OK    pulsador: tiene los LED (ninguno obligatorio)
+OK    pulsador: cada data-led está en el JSON con color apagado y encendido #rrggbb
+OK    pulsador: cada LED es una sola forma (circle, rect, ellipse o path) pintada con su color apagado
+OK    pulsador: partes ['capuchon'] como <g> sin transform propio, también en el JSON
+OK    pulsador: sin data-valor (solo el potenciómetro lo lleva)
+OK    pulsador: «colores» trae rojo, verde, azul, amarillo, blanco, negro, cada uno #rrggbb
+OK    pulsador: un data-relleno="capuchon" en una sola forma, pintada con el negro de «colores»
+OK    pulsador: sin data-banda (solo la resistencia los lleva)
+OK    pulsador: origen con registro, generador y fotos
+OK    pulsador: licencia publicable y sin material «compartir igual»
+      diferencias informadas: Las patas están a 7,0 mm de lado a lado y a 5,0 mm en el mismo lado (pie de rey): se dibujan a 7,62 y 5,08, 3 y 2 pasos de la rejilla (el estándar manda). | El pulsador del kit es negro; los otros cinco colores del contrato se conservan (decisión de Efraín, 27 oct) con los colores de los cables del lienzo, sin foto.
+
+202 comprobaciones; la entrega cumple la especificación.

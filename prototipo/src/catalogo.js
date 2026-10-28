@@ -106,6 +106,9 @@ export const TIPOS = {
     dibujo: { marco: marcoResistencia, svg: dibujarResistencia },
     soloPintado: true, // el clic solo cuenta sobre lo dibujado: el marco no tapa los huecos de al lado
     ancla: '1', // al cambiar la potencia, la pata 1 se queda en su hueco y la 2 va al que le toque
+    // La potencia cambia el dibujo aunque el marco no cambie (la de ¼ W abierta y la de ½ W miden lo mismo y tienen las
+    // patas a 6 pasos): el lienzo lo rehace. Los ohmios solo pintan otra vez las bandas (`aplicar`).
+    rehacerCon: ['vatios'],
     rotulo: (pin) => 'pata ' + pin,
     campos: [
       { prop: 'ohmios', etiqueta: 'Valor', opciones: [[220, '220 Ω'], [330, '330 Ω'], [1000, '1 kΩ'], [10000, '10 kΩ']] },

@@ -1,7 +1,7 @@
 // Prueba el motor eléctrico con Node, sin navegador: leyes de circuitos, modelo del LED, fallas,
 // convergencia y tiempo por solución. Al final imprime los valores esperados para comparar con el multímetro.
 // Uso: npm run probar:motor   (arma pruebas/motor.cjs con esbuild y corre este archivo)
-const { armarRed, revisarFallas, resolver, resistencia, fuenteVoltaje, LED, PinState } = require('./motor.cjs');
+const { armarRed, revisarFallas, resolver, resistencia, fuenteVoltaje, LED, PinState, potenciaDe } = require('./motor.cjs');
 
 let fallos = 0;
 function revisar(condicion, texto) {
@@ -107,6 +107,14 @@ function medir(circuito, estados = { D13: PinState.High }) {
   const fuerte = calor(directa({ ohmios: 33, vatios: 0.5 }));
   revisar(/aguanta 0,5 W\. Usa una de más ohmios\.$/.test(fuerte?.mensaje || ''), `33 Ω en la de ½ W: se calienta, sin sugerir otra potencia («${fuerte?.mensaje}»)`);
   revisar(!revisarFallas(cuarto, {}).length, 'en modo ideal, la de ¼ W con 0,37 W no da falla');
+  // Una sola regla para el dibujo, la ficha, el calor y KiCad (potenciaDe): "0.5" es la de ½ W; un valor que el esquema
+  // no admite (2 W) cuenta como guardada sin vatios, igual que en el dibujo.
+  const texto = directa({ ohmios: 68, vatios: '0.5' });
+  const dos = directa({ ohmios: 68, vatios: 2 });
+  revisar(texto.resistencias[0].vatios === 0.5 && !calor(texto) && dos.resistencias[0].vatios === 0.25 && !!calor(dos),
+    `"0.5" aguanta como la de ½ W; 2 (fuera del esquema) como una guardada sin vatios (${texto.resistencias[0].vatios} y ${dos.resistencias[0].vatios})`);
+  revisar([0.25, 0.5, '0.25', '0.5', undefined, 2, 0, 'x'].map((w) => potenciaDe({ vatios: w })).join() === '0.25,0.5,0.25,0.5,,,,',
+    'potenciaDe: 0.25 y 0.5 (número o texto); lo demás, sin vatios');
 }
 
 // 9. Convergencia en un barrido de 0 Ω a 1 MΩ y con todos los colores

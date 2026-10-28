@@ -1,0 +1,9 @@
+
+> tecnocircuito@0.3.1 construir
+> npm --prefix prototipo run construir
+
+
+> tecnocircuito-prototipo@0.0.1 construir
+> node construir.js
+
+dist/tecnocircuito.js 0.3.1-dev · 557 KB (Worker: 91 KB) · dist/prototipo.html listo
