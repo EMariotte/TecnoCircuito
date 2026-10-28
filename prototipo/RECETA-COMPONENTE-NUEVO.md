@@ -6,7 +6,7 @@
 
 ## Lo que pasó con la protoboard
 
-@wokwi/elements (MIT) trae los dibujos del Uno, el LED, la resistencia, el potenciómetro, el botón y otros, cada uno con la posición de sus pines. **No trae protoboard.** El simulador de Wokwi sí tiene una, pero no está en ese paquete libre. Fritzing tiene dibujos, pero son CC BY-SA 3.0, que obliga a «compartir igual»: un dibujo adaptado (escalado, con los huecos marcados) seguiría siendo CC BY-SA. No se podría volver Apache 2.0 y llegaría hasta el SVG que exporta el aprendiz, que tendría que dar crédito a Fritzing y conservar esa licencia. Además, Creative Commons recomienda no usar sus licencias para software.
+*Histórico: desde PIEZA-003 (COMO-FUNCIONA 75) ya no se usa `@wokwi/elements` ni Lit; toda pieza es Pieza Tecno.* @wokwi/elements (MIT) traía los dibujos del Uno, el LED, la resistencia, el potenciómetro, el botón y otros, cada uno con la posición de sus pines. **No trae protoboard.** El simulador de Wokwi sí tiene una, pero no está en ese paquete libre. Fritzing tiene dibujos, pero son CC BY-SA 3.0, que obliga a «compartir igual»: un dibujo adaptado (escalado, con los huecos marcados) seguiría siendo CC BY-SA. No se podría volver Apache 2.0 y llegaría hasta el SVG que exporta el aprendiz, que tendría que dar crédito a Fritzing y conservar esa licencia. Además, Creative Commons recomienda no usar sus licencias para software.
 
 Por eso se construyó desde cero, **sin copiar el código ni los dibujos de nadie**, a partir del objeto real: una media protoboard de 400 puntos, con huecos a 0,1", el canal central de 0,3" y los rieles. El resultado es [src/protoboard.js](src/protoboard.js), unas 170 líneas, más su integración en el lienzo.
 
@@ -54,7 +54,7 @@ Una función devuelve cada punto de conexión con su posición en px del dibujo 
 - **En px, con `width`, `height` y `viewBox`.** Así el lienzo sabe su tamaño aunque el panel esté oculto.
 - **Solo atributos** (`fill`, `stroke`, `font-size`), sin CSS ni variables. Así se ve igual en el lienzo, en la imagen SVG exportada, en Word y en Inkscape.
 - **Simple:** el aprendiz tiene que reconocer la pieza, no admirarla. Colores parecidos a los del objeto real y los textos que trae impresos.
-- Si la pieza tiene partes que cambian (un LED encendido, un motor que gira), el dibujo debe poder recibir ese estado. Puede ser un elemento propio (como los de Wokwi, hechos con Lit) o una función que redibuje.
+- Si la pieza tiene partes que cambian (un LED encendido, un motor que gira), el dibujo debe poder recibir ese estado. Puede ser una función que redibuje el SVG (como las Piezas Tecno) o marcar partes con `data-parte`.
 
 ### 5. Los puntos de conexión en el lienzo
 

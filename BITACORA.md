@@ -1847,3 +1847,15 @@ Dos hallazgos. **H1, conexión escondida al cambiar de placa:** una resistencia 
 ## 2026-10-28 — LAB-001: primeras medidas con el cuaderno
 
 Efraín midió con el cuaderno LAB-001 (página web que exporta un JSON; `validacion/lab001-2026-10-28.json`). Análisis en `validacion/2026-10-28-lab001.md`; el modelo no se cambió. El monitor serial con la placa real (CSV y gráfico) quedó validado. La caída del L293D sube unos 2 V/A, no 1 como usa el modelo: la recta 1,28 V + 2,08 V/A acierta el bloqueo con un 2 % de error. El bobinado mide 4 Ω (el modelo usa 5) y se confirmó la LiPo de 1,2 Ω. Hay una contradicción en los servos del Uno: la tabla dice «sin reinicio» con 10 servos, pero el CSV muestra «Inicio» cada 1,64 s. Hasta contar los reinicios no se toca el golpe de arranque. En el sentido de giro, M4 no cuadra con M1 y falta una foto de la numeración de los tornillos. Pendientes en la lista del registro.
+
+## 2026-10-28 — PIEZA-003: preauditoría y corrección en un lote
+
+Antes de entregar PIEZA-003 a Codex, un auditor aparte revisó el commit `106627a` (sin código, solo pruebas y casos propios). Encontró seis cosas; Efraín pidió corregir A1 a A5 y dejar A6 documentado.
+
+- **A1 (alta):** al abrir un potenciómetro o botón guardado sin `modelo`, el lienzo lo corría con todo lo enchufado en él; un LED enchufado en sus patas quedaba a 23–27 px, conectado por dentro y sin aviso. Lo introducía PIEZA-003. Ahora la pieza renovada se corre sola y lo que ya no cabe en sus patas nuevas queda suelto con aviso («Se soltó el LED led1 del potenciómetro pot1: vuelve a ponerlo.»).
+- **A2 (media; decisión de Efraín: medio paso):** la pieza suelta podía caer con las patas justo sobre otros huecos o pines y parecer encajada; al reabrir ya no había aviso. Ahora toda pieza que queda suelta al abrir se aparta medio paso (`apartar`), en la primera dirección en que ninguna pata queda sobre un hueco ni un pin.
+- **A3:** un `modelo` nulo o vacío en el archivo hacía que la pieza se corriera en cada apertura; ahora se completa el del kit.
+- **A4 y A5:** COMO-FUNCIONA 75 («siempre quedan sueltos»), las secciones 1, 5, 10 y 34 marcadas como históricas, la receta de componente nuevo y el comentario del ejemplo antiguo de `pagina.html` (ya no queda «wokwi» en `dist/prototipo.html`).
+- **Pendiente, A6:** el «Acerca de» de TecnoBloques ya no nombra Wokwi Elements ni Lit, pero TecnoBloques sigue en `#v0.3.1`; ese texto (y `avr8js` en su NOTICE) entra con el paso de TecnoBloques a la `v0.4.0`.
+
+Pruebas: `probar_piezas.py` con seis regresiones nuevas, que fallan con `106627a`; suite completa con cargador en una copia limpia (sin el trabajo de LAB-001 que estaba sin commit); TecnoBloques `test:simulador` 58 y `test:registro-app` 134. Paquete 527 KB. Se entrega a Codex para una verificación profunda única (CLA-20261028-007).

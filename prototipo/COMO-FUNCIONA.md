@@ -5,6 +5,8 @@
 
 ## 1. Vista general
 
+> **Histórico.** Desde PIEZA-003 (sección 75) el paquete ya no lleva `@wokwi/elements` ni Lit: todas las piezas son Piezas Tecno. Lo que sigue describe cómo era cuando se escribió.
+
 Hay dos momentos: cuando se **construye** el archivo y cuando **corre** en el navegador.
 
 ```
@@ -91,6 +93,8 @@ centro c = (w/2, h/2)     d = pin − c     pin girado = c + ( d.x·cosθ − d.
 Para que esa cuenta coincida con lo que hace CSS, cada pieza recibe un ancho y un alto exactos, iguales al tamaño de su dibujo.
 
 ## 5. Arranque
+
+> **Histórico.** Desde PIEZA-003 (sección 75) el paquete ya no lleva `@wokwi/elements` ni Lit: todas las piezas son Piezas Tecno. Lo que sigue describe cómo era cuando se escribió.
 
 ```
 crearLienzo(elemento, opciones)
@@ -186,6 +190,8 @@ un <g> por cable, de abajo hacia arriba:
 Si el código que escucha falla, el `try/catch` de [emitir](src/lienzo.js#L1252) y [cambio](src/lienzo.js#L1261) evita que se rompa el lienzo. El contrato lo exige: el editor nunca se cae por el simulador.
 
 ## 10. La construcción ([construir.js](construir.js))
+
+> **Histórico.** Desde PIEZA-003 (sección 75) el paquete ya no lleva `@wokwi/elements` ni Lit: todas las piezas son Piezas Tecno. Lo que sigue describe cómo era cuando se escribió.
 
 1. **esbuild parte de `index.js`** y sigue los `import`. Importa solo los tres dibujos que se usan (`arduino-uno-element.js` y los otros dos), no el índice con los 40. Por eso el paquete pesa 69 KB.
 2. **El CSS entra como texto** (`loader: text`) y el lienzo lo pone dentro del shadow DOM.
@@ -545,6 +551,8 @@ TecnoBloques (app de escritorio)                          TecnoCircuito (este pr
 - **Las teclas que usa el lienzo** (Supr, Esc, R y 0 a 9) se detienen con `stopPropagation()` y no siguen hacia la página. Sin eso, Supr en el circuito también borraba un bloque elegido en Blockly.
 
 ## 34. La imagen SVG del circuito (`lienzo.exportarSVG()`)
+
+> **Histórico.** Desde PIEZA-003 (sección 75) el paquete ya no lleva `@wokwi/elements` ni Lit: todas las piezas son Piezas Tecno. Lo que sigue describe cómo era cuando se escribió.
 
 ```
  por cada pieza (en el orden de las capas):        al final, los cables (encima, como en pantalla)
@@ -2365,16 +2373,23 @@ Después de PIEZA-001 y PIEZA-002, `@wokwi/elements` (MIT) solo dibujaba el pote
 flowchart TD
   A["Potenciómetro o botón guardado sin modelo"] --> B["normalizar: completa el modelo y anota dónde estaba<br/>el centro de sus patas (dibujoAnterior del catálogo)"]
   B --> C["crearVista: el dibujo del kit"]
-  C --> D["colocarRenovadas: lo corre para que el centro<br/>de sus patas nuevas quede donde estaba"]
+  C --> D["colocarRenovadas: lo corre solo (sin lo enchufado en él)<br/>para que el centro de sus patas nuevas quede donde estaba"]
   D --> E{"¿Tenía «en»?<br/>(protoboard o enchufado)"}
   E -->|no: cableado| F["Igual que antes: los cables<br/>siguen a sus pines"]
   E -->|sí| G{"¿Sus patas caben en esos huecos<br/>con el mismo corrimiento (imán)?"}
   G -->|sí| H["alinearEnchufesAlAbrir<br/>lo deja justo encima"]
   G -->|no| I["Queda suelto (sin «en») y se avisa:<br/>«El botón btn1 quedó suelto: ahora tiene el dibujo<br/>del kit y sus patas ya no caben donde estaban.<br/>Ponlo otra vez donde va.»"]
+  D --> J{"¿Hay piezas enchufadas en él<br/>que ya no caben en sus patas nuevas?"}
+  J -->|sí| K["Quedan sueltas y se avisa:<br/>«Se soltó el LED led1 del potenciómetro pot1:<br/>vuelve a ponerlo.»"]
+  I --> L["apartar: toda pieza suelta se corre medio paso,<br/>sin patas sobre un hueco ni un pin"]
+  K --> L
 ```
 
 - **`dibujoAnterior`** en el catálogo: el tamaño del dibujo de antes y dónde tenía cada pata. Son medidas tomadas el 28 oct, con la librería todavía puesta, no código: el potenciómetro de 20 × 20 mm con GND, SIG y VCC en (29; 68,5), (39; 68,5) y (49; 68,5) px; el botón de 17,802 × 12 mm con `1i` (0; 13), `2i` (0; 32), `1d` (67; 13) y `2d` (67; 32). El centro se calcula con el mismo giro que usa el lienzo para los pines (`rotarPunto`, que ahora comparte `girarPunto`).
-- **En la práctica, en la protoboard siempre quedan sueltos:** el potenciómetro de antes tenía las patas a 1 paso y el del kit a 2; el botón, a 7 pasos de lado a lado, y el del kit a 3. Pierden esas conexiones de la protoboard; los cables que llegaban a los huecos se quedan.
+- **En la protoboard quedan sueltos si alguna pata enchufada ya no cabe**, que es lo normal: el potenciómetro de antes tenía las patas a 1 paso y el del kit a 2; el botón, a 7 pasos de lado a lado, y el del kit a 3. Pierden esas conexiones de la protoboard; los cables que llegaban a los huecos se quedan. Un potenciómetro con solo `SIG` en la protoboard sí cabe y sigue encajado (sus otras patas no conducían antes ni ahora).
+- **Se corre solo.** Lo enchufado en él se queda sobre sus patas de antes; si ya no cabe en las nuevas, queda suelto con el aviso «Se soltó el LED led1 del potenciómetro pot1: vuelve a ponerlo.». Nunca queda unido a la distancia (A1 de la preauditoría).
+- **Suelto, se ve suelto.** Toda pieza que queda suelta al abrir se aparta medio paso (`apartar`, en la primera de ocho direcciones en que ninguna de sus patas queda a 3,5 px o menos de un hueco o un pin). Sin eso podía caer con las patas justo sobre otros huecos y parecer encajada sin conducir; y al reabrir ya no hay aviso (A2, decisión de Efraín: medio paso).
+- **Un `modelo` nulo o vacío** en el archivo se completa con el del kit; si no, la pieza se renovaba y se corría en cada apertura (A3).
 - **Abrir no emite eventos:** no es un cambio del aprendiz, como tampoco el LED que se corre. El `modelo` llega a lo guardado con el siguiente cambio y al registro con el circuito de la siguiente `simulacion_iniciada`.
 - **KiCad:** el potenciómetro lleva siempre la Alps RK163, porque se dibuja siempre como el del kit (la huella va con el dibujo).
 
@@ -2383,8 +2398,11 @@ flowchart TD
 **Paquete:** 557 KB → 525 KB; el Worker sigue en 91 KB. Ya no contiene la palabra «wokwi».
 
 **Pruebas:**
-- `probar_piezas.py`: el circuito de antes abre con el LED y las resistencias en sus huecos y el botón suelto con el dibujo del kit, el centro de sus patas en el mismo punto (525,5; 103,3) y el aviso; puesto otra vez en e/f, el LED mide lo mismo que con las piezas del kit. El potenciómetro cableado abre con el dibujo del kit, su perilla y su cable, sin aviso, con el centro de sus patas en (289; 283,5).
+- `probar_piezas.py`: el circuito de antes abre con el LED y las resistencias en sus huecos y el botón suelto con el dibujo del kit, el centro de sus patas en (525,5; 103,3) más medio paso, ninguna pata sobre un hueco, y el aviso; puesto otra vez en e/f, el LED mide lo mismo que con las piezas del kit. El potenciómetro cableado abre con el dibujo del kit, su perilla y su cable, sin aviso, con el centro de sus patas en (289; 283,5).
 - `probar_svg.py`: el potenciómetro guardado sin `modelo` sale en la imagen con el eje del kit girado, y la imagen no trae `wokwi` ni `<style>`.
 - `probar_contrato.js`: las patas de `dibujoAnterior` son las del esquema. `probar_kicad.js`: el potenciómetro sin `modelo` lleva la RK163.
+- Regresiones de la preauditoría (fallan con `106627a`): el LED enchufado en un potenciómetro antiguo se suelta con aviso y sin patas sobre pines (A1); el potenciómetro antiguo en c10–c12 queda suelto, sin patas sobre huecos, y reabrir no lo corre (A2); con `modelo` `null` o `""` se completa y reabrir no lo corre (A3).
+
+**Preauditoría (28 oct, antes de Codex):** un auditor aparte, con el árbol de `106627a`, encontró A1 (alta: lo enchufado en la pieza renovada se corría con ella y quedaba unido a la distancia; lo introducía PIEZA-003), A2 (media: la pieza suelta podía parecer encajada), A3, A4 (esta sección decía «siempre quedan sueltos») y A5 (textos que presentaban a Wokwi Elements y Lit como presentes). Corregidos en un lote. **Queda pendiente A6:** el «Acerca de» de TecnoBloques (`src/app.js`, sin commit) ya no nombra Wokwi Elements ni Lit, pero TecnoBloques depende todavía de `#v0.3.1`, que sí los trae; ese texto entra junto con el paso de TecnoBloques a la `v0.4.0`, y con él el NOTICE de TecnoBloques nombrará `avr8js` (que nunca nombró). Conforme según el auditor: sin restos de wokwi ni Lit en el paquete, SVG y netlist idénticos a HEAD en los 10 ejemplos del kit, pulsador igual, suite 1386/0.
 
 **Límites:** un circuito guardado sin `modelo` con el potenciómetro o el botón en la protoboard pierde esas conexiones y hay que volver a ponerlos; hoy no hay proyectos así. Una versión anterior de TecnoCircuito sigue abriendo los circuitos nuevos como dice la sección 74.

@@ -107,6 +107,17 @@ with sync_playwright() as p:
         a, b = donde(f'{id_}.{pata}'), donde(f'protoboard.{hueco}')
         arrastrar(id_, b[0] - a[0] + 1.2, b[1] - a[1] - 1)
 
+    def pegadas(id_):
+        """Patas de la pieza que caen sobre un pin o un hueco ajeno (a 3,5 px o menos, la tolerancia del imán)."""
+        return pg.evaluate(f'''(id) => {{
+          const r = {RAIZ}; const m = new DOMMatrix(getComputedStyle(r.querySelector('.tc-mundo')).transform);
+          const centro = (e) => {{ const b = e.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; }};
+          const pines = [...r.querySelectorAll('.tc-pin[data-ref]')];
+          const propias = pines.filter((e) => e.dataset.ref.startsWith(id + '.'));
+          const ajenos = pines.filter((e) => !e.dataset.ref.startsWith(id + '.')).map(centro);
+          return propias.filter((e) => {{ const [x, y] = centro(e); return ajenos.some(([u, v]) => Math.hypot(u - x, v - y) / m.a <= 3.5); }})
+            .map((e) => e.dataset.ref); }}''', id_)
+
     def separacion(id_, a, b):
         pa, pb = donde(f'{id_}.{a}'), donde(f'{id_}.{b}')
         return round(abs(pb[0] - pa[0]), 1), round(abs(pb[1] - pa[1]), 1)
@@ -304,7 +315,8 @@ with sync_playwright() as p:
     revisar(seleccion == '¼ W, patas abiertas' and 'a 6 pasos' in ficha() and '¼ W (0,25 W)' in ficha(),
             f'su ficha dice «{seleccion}», ¼ W y las patas a 6 pasos')
     # El botón: dibujo del kit, `modelo` completado, suelto y con el centro de sus patas donde estaba el de las antiguas
-    # (el dibujo anterior, girado 90°, medía 67,28 × 45,35 px con las patas en x 0/67 e y 13/32).
+    # (el dibujo anterior, girado 90°, medía 67,28 × 45,35 px con las patas en x 0/67 e y 13/32), apartado medio paso
+    # para que ninguna pata quede sobre un hueco: suelto, se ve suelto (A2 de la preauditoría).
     btn = ahora['btn1']
     a = antes['btn1']
     centro_antes = (a['x'] + 67.28 / 2 - (22.5 - 45.35 / 2), a['y'] + 45.35 / 2 + (33.5 - 67.28 / 2))
@@ -312,8 +324,10 @@ with sync_playwright() as p:
     revisar(btn['props'] == {'color': 'rojo', 'modelo': '6x6'} and 'en' not in btn
             and pg.evaluate(f'{RAIZ}.querySelector(\'.tc-comp[data-id="btn1"]\').firstElementChild.tagName') == 'svg',
             f'el botón guardado sin modelo abre con el dibujo del kit y queda suelto: {btn["props"]}, en: {btn.get("en")}')
-    revisar(abs(centro_ahora[0] - centro_antes[0]) < 0.6 and abs(centro_ahora[1] - centro_antes[1]) < 0.6,
-            f'con el centro de sus patas donde estaba el de las anteriores: {[round(v, 1) for v in centro_ahora]} y {[round(v, 1) for v in centro_antes]}')
+    corrido = (centro_ahora[0] - centro_antes[0], centro_ahora[1] - centro_antes[1])
+    revisar(all(min(abs(abs(v) - PASO / 2), abs(v)) < 0.6 for v in corrido) and max(abs(v) for v in corrido) > PASO / 2 - 0.6,
+            f'con el centro de sus patas donde estaba el de las anteriores, apartado medio paso: {[round(v, 1) for v in centro_ahora]} y {[round(v, 1) for v in centro_antes]}')
+    revisar(not pegadas('btn1'), f'ninguna pata del botón suelto queda sobre un hueco o un pin ({pegadas("btn1")})')
     revisar('El botón btn1 quedó suelto: ahora tiene el dibujo del kit y sus patas ya no caben donde estaban. Ponlo otra vez donde va.' in aviso,
             f'y se avisa: «{aviso}»')
     elegir('btn1')
@@ -323,7 +337,7 @@ with sync_playwright() as p:
 
     # Puesto otra vez en la protoboard, cruzando el canal en las mismas columnas, el circuito mide lo mismo que con las
     # piezas del kit.
-    arrastrar('btn1', 0, 2 * PASO)
+    arrastrar('btn1', -corrido[0], 2 * PASO - corrido[1])
     btn = pieza('btn1')
     revisar(btn.get('en') == {'1i': 'protoboard.e24', '1d': 'protoboard.f24', '2i': 'protoboard.e22', '2d': 'protoboard.f22'},
             f'al ponerlo otra vez, encaja cruzando el canal en las mismas columnas: {btn.get("en")}')
@@ -355,6 +369,42 @@ with sync_playwright() as p:
             f'con el centro de sus patas donde estaba el de las anteriores: {[round(v, 1) for v in centro_pot]} y [289, 283.5]')
     elegir('pot1')
     revisar('a 2 pasos (5,08 mm)' in ficha(), 'y su ficha da las patas del kit, a 2 pasos')
+
+    # Un LED enchufado en un potenciómetro antiguo cableado: el potenciómetro se renueva y se corre solo; el LED ya no cabe
+    # en sus patas nuevas, así que se suelta y se avisa, sin quedar unido a la distancia (A1 de la preauditoría).
+    abrir({'formato': 1, 'placa': 'uno', 'protoboard': None,
+           'componentes': [{'id': 'pot1', 'tipo': 'potenciometro', 'x': 400, 'y': 60, 'rot': 0, 'props': {'ohmios': 10000, 'posicion': 0.5}},
+                           {'id': 'led1', 'tipo': 'led', 'x': 419.4, 'y': 85.3, 'rot': 0, 'props': {'color': 'rojo'},
+                            'en': {'catodo': 'pot1.GND', 'anodo': 'pot1.SIG'}}],
+           'cables': [{'de': 'placa.A0', 'a': 'pot1.SIG', 'color': 'verde'}, {'de': 'placa.GND1', 'a': 'pot1.VCC', 'color': 'negro'}]})
+    aviso = pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')
+    led = pieza('led1')
+    revisar('en' not in led and 'Se soltó el LED led1 del potenciómetro pot1' in aviso and not pegadas('led1'),
+            f'el LED enchufado en el potenciómetro antiguo se suelta, con aviso y sin patas sobre pines: en {led.get("en")}, «{aviso}», {pegadas("led1")}')
+    revisar(pieza('pot1')['props'].get('modelo') == '16mm' and 'suelto' not in aviso.split('Se soltó')[0],
+            'el potenciómetro, cableado, toma el dibujo del kit sin quedar suelto')
+
+    # Un potenciómetro antiguo encajado en c10–c12: sus patas del kit van a 2 pasos, no caben, queda suelto y apartado
+    # medio paso: ninguna pata sobre un hueco (A2). Reabrir lo guardado no lo corre más.
+    pot_pb = {'formato': 1, 'placa': 'uno', 'protoboard': {'tipo': 'media', 'x': 300, 'y': 30},
+              'componentes': [{'id': 'pot1', 'tipo': 'potenciometro', 'x': 371.39, 'y': 20.5, 'rot': 0, 'props': {'ohmios': 10000, 'posicion': 0.5},
+                               'en': {'GND': 'protoboard.c10', 'SIG': 'protoboard.c11', 'VCC': 'protoboard.c12'}}],
+              'cables': [{'de': 'placa.A0', 'a': 'protoboard.a11', 'color': 'verde'}]}
+    abrir(pot_pb)
+    pot = pieza('pot1')
+    revisar('en' not in pot and not pegadas('pot1'), f'el potenciómetro antiguo en la protoboard queda suelto y sin patas sobre huecos: {pot.get("en")}, {pegadas("pot1")}')
+    reabierto = pg.evaluate("lienzo.circuito()")
+    abrir(reabierto)
+    revisar((pieza('pot1')['x'], pieza('pot1')['y']) == (pot['x'], pot['y']), 'reabrir lo guardado no lo corre más')
+
+    # Con `modelo` nulo o vacío en el archivo, se completa el del kit: reabrir no lo vuelve a correr (A3).
+    for vacio in (None, ''):
+        abrir({**VACIO, 'componentes': [{'id': 'pot1', 'tipo': 'potenciometro', 'x': 250, 'y': 215, 'rot': 0, 'props': {'ohmios': 10000, 'posicion': 0.5, 'modelo': vacio}}]})
+        uno = pieza('pot1')
+        abrir(pg.evaluate('lienzo.circuito()'))
+        dos = pieza('pot1')
+        revisar(uno['props']['modelo'] == '16mm' and (uno['x'], uno['y']) == (dos['x'], dos['y']),
+                f'con modelo {vacio!r}: se completa «16mm» y reabrir no lo corre ({uno["x"]}, {uno["y"]}) → ({dos["x"]}, {dos["y"]})')
 
     # Elegir una potencia en la resistencia antigua (c13 a c19): lo guardado, y lo que recibe el simulador, tiene los
     # huecos donde quedó el dibujo nuevo (hallazgo A-01 de la revisión: se avisaba el cambio antes de reacomodarla).

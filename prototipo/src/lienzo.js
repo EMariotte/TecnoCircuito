@@ -419,37 +419,83 @@ export function crearLienzo(elemento, opciones = {}) {
   // Un potenciómetro o un botón guardado sin `modelo` (PIEZA-003): abre con el dibujo del kit, corrido para que el
   // centro de sus patas quede donde estaba el de las anteriores. Cableado, no cambia nada: los cables siguen a sus
   // pines. Si estaba en la protoboard o enchufado y sus patas nuevas ya no caben en esos huecos o pines (las del kit
-  // van a otra distancia), queda suelto y se avisa. Devuelve las que quedaron sueltas.
+  // van a otra distancia), queda suelto y se avisa. Se corre sola: lo enchufado en ella se queda sobre sus patas de
+  // antes y, si ya no cabe en las nuevas, también queda suelto con aviso; nunca queda unido a la distancia. Toda pieza
+  // que queda suelta se aparta medio paso, para que no parezca encajada. Devuelve las sueltas y las que se soltaron
+  // de una renovada.
   function colocarRenovadas() {
     const sueltas = [];
-    for (const r of renovadasAlAbrir) {
-      const k = componente(r.id);
-      const v = vistas.get(r.id);
-      if (!k || !v) continue;
-      const ps = [...v.pines.keys()].map((pata) => posicion(k.id + '.' + pata)).filter(Boolean);
-      if (ps.length) moverGrupo(k, redondear(r.x - ps.reduce((s, q) => s + q.x, 0) / ps.length), redondear(r.y - ps.reduce((s, q) => s + q.y, 0) / ps.length));
-      if (!k.en) continue;
+    const soltadas = [];
+    // Caben si las patas se corren todas igual (alinearEnchufesAlAbrir las corre) y, con alguna en un hueco, sin correrse.
+    const caben = (k) => {
       const pasos = Object.entries(k.en).map(([pata, ref]) => {
         const a = posicion(k.id + '.' + pata);
         const b = posicion(ref);
         return a && b ? { dx: b.x - a.x, dy: b.y - a.y } : null;
       });
-      const caben = pasos.every(Boolean) && pasos.every((q) => Math.hypot(q.dx - pasos[0].dx, q.dy - pasos[0].dy) <= ENCHUFE_TOL)
-        && Math.hypot(pasos[0].dx, pasos[0].dy) <= ENCHUFE_TOL;
-      if (caben) continue; // alinearEnchufesAlAbrir la deja justo sobre ellos
-      delete k.en;
-      sueltas.push(k);
+      return pasos.every(Boolean) && pasos.every((q) => Math.hypot(q.dx - pasos[0].dx, q.dy - pasos[0].dy) <= ENCHUFE_TOL)
+        && (Math.hypot(pasos[0].dx, pasos[0].dy) <= ENCHUFE_TOL || !Object.values(k.en).some(esHueco));
+    };
+    for (const r of renovadasAlAbrir) {
+      const k = componente(r.id);
+      const v = vistas.get(r.id);
+      if (!k || !v) continue;
+      const ps = [...v.pines.keys()].map((pata) => posicion(k.id + '.' + pata)).filter(Boolean);
+      if (ps.length) moverGrupo(k, redondear(r.x - ps.reduce((s, q) => s + q.x, 0) / ps.length), redondear(r.y - ps.reduce((s, q) => s + q.y, 0) / ps.length), []);
+      // La renovada no se corre más: en un pin o en un hueco, sus patas nuevas deben quedar ya sobre ellos.
+      const suelta = !!k.en && !(caben(k) && Object.entries(k.en).every(([pata, ref]) => {
+        const a = posicion(k.id + '.' + pata);
+        const b = posicion(ref);
+        return a && b && Math.hypot(b.x - a.x, b.y - a.y) <= ENCHUFE_TOL;
+      }));
+      if (suelta) {
+        delete k.en;
+        sueltas.push(k);
+      }
+      for (const h of datos.componentes) {
+        if (h === k || !h.en || !Object.values(h.en).some((ref) => !esHueco(ref) && partirRef(ref)[0] === k.id)) continue;
+        if (!suelta && caben(h)) continue;
+        delete h.en;
+        soltadas.push({ k: h, de: k });
+      }
     }
-    if (sueltas.length) marcarOcupados();
-    return sueltas;
+    for (const s of [...sueltas, ...soltadas.map((x) => x.k)]) apartar(s);
+    if (sueltas.length || soltadas.length) marcarOcupados();
+    return { sueltas, soltadas };
   }
 
-  function avisoRenovadas(sueltas) {
-    if (!sueltas.length) return '';
-    const nombres = sueltas.map((k) => `el ${TIPOS[k.tipo].nombre.toLowerCase()} ${k.id}`);
-    const lista = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
-    const muchas = sueltas.length > 1;
-    return `${lista[0].toUpperCase() + lista.slice(1)} ${muchas ? 'quedaron sueltos' : 'quedó suelto'}: ${muchas ? 'ahora tienen' : 'ahora tiene'} el dibujo del kit y sus patas ya no caben donde estaban. ${muchas ? 'Ponlos otra vez donde van' : 'Ponlo otra vez donde va'}.`;
+  // Corre una pieza suelta medio paso (en la primera dirección que sirva) para que ninguna de sus patas quede sobre un
+  // hueco o un pin: suelta, se ve suelta.
+  function apartar(k) {
+    const grupo = [k, ...colgantes(k.id)];
+    const propios = new Set(grupo.map((g) => g.id));
+    const destinos = [];
+    for (const [id, w] of vistas) {
+      if (propios.has(id) || !w.lista || !w.pines.size) continue;
+      const lw = id === 'protoboard' ? datos.protoboard : lugar(id);
+      if (lw) for (const p of w.pines.values()) destinos.push(girarPunto(w, lw, p));
+    }
+    const patas = grupo.flatMap((g) => {
+      const v = vistas.get(g.id);
+      return v && v.lista ? [...v.pines.values()].map((p) => girarPunto(v, lugar(g.id), p)) : [];
+    });
+    const m = PASO_REJILLA / 2;
+    const libre = ([dx, dy]) => patas.every((q) => destinos.every((d) => Math.hypot(d.x - q.x - dx, d.y - q.y - dy) > ENCHUFE_TOL));
+    const [dx, dy] = [[m, m], [m, 0], [0, m], [-m, m], [m, -m], [-m, 0], [0, -m], [-m, -m]].find(libre) || [m, m];
+    moverGrupo(k, dx, dy);
+  }
+
+  function avisoRenovadas({ sueltas, soltadas }) {
+    const nombre = (k) => `el ${TIPOS[k.tipo].nombre.replace(/^[A-ZÁÉÍÓÚ](?=[a-záéíóúñ])/, (l) => l.toLowerCase())} ${k.id}`; // «LED» se queda
+    const textos = [];
+    if (sueltas.length) {
+      const nombres = sueltas.map(nombre);
+      const lista = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
+      const muchas = sueltas.length > 1;
+      textos.push(`${lista[0].toUpperCase() + lista.slice(1)} ${muchas ? 'quedaron sueltos' : 'quedó suelto'}: ${muchas ? 'ahora tienen' : 'ahora tiene'} el dibujo del kit y sus patas ya no caben donde estaban. ${muchas ? 'Ponlos otra vez donde van' : 'Ponlo otra vez donde va'}.`);
+    }
+    for (const { k, de } of soltadas) textos.push(`Se soltó ${nombre(k)} del ${nombre(de).slice(3)}: vuelve a ponerlo.`);
+    return textos.join(' ');
   }
 
   // Corre una pieza y todo lo que cuelga de ella.
@@ -1997,6 +2043,8 @@ function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }, renovada
     }
     const base = def ? Object.fromEntries(Object.entries(def.props).filter(([prop]) => !(def.noCompletar || []).includes(prop))) : {};
     k.props = { ...base, ...(k.props && typeof k.props === 'object' ? k.props : {}) };
+    // Un `modelo` vacío o nulo guardado no debe pisar el del kit: la pieza se renovaría (y correría) en cada apertura.
+    if (def?.dibujoAnterior && !k.props.modelo) k.props.modelo = def.props.modelo;
     if (TIPOS[k.tipo]?.montada) {
       delete k.en; // va montada sobre la placa: no se encaja en la protoboard
       k.x = 0; k.y = 0; k.rot = 0;
