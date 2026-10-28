@@ -1,0 +1,155 @@
+﻿DIST-001 · PASO 5 · TecnoBloques 0.4.1 instalado y recorrido SIN RED
+=====================================================================
+
+Guía de pasos y hoja de evidencias. Llena los espacios ____ a medida que
+avanzas. Guarda las capturas y los archivos en una carpeta de la USB llamada
+evidencias-dist001\ con el nombre que se indica en cada paso (E1, E2...).
+
+Fecha: ____________   Hora de inicio: ________   Hora de fin: ________
+PC (marca y modelo): ______________________________
+Windows (10 u 11 y versión): ______________________
+Placa usada (Uno / Nano, con CH340): ______________
+¿Tenía TecnoBloques instalado antes? (no / sí, versión ____): __________
+
+
+---------------------------------------------------------------------
+ANTES DE IR
+---------------------------------------------------------------------
+[ ] En la USB: TecnoBloques-Setup-0.4.1.exe
+    (sale de C:\Users\ACER\AppData\Local\TecnoBloques-build\)
+[ ] En la USB: carpeta vacía evidencias-dist001\
+[ ] Placa con CH340, cable USB, LED + resistencia y/o potenciómetro
+[ ] Esta guía
+
+
+---------------------------------------------------------------------
+A. ANTES DE INSTALAR
+---------------------------------------------------------------------
+1. [ ] Desconectar la red (wifi y cable). Si se puede, modo avión.
+       ¿Sin red confirmado? (ícono de red sin conexión): sí / no
+
+2. [ ] Abrir PowerShell y revisar si el driver CH340 ya está:
+
+         Test-Path C:\Windows\System32\drivers\CH341S64.SYS
+         Test-Path C:\Windows\System32\drivers\CH341SER.SYS
+
+       CH341S64.SYS: True / False      CH341SER.SYS: True / False
+       (Si los dos dan False, es el caso que nunca se ha probado: el mejor.)
+
+3. [ ] Comprobar el instalador (cambia E: por la letra de la USB):
+
+         Get-FileHash E:\TecnoBloques-Setup-0.4.1.exe
+
+       Esperado:
+       F32F62F3086C656101B257D14866219791EFB5CB24D55303BF0DFC6B4C3390CB
+       ¿Coincide?: sí / no
+
+   >> E1: captura de la ventana de PowerShell con los pasos 2 y 3
+          (E1-antes.png)
+
+
+---------------------------------------------------------------------
+B. INSTALACIÓN SILENCIOSA
+---------------------------------------------------------------------
+4. [ ] En PowerShell, desde la carpeta de la USB:
+
+         cd E:\
+         .\TecnoBloques-Setup-0.4.1.exe /S
+
+       Tomar el tiempo con el reloj.
+       Hora de inicio: ________   Hora en que terminó: ________
+
+5. [ ] Anotar:
+       ¿Terminó solo, sin ninguna pregunta de TecnoBloques?   sí / no
+       ¿Windows pidió permiso de administrador (UAC)?         sí / no
+         (esperado SOLO si no había driver: el instalador es por usuario)
+       ¿Se abrió la ventana del instalador de WCH (CH341SER)? sí / no
+         (si se abre, es un hallazgo: anotar qué mostró)
+       Observaciones: ____________________________________________
+
+6. [ ] Repetir los Test-Path del paso 2:
+       CH341S64.SYS: True / False      CH341SER.SYS: True / False
+
+   >> E2: captura de PowerShell con el paso 6 (E2-despues.png)
+          y, si apareció, captura del permiso o de la ventana de WCH
+          (E2b-ventana.png)
+
+
+---------------------------------------------------------------------
+C. RECORRIDO SIN RED
+---------------------------------------------------------------------
+7. [ ] Abrir TecnoBloques → Acerca de.
+       ¿Dice TecnoBloques 0.4.1?            sí / no
+       ¿Dice TecnoCircuito 0.3.1?           sí / no
+       ¿Salen las dos marcas?               sí / no
+   >> E3: captura (E3-acerca-de.png)
+
+8. [ ] Conectar la placa. ¿Aparece el puerto COM? sí / no   COM: ____
+       Abrir un ejemplo, compilar y subir a la placa real.
+       ¿Compiló sin internet?  sí / no    ¿Subió?  sí / no
+       ¿La placa hizo lo esperado?  sí / no
+       Ejemplo usado: ____________________________________________
+
+9. [ ] Monitor serial: ver en Texto, pasar a Gráfico, Exportar CSV.
+       ¿Texto bien?  sí / no    ¿Gráfico bien?  sí / no
+   >> E4: el CSV exportado (E4-monitor.csv)
+
+10. [ ] Pestaña Circuito: abrir un ejemplo de T1 o T2 y Simular.
+        ¿Simula?  sí / no      ¿Mediciones muestra la tabla?  sí / no
+        Chip de TecnoCircuito en la serigrafía:
+          Uno: sí / no   shield: sí / no   expansión: sí / no
+          protoboard: sí / no   Nano (NO debe tenerlo): no lo tiene / sí lo tiene
+        Cambiar de placa una vez. ¿Bien?  sí / no
+        Exportar la imagen SVG.
+        ¿Lleva «Hecho con:» + logo + frase?  sí / no
+        ¿Lleva la marca de agua encima del circuito?  sí / no
+   >> E5: captura de una placa con el chip (E5-chip.png)
+   >> E6: el SVG exportado (E6-circuito.svg)
+
+11. [ ] Registro de eventos:
+        a. Ctrl+Alt+Mayús+R → PIN → encender el registro.
+        b. Código del equipo: PRUEBA-05 (confirmar).
+        c. Corrida 1: provocar una falla (ej.: LED sin resistencia) → Simular
+           → ver la falla → Detener.
+           Falla que se vio: ______________________________________
+        d. Corregir (poner la resistencia) → Corrida 2 → Simular → Detener.
+           ¿La falla desapareció?  sí / no
+        e. Cambiar de placa (de ______ a ______).
+        f. Una corrida más con la placa nueva → Detener.
+        g. Panel del instructor → «Exportar registros».
+           ¿Avisos en la esquina o en el panel?  no / sí: _______________
+   >> E7: la CARPETA COMPLETA de la exportación (los .jsonl y
+          exportacion.json), copiada tal cual a evidencias-dist001\E7-registro\
+
+12. [ ] Consola: con el PIN, F12 → pestaña Console.
+        ¿Hay errores en rojo?  no / sí (cuántos: ___)
+   >> E8: captura de la consola (E8-consola.png)
+
+
+---------------------------------------------------------------------
+D. HALLAZGOS
+---------------------------------------------------------------------
+Todo lo que no salió como esperabas, aunque sea menor (qué hiciste, qué
+pasó, qué esperabas):
+
+1. _______________________________________________________________
+2. _______________________________________________________________
+3. _______________________________________________________________
+
+Conclusión general:  sin problemas / con hallazgos (ver arriba)
+
+
+---------------------------------------------------------------------
+AL VOLVER
+---------------------------------------------------------------------
+[ ] Pasarle a Claude esta guía llena y la carpeta evidencias-dist001\.
+    Claude escribe el registro en validacion/, corre `npm run historia`
+    sobre E7, anota DIST-001 y lo entrega a Codex (paso 6).
+    Publicar el Release sigue siendo decisión de Efraín.
+
+Lista de evidencias:
+[ ] E1-antes.png        [ ] E5-chip.png
+[ ] E2-despues.png      [ ] E6-circuito.svg
+[ ] E2b-ventana.png (si hubo)   [ ] E7-registro\ (carpeta)
+[ ] E3-acerca-de.png    [ ] E8-consola.png
+[ ] E4-monitor.csv

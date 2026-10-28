@@ -1,0 +1,12 @@
+﻿t_ms;origen;linea;"min";"max";"promedio";"desviacion"
+463;simulador;"min 511 max 512 promedio 511.54 desviacion 0.50";511;512;511,54;0,5
+1885;simulador;"min 511 max 512 promedio 511.48 desviacion 0.50";511;512;511,48;0,5
+3316;simulador;"min 511 max 512 promedio 511.48 desviacion 0.50";511;512;511,48;0,5
+4738;simulador;"min 419 max 512 promedio 507.14 desviacion 19.20";419;512;507,14;19,2
+6168;simulador;"min 911 max 1023 promedio 996.92 desviacion 37.31";911;1023;996,92;37,31
+7581;simulador;"min 0 max 225 promedio 21.40 desviacion 55.30";0;225;21,4;55,3
+9025;simulador;"min 829 max 1023 promedio 970.68 desviacion 65.67";829;1023;970,68;65,67
+10422;simulador;"min 0 max 0 promedio 0.00 desviacion 0.00";0;0;0;0
+11859;simulador;"min 0 max 0 promedio 0.00 desviacion 0.00";0;0;0;0
+13288;simulador;"min 0 max 0 promedio 0.00 desviacion 0.00";0;0;0;0
+14714;simulador;"min 0 max 0 promedio 0.00 desviacion 0.00";0;0;0;0

@@ -1,0 +1,90 @@
+{
+ "circuito": {
+  "formato": 1,
+  "placa": "nano",
+  "componentes": [
+   {
+    "id": "led1",
+    "tipo": "led",
+    "x": 109.21,
+    "y": -92.11,
+    "rot": 0,
+    "props": {
+     "color": "rojo"
+    }
+   },
+   {
+    "id": "r1",
+    "tipo": "resistencia",
+    "x": 104.63,
+    "y": -26.21,
+    "rot": 90,
+    "props": {
+     "ohmios": 220
+    },
+    "en": {
+     "1": "led1.anodo",
+     "2": "placa.D12"
+    }
+   }
+  ],
+  "cables": [
+   {
+    "de": "led1.catodo",
+    "a": "placa.GND1",
+    "color": "negro",
+    "puntos": [
+     [
+      92.74,
+      -50.11
+     ],
+     [
+      98.38,
+      104.75
+     ]
+    ]
+   },
+   {
+    "de": "r1.2",
+    "a": "placa.D11",
+    "color": "verde"
+   }
+  ],
+  "protoboard": null
+ },
+ "app": "TecnoBloques",
+ "version": 1,
+ "nombre": "Mi proyecto",
+ "placa": "nano",
+ "nivel": 3,
+ "bloques": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "programa",
+     "id": "A~$dRB{#Ad]PtI0J4PUY",
+     "x": 40,
+     "y": 40,
+     "deletable": false,
+     "inputs": {
+      "LOOP": {
+       "block": {
+        "type": "escribir_digital",
+        "id": "D[{ecZ/e5r~7vXGPV1/1",
+        "fields": {
+         "PIN": "12",
+         "EST": "HIGH"
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ },
+ "embebidos": {},
+ "texto": null,
+ "creadoCon": "0.4.1",
+ "guardado": "2026-10-28T16:30:55.653Z"
+}

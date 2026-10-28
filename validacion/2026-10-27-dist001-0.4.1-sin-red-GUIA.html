@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía DIST-001 sin red</title>
+<style>
+  :root {
+    --fondo: #f6f7f9; --tarjeta: #ffffff; --texto: #1b1f24; --suave: #5b6470;
+    --borde: #d8dde3; --acento: #0b6e4f; --acento-suave: #e3f3ec; --aviso: #8a5a00; --aviso-suave: #fff4dc;
+    --codigo: #eef1f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo: #14171b; --tarjeta: #1d2126; --texto: #e7eaee; --suave: #9aa4af;
+      --borde: #333a42; --acento: #4cc59a; --acento-suave: #173328; --aviso: #f0b847; --aviso-suave: #3a2e14;
+      --codigo: #262b31; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--texto);
+    font: 16px/1.5 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 120px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--suave); margin: 0 0 20px; }
+  section { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px;
+    padding: 16px 18px; margin: 0 0 16px; }
+  h2 { font-size: 1.1rem; margin: 0 0 12px; color: var(--acento); }
+  .paso { border-top: 1px solid var(--borde); padding: 12px 0; }
+  .paso:first-of-type { border-top: 0; padding-top: 0; }
+  .titulo { display: flex; gap: 10px; align-items: flex-start; font-weight: 600; }
+  .titulo input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
+  .nota { color: var(--suave); font-size: .92rem; margin: 4px 0 0 30px; }
+  .cuerpo { margin-left: 30px; }
+  pre { background: var(--codigo); border-radius: 6px; padding: 8px 10px; margin: 8px 0;
+    overflow-x: auto; font: 14px/1.4 Consolas, monospace; white-space: pre-wrap; word-break: break-all; }
+  .campo { margin: 8px 0; }
+  .campo label.p { display: block; font-size: .95rem; margin-bottom: 4px; }
+  .opciones { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .opciones label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  input[type=text], textarea { width: 100%; padding: 7px 9px; border: 1px solid var(--borde);
+    border-radius: 6px; background: var(--fondo); color: var(--texto); font: inherit; }
+  textarea { min-height: 70px; resize: vertical; }
+  .evid { background: var(--aviso-suave); color: var(--aviso); border-radius: 6px; padding: 6px 10px;
+    margin: 8px 0 0 30px; font-size: .92rem; }
+  .evid b { font-family: Consolas, monospace; }
+  .barra { position: fixed; left: 0; right: 0; bottom: 0; background: var(--tarjeta);
+    border-top: 1px solid var(--borde); padding: 10px 16px; display: flex; gap: 10px;
+    justify-content: center; flex-wrap: wrap; }
+  button { font: inherit; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--acento);
+    background: var(--acento); color: #fff; cursor: pointer; }
+  button.sec { background: transparent; color: var(--acento); }
+  #estado { color: var(--suave); font-size: .9rem; align-self: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>DIST-001 · Paso 5 · TecnoBloques 0.4.1 sin red</h1>
+  <p class="sub">Marca cada paso y anota lo que veas. Lo que escribes se queda guardado en este navegador.
+    Al terminar, pulsa <b>Guardar respuestas</b>: se descarga un archivo de texto que va en
+    <b>evidencias-dist001\</b> junto con las capturas.</p>
+  <div id="guia"></div>
+</main>
+<div class="barra">
+  <button id="guardar">Guardar respuestas</button>
+  <button class="sec" id="borrar">Empezar de nuevo</button>
+  <span id="estado"></span>
+</div>
+
+<script>
+const SN = ["sí", "no"];
+const GUIA = [
+  { seccion: "Datos de la prueba", pasos: [
+    { campos: [
+      { id: "fecha", p: "Fecha", t: "texto" },
+      { id: "hora_ini", p: "Hora de inicio", t: "texto" },
+      { id: "pc", p: "PC (marca y modelo)", t: "texto" },
+      { id: "windows", p: "Windows (10 u 11 y versión)", t: "texto" },
+      { id: "placa", p: "Placa usada (Uno / Nano, con CH340)", t: "texto" },
+      { id: "tb_previo", p: "¿Tenía TecnoBloques instalado antes? ¿Qué versión?", t: "texto" }
+    ] }
+  ] },
+  { seccion: "A. Antes de instalar", pasos: [
+    { id: "a1", titulo: "1. Desconectar la red (wifi y cable). Si se puede, modo avión.",
+      campos: [{ id: "a1_sinred", p: "¿Sin red confirmado?", t: SN }] },
+    { id: "a2", titulo: "2. Revisar si el driver CH340 ya está (PowerShell):",
+      codigo: "Test-Path C:\\Windows\\System32\\drivers\\CH341S64.SYS\nTest-Path C:\\Windows\\System32\\drivers\\CH341SER.SYS",
+      nota: "Si los dos dan False, es el caso que nunca se ha probado: el mejor.",
+      campos: [
+        { id: "a2_s64", p: "CH341S64.SYS", t: ["True", "False"] },
+        { id: "a2_ser", p: "CH341SER.SYS", t: ["True", "False"] }
+      ] },
+    { id: "a3", titulo: "3. Comprobar el instalador (cambia E: por la letra de la USB):",
+      codigo: "Get-FileHash E:\\TecnoBloques-Setup-0.4.1.exe",
+      nota: "Esperado: F32F62F3086C656101B257D14866219791EFB5CB24D55303BF0DFC6B4C3390CB",
+      campos: [{ id: "a3_hash", p: "¿Coincide?", t: SN }],
+      evid: "E1-antes.png · captura de PowerShell con los pasos 2 y 3" }
+  ] },
+  { seccion: "B. Instalación silenciosa", pasos: [
+    { id: "b4", titulo: "4. Instalar desde la carpeta de la USB y tomar el tiempo:",
+      codigo: "cd E:\\\n.\\TecnoBloques-Setup-0.4.1.exe /S",
+      campos: [
+        { id: "b4_ini", p: "Hora de inicio", t: "texto" },
+        { id: "b4_fin", p: "Hora en que terminó", t: "texto" }
+      ] },
+    { id: "b5", titulo: "5. Anotar cómo fue la instalación",
+      campos: [
+        { id: "b5_solo", p: "¿Terminó solo, sin ninguna pregunta de TecnoBloques?", t: SN },
+        { id: "b5_uac", p: "¿Windows pidió permiso de administrador? (esperado solo si no había driver)", t: SN },
+        { id: "b5_wch", p: "¿Se abrió la ventana del instalador de WCH (CH341SER)? (si se abre, es un hallazgo)", t: SN },
+        { id: "b5_obs", p: "Observaciones", t: "largo" }
+      ] },
+    { id: "b6", titulo: "6. Repetir los Test-Path del paso 2",
+      campos: [
+        { id: "b6_s64", p: "CH341S64.SYS", t: ["True", "False"] },
+        { id: "b6_ser", p: "CH341SER.SYS", t: ["True", "False"] }
+      ],
+      evid: "E2-despues.png · y, si apareció, E2b-ventana.png (permiso o ventana de WCH)" }
+  ] },
+  { seccion: "C. Recorrido sin red", pasos: [
+    { id: "c7", titulo: "7. Abrir TecnoBloques → Acerca de",
+      campos: [
+        { id: "c7_tb", p: "¿Dice TecnoBloques 0.4.1?", t: SN },
+        { id: "c7_tc", p: "¿Dice TecnoCircuito 0.3.1?", t: SN },
+        { id: "c7_marcas", p: "¿Salen las dos marcas?", t: SN }
+      ],
+      evid: "E3-acerca-de.png" },
+    { id: "c8", titulo: "8. Conectar la placa, compilar y subir un ejemplo",
+      campos: [
+        { id: "c8_com", p: "¿Aparece el puerto COM? ¿Cuál?", t: "texto" },
+        { id: "c8_ej", p: "Ejemplo usado", t: "texto" },
+        { id: "c8_comp", p: "¿Compiló sin internet?", t: SN },
+        { id: "c8_sub", p: "¿Subió?", t: SN },
+        { id: "c8_placa", p: "¿La placa hizo lo esperado?", t: SN }
+      ] },
+    { id: "c9", titulo: "9. Monitor serial: Texto, Gráfico y Exportar CSV",
+      campos: [
+        { id: "c9_txt", p: "¿Texto bien?", t: SN },
+        { id: "c9_graf", p: "¿Gráfico bien?", t: SN }
+      ],
+      evid: "E4-monitor.csv · el CSV exportado" },
+    { id: "c10", titulo: "10. Circuito: abrir un ejemplo de T1 o T2 y Simular",
+      campos: [
+        { id: "c10_sim", p: "¿Simula?", t: SN },
+        { id: "c10_med", p: "¿Mediciones muestra la tabla?", t: SN },
+        { id: "c10_uno", p: "Chip de TecnoCircuito en el Uno", t: SN },
+        { id: "c10_shield", p: "Chip en la shield", t: SN },
+        { id: "c10_exp", p: "Chip en la expansión", t: SN },
+        { id: "c10_proto", p: "Chip en la protoboard", t: SN },
+        { id: "c10_nano", p: "Nano (NO debe tenerlo)", t: ["no lo tiene", "sí lo tiene"] },
+        { id: "c10_cambio", p: "Cambiar de placa una vez: ¿bien?", t: SN },
+        { id: "c10_firma", p: "SVG exportado: ¿lleva «Hecho con:» + logo + frase?", t: SN },
+        { id: "c10_agua", p: "SVG: ¿lleva la marca de agua encima del circuito?", t: SN }
+      ],
+      evid: "E5-chip.png (una placa con el chip) · E6-circuito.svg (el SVG exportado)" },
+    { id: "c11", titulo: "11. Registro de eventos",
+      nota: "a. Ctrl+Alt+Mayús+R → PIN → encender. b. Código del equipo: PRUEBA-05. c. Corrida 1 con una falla (ej.: LED sin resistencia) → Detener. d. Corregir → Corrida 2 → Detener. e. Cambiar de placa. f. Una corrida más → Detener. g. Panel del instructor → «Exportar registros».",
+      campos: [
+        { id: "c11_falla", p: "Falla que se vio en la corrida 1", t: "texto" },
+        { id: "c11_corr", p: "En la corrida 2, ¿la falla desapareció?", t: SN },
+        { id: "c11_placas", p: "Cambio de placa (de … a …)", t: "texto" },
+        { id: "c11_avisos", p: "¿Avisos en la esquina o en el panel? ¿Cuáles?", t: "texto" }
+      ],
+      evid: "E7-registro\\ · la CARPETA COMPLETA de la exportación (los .jsonl y exportacion.json), copiada tal cual" },
+    { id: "c12", titulo: "12. Consola: con el PIN, F12 → pestaña Console",
+      campos: [
+        { id: "c12_err", p: "¿Hay errores en rojo?", t: SN },
+        { id: "c12_cuantos", p: "Si hay, ¿cuántos y qué dicen?", t: "texto" }
+      ],
+      evid: "E8-consola.png" }
+  ] },
+  { seccion: "D. Hallazgos y cierre", pasos: [
+    { campos: [
+      { id: "d_hall", p: "Todo lo que no salió como esperabas, aunque sea menor (qué hiciste, qué pasó, qué esperabas)", t: "largo" },
+      { id: "d_conc", p: "Conclusión general", t: ["sin problemas", "con hallazgos"] },
+      { id: "hora_fin", p: "Hora de fin", t: "texto" }
+    ] }
+  ] }
+];
+
+const CLAVE = "guia-dist001-041";
+let datos = {};
+try { datos = JSON.parse(localStorage.getItem(CLAVE) || "{}"); } catch (e) { datos = {}; }
+function guardarLocal() {
+  try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) {}
+}
+
+const raiz = document.getElementById("guia");
+function el(tag, props, ...hijos) {
+  const n = document.createElement(tag);
+  Object.assign(n, props || {});
+  hijos.forEach(h => n.append(h));
+  return n;
+}
+
+GUIA.forEach(sec => {
+  const s = el("section", {}, el("h2", { textContent: sec.seccion }));
+  sec.pasos.forEach(paso => {
+    const d = el("div", { className: "paso" });
+    if (paso.titulo) {
+      const ch = el("input", { type: "checkbox", checked: !!datos[paso.id] });
+      ch.addEventListener("change", () => { datos[paso.id] = ch.checked; guardarLocal(); });
+      d.append(el("label", { className: "titulo" }, ch, paso.titulo));
+    }
+    if (paso.nota) d.append(el("div", { className: "nota", textContent: paso.nota }));
+    const cuerpo = el("div", { className: paso.titulo ? "cuerpo" : "" });
+    if (paso.codigo) cuerpo.append(el("pre", { textContent: paso.codigo }));
+    (paso.campos || []).forEach(c => {
+      const caja = el("div", { className: "campo" });
+      caja.append(el("label", { className: "p", textContent: c.p }));
+      if (Array.isArray(c.t)) {
+        const ops = el("div", { className: "opciones" });
+        c.t.forEach(v => {
+          const r = el("input", { type: "radio", name: c.id, value: v, checked: datos[c.id] === v });
+          r.addEventListener("change", () => { datos[c.id] = v; guardarLocal(); });
+          ops.append(el("label", {}, r, v));
+        });
+        caja.append(ops);
+      } else {
+        const inp = c.t === "largo" ? el("textarea") : el("input", { type: "text" });
+        inp.value = datos[c.id] || "";
+        inp.addEventListener("input", () => { datos[c.id] = inp.value; guardarLocal(); });
+        caja.append(inp);
+      }
+      cuerpo.append(caja);
+    });
+    d.append(cuerpo);
+    if (paso.evid) d.append(el("div", { className: "evid" }, "Evidencia: ", el("b", { textContent: paso.evid })));
+    s.append(d);
+  });
+  raiz.append(s);
+});
+
+function informe() {
+  const L = ["DIST-001 · Paso 5 · TecnoBloques 0.4.1 sin red", "Guardado: " + new Date().toLocaleString("es-CO"), ""];
+  GUIA.forEach(sec => {
+    L.push("== " + sec.seccion + " ==");
+    sec.pasos.forEach(paso => {
+      if (paso.titulo) L.push("[" + (datos[paso.id] ? "x" : " ") + "] " + paso.titulo);
+      (paso.campos || []).forEach(c => L.push("    " + c.p + ": " + (datos[c.id] || "(sin respuesta)")));
+      if (paso.evid) L.push("    Evidencia: " + paso.evid);
+    });
+    L.push("");
+  });
+  return L.join("\r\n");
+}
+function descargar(nombre, texto, tipo) {
+  const a = el("a", { href: URL.createObjectURL(new Blob(["\ufeff" + texto], { type: tipo })), download: nombre });
+  document.body.append(a); a.click(); a.remove();
+}
+document.getElementById("guardar").addEventListener("click", () => {
+  descargar("respuestas-dist001.txt", informe(), "text/plain;charset=utf-8");
+  descargar("respuestas-dist001.json", JSON.stringify(datos, null, 2), "application/json");
+  document.getElementById("estado").textContent = "Descargado: respuestas-dist001.txt y .json (mira la carpeta Descargas).";
+});
+document.getElementById("borrar").addEventListener("click", () => {
+  if (!confirm("¿Borrar todas las respuestas?")) return;
+  datos = {}; guardarLocal(); location.reload();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+﻿DIST-001 · Paso 5 · TecnoBloques 0.4.1 sin red
+Guardado: 28/10/2026, 11:56:01 a. m.
+
+== Datos de la prueba ==
+    Fecha: 28/10/2026
+    Hora de inicio: 10:57 am
+    PC (marca y modelo): HP ProBook 450 G7
+    Windows (10 u 11 y versión): Windows 11 Pro
+    Placa usada (Uno / Nano, con CH340): Nano con ch340
+    ¿Tenía TecnoBloques instalado antes? ¿Qué versión?: no
+
+== A. Antes de instalar ==
+[x] 1. Desconectar la red (wifi y cable). Si se puede, modo avión.
+    ¿Sin red confirmado?: sí
+[x] 2. Revisar si el driver CH340 ya está (PowerShell):
+    CH341S64.SYS: True
+    CH341SER.SYS: False
+[x] 3. Comprobar el instalador (cambia E: por la letra de la USB):
+    ¿Coincide?: sí
+    Evidencia: E1-antes.png · captura de PowerShell con los pasos 2 y 3
+
+== B. Instalación silenciosa ==
+[x] 4. Instalar desde la carpeta de la USB y tomar el tiempo:
+    Hora de inicio: 11:02
+    Hora en que terminó: 11:10
+[x] 5. Anotar cómo fue la instalación
+    ¿Terminó solo, sin ninguna pregunta de TecnoBloques?: sí
+    ¿Windows pidió permiso de administrador? (esperado solo si no había driver): no
+    ¿Se abrió la ventana del instalador de WCH (CH341SER)? (si se abre, es un hallazgo): no
+    Observaciones: (sin respuesta)
+[ ] 6. Repetir los Test-Path del paso 2
+    CH341S64.SYS: True
+    CH341SER.SYS: False
+    Evidencia: E2-despues.png · y, si apareció, E2b-ventana.png (permiso o ventana de WCH)
+
+== C. Recorrido sin red ==
+[x] 7. Abrir TecnoBloques → Acerca de
+    ¿Dice TecnoBloques 0.4.1?: sí
+    ¿Dice TecnoCircuito 0.3.1?: sí
+    ¿Salen las dos marcas?: sí
+    Evidencia: E3-acerca-de.png
+[x] 8. Conectar la placa, compilar y subir un ejemplo
+    ¿Aparece el puerto COM? ¿Cuál?: en el UNO COM23, y en el nano COM5 y dice que tiene el ch340
+    Ejemplo usado: Eco serial y led
+    ¿Compiló sin internet?: sí
+    ¿Subió?: sí
+    ¿La placa hizo lo esperado?: sí
+[x] 9. Monitor serial: Texto, Gráfico y Exportar CSV
+    ¿Texto bien?: sí
+    ¿Gráfico bien?: sí
+    Evidencia: E4-monitor.csv · el CSV exportado
+[x] 10. Circuito: abrir un ejemplo de T1 o T2 y Simular
+    ¿Simula?: sí
+    ¿Mediciones muestra la tabla?: sí
+    Chip de TecnoCircuito en el Uno: sí
+    Chip en la shield: sí
+    Chip en la expansión: sí
+    Chip en la protoboard: sí
+    Nano (NO debe tenerlo): no lo tiene
+    Cambiar de placa una vez: ¿bien?: sí
+    SVG exportado: ¿lleva «Hecho con:» + logo + frase?: sí
+    SVG: ¿lleva la marca de agua encima del circuito?: sí
+    Evidencia: E5-chip.png (una placa con el chip) · E6-circuito.svg (el SVG exportado)
+[x] 11. Registro de eventos
+    Falla que se vio en la corrida 1: El LED led1 se quemó: le pasaron 101 mA y aguanta unos 20 mA. Ponle una resistencia en s
+    En la corrida 2, ¿la falla desapareció?: sí
+    Cambio de placa (de … a …): nano, tuve que cambiar el pin del 12 al 11 porque parece que en la forma de nano sin expansión no esta conectado ese pin.
+    ¿Avisos en la esquina o en el panel? ¿Cuáles?: sin avisos con el circuito bien
+    Evidencia: E7-registro\ · la CARPETA COMPLETA de la exportación (los .jsonl y exportacion.json), copiada tal cual
+[ ] 12. Consola: con el PIN, F12 → pestaña Console
+    ¿Hay errores en rojo?: sí
+    Si hay, ¿cuántos y qué dicen?: Que no se pudo conectar a internet
+    Evidencia: E8-consola.png
+
+== D. Hallazgos y cierre ==
+    Todo lo que no salió como esperabas, aunque sea menor (qué hiciste, qué pasó, qué esperabas): el pin 12 del nano sin expansión no se puede conectar.
+    Conclusión general: con hallazgos
+    Hora de fin: 11:37

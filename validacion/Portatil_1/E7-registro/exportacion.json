@@ -1,0 +1,16 @@
+{
+ "formato": 1,
+ "app": "TecnoBloques",
+ "version_tb": "0.4.1",
+ "t": 1793205193406,
+ "completa": true,
+ "total": 1,
+ "archivos": [
+  {
+   "archivo": "A1-2026-10-28.jsonl",
+   "bytes": 20354,
+   "sha256": "643bcaa7f6779ec23ed88acb0489b73dec1b562dfd03b6fb3aaa40513d57d625"
+  }
+ ],
+ "pendientes": 0
+}
