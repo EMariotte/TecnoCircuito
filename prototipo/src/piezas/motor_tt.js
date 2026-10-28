@@ -19,7 +19,7 @@ export const MOTOR_TT = {
   voltiosRef: 6,
   rpmSinCarga: 200, // en el eje de salida, a 6 V
   mASinCarga: 150,
-  mABloqueado: 1200,
+  mABloqueado: 1500, // 6 V / 4 Ω: el bobinado del kit mide 4 Ω con el óhmetro (28 oct, validacion/2026-10-28-lab001.md)
   tauMecanicoMs: 40, // cuánto tarda en llegar al 63 % de su velocidad
   ruedaMM: 66,
 };

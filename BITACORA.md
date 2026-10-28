@@ -1859,3 +1859,23 @@ Antes de entregar PIEZA-003 a Codex, un auditor aparte revisó el commit `106627
 - **Pendiente, A6:** el «Acerca de» de TecnoBloques ya no nombra Wokwi Elements ni Lit, pero TecnoBloques sigue en `#v0.3.1`; ese texto (y `avr8js` en su NOTICE) entra con el paso de TecnoBloques a la `v0.4.0`.
 
 Pruebas: `probar_piezas.py` con seis regresiones nuevas, que fallan con `106627a`; suite completa con cargador en una copia limpia (sin el trabajo de LAB-001 que estaba sin commit); TecnoBloques `test:simulador` 58 y `test:registro-app` 134. Paquete 527 KB. Se entrega a Codex para una verificación profunda única (CLA-20261028-007).
+
+## 2026-10-28 — LAB-001: primeras medidas con el cuaderno
+
+Efraín midió con el cuaderno LAB-001 (página web que exporta un JSON; `validacion/lab001-2026-10-28.json`). Análisis en `validacion/2026-10-28-lab001.md`; el modelo no se cambió. El monitor serial con la placa real (CSV y gráfico) quedó validado. La caída del L293D sube unos 2 V/A, no 1 como usa el modelo: la recta 1,28 V + 2,08 V/A acierta el bloqueo con un 2 % de error. El bobinado mide 4 Ω (el modelo usa 5) y se confirmó la LiPo de 1,2 Ω. Hay una contradicción en los servos del Uno: la tabla dice «sin reinicio» con 10 servos, pero el CSV muestra «Inicio» cada 1,64 s. Hasta contar los reinicios no se toca el golpe de arranque. En el sentido de giro, M4 no cuadra con M1 y falta una foto de la numeración de los tornillos. Pendientes en la lista del registro.
+
+## 2026-10-28 — LAB-001: revisión con Efraín y ajuste del L293D y del motor TT
+
+Efraín aclaró las dudas del registro. Los diez «Inicio» del CSV de servos eran subidas del programa: **el Uno no se reinicia ni con 10 servos** (6 SG90 + 4 MG90S), lo que confirma que el golpe de arranque del modelo está exagerado (ajuste pendiente, a decidir). T3-1 queda cerrada: lo de M4 fue un error de anotación. Los datos de T3-3 son los medidos. La corriente de T1-B se quita por no ser fiable, y el ruido del ADC se repite. **Modelo ajustado con su sí:** caída del L293D 1,3 V + 2 V/A (antes 1 V/A) y bobinado del motor TT de 4 Ω (`mABloqueado` 1500). Con eso, el frenado fuerte y el bloqueo quedan a −1,4 % y +0,3 %. Con 2 V/A apareció una oscilación de un milisegundo al otro con el motor a 255 (la batería quedaba sin carga); ahora la caída sigue la corriente suavizada (`CAIDA_SUAVE`), y `probar_potencia.js` revisa que no oscile.
+
+## 2026-10-28 — PIEZA-003: preauditoría y corrección en un lote
+
+Antes de entregar PIEZA-003 a Codex, un auditor aparte revisó el commit `106627a` (sin código, solo pruebas y casos propios). Encontró seis cosas; Efraín pidió corregir A1 a A5 y dejar A6 documentado.
+
+- **A1 (alta):** al abrir un potenciómetro o botón guardado sin `modelo`, el lienzo lo corría con todo lo enchufado en él; un LED enchufado en sus patas quedaba a 23–27 px, conectado por dentro y sin aviso. Lo introducía PIEZA-003. Ahora la pieza renovada se corre sola y lo que ya no cabe en sus patas nuevas queda suelto con aviso («Se soltó el LED led1 del potenciómetro pot1: vuelve a ponerlo.»).
+- **A2 (media; decisión de Efraín: medio paso):** la pieza suelta podía caer con las patas justo sobre otros huecos o pines y parecer encajada; al reabrir ya no había aviso. Ahora toda pieza que queda suelta al abrir se aparta medio paso (`apartar`), en la primera dirección en que ninguna pata queda sobre un hueco ni un pin.
+- **A3:** un `modelo` nulo o vacío en el archivo hacía que la pieza se corriera en cada apertura; ahora se completa el del kit.
+- **A4 y A5:** COMO-FUNCIONA 75 («siempre quedan sueltos»), las secciones 1, 5, 10 y 34 marcadas como históricas, la receta de componente nuevo y el comentario del ejemplo antiguo de `pagina.html` (ya no queda «wokwi» en `dist/prototipo.html`).
+- **Pendiente, A6:** el «Acerca de» de TecnoBloques ya no nombra Wokwi Elements ni Lit, pero TecnoBloques sigue en `#v0.3.1`; ese texto (y `avr8js` en su NOTICE) entra con el paso de TecnoBloques a la `v0.4.0`.
+
+Pruebas: `probar_piezas.py` con seis regresiones nuevas, que fallan con `106627a`; suite completa con cargador en una copia limpia (sin el trabajo de LAB-001 que estaba sin commit); TecnoBloques `test:simulador` 58 y `test:registro-app` 134. Paquete 527 KB. Se entrega a Codex para una verificación profunda única (CLA-20261028-007).

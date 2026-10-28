@@ -73,7 +73,8 @@ const IDEAL = { caidaL293D: false, limiteUSB: false, resistenciaBateria: false }
   const at = r.en(4800).piezas;
   revisar(at.motor1.rpm < -200 && at.motor1.rpm > -245, `atrás a 255: gira al revés a ${Math.round(at.motor1.rpm)} RPM`);
   const caida = at.bateria1.voltios - at.motor1.voltios;
-  revisar(at.motor1.voltios > 6.2 && at.motor1.voltios < 6.8 && caida > 1.35 && caida < 1.55, `a 255 le llegan ${coma(at.motor1.voltios)} V: la caída del L293D es de ${coma(caida)} V (medida el 15 oct: 1,43 a 1,47 V)`);
+  revisar(at.motor1.voltios > 6.2 && at.motor1.voltios < 6.8 && caida > 1.35 && caida < 1.7, `a 255 le llegan ${coma(at.motor1.voltios)} V: la caída del L293D es de ${coma(caida)} V con ${Math.round(at.motor1.i * 1000)} mA (medida con 0,13 A: 1,43 a 1,47 V el 15 oct y 1,55 V el 28 oct)`);
+  revisar(Math.abs(r.en(4400).piezas.motor1.voltios - r.en(4800).piezas.motor1.voltios) < 0.01, 'a 255 la caída del L293D no oscila de un milisegundo al otro');
   revisar(Math.abs(r.en(2900).piezas.motor1.rpm) < 15, `con RELEASE se detiene solo en menos de 1 s (${Math.round(r.en(2900).piezas.motor1.rpm)} RPM a los 0,9 s)`);
   revisar(r.ultima.medicion && r.ultima.medicion.porVin === true && r.ultima.energia.amperios === 0, 'con el puente PWR y 8,4 V, el Uno toma la energía del VIN: el USB no entrega nada');
   revisar(r.en(4800).piezas.bateria1.voltios < 8.1 && r.en(4800).piezas.bateria1.voltios > 7.7, `la batería baja a ${coma(r.en(4800).piezas.bateria1.voltios)} V con los motores (resistencia interna de 1,2 Ω, medida el 15 oct)`);

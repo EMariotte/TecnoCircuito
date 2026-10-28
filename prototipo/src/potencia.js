@@ -11,9 +11,10 @@
 //     FORWARD: A = 1, B = 0. BACKWARD: A = 0, B = 1. RELEASE: los dos en 0 (con PWM, el puente une los bornes y frena).
 //   - PWM: M1 = 11, M2 = 3, M3 = 6, M4 = 5. Sin PWM (pin en 0 o de entrada), el puente queda abierto y el motor gira libre.
 //
-// Caída del L293D (no idealidad «caidaL293D»): sus transistores son bipolares y se comen 1,3 V más 1 V por amperio.
+// Caída del L293D (no idealidad «caidaL293D»): sus transistores son bipolares y se comen 1,3 V más 2 V por amperio.
 // Medido en la shield del kit (15 oct, validacion/2026-10-15-carro-l293d.md): 1,43 a 1,47 V con 0,13 A (la hoja de
-// datos da 1,4 V típico a poca corriente). El aumento por amperio sigue siendo el de la hoja: por medir.
+// datos da 1,4 V típico a poca corriente). El aumento por amperio, el 28 oct (validacion/2026-10-28-lab001.md):
+// 2,84 V con 0,75 A y 2,95 V con el motor bloqueado (~0,83 A).
 //
 // El PWM se promedia en cada milisegundo: el motor siente el voltaje medio (ciclo útil × voltaje), porque su
 // inductancia y su inercia filtran los pulsos. El voltaje de la batería baja con la corriente: su resistencia interna
@@ -30,7 +31,7 @@ import { CONEXIONES_SHIELD } from './piezas/shield_l293d.js';
 export const SHIELD = {
   ...CONEXIONES_SHIELD, // datos, reloj, cierre, habilita, pwm y bits: los de AFMotor_R4
   caidaV: 1.3, // caída del puente H con poca corriente (medida: 1,43 V con 0,13 A)
-  caidaPorA: 1.0, // y lo que sube por cada amperio
+  caidaPorA: 2.0, // y lo que sube por cada amperio (medido el 28 oct)
   maximoCanalA: 0.6, // corriente continua por canal del L293D
   avisoCanalMs: 500, // pasada de 0,6 A por este tiempo: se calienta
 };
@@ -41,6 +42,7 @@ const PLACA_POR_VIN_A = 0.06; // lo que pide la placa al VIN (el regulador y el 
 // esta constante de tiempo (unos pocos períodos), como lo hace la inductancia del motor con la corriente.
 const PWM_MS = 4;
 const SUAVE = 1 - Math.exp(-1 / PWM_MS);
+const CAIDA_SUAVE = 0.3; // fracción por milisegundo con que la caída del L293D sigue a la corriente del motor
 const PINES = ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
 const coma = (n, dec = 1) => n.toFixed(dec).replace('.', ',');
 
@@ -149,7 +151,7 @@ export function crearPotencia({ activas, avisar }) {
     for (const k of circuito.componentes) {
       if (k.tipo !== 'motor_tt') continue;
       const antes = motores.get(k.id);
-      const m = antes || { logico: crearMotor(), iAntes: 0, sumaV: 0, sumaI: 0, ms: 0, sobreMs: 0 };
+      const m = antes || { logico: crearMotor(), iAntes: 0, iCaida: 0, sumaV: 0, sumaI: 0, ms: 0, sobreMs: 0 };
       m.lado = (k.props && k.props.lado) || 'izquierdo';
       m.a = borne(k.id + '.A');
       m.b = borne(k.id + '.B');
@@ -257,7 +259,7 @@ export function crearPotencia({ activas, avisar }) {
         const nShield = (a.shield ? 1 : 0) + (b.shield ? 1 : 0);
         let v = 0;
         if (Math.abs(dif) > 1e-9) {
-          const caida = activas.caidaL293D && nShield ? (nShield / 2) * (SHIELD.caidaV + SHIELD.caidaPorA * Math.abs(m.iAntes)) : 0;
+          const caida = activas.caidaL293D && nShield ? (nShield / 2) * (SHIELD.caidaV + SHIELD.caidaPorA * (m.iCaida || 0)) : 0;
           v = Math.sign(dif) * Math.max(0, Math.abs(dif) - caida) * d;
         }
         m.vAhora = v;
@@ -276,6 +278,9 @@ export function crearPotencia({ activas, avisar }) {
       }
       const e = m.logico.estado();
       m.iAntes = e.i;
+      // La caída usa la corriente suavizada (como la inductancia del motor): con la del milisegundo anterior tal cual,
+      // 2 V/A más la batería oscilan de un milisegundo al otro (28 oct).
+      m.iCaida = (m.iCaida || 0) + CAIDA_SUAVE * (Math.abs(e.i) - (m.iCaida || 0));
       m.sumaI += Math.abs(e.i);
       m.sumaV += Math.abs(m.vMedido || 0);
       m.ms++;
