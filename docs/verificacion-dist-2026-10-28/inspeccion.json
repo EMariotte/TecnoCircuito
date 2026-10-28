@@ -1,0 +1,136 @@
+{
+  "fecha": "2026-10-28T20:13:52.604Z",
+  "checks": [
+    {
+      "ok": true,
+      "detail": "Setup: tamaño y SHA256 exactos"
+    },
+    {
+      "ok": true,
+      "detail": "asar armado/instalado coincide con entrega"
+    },
+    {
+      "ok": true,
+      "detail": "versiones y dependencia fija del candidato"
+    },
+    {
+      "ok": true,
+      "detail": "bundle de v0.3.1 íntegro en HTML candidato"
+    },
+    {
+      "ok": true,
+      "detail": "escritorio/main.js del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "escritorio/preload.js del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "escritorio/arduino.js del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "escritorio/registro-disco.js del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "src/registro.js del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "LICENSE del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "NOTICE del asar coincide con c7252b8"
+    },
+    {
+      "ok": true,
+      "detail": "package.json: solo se omiten scripts, devDependencies y build al empaquetar"
+    },
+    {
+      "ok": true,
+      "detail": "recurso arduino/arduino-cli.exe"
+    },
+    {
+      "ok": true,
+      "detail": "recurso drivers/CH341SER.EXE"
+    },
+    {
+      "ok": true,
+      "detail": "build actual aislado reproduce byte por byte el HTML entregado"
+    },
+    {
+      "ok": true,
+      "detail": "HTML local sin Google Fonts"
+    },
+    {
+      "ok": true,
+      "detail": "artefacto web conserva Google Fonts permitido"
+    },
+    {
+      "ok": true,
+      "detail": "control: build previo conserva solicitud externa"
+    },
+    {
+      "ok": true,
+      "detail": "regresión: solo cambia el bloque de fuentes del HTML local"
+    },
+    {
+      "ok": true,
+      "detail": "Atkinson Hyperlegible 400 incrustada exacta"
+    },
+    {
+      "ok": true,
+      "detail": "Atkinson Hyperlegible 700 incrustada exacta"
+    },
+    {
+      "ok": true,
+      "detail": "JetBrains Mono 400 incrustada exacta"
+    },
+    {
+      "ok": true,
+      "detail": "JetBrains Mono 600 incrustada exacta"
+    },
+    {
+      "ok": true,
+      "detail": "OFL-atkinson-hyperlegible.txt: texto OFL completo y configurado en instalador"
+    },
+    {
+      "ok": true,
+      "detail": "OFL-atkinson-hyperlegible.txt: inclusión explícita build.files"
+    },
+    {
+      "ok": true,
+      "detail": "OFL-jetbrains-mono.txt: texto OFL completo y configurado en instalador"
+    },
+    {
+      "ok": true,
+      "detail": "OFL-jetbrains-mono.txt: inclusión explícita build.files"
+    },
+    {
+      "ok": true,
+      "detail": "NOTICE de las dos fuentes"
+    },
+    {
+      "ok": true,
+      "detail": "E7: integridad de exportación completa"
+    },
+    {
+      "ok": true,
+      "detail": "E7: 62 eventos JSON válidos"
+    }
+  ],
+  "shaHTML": "7ae0b4dfb1fa63ec3f222460967180eaebce7ce1746da934dd2816ae693b5a4a",
+  "shaSetup": "f32f62f3086c656101b257d14866219791efb5cb24d55303bf0dfc6b4c3390cb",
+  "shaAsar": "b2ba0b1b40192de9ae7ad2e21a51fa4d7901bf9079ef2c5475587c052f1d689d",
+  "recursos": [
+    "app-update.yml",
+    "app.asar",
+    "arduino",
+    "drivers",
+    "elevate.exe"
+  ],
+  "eventos": 62
+}

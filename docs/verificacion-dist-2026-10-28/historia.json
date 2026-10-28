@@ -1,0 +1,725 @@
+{
+  "limpio": true,
+  "historias": [
+    {
+      "equipo": "A1",
+      "sesion": "15e3052c-55e9-4730-8f9b-462f042dfc5e",
+      "archivos": [
+        "A1-2026-10-28.jsonl"
+      ],
+      "inicio": 1793204726253,
+      "fin": 1793205176766,
+      "placa": "uno",
+      "placas": [
+        "uno",
+        "nano"
+      ],
+      "nivel": 3,
+      "pasos": [
+        {
+          "t": 1793204726253,
+          "texto": "Empezó la sesión (uno, nivel 3)."
+        },
+        {
+          "t": 1793204730989,
+          "texto": "Compiló: bien, 4190 bytes."
+        },
+        {
+          "t": 1793204731002,
+          "texto": "▶ Corrida 5 (uno, realista; 1 pieza, 3 cables).",
+          "corrida": 5
+        },
+        {
+          "t": 1793204731081,
+          "texto": "Circuito: cambió pot1: ohmios 10000, posicion 0.08."
+        },
+        {
+          "t": 1793204762564,
+          "texto": "■ Corrida 5 terminó: 31,5 s simulados. Sin fallas.",
+          "corrida": 5
+        },
+        {
+          "t": 1793204791074,
+          "texto": "Bloques: 1 (1 tipo)."
+        },
+        {
+          "t": 1793204798580,
+          "texto": "Circuito: agregó led1 (led); cambió led1: desenchufado; conectó placa.D12 → led1.anodo, led1.catodo → placa.GND1; movió led1."
+        },
+        {
+          "t": 1793204813870,
+          "texto": "Compiló: bien, 444 bytes. Programa: quitó `Serial.begin(9600);`; quitó 13 líneas; quitó 14 líneas."
+        },
+        {
+          "t": 1793204813872,
+          "texto": "▶ Corrida 6 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 6
+        },
+        {
+          "t": 1793204820879,
+          "texto": "■ Corrida 6 terminó: 7,0 s simulados. Sin fallas.",
+          "corrida": 6
+        },
+        {
+          "t": 1793204835008,
+          "texto": "Bloques: 1 (1 tipo) → 2 (2 tipos)."
+        },
+        {
+          "t": 1793204838802,
+          "texto": "Compiló: bien, 724 bytes. Programa: agregó `pinMode(12, OUTPUT);`; agregó `digitalWrite(12, HIGH);`."
+        },
+        {
+          "t": 1793204838804,
+          "texto": "▶ Corrida 7 (uno, realista; 1 pieza, 2 cables).",
+          "corrida": 7
+        },
+        {
+          "t": 1793204838863,
+          "texto": "   falla: LED quemado (led1), a los 0,0 s simulados.",
+          "corrida": 7
+        },
+        {
+          "t": 1793204838863,
+          "texto": "   falla: corriente del pin (placa.D12), a los 0,0 s simulados.",
+          "corrida": 7
+        },
+        {
+          "t": 1793204844227,
+          "texto": "■ Corrida 7 terminó: 5,4 s simulados. Fallas: LED quemado (led1), corriente del pin (placa.D12). Nuevas: LED quemado (led1), corriente del pin (placa.D12).",
+          "corrida": 7
+        },
+        {
+          "t": 1793204848191,
+          "texto": "Circuito: agregó r1 (resistencia); cambió r1: giro 90°, enchufado en 2→placa.D12; led1: enchufado en anodo→r1.1; desconectó placa.D12 → led1.anodo; movió r1, led1."
+        },
+        {
+          "t": 1793204870116,
+          "texto": "Compiló: bien, 724 bytes (el mismo programa)."
+        },
+        {
+          "t": 1793204870119,
+          "texto": "▶ Corrida 8 (uno, realista; 2 piezas, 1 cable).",
+          "corrida": 8
+        },
+        {
+          "t": 1793204879053,
+          "texto": "Circuito: quitó r1 (resistencia); cambió led1: desenchufado; conectó led1.anodo → placa.D12; movió led1."
+        },
+        {
+          "t": 1793204881341,
+          "texto": "   falla: LED quemado (led1), a los 11,1 s simulados.",
+          "corrida": 8
+        },
+        {
+          "t": 1793204881341,
+          "texto": "   falla: corriente del pin (placa.D12), a los 11,1 s simulados.",
+          "corrida": 8
+        },
+        {
+          "t": 1793204899093,
+          "texto": "Circuito: agregó r1 (resistencia); cambió r1: giro 90°, enchufado en 1→led1.anodo, 2→placa.D12; desconectó led1.anodo → placa.D12; movió r1."
+        },
+        {
+          "t": 1793204908411,
+          "texto": "■ Corrida 8 terminó: 38,1 s simulados. Fallas: LED quemado (led1), corriente del pin (placa.D12). Siguen: LED quemado (led1), corriente del pin (placa.D12).",
+          "corrida": 8
+        },
+        {
+          "t": 1793204909664,
+          "texto": "Compiló: bien, 724 bytes (el mismo programa)."
+        },
+        {
+          "t": 1793204909667,
+          "texto": "▶ Corrida 9 (uno, realista; 2 piezas, 1 cable).",
+          "corrida": 9
+        },
+        {
+          "t": 1793204918341,
+          "texto": "■ Corrida 9 terminó: 8,6 s simulados. Sin fallas. Corrigió: LED quemado (led1), corriente del pin (placa.D12).",
+          "corrida": 9
+        },
+        {
+          "t": 1793204920550,
+          "texto": "Cambió la placa: uno → nano."
+        },
+        {
+          "t": 1793204929409,
+          "texto": "Circuito: conectó r1.2 → placa.GND2."
+        },
+        {
+          "t": 1793204951277,
+          "texto": "Compiló: bien, 724 bytes (el mismo programa)."
+        },
+        {
+          "t": 1793204951279,
+          "texto": "▶ Corrida 10 (nano, realista; 2 piezas, 2 cables).",
+          "corrida": 10
+        },
+        {
+          "t": 1793204951336,
+          "texto": "   falla: corriente del pin (placa.D12), a los 0,0 s simulados.",
+          "corrida": 10
+        },
+        {
+          "t": 1793204961568,
+          "texto": "Circuito: desconectó r1.2 → placa.GND2."
+        },
+        {
+          "t": 1793204969354,
+          "texto": "■ Corrida 10 terminó: 18,0 s simulados. Fallas: corriente del pin (placa.D12). Nuevas: corriente del pin (placa.D12).",
+          "corrida": 10
+        },
+        {
+          "t": 1793204986792,
+          "texto": "Circuito: conectó r1.2 → placa.D11."
+        },
+        {
+          "t": 1793204989793,
+          "texto": "Compiló: bien, 724 bytes (el mismo programa)."
+        },
+        {
+          "t": 1793204989796,
+          "texto": "▶ Corrida 11 (nano, realista; 2 piezas, 2 cables).",
+          "corrida": 11
+        },
+        {
+          "t": 1793205042584,
+          "texto": "■ Corrida 11 terminó: 52,1 s simulados. Sin fallas. Corrigió: corriente del pin (placa.D12).",
+          "corrida": 11
+        },
+        {
+          "t": 1793205176766,
+          "texto": "Terminó la sesión (8 min)."
+        }
+      ],
+      "corridas": [
+        {
+          "numero": 5,
+          "inicio": 1793204731002,
+          "fin": 1793204762564,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "pot1": "potenciometro"
+          },
+          "generaciones": {
+            "pot1": 0
+          },
+          "aperturas": 0,
+          "fallasVistas": [],
+          "cierres": [
+            []
+          ],
+          "ms_sim": 31519,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 31519,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 2,
+          "hastaPos": 14,
+          "fallas": [],
+          "completa": true,
+          "cierre": [],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": null,
+          "nuevas": [],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": []
+        },
+        {
+          "numero": 6,
+          "inicio": 1793204813872,
+          "fin": 1793204820879,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "generaciones": {
+            "led1": 1
+          },
+          "aperturas": 0,
+          "fallasVistas": [],
+          "cierres": [
+            []
+          ],
+          "ms_sim": 6980,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 6980,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 22,
+          "hastaPos": 23,
+          "fallas": [],
+          "completa": true,
+          "cierre": [],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 5,
+          "nuevas": [],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": []
+        },
+        {
+          "numero": 7,
+          "inicio": 1793204838804,
+          "fin": 1793204844227,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "led1": "led"
+          },
+          "generaciones": {
+            "led1": 1
+          },
+          "aperturas": 0,
+          "fallasVistas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "ms_sim": 19
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12",
+              "ms_sim": 19
+            }
+          ],
+          "cierres": [
+            [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              },
+              {
+                "tipo": "corriente_pin",
+                "componente": "placa.D12"
+              }
+            ]
+          ],
+          "ms_sim": 5378,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "ms_sim": 19,
+              "tramo": 0
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12",
+              "ms_sim": 19,
+              "tramo": 0
+            }
+          ],
+          "tiemposCierre": [
+            {
+              "ms_sim": 5378,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 26,
+          "hastaPos": 29,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "completa": true,
+          "cierre": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 6,
+          "nuevas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": []
+        },
+        {
+          "numero": 8,
+          "inicio": 1793204870119,
+          "fin": 1793204908411,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "led1": "led",
+            "r1": "resistencia"
+          },
+          "generaciones": {
+            "led1": 1,
+            "r1": 1
+          },
+          "aperturas": 0,
+          "fallasVistas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "ms_sim": 11136
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12",
+              "ms_sim": 11136
+            }
+          ],
+          "cierres": [
+            [
+              {
+                "tipo": "led_quemado",
+                "componente": "led1"
+              },
+              {
+                "tipo": "corriente_pin",
+                "componente": "placa.D12"
+              }
+            ]
+          ],
+          "ms_sim": 38066,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1",
+              "ms_sim": 11136,
+              "tramo": 0
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12",
+              "ms_sim": 11136,
+              "tramo": 0
+            }
+          ],
+          "tiemposCierre": [
+            {
+              "ms_sim": 38066,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 36,
+          "hastaPos": 46,
+          "fallas": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "completa": true,
+          "cierre": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 7,
+          "nuevas": [],
+          "siguen": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "yaNoSeObservo": [],
+          "corrigio": []
+        },
+        {
+          "numero": 9,
+          "inicio": 1793204909667,
+          "fin": 1793204918341,
+          "modo": "realista",
+          "placa": "uno",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "led1": "led",
+            "r1": "resistencia"
+          },
+          "generaciones": {
+            "led1": 1,
+            "r1": 3
+          },
+          "aperturas": 0,
+          "fallasVistas": [],
+          "cierres": [
+            []
+          ],
+          "ms_sim": 8636,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 8636,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 48,
+          "hastaPos": 49,
+          "fallas": [],
+          "completa": true,
+          "cierre": [],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 8,
+          "nuevas": [],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": [
+            {
+              "tipo": "led_quemado",
+              "componente": "led1"
+            },
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ]
+        },
+        {
+          "numero": 10,
+          "inicio": 1793204951279,
+          "fin": 1793204969354,
+          "modo": "realista",
+          "placa": "nano",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "led1": "led",
+            "r1": "resistencia"
+          },
+          "generaciones": {
+            "led1": 1,
+            "r1": 3
+          },
+          "aperturas": 0,
+          "fallasVistas": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12",
+              "ms_sim": 9
+            }
+          ],
+          "cierres": [
+            [
+              {
+                "tipo": "corriente_pin",
+                "componente": "placa.D12"
+              }
+            ]
+          ],
+          "ms_sim": 18037,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12",
+              "ms_sim": 9,
+              "tramo": 0
+            }
+          ],
+          "tiemposCierre": [
+            {
+              "ms_sim": 18037,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 53,
+          "hastaPos": 56,
+          "fallas": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "completa": true,
+          "cierre": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 9,
+          "nuevas": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": []
+        },
+        {
+          "numero": 11,
+          "inicio": 1793204989796,
+          "fin": 1793205042584,
+          "modo": "realista",
+          "placa": "nano",
+          "activas": {
+            "danoComponentes": true,
+            "limitePin": true,
+            "entradaFlotante": true,
+            "ruidoADC": true,
+            "limiteUSB": true,
+            "caidaL293D": true,
+            "resistenciaBateria": true
+          },
+          "piezas": {
+            "led1": "led",
+            "r1": "resistencia"
+          },
+          "generaciones": {
+            "led1": 1,
+            "r1": 3
+          },
+          "aperturas": 0,
+          "fallasVistas": [],
+          "cierres": [
+            []
+          ],
+          "ms_sim": 52119,
+          "reinicios": 0,
+          "contradicciones": [],
+          "ocurrencias": [],
+          "tiemposCierre": [
+            {
+              "ms_sim": 52119,
+              "tramo": 0
+            }
+          ],
+          "desdePos": 59,
+          "hastaPos": 60,
+          "fallas": [],
+          "completa": true,
+          "cierre": [],
+          "coherente": true,
+          "incoherencia": null,
+          "comparada": 10,
+          "nuevas": [],
+          "siguen": [],
+          "yaNoSeObservo": [],
+          "corrigio": [
+            {
+              "tipo": "corriente_pin",
+              "componente": "placa.D12"
+            }
+          ]
+        }
+      ],
+      "avisos": [],
+      "notas": [],
+      "dudas": [],
+      "sinAtribuir": [],
+      "huecos": [],
+      "resumen": "7 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa.D12). Corregidas al final: LED quemado (led1), corriente del pin (placa.D12). Sin corregir: ninguna."
+    }
+  ],
+  "problemas": [],
+  "notas": []
+}

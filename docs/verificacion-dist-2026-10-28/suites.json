@@ -1,0 +1,4 @@
+[
+  {"suite":"npm-test","command":["npm.cmd","test"],"exit_code":0},
+  {"suite":"test-app","command":["npm.cmd","run","test:app"],"exit_code":0}
+]

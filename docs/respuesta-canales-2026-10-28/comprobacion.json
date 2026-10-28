@@ -1,0 +1,39 @@
+{
+  "setup": {
+    "bytes": 184818059,
+    "sha256": "f32f62f3086c656101b257d14866219791efb5cb24d55303bf0dfc6b4c3390cb"
+  },
+  "asar": {
+    "armado": "b2ba0b1b40192de9ae7ad2e21a51fa4d7901bf9079ef2c5475587c052f1d689d",
+    "instalado": "b2ba0b1b40192de9ae7ad2e21a51fa4d7901bf9079ef2c5475587c052f1d689d"
+  },
+  "version": "0.4.1",
+  "dependencia": "github:EMariotte/TecnoCircuito#v0.3.1",
+  "bundleTC": {
+    "sha256": "f0815893488ad686763ce99de86ed2f1e4c6350a7ca394f71fdb24d89f04c3b9",
+    "incluido": true
+  },
+  "googleFontsEnCandidato": true,
+  "manifiesto": {
+    "formato": 1,
+    "app": "TecnoBloques",
+    "version_tb": "0.4.1",
+    "t": 1793205193406,
+    "completa": true,
+    "total": 1,
+    "archivos": [
+      {
+        "archivo": "A1-2026-10-28.jsonl",
+        "bytes": 20354,
+        "sha256": "643bcaa7f6779ec23ed88acb0489b73dec1b562dfd03b6fb3aaa40513d57d625"
+      }
+    ],
+    "pendientes": 0
+  },
+  "registro": [
+    {
+      "archivo": "A1-2026-10-28.jsonl",
+      "sha256": "643bcaa7f6779ec23ed88acb0489b73dec1b562dfd03b6fb3aaa40513d57d625"
+    }
+  ]
+}

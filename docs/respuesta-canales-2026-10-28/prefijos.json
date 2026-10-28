@@ -1,0 +1,22 @@
+{
+  "tareas\\DIST-001.md": {
+    "bytes_antes": 15166,
+    "sha256_prefijo": "5880a78119c4ee1f97027e76752550ca5bfd69dd71b30a8af988a6847648da30"
+  },
+  "tareas\\DIST-002.md": {
+    "bytes_antes": 3193,
+    "sha256_prefijo": "3a096432582093c20bfa6bd5adfd186354124dd3edc252a2e32e9c40fdd6750a"
+  },
+  "registro\\SESIONES.md": {
+    "bytes_antes": 80920,
+    "sha256_prefijo": "f6206871bf5b502e3605640b535d021fbac5a03de2669f498f98dcc66c0c2b38"
+  },
+  "tareas\\INV-001.md": {
+    "bytes_antes": 38804,
+    "sha256_prefijo": "59ca4b7c0a422f023153491fc3e0821a407634ff99238c50dc99fd4601c5f811"
+  },
+  "canales\\CODEX-A-CLAUDE.md": {
+    "bytes_antes": 107159,
+    "sha256_prefijo": "6ef58c2587eea89a03b6001baebd62c6eb581269f2eed7ef20aa677675873c40"
+  }
+}

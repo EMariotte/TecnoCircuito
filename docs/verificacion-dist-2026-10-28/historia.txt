@@ -1,0 +1,43 @@
+Equipo A1 · 28 de oct de 2026, 11:25 a 11:32 · uno → nano, nivel 3 · sesión 15e3052c
+  11:25  Empezó la sesión (uno, nivel 3).
+  11:25  Compiló: bien, 4190 bytes.
+  11:25  ▶ Corrida 5 (uno, realista; 1 pieza, 3 cables).
+  11:25  Circuito: cambió pot1: ohmios 10000, posicion 0.08.
+  11:26  ■ Corrida 5 terminó: 31,5 s simulados. Sin fallas.
+  11:26  Bloques: 1 (1 tipo).
+  11:26  Circuito: agregó led1 (led); cambió led1: desenchufado; conectó placa.D12 → led1.anodo, led1.catodo → placa.GND1; movió led1.
+  11:26  Compiló: bien, 444 bytes. Programa: quitó `Serial.begin(9600);`; quitó 13 líneas; quitó 14 líneas.
+  11:26  ▶ Corrida 6 (uno, realista; 1 pieza, 2 cables).
+  11:27  ■ Corrida 6 terminó: 7,0 s simulados. Sin fallas.
+  11:27  Bloques: 1 (1 tipo) → 2 (2 tipos).
+  11:27  Compiló: bien, 724 bytes. Programa: agregó `pinMode(12, OUTPUT);`; agregó `digitalWrite(12, HIGH);`.
+  11:27  ▶ Corrida 7 (uno, realista; 1 pieza, 2 cables).
+  11:27     falla: LED quemado (led1), a los 0,0 s simulados.
+  11:27     falla: corriente del pin (placa.D12), a los 0,0 s simulados.
+  11:27  ■ Corrida 7 terminó: 5,4 s simulados. Fallas: LED quemado (led1), corriente del pin (placa.D12). Nuevas: LED quemado (led1), corriente del pin (placa.D12).
+  11:27  Circuito: agregó r1 (resistencia); cambió r1: giro 90°, enchufado en 2→placa.D12; led1: enchufado en anodo→r1.1; desconectó placa.D12 → led1.anodo; movió r1, led1.
+  11:27  Compiló: bien, 724 bytes (el mismo programa).
+  11:27  ▶ Corrida 8 (uno, realista; 2 piezas, 1 cable).
+  11:27  Circuito: quitó r1 (resistencia); cambió led1: desenchufado; conectó led1.anodo → placa.D12; movió led1.
+  11:28     falla: LED quemado (led1), a los 11,1 s simulados.
+  11:28     falla: corriente del pin (placa.D12), a los 11,1 s simulados.
+  11:28  Circuito: agregó r1 (resistencia); cambió r1: giro 90°, enchufado en 1→led1.anodo, 2→placa.D12; desconectó led1.anodo → placa.D12; movió r1.
+  11:28  ■ Corrida 8 terminó: 38,1 s simulados. Fallas: LED quemado (led1), corriente del pin (placa.D12). Siguen: LED quemado (led1), corriente del pin (placa.D12).
+  11:28  Compiló: bien, 724 bytes (el mismo programa).
+  11:28  ▶ Corrida 9 (uno, realista; 2 piezas, 1 cable).
+  11:28  ■ Corrida 9 terminó: 8,6 s simulados. Sin fallas. Corrigió: LED quemado (led1), corriente del pin (placa.D12).
+  11:28  Cambió la placa: uno → nano.
+  11:28  Circuito: conectó r1.2 → placa.GND2.
+  11:29  Compiló: bien, 724 bytes (el mismo programa).
+  11:29  ▶ Corrida 10 (nano, realista; 2 piezas, 2 cables).
+  11:29     falla: corriente del pin (placa.D12), a los 0,0 s simulados.
+  11:29  Circuito: desconectó r1.2 → placa.GND2.
+  11:29  ■ Corrida 10 terminó: 18,0 s simulados. Fallas: corriente del pin (placa.D12). Nuevas: corriente del pin (placa.D12).
+  11:29  Circuito: conectó r1.2 → placa.D11.
+  11:29  Compiló: bien, 724 bytes (el mismo programa).
+  11:29  ▶ Corrida 11 (nano, realista; 2 piezas, 2 cables).
+  11:30  ■ Corrida 11 terminó: 52,1 s simulados. Sin fallas. Corrigió: corriente del pin (placa.D12).
+  11:32  Terminó la sesión (8 min).
+  Resumen: 7 corrida(s). Fallas vistas: LED quemado (led1), corriente del pin (placa.D12). Corregidas al final: LED quemado (led1), corriente del pin (placa.D12). Sin corregir: ninguna.
+  Avisos: ninguno.
+

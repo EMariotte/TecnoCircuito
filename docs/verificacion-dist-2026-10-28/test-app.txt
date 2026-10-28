@@ -1,0 +1,9 @@
+
+> tecnobloques@0.4.1 test:app
+> node test/app.js
+
+app: {"puente":true,"info":{"version":"0.4.1","arduino":"paquete","empaquetada":false},"puertoVisible":true,"opciones":["COM3 · dispositivo serie","COM4 · dispositivo serie"]}
+compilar carro: {"ok":true,"memoria":{"flash":36,"ram":29,"bytes":11654},"ms":2853}
+puerto falso → No se pudo abrir COM99
+error C++ → El programa tiene un error | Revisa el C++ que escribiste a mano o en los bloques "C++ libre":Línea 27: "velocidad" no existe. Revisa que esté creado (variable, bloque o pin con nombre) y bien escrito.velocidad = 3Ver el mensaje completoC:\Users\ACE
+ERRORES: []

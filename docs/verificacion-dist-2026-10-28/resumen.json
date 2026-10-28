@@ -1,0 +1,28 @@
+{
+  "fecha_bogota": "2026-10-28 15:22",
+  "revisor": "Codex",
+  "alcance": "CLA-20261028-005",
+  "dictamen": {
+    "DIST-001": "Verificado paso 6: identidad del candidato y contraste E1-E9; no publicación ni cierre H1",
+    "DIST-002": "Verificado software y configuración de empaquetado; nuevo instalador no armado/inspeccionado"
+  },
+  "pruebas": {
+    "inspeccion": 30,
+    "electron": 9,
+    "evidencias": 9,
+    "npm_test_exit": 0,
+    "test_app_exit": 0
+  },
+  "integridad": {
+    "archivos": 940,
+    "cambiados": []
+  },
+  "pendientes": [
+    "LIENZO-001/H1",
+    "driver ausente e instalación con ventana",
+    "próximo candidato: HTML/OFL/NOTICE del asar y recorrido sin red",
+    "D1: precisar el hash abreviado en canal/ficha",
+    "memoria y bitácora TB al liberarse reservas"
+  ],
+  "sin_commit_push_publicacion": true
+}

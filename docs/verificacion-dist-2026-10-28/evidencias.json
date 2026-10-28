@@ -1,0 +1,43 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "lector E7 txt: exit 0 y stderr vacío"
+    },
+    {
+      "ok": true,
+      "label": "lector E7 json: exit 0 y stderr vacío"
+    },
+    {
+      "ok": true,
+      "label": "historia E7: una sesión, siete corridas y sin avisos/problemas"
+    },
+    {
+      "ok": true,
+      "label": "CSV E4 del simulador (no acredita placa real)"
+    },
+    {
+      "ok": true,
+      "label": "E6-circuito.svg: firma y marca de agua al 10%"
+    },
+    {
+      "ok": true,
+      "label": "E6-circuito.svg: chip según placa"
+    },
+    {
+      "ok": true,
+      "label": "E6b-circuito-uno.svg: firma y marca de agua al 10%"
+    },
+    {
+      "ok": true,
+      "label": "E6b-circuito-uno.svg: chip según placa"
+    },
+    {
+      "ok": true,
+      "label": "E9 conserva D12 enchufado y cable D11: evidencia coherente con H1"
+    }
+  ],
+  "csv_filas": 11,
+  "historia_limpia": true,
+  "corridas": 7
+}

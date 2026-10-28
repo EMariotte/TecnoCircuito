@@ -1,0 +1,236 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "anterior: HTTP(S) inaccesible antes de cargar HTML (control de red)"
+    },
+    {
+      "ok": true,
+      "label": "control previo: solicitud a Google reproducida"
+    },
+    {
+      "ok": true,
+      "label": "control previo: ninguna de las cuatro fuentes incrustada"
+    },
+    {
+      "ok": true,
+      "label": "corregido: HTTP(S) inaccesible antes de cargar HTML (control de red)"
+    },
+    {
+      "ok": true,
+      "label": "corregido: cero solicitudes HTTP(S)"
+    },
+    {
+      "ok": true,
+      "label": "corregido: cero errores JS/consola"
+    },
+    {
+      "ok": true,
+      "label": "corregido: cuatro familias/pesos resueltos desde FontFace"
+    },
+    {
+      "ok": true,
+      "label": "corregido: CDP acredita cuatro fuentes reales sin fallback para español"
+    },
+    {
+      "ok": true,
+      "label": "corregido: Atkinson aplicada al body"
+    }
+  ],
+  "results": [
+    {
+      "label": "anterior",
+      "file": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-dist-2026-10-28\\fuentes-anteriores.html",
+      "fonts": {
+        "loaded": [
+          {
+            "family": "Atkinson Hyperlegible",
+            "weight": 400,
+            "faces": []
+          },
+          {
+            "family": "Atkinson Hyperlegible",
+            "weight": 700,
+            "faces": []
+          },
+          {
+            "family": "JetBrains Mono",
+            "weight": 400,
+            "faces": []
+          },
+          {
+            "family": "JetBrains Mono",
+            "weight": 600,
+            "faces": []
+          }
+        ],
+        "body": "\"Atkinson Hyperlegible\", \"Segoe UI\", system-ui, -apple-system, sans-serif",
+        "faces": [],
+        "online": true
+      },
+      "platform": [
+        [
+          {
+            "familyName": "Times New Roman",
+            "postScriptName": "TimesNewRomanPSMT",
+            "isCustomFont": false,
+            "glyphCount": 45
+          }
+        ],
+        [
+          {
+            "familyName": "Times New Roman",
+            "postScriptName": "TimesNewRomanPS-BoldMT",
+            "isCustomFont": false,
+            "glyphCount": 45
+          }
+        ],
+        [
+          {
+            "familyName": "Times New Roman",
+            "postScriptName": "TimesNewRomanPSMT",
+            "isCustomFont": false,
+            "glyphCount": 38
+          }
+        ],
+        [
+          {
+            "familyName": "Times New Roman",
+            "postScriptName": "TimesNewRomanPS-BoldMT",
+            "isCustomFont": false,
+            "glyphCount": 38
+          }
+        ]
+      ],
+      "errors": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT"
+      ],
+      "outside": [
+        "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      ],
+      "network": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap",
+          "resourceType": "stylesheet"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap",
+          "resourceType": "stylesheet"
+        }
+      ]
+    },
+    {
+      "label": "corregido",
+      "file": "C:\\Users\\ACER\\Documents\\Proyectos Tecno\\TecnoCircuito\\docs\\verificacion-dist-2026-10-28\\fuentes-locales.html",
+      "fonts": {
+        "loaded": [
+          {
+            "family": "Atkinson Hyperlegible",
+            "weight": 400,
+            "faces": [
+              {
+                "family": "Atkinson Hyperlegible",
+                "weight": "400",
+                "status": "loaded"
+              }
+            ]
+          },
+          {
+            "family": "Atkinson Hyperlegible",
+            "weight": 700,
+            "faces": [
+              {
+                "family": "Atkinson Hyperlegible",
+                "weight": "700",
+                "status": "loaded"
+              }
+            ]
+          },
+          {
+            "family": "JetBrains Mono",
+            "weight": 400,
+            "faces": [
+              {
+                "family": "JetBrains Mono",
+                "weight": "400",
+                "status": "loaded"
+              }
+            ]
+          },
+          {
+            "family": "JetBrains Mono",
+            "weight": 600,
+            "faces": [
+              {
+                "family": "JetBrains Mono",
+                "weight": "600",
+                "status": "loaded"
+              }
+            ]
+          }
+        ],
+        "body": "\"Atkinson Hyperlegible\", \"Segoe UI\", system-ui, -apple-system, sans-serif",
+        "faces": [
+          {
+            "family": "Atkinson Hyperlegible",
+            "weight": "400",
+            "status": "loaded"
+          },
+          {
+            "family": "Atkinson Hyperlegible",
+            "weight": "700",
+            "status": "loaded"
+          },
+          {
+            "family": "JetBrains Mono",
+            "weight": "400",
+            "status": "loaded"
+          },
+          {
+            "family": "JetBrains Mono",
+            "weight": "600",
+            "status": "loaded"
+          }
+        ],
+        "online": true
+      },
+      "platform": [
+        [
+          {
+            "familyName": "Atkinson Hyperlegible",
+            "postScriptName": "AtkinsonHyperlegible-Regular",
+            "isCustomFont": true,
+            "glyphCount": 45
+          }
+        ],
+        [
+          {
+            "familyName": "Atkinson Hyperlegible",
+            "postScriptName": "AtkinsonHyperlegible-Bold",
+            "isCustomFont": true,
+            "glyphCount": 45
+          }
+        ],
+        [
+          {
+            "familyName": "JetBrains Mono",
+            "postScriptName": "JetBrainsMono-Regular",
+            "isCustomFont": true,
+            "glyphCount": 38
+          }
+        ],
+        [
+          {
+            "familyName": "JetBrains Mono SemiBold",
+            "postScriptName": "JetBrainsMono-SemiBold",
+            "isCustomFont": true,
+            "glyphCount": 38
+          }
+        ]
+      ],
+      "errors": [],
+      "outside": [],
+      "network": []
+    }
+  ]
+}
