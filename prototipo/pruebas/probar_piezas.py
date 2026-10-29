@@ -4,8 +4,11 @@ Dibujo medido por TecnoDiseñador en la biblioteca y en el lienzo, colores, band
 encaje en la protoboard al paso exacto (el pulsador cruza el canal central, como el real) y los circuitos guardados
 antes del 27 oct: abren con las mismas conexiones y las mismas mediciones; el botón y el potenciómetro sin `modelo`
 abren con el dibujo del kit, cableados igual y, si sus patas no caben en sus huecos, sueltos con aviso (PIEZA-003).
+Al abrir o cambiar de placa, ninguna conexión queda escondida: las piezas unidas se corren juntas hasta sus pines o se
+sueltan con aviso (LIENZO-001).
 """
 import json
+import re
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -508,6 +511,99 @@ with sync_playwright() as p:
     elegir('r1')
     revisar(separacion('r1', '1', '2') == pasos(4) and '¼ W (0,25 W)' in ficha() and 'a 4 pasos' in ficha(),
             f'«vatios»: "0.25" es la de ¼ W en el dibujo y en la ficha, con las patas a 4 pasos {separacion("r1", "1", "2")}')
+
+    # ---- 5b. Ninguna conexión escondida al abrir o cambiar de placa (LIENZO-001, decisión de Efraín del 28 oct)
+    def aviso_actual():
+        return pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')
+
+    def ajenas_sin_enchufe(id_):
+        """Patas de la pieza sobre un pin o hueco ajeno sin enchufe entre ellos, en ningún sentido: parecen enchufadas y no lo están."""
+        comps = {k['id']: k.get('en') or {} for k in pg.evaluate('lienzo.circuito()')['componentes']}
+        def enchufadas(propia, ajena):
+            otro, pata = ajena.split('.', 1)
+            return comps.get(id_, {}).get(propia.split('.', 1)[1]) == ajena or comps.get(otro, {}).get(pata) == propia
+        return [s for s in sobre_ajenos([id_]) if not enchufadas(*s.split('→'))]
+
+    # H1 de DIST-001: r1 enchufada en el ánodo de led1 y en D12, guardada con 0.3.1 (corrida 9 del registro E7). Con el
+    # Uno, la geometría nueva de PIEZA-001 la dejaba a 22 y 31 px; con el Nano, a 299 px del D12, sin aviso. Ahora r1 y
+    # led1 se corren juntos hasta el D12, sin soltar nada.
+    h1 = {'formato': 1, 'placa': 'uno', 'protoboard': None, 'cables': [{'de': 'led1.catodo', 'a': 'placa.GND1', 'color': 'negro'}],
+          'componentes': [{'id': 'led1', 'tipo': 'led', 'x': 109.21, 'y': -92.11, 'rot': 0, 'props': {'color': 'rojo'}},
+                          {'id': 'r1', 'tipo': 'resistencia', 'x': 104.63, 'y': -26.21, 'rot': 90, 'props': {'ohmios': 220},
+                           'en': {'1': 'led1.anodo', '2': 'placa.D12'}}]}
+    for placa in ('uno', 'nano'):
+        abrir({**h1, 'placa': placa})
+        aviso = aviso_actual()
+        revisar(not lejos() and pieza('r1').get('en') == {'1': 'led1.anodo', '2': 'placa.D12'} and 'Se soltó' not in aviso,
+                f'H1 ({placa}): r1 y led1 quedan juntos sobre el D12, sin soltar nada: {lejos()}, «{aviso}»')
+        abierto = pg.evaluate('lienzo.circuito()')
+        abrir(abierto)
+        revisar(pg.evaluate('lienzo.circuito()')['componentes'] == abierto['componentes'], f'H1 ({placa}): reabrir lo guardado no corre nada')
+    # Y lo que quedó en el Uno, abierto después en el Nano (el paso del aula).
+    abrir({**h1, 'placa': 'uno'})
+    abrir({**pg.evaluate('lienzo.circuito()'), 'placa': 'nano'})
+    revisar(not lejos() and pieza('r1').get('en') == {'1': 'led1.anodo', '2': 'placa.D12'}, f'H1 Uno → Nano: siguen sobre el D12: {lejos()}')
+
+    # Una cadena de tres: led1 ← r1 ← r2 → D12. Las tres se corren juntas, en el Uno y en el Nano.
+    cadena3 = {**h1, 'componentes': [h1['componentes'][0],
+               {'id': 'r1', 'tipo': 'resistencia', 'x': 104.63, 'y': -26.21, 'rot': 90, 'props': {'ohmios': 220}, 'en': {'1': 'led1.anodo'}},
+               {'id': 'r2', 'tipo': 'resistencia', 'x': 104.63, 'y': 40, 'rot': 90, 'props': {'ohmios': 330}, 'en': {'1': 'r1.2', '2': 'placa.D12'}}]}
+    for placa in ('uno', 'nano'):
+        abrir({**cadena3, 'placa': placa})
+        en = {k: (pieza(k) or {}).get('en') for k in ('r1', 'r2')}
+        revisar(not lejos() and en == {'r1': {'1': 'led1.anodo'}, 'r2': {'1': 'r1.2', '2': 'placa.D12'}} and 'Se soltó' not in aviso_actual(),
+                f'cadena de tres ({placa}): todas quedan sobre su destino, sin soltar nada: {lejos()}, {en}')
+
+    # Imposible: un LED con el cátodo en D12 y el ánodo en A0 (sus patas están a un paso). Una conexión se queda y la otra
+    # se suelta con aviso; ninguna pata queda unida a la distancia ni sobre un pin que no es su destino.
+    for placa in ('uno', 'nano'):
+        abrir({**VACIO, 'placa': placa, 'componentes': [{'id': 'led1', 'tipo': 'led', 'x': 200, 'y': -80, 'rot': 0, 'props': {'color': 'rojo'},
+                                                          'en': {'catodo': 'placa.D12', 'anodo': 'placa.A0'}}]})
+        aviso = aviso_actual()
+        en = pieza('led1').get('en') or {}
+        soltados = [pin for pata, pin in (('catodo', 'D12'), ('anodo', 'A0')) if pata not in en]
+        frase = re.search(r'Se soltó el LED led1 (del pin|de los pines) ([^:]+) de la placa: vuelve a ponerlo\.', aviso)
+        revisar(not lejos() and len(en) <= 1 and frase and all(p in frase.group(2) for p in soltados) and aviso.count('de la placa') == 1
+                and not ajenas_sin_enchufe('led1'), f'imposible ({placa}): se suelta con aviso que nombra los pines y nada queda escondido: {en}, «{aviso}», {ajenas_sin_enchufe("led1")}')
+
+    # F01 de Codex (COD-20261029-004): LED con el cátodo en c15 y r1 en su ánodo y en D12; las dos anclas no caben a la
+    # vez y gana D12. Se suelta solo el cátodo de c15, con aviso: el LED sigue unido a r1, que sigue en D12. Antes, el
+    # LED sin «en» propio se tomaba como suelto y al apartarlo se perdía también D12. Control: sin el cátodo en c15,
+    # nada se suelta. En los dos órdenes del archivo, en edición y en solo lectura, y al reabrir.
+    f01 = {'formato': 1, 'placa': 'uno', 'protoboard': {'tipo': 'media', 'x': 18.2, 'y': -50.33},
+           'cables': [{'de': 'led1.catodo', 'a': 'placa.GND1', 'color': 'negro'}],
+           'componentes': [{'id': 'led1', 'tipo': 'led', 'x': 104.41, 'y': -65.52, 'rot': 0, 'props': {'color': 'rojo'}, 'en': {'catodo': 'protoboard.c15'}},
+                           {'id': 'r1', 'tipo': 'resistencia', 'x': 118.82, 'y': -36.73, 'rot': 0, 'props': {'ohmios': 220},
+                            'en': {'1': 'led1.anodo', '2': 'placa.D12'}}]}
+
+    def abrir_lectura(circuito):
+        """Abre el circuito en un lienzo de solo lectura aparte y devuelve lo que quedó y su aviso."""
+        return pg.evaluate('''async (c) => { const div = document.createElement('div'); div.style.cssText = 'width:900px;height:600px';
+          document.body.append(div); const l = TecnoCircuito.crearLienzo(div, { circuito: c, soloLectura: true });
+          await new Promise((r) => setTimeout(r, 400)); const sr = div.querySelector('.tecnocircuito').shadowRoot;
+          const out = { c: l.circuito(), aviso: sr.querySelector('.tc-aviso')?.textContent || '' }; l.destroy?.(); l.destruir?.(); div.remove(); return out; }''', circuito)
+
+    for orden in ('led1 primero', 'r1 primero'):
+        caso = {**f01, 'componentes': f01['componentes'] if orden == 'led1 primero' else f01['componentes'][::-1]}
+        abrir(caso)
+        aviso = aviso_actual()
+        r1, led1 = pieza('r1'), pieza('led1')
+        revisar(r1.get('en') == {'1': 'led1.anodo', '2': 'placa.D12'} and 'en' not in led1 and not lejos()
+                and not ajenas_sin_enchufe('led1') and not ajenas_sin_enchufe('r1')
+                and 'Se soltó el LED led1 de la protoboard: vuelve a ponerlo.' in aviso and 'placa' not in aviso,
+                f'F01 ({orden}): se suelta solo el cátodo de c15, r1 sigue en el LED y en D12: {r1.get("en")}, {led1.get("en")}, «{aviso}», {lejos()}')
+        abierto = pg.evaluate('lienzo.circuito()')
+        abrir(abierto)
+        revisar(pg.evaluate('lienzo.circuito()')['componentes'] == abierto['componentes'] and 'Se soltó' not in aviso_actual(),
+                f'F01 ({orden}): reabrir lo guardado no corre ni suelta nada')
+        lectura = abrir_lectura(caso)
+        r1l = next(k for k in lectura['c']['componentes'] if k['id'] == 'r1')
+        revisar(r1l.get('en') == {'1': 'led1.anodo', '2': 'placa.D12'} and 'Se soltó el LED led1 de la protoboard' in lectura['aviso'],
+                f'F01 ({orden}, solo lectura): lo mismo, r1 sigue en D12: {r1l.get("en")}, «{lectura["aviso"]}»')
+    control = {**f01, 'componentes': [{k: v for k, v in f01['componentes'][0].items() if k != 'en'}, f01['componentes'][1]]}
+    abrir(control)
+    revisar(pieza('r1').get('en') == {'1': 'led1.anodo', '2': 'placa.D12'} and not lejos() and 'Se soltó' not in aviso_actual()
+            and not ajenas_sin_enchufe('led1'), f'F01, control sin el cátodo en c15: nada se suelta ni queda sobre un hueco ajeno ({pieza("r1").get("en")})')
 
     # ---- 6. La imagen exportada lleva los dibujos medidos
     pg.click('#ejemploPB')

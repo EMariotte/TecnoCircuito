@@ -202,7 +202,8 @@ with sync_playwright() as p:
     circ['componentes'] += [
         {'id': 'led1', 'tipo': 'led', 'x': 300, 'y': 300, 'rot': 0, 'props': {'color': 'rojo'},
          'en': {'anodo': 'placa.3V3', 'catodo': 'placa.D13'}},
-        # Este no cabe: sus patas piden corrimientos distintos. Se queda donde está, enchufado (el en manda).
+        # Este no cabe: sus patas piden corrimientos distintos. Hasta el 28 oct se quedaba donde estaba, enchufado a la
+        # distancia y sin aviso; desde LIENZO-001 (decisión de Efraín) lo que no cabe se suelta y se avisa.
         {'id': 'led2', 'tipo': 'led', 'x': 500, 'y': 300, 'rot': 0, 'props': {'color': 'verde'},
          'en': {'anodo': 'placa.VIN', 'catodo': 'exp1.A0_S'}},
     ]
@@ -213,11 +214,12 @@ with sync_playwright() as p:
       const c = lz.circuito().componentes;
       const k = (id) => c.find(x => x.id === id);
       return {{ led1: [d('led1.anodo', 'placa.3V3'), d('led1.catodo', 'placa.D13')], en1: k('led1').en,
-        led2: [k('led2').x, k('led2').y], en2: k('led2').en, aviso: r.querySelector('.tc-ayuda').textContent }}; }}''')
+        en2: k('led2').en || {{}}, lejos2: Object.entries(k('led2').en || {{}}).map(([pata, ref]) => d('led2.' + pata, ref)),
+        aviso: r.querySelector('.tc-ayuda').textContent }}; }}''')
     revisar(max(r['led1']) < 1 and r['en1'] == {'anodo': 'placa.3V3', 'catodo': 'placa.D13'},
             f'el LED guardado lejos queda sobre D13 y 3V3, con su en (distancias {[round(x, 2) for x in r["led1"]]} px)')
-    revisar(r['led2'] == [500, 300] and r['en2'] == {'anodo': 'placa.VIN', 'catodo': 'exp1.A0_S'} and 'Se solt' not in r['aviso'],
-            'el que ya no cabe en sus pines se queda donde estaba y sigue enchufado, sin aviso de soltar')
+    revisar(len(r['en2']) <= 1 and all(x <= 3.5 for x in r['lejos2']) and 'Se soltó el LED led2' in r['aviso'],
+            f'el que ya no cabe en sus pines se suelta con aviso y nada queda unido a la distancia (LIENZO-001): {r["en2"]}, «{r["aviso"]}»')
 
     print('— Los id del documento no se repiten (miniaturas de la biblioteca incluidas)')
     for placa, variante in [('nano', 'roja'), ('nano', 'azul'), ('uno', None), ('uno', 'shield')]:

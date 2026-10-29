@@ -383,38 +383,123 @@ export function crearLienzo(elemento, opciones = {}) {
     marcarOcupados();
   }
 
-  // Al abrir, el `en` manda para la conexión (contrato). Si el dibujo de un pin cambió desde que se guardó (una vista
-  // nueva de la placa o de la expansión), la pieza enchufada se corre, con lo que cuelga de ella, hasta quedar sobre sus
-  // pines: lo que conduce y lo que se ve vuelven a coincidir. Si sus patas ya no caben a la vez en sus pines, o si
-  // tiene unas patas en la protoboard y otras en un pin, se queda donde estaba, enchufada como dice el archivo.
-  // Lo mismo con una pieza encajada en la protoboard: el LED y la resistencia medidos ponen las patas unos píxeles más
-  // allá que los dibujos de wokwi con que se guardaron, y cada pata vuelve a quedar sobre su hueco.
+  // Al abrir, el `en` manda para la conexión (contrato), y lo que se ve debe coincidir con lo que conduce (LIENZO-001).
+  // Si el dibujo de un pin cambió desde que se guardó (otra placa, una vista nueva de la placa, de la expansión o de una
+  // pieza), las piezas unidas entre sí por enchufes se corren juntas (decisión de Efraín, 28 oct): primero cada una
+  // sobre los pines de la pieza en que está enchufada, y después todo el grupo hasta sus pines de la placa o de una
+  // pieza montada, o hasta sus huecos de la protoboard. Por ejemplo, r1 enchufada en el ánodo de led1 y en D12 lleva a
+  // led1 consigo hasta el D12 del Nano. En un pin, el grupo se corre solo si alguna pata quedó fuera del imán; en la
+  // protoboard, cada pata va justo sobre su hueco, como cuando se suelta ahí. Si no todas pueden quedar sobre su
+  // destino, gana el corrimiento que deja más (a igualdad, el más corto), y al final toda pata que no quedó sobre su
+  // destino se suelta y se avisa: nunca queda una conexión que no se ve. Devuelve lo que se soltó, para el aviso.
   function alinearEnchufesAlAbrir() {
-    // Varias vueltas: una pieza enchufada en otra que se acaba de correr ya se corrió con ella. Una vuelta sin nada que
-    // correr termina.
-    for (let vuelta = 0; vuelta <= datos.componentes.length; vuelta++) {
-      let corrida = false;
-      for (const k of datos.componentes) {
-        if (!k.en || montada(k)) continue;
-        const enProtoboard = Object.values(k.en).every(esHueco);
-        if (!enProtoboard && Object.values(k.en).some(esHueco)) continue;
-        const pasos = Object.entries(k.en).map(([pata, ref]) => {
-          const a = posicion(k.id + '.' + pata);
-          const b = posicion(ref);
-          return a && b ? { dx: b.x - a.x, dy: b.y - a.y } : null;
-        });
-        // En un pin, solo si alguna pata quedó fuera del imán: dentro de su tolerancia, la pieza se queda donde se
-        // guardó. En la protoboard, cada pata va justo sobre su hueco, como cuando se suelta ahí.
-        const tolerancia = enProtoboard ? 0.01 : ENCHUFE_TOL;
-        if (pasos.some((p) => !p) || pasos.every((p) => Math.hypot(p.dx, p.dy) <= tolerancia)) continue;
-        const { dx, dy } = pasos[0];
-        if (pasos.some((p) => Math.hypot(p.dx - dx, p.dy - dy) > ENCHUFE_TOL) || Math.hypot(dx, dy) <= 0.01) continue;
-        moverGrupo(k, dx, dy);
-        corrida = true;
+    const libres = datos.componentes.filter((k) => !montada(k));
+    const ids = new Set(libres.map((k) => k.id));
+    const interno = (ref) => !esHueco(ref) && ids.has(partirRef(ref)[0]);
+    // Lo que pide cada enchufe: cuánto hay que correr la pieza para que su pata quede sobre el destino.
+    const pedido = (k, pata, ref) => {
+      const a = posicion(k.id + '.' + pata);
+      const b = posicion(ref);
+      return a && b ? { dx: b.x - a.x, dy: b.y - a.y, hueco: esHueco(ref) } : null; // sin dibujo listo, no se juzga
+    };
+    // De los corrimientos pedidos, el que deja más patas sobre su destino; a igualdad, quedarse quieta y después el
+    // más corto. Si entre las que caben hay un hueco y correrse justo hasta él no deja fuera a ninguna, ese: en la
+    // protoboard la pata va justo encima.
+    const cuantas = (pedidos, c) => pedidos.filter((p) => Math.hypot(p.dx - c.dx, p.dy - c.dy) <= ENCHUFE_TOL).length;
+    const acuerdo = (pedidos) => {
+      let mejor = null;
+      for (const c of [{ dx: 0, dy: 0 }, ...pedidos]) {
+        const n = cuantas(pedidos, c);
+        const largo = Math.hypot(c.dx, c.dy);
+        if (!mejor || n > mejor.n || (n === mejor.n && largo < mejor.largo - 0.01)) mejor = { c, n, largo };
       }
-      if (!corrida) break;
+      const hueco = pedidos.find((p) => p.hueco && Math.hypot(p.dx - mejor.c.dx, p.dy - mejor.c.dy) <= ENCHUFE_TOL && cuantas(pedidos, p) === mejor.n);
+      return hueco || mejor.c;
+    };
+    const correr = (piezas, { dx, dy }) => {
+      if (Math.hypot(dx, dy) > 0.01) for (const k of piezas) moverGrupo(k, redondear(dx), redondear(dy), []);
+    };
+    // Grupos: las piezas unidas por enchufes entre ellas (no por la placa, una pieza montada ni la protoboard).
+    const padre = new Map(libres.map((k) => [k.id, k.id]));
+    const raiz = (id) => (padre.get(id) === id ? id : raiz(padre.get(id)));
+    for (const k of libres) for (const ref of Object.values(k.en || {})) if (interno(ref)) padre.set(raiz(k.id), raiz(partirRef(ref)[0]));
+    const grupos = new Map();
+    for (const k of libres) grupos.set(raiz(k.id), [...(grupos.get(raiz(k.id)) || []), k]);
+    for (const grupo of grupos.values()) {
+      // Cada pieza sobre las del grupo en que está enchufada, empezando por las que no están enchufadas en ninguna.
+      const puestas = new Set();
+      const pendientes = [...grupo];
+      while (pendientes.length) {
+        let i = pendientes.findIndex((k) => Object.values(k.en || {}).filter(interno).every((ref) => puestas.has(partirRef(ref)[0])));
+        if (i < 0) i = 0; // enchufadas en ronda (un archivo raro): se empieza por la primera
+        const [k] = pendientes.splice(i, 1);
+        const pedidos = Object.entries(k.en || {})
+          .filter(([, ref]) => interno(ref) && puestas.has(partirRef(ref)[0]))
+          .map(([pata, ref]) => pedido(k, pata, ref)).filter(Boolean);
+        if (pedidos.length) correr([k], acuerdo(pedidos));
+        puestas.add(k.id);
+      }
+      // Después, el grupo entero hasta la placa, una pieza montada o la protoboard.
+      const externos = grupo.flatMap((k) => Object.entries(k.en || {}).filter(([, ref]) => !interno(ref)).map(([pata, ref]) => pedido(k, pata, ref))).filter(Boolean);
+      if (externos.length) correr(grupo, acuerdo(externos));
+    }
+    // Toda pata que no quedó sobre su destino se suelta, con aviso.
+    const soltadas = [];
+    const conPerdidas = new Set();
+    for (const k of libres) {
+      if (!k.en) continue;
+      for (const [pata, ref] of Object.entries(k.en)) {
+        const p = pedido(k, pata, ref);
+        if (!p || Math.hypot(p.dx, p.dy) <= ENCHUFE_TOL) continue;
+        delete k.en[pata];
+        conPerdidas.add(k);
+        const [de, pin] = esHueco(ref) ? ['protoboard', ''] : partirRef(ref);
+        soltadas.push({ k, de: componente(de) || { id: de }, pin: de === 'placa' || montada(componente(de)) ? pin : '' });
+      }
+      if (!Object.keys(k.en).length) delete k.en;
+    }
+    // Lo que perdió una conexión se aparta con todo su grupo (las piezas unidas a ella por enchufes, en los dos
+    // sentidos) si el grupo ya no tiene ningún ancla en la placa, una pieza montada o la protoboard (suelto, se ve
+    // suelto, como en PIEZA-003), o si una pata suya quedó sobre un hueco o un pin que no es su destino (parecería
+    // enchufada). Si sigue anclado y no hay contacto falso, se queda: apartarlo soltaría anclas válidas (F01 de Codex).
+    const unidas = (k) => {
+      const une = (a, b) => Object.values(a.en || {}).some((ref) => !esHueco(ref) && partirRef(ref)[0] === b.id);
+      const grupo = [k];
+      for (let i = 0; i < grupo.length; i++) for (const h of libres) if (!grupo.includes(h) && (une(grupo[i], h) || une(h, grupo[i]))) grupo.push(h);
+      return grupo;
+    };
+    const vistos = new Set();
+    for (const k of conPerdidas) {
+      if (vistos.has(k)) continue;
+      const grupo = unidas(k);
+      grupo.forEach((g) => vistos.add(g));
+      const propios = new Set(grupo.map((g) => g.id));
+      const anclado = grupo.some((g) => Object.values(g.en || {}).some((ref) => !interno(ref)));
+      if (!anclado || grupo.some((g) => sobreOtroDestino(g, propios))) soltadas.push(...apartar(k, grupo));
     }
     marcarOcupados();
+    return soltadas;
+  }
+
+  // Si alguna pata de `k` que no está enchufada queda sobre un hueco o un pin libre de una pieza fuera de `propios`.
+  function sobreOtroDestino(k, propios = new Set([k.id])) {
+    const v = vistas.get(k.id);
+    if (!v || !v.lista) return false;
+    const lk = lugar(k.id);
+    for (const [nombre, p] of v.pines) {
+      if (k.en && k.en[nombre]) continue;
+      const q = girarPunto(v, lk, p);
+      for (const [id, w] of vistas) {
+        if (propios.has(id) || !w.lista || !w.pines.size) continue;
+        const lw = id === 'protoboard' ? datos.protoboard : lugar(id);
+        if (!lw) continue;
+        for (const d of w.pines.values()) {
+          const e = girarPunto(w, lw, d);
+          if (Math.hypot(e.x - q.x, e.y - q.y) <= ENCHUFE_TOL) return true;
+        }
+      }
+    }
+    return false;
   }
 
   // Un potenciómetro o un botón guardado sin `modelo` (PIEZA-003): abre con el dibujo del kit, corrido para que el
@@ -467,23 +552,23 @@ export function crearLienzo(elemento, opciones = {}) {
     return { sueltas, soltadas };
   }
 
-  // Corre una pieza suelta, con lo que cuelga de ella, para que ninguna de sus patas quede sobre un hueco o un pin:
+  // Corre una pieza suelta, con lo que cuelga de ella (o con el grupo que se le pase, que empieza por ella; así lo usa
+  // alinearEnchufesAlAbrir), para que ninguna de sus patas quede sobre un hueco o un pin:
   // suelta, se ve suelta. Lo que cuelga y además estaba enchufado fuera (en la protoboard, la placa u otra pieza) se
   // suelta de ahí con aviso: nunca queda unido a la distancia, ni con una pata sobre el hueco que dejó sin conducir.
   // Primero medio paso en la primera de ocho direcciones que sirva. Si ninguna sirve (patas desfasadas de la rejilla),
   // como mucho medio paso por eje, a donde sus patas quedan más lejos de todo hueco o pin (decisión de Efraín, 29 oct);
   // si ni así quedan libres, el sitio libre más cercano. Devuelve lo que se soltó y de dónde, para el aviso.
-  function apartar(k) {
-    const grupo = [k, ...colgantes(k.id)];
+  function apartar(k, grupo = [k, ...colgantes(k.id)]) {
     const propios = new Set(grupo.map((g) => g.id));
     const soltadas = [];
     for (const g of grupo) {
       if (!g.en) continue;
       for (const [pata, ref] of Object.entries(g.en)) {
-        const de = esHueco(ref) ? 'protoboard' : partirRef(ref)[0];
+        const [de, pin] = esHueco(ref) ? ['protoboard', ''] : partirRef(ref);
         if (propios.has(de)) continue;
         delete g.en[pata];
-        if (!soltadas.some((s) => s.k === g && s.de.id === de)) soltadas.push({ k: g, de: componente(de) || { id: de } });
+        soltadas.push({ k: g, de: componente(de) || { id: de }, pin: de === 'placa' || montada(componente(de)) ? pin : '' });
       }
       if (!Object.keys(g.en).length) delete g.en;
     }
@@ -553,8 +638,24 @@ export function crearLienzo(elemento, opciones = {}) {
       textos.push(`${lista[0].toUpperCase() + lista.slice(1)} ${muchas ? 'quedaron sueltos' : 'quedó suelto'}: ${muchas ? 'ahora tienen' : 'ahora tiene'} el dibujo del kit y sus patas ya no caben donde estaban. ${muchas ? 'Ponlos otra vez donde van' : 'Ponlo otra vez donde va'}.`);
     }
     // Una frase por pieza, con todo aquello de lo que se soltó: «Se soltó el botón btn2 de la protoboard y de la placa».
+    // De la placa o de una pieza montada se nombran los pines: «del pin D12 de la placa», «de los pines A0 y D12 de la
+    // placa» (LIENZO-001).
+    const y = (xs) => (xs.length === 1 ? xs[0] : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`);
+    const porPieza = new Map();
+    for (const { k, de, pin } of soltadas) {
+      const desdeK = porPieza.get(k) || new Map();
+      const d = desdeK.get(de.id) || { de, pines: [] };
+      if (pin && !d.pines.includes(pin)) d.pines.push(pin);
+      porPieza.set(k, desdeK.set(de.id, d));
+    }
     const desde = new Map();
-    for (const { k, de } of soltadas) desde.set(k, [...(desde.get(k) || []), nombrar(de).la ? `de ${nombre(de)}` : `del ${nombre(de).slice(3)}`]);
+    for (const [k, desdeK] of porPieza) {
+      desde.set(k, [...desdeK.values()].map(({ de, pines }) => {
+        const deQue = nombrar(de).la ? `de ${nombre(de)}` : `del ${nombre(de).slice(3)}`;
+        pines.sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+        return !pines.length ? deQue : `${pines.length === 1 ? 'del pin' : 'de los pines'} ${y(pines)} ${deQue}`;
+      }));
+    }
     for (const [k, des] of desde) {
       const lista = des.length === 1 ? des[0] : `${des.slice(0, -1).join(', ')} y ${des[des.length - 1]}`;
       textos.push(`Se soltó ${nombre(k)} ${lista}: vuelve a ponerl${nombrar(k).la ? 'a' : 'o'}.`);
@@ -2050,7 +2151,7 @@ export function crearLienzo(elemento, opciones = {}) {
     if (destruido) return;
     listo = true;
     const renovadasSueltas = colocarRenovadas();
-    alinearEnchufesAlAbrir();
+    renovadasSueltas.soltadas.push(...alinearEnchufesAlAbrir());
     dibujarCables();
     encuadrado = encuadrar();
     const aviso = [

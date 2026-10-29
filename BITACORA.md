@@ -1889,3 +1889,17 @@ Codex devolvió la entrega tras su verificación profunda (COD-20261029-001); lo
 - **F01 (media):** un tipo desconocido soltado de una renovada rompía el aviso. Ahora es «la pieza fut1». De paso, el aviso usa el artículo de cada pieza («la resistencia r1») y nombra todo aquello de lo que se soltó.
 
 Preauditoría con un auditor aparte, en dos pasadas: sin hallazgos altos ni medios; sus observaciones P1–P4 se corrigieron y Q1–Q2 quedaron documentadas. Pruebas: diagnóstico de Codex 30/30; `probar_piezas.py` con siete comprobaciones nuevas (seis fallan con `0a084e3`); suite completa 1401/0, en batería; TecnoBloques `test:simulador` y `test:registro-app` con este paquete.
+
+## 2026-10-29 — LIENZO-001: ninguna conexión escondida al abrir o cambiar de placa
+
+H1 de DIST-001, reproducido antes de tocar código con `repro_d12.py` sobre `63de777`: r1, enchufada en el ánodo de led1 y en D12, quedaba a 22 y 31 px con el Uno (circuito guardado con 0.3.1) y a 299 px del D12 con el Nano, conectada por dentro y sin aviso. Causa: `alinearEnchufesAlAbrir` corría cada pieza sola y solo si todas sus patas pedían el mismo corrimiento.
+
+Decisión de Efraín (28 oct): las piezas unidas por enchufes se corren juntas hasta el pin que se movió, y lo que no cabe se suelta con aviso. Ahora se arman grupos de piezas unidas entre sí; cada pieza se corre sobre la pieza en que está enchufada y después el grupo entero hasta la placa o la protoboard, con el corrimiento que deja más patas sobre su destino. Una revisión final suelta, con aviso, toda pata que no quedó a 3,5 px o menos de su destino, y aparta la pieza si quedó suelta o con una pata sobre otro pin. El aviso nombra los pines de la placa («Se soltó el LED led1 de los pines A0 y D12 de la placa: vuelve a ponerlo.»), también en los de PIEZA-003. COMO-FUNCIONA 76.
+
+Pruebas: `probar_piezas.py` con nueve comprobaciones nuevas (H1 con el Uno y con el Nano, Uno → Nano, cadena de tres en las dos placas, LED imposible en las dos placas y reabrir); siete fallan con `63de777`. Con la corrección, `repro_d12.py` da 0 px en las dos placas. `probar_vistas.py` exigía lo contrario para un LED que no cabe (VIN y A0_S): que siguiera enchufado a la distancia y sin aviso. Se cambió a la regla nueva.
+
+## 2026-10-29 — LIENZO-001: devolución de Codex (F01) corregida
+
+Codex devolvió la entrega (COD-20261029-004) por F01: en un grupo mixto (LED con el cátodo en c15; r1 en su ánodo y en D12), al soltar c15 el LED quedaba sin `en` propio y se tomaba como suelto, aunque r1 lo seguía recibiendo y estaba anclada en D12. Al apartarlo, se perdía también D12. Reproducido con su entrada: cuatro comprobaciones nuevas fallan con la entrega anterior y su diagnóstico da 4/8.
+
+Ahora lo que perdió una conexión se aparta con todo su grupo (unido en los dos sentidos) solo si el grupo ya no tiene anclas, o si una pata quedó sobre un hueco o un pin que no es su destino. `sobreOtroDestino` ya no cuenta como ajenos los pines de las piezas del mismo grupo. Pruebas: `probar_piezas.py` con F01 en los dos órdenes, en edición y en solo lectura, más el control y la reapertura. El ayudante `ajenas_sin_enchufe` de la prueba ahora acepta el enchufe en los dos sentidos. El diagnóstico de Codex da 8/8.
