@@ -28,6 +28,7 @@ const ENCHUFE_RADIO = 6;
 const ENCHUFE_TOL = 3.5;
 const esHueco = (ref) => typeof ref === 'string' && ref.startsWith('protoboard.');
 const PASO_REJILLA = 9.6; // 0,1 pulgadas: la distancia entre pines de la placa y de la protoboard
+const FEMENINOS = new Set(['resistencia', 'bateria_lipo', 'shield_l293d', 'shield_nano_io']); // «la» en los avisos
 const ESCALA_MIN = 0.4;
 const ESCALA_MAX = 5;
 
@@ -421,8 +422,8 @@ export function crearLienzo(elemento, opciones = {}) {
   // pines. Si estaba en la protoboard o enchufado y sus patas nuevas ya no caben en esos huecos o pines (las del kit
   // van a otra distancia), queda suelto y se avisa. Se corre sola: lo enchufado en ella se queda sobre sus patas de
   // antes y, si ya no cabe en las nuevas, también queda suelto con aviso; nunca queda unido a la distancia. Toda pieza
-  // que queda suelta se aparta medio paso, para que no parezca encajada. Devuelve las sueltas y las que se soltaron
-  // de una renovada.
+  // que queda suelta se aparta (`apartar`), con lo que cuelga de ella, para que no parezca encajada. Devuelve las
+  // sueltas y lo que se soltó, de una renovada o al apartar.
   function colocarRenovadas() {
     const sueltas = [];
     const soltadas = [];
@@ -455,20 +456,37 @@ export function crearLienzo(elemento, opciones = {}) {
       for (const h of datos.componentes) {
         if (h === k || !h.en || !Object.values(h.en).some((ref) => !esHueco(ref) && partirRef(ref)[0] === k.id)) continue;
         if (!suelta && caben(h)) continue;
+        // Se suelta de la renovada y de todo lo demás en que estaba enchufada: el aviso los nombra a todos.
+        const de = [k.id, ...Object.values(h.en).map((ref) => (esHueco(ref) ? 'protoboard' : partirRef(ref)[0]))];
         delete h.en;
-        soltadas.push({ k: h, de: k });
+        for (const id of new Set(de)) soltadas.push({ k: h, de: componente(id) || { id } });
       }
     }
-    for (const s of [...sueltas, ...soltadas.map((x) => x.k)]) apartar(s);
+    for (const s of new Set([...sueltas, ...soltadas.map((x) => x.k)])) soltadas.push(...apartar(s));
     if (sueltas.length || soltadas.length) marcarOcupados();
     return { sueltas, soltadas };
   }
 
-  // Corre una pieza suelta medio paso (en la primera dirección que sirva) para que ninguna de sus patas quede sobre un
-  // hueco o un pin: suelta, se ve suelta.
+  // Corre una pieza suelta, con lo que cuelga de ella, para que ninguna de sus patas quede sobre un hueco o un pin:
+  // suelta, se ve suelta. Lo que cuelga y además estaba enchufado fuera (en la protoboard, la placa u otra pieza) se
+  // suelta de ahí con aviso: nunca queda unido a la distancia, ni con una pata sobre el hueco que dejó sin conducir.
+  // Primero medio paso en la primera de ocho direcciones que sirva. Si ninguna sirve (patas desfasadas de la rejilla),
+  // como mucho medio paso por eje, a donde sus patas quedan más lejos de todo hueco o pin (decisión de Efraín, 29 oct);
+  // si ni así quedan libres, el sitio libre más cercano. Devuelve lo que se soltó y de dónde, para el aviso.
   function apartar(k) {
     const grupo = [k, ...colgantes(k.id)];
     const propios = new Set(grupo.map((g) => g.id));
+    const soltadas = [];
+    for (const g of grupo) {
+      if (!g.en) continue;
+      for (const [pata, ref] of Object.entries(g.en)) {
+        const de = esHueco(ref) ? 'protoboard' : partirRef(ref)[0];
+        if (propios.has(de)) continue;
+        delete g.en[pata];
+        if (!soltadas.some((s) => s.k === g && s.de.id === de)) soltadas.push({ k: g, de: componente(de) || { id: de } });
+      }
+      if (!Object.keys(g.en).length) delete g.en;
+    }
     const destinos = [];
     for (const [id, w] of vistas) {
       if (propios.has(id) || !w.lista || !w.pines.size) continue;
@@ -479,14 +497,54 @@ export function crearLienzo(elemento, opciones = {}) {
       const v = vistas.get(g.id);
       return v && v.lista ? [...v.pines.values()].map((p) => girarPunto(v, lugar(g.id), p)) : [];
     });
-    const m = PASO_REJILLA / 2;
+    // Lo que queda entre las patas corridas y el hueco o pin más cercano.
+    const holgura = ([dx, dy]) => {
+      let h = Infinity;
+      for (const q of patas) for (const d of destinos) h = Math.min(h, Math.hypot(d.x - q.x - dx, d.y - q.y - dy));
+      return h;
+    };
     const libre = ([dx, dy]) => patas.every((q) => destinos.every((d) => Math.hypot(d.x - q.x - dx, d.y - q.y - dy) > ENCHUFE_TOL));
-    const [dx, dy] = [[m, m], [m, 0], [0, m], [-m, m], [m, -m], [-m, 0], [0, -m], [-m, -m]].find(libre) || [m, m];
-    moverGrupo(k, dx, dy);
+    const octavo = (i, j) => [redondear((i * PASO_REJILLA) / 8), redondear((j * PASO_REJILLA) / 8)];
+    const m = PASO_REJILLA / 2;
+    let paso = [[m, m], [m, 0], [0, m], [-m, m], [m, -m], [-m, 0], [0, -m], [-m, -m]].find(libre);
+    if (!paso) {
+      // En octavos de paso, como mucho medio paso por eje: donde las patas quedan más lejos de todo hueco o pin.
+      let mejor = null;
+      for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) {
+        const p = octavo(i, j);
+        const h = holgura(p);
+        const largo = Math.hypot(p[0], p[1]);
+        if (!mejor || h > mejor.h + 0.01 || (h > mejor.h - 0.01 && largo < mejor.largo)) mejor = { p, h, largo };
+      }
+      paso = mejor.p;
+      // Si ni así queda libre, el sitio libre más cercano del primer anillo cuadrado (de un octavo de paso) que tenga
+      // alguno, hasta diez pasos; a lo sumo √2 más lejos que el más cercano de verdad. Más allá (no pasa con un
+      // circuito real) se queda en el más libre de medio paso, sin otro aviso que el de suelta.
+      for (let anillo = 5; mejor.h <= ENCHUFE_TOL && anillo <= 80; anillo++) {
+        const libres = [];
+        for (let i = -anillo; i <= anillo; i++) for (let j = -anillo; j <= anillo; j++) {
+          if (Math.max(Math.abs(i), Math.abs(j)) === anillo && libre(octavo(i, j))) libres.push(octavo(i, j));
+        }
+        if (!libres.length) continue;
+        paso = libres.reduce((a, b) => (Math.hypot(b[0], b[1]) < Math.hypot(a[0], a[1]) ? b : a));
+        break;
+      }
+    }
+    moverGrupo(k, paso[0], paso[1], grupo.slice(1));
+    return soltadas;
+  }
+
+  // «el LED led1», «la resistencia r1»; un tipo que este lienzo no conoce (de una versión futura) es «la pieza fut1».
+  function nombrar(k) {
+    if (k.id === 'protoboard' || k.id === 'placa') return { la: true, texto: `la ${k.id}` };
+    const t = TIPOS[k.tipo];
+    const la = !t || FEMENINOS.has(k.tipo);
+    const nombre = t ? t.nombre.replace(/^[A-ZÁÉÍÓÚ](?=[a-záéíóúñ])/, (l) => l.toLowerCase()) : 'pieza'; // «LED» se queda
+    return { la, texto: `${la ? 'la' : 'el'} ${nombre} ${k.id}` };
   }
 
   function avisoRenovadas({ sueltas, soltadas }) {
-    const nombre = (k) => `el ${TIPOS[k.tipo].nombre.replace(/^[A-ZÁÉÍÓÚ](?=[a-záéíóúñ])/, (l) => l.toLowerCase())} ${k.id}`; // «LED» se queda
+    const nombre = (k) => nombrar(k).texto;
     const textos = [];
     if (sueltas.length) {
       const nombres = sueltas.map(nombre);
@@ -494,7 +552,13 @@ export function crearLienzo(elemento, opciones = {}) {
       const muchas = sueltas.length > 1;
       textos.push(`${lista[0].toUpperCase() + lista.slice(1)} ${muchas ? 'quedaron sueltos' : 'quedó suelto'}: ${muchas ? 'ahora tienen' : 'ahora tiene'} el dibujo del kit y sus patas ya no caben donde estaban. ${muchas ? 'Ponlos otra vez donde van' : 'Ponlo otra vez donde va'}.`);
     }
-    for (const { k, de } of soltadas) textos.push(`Se soltó ${nombre(k)} del ${nombre(de).slice(3)}: vuelve a ponerlo.`);
+    // Una frase por pieza, con todo aquello de lo que se soltó: «Se soltó el botón btn2 de la protoboard y de la placa».
+    const desde = new Map();
+    for (const { k, de } of soltadas) desde.set(k, [...(desde.get(k) || []), nombrar(de).la ? `de ${nombre(de)}` : `del ${nombre(de).slice(3)}`]);
+    for (const [k, des] of desde) {
+      const lista = des.length === 1 ? des[0] : `${des.slice(0, -1).join(', ')} y ${des[des.length - 1]}`;
+      textos.push(`Se soltó ${nombre(k)} ${lista}: vuelve a ponerl${nombrar(k).la ? 'a' : 'o'}.`);
+    }
     return textos.join(' ');
   }
 

@@ -397,6 +397,72 @@ with sync_playwright() as p:
     abrir(reabierto)
     revisar((pieza('pot1')['x'], pieza('pot1')['y']) == (pot['x'], pot['y']), 'reabrir lo guardado no lo corre más')
 
+    # Lo que la devolución de Codex del 29 oct (COD-20261029-001) encontró al apartar, con sus entradas sintéticas.
+    def lejos():
+        """Enlaces declarados en el «en» cuya pata no está sobre su destino (más de 3,5 px): unidos a la distancia."""
+        return [(f'{k["id"]}.{pata}', ref) for k in pg.evaluate('lienzo.circuito()')['componentes'] for pata, ref in (k.get('en') or {}).items()
+                if (a := donde(f'{k["id"]}.{pata}')) and (b := donde(ref)) and ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5 > 3.5]
+
+    def sobre_ajenos(ids):
+        """Patas de esas piezas sobre un hueco o pin que no es de ellas (a 3,5 px o menos)."""
+        return pg.evaluate(f'''(ids) => {{
+          const r = {RAIZ}; const m = new DOMMatrix(getComputedStyle(r.querySelector('.tc-mundo')).transform);
+          const centro = (e) => {{ const b = e.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; }};
+          const propia = (e) => ids.some((id) => e.dataset.ref.startsWith(id + '.'));
+          const pines = [...r.querySelectorAll('.tc-pin[data-ref]')];
+          const ajenos = pines.filter((e) => !propia(e)).map((e) => [e.dataset.ref, centro(e)]);
+          return pines.filter(propia).flatMap((e) => {{ const [x, y] = centro(e);
+            return ajenos.filter(([, [u, v]]) => Math.hypot(u - x, v - y) / m.a <= 3.5).map(([q]) => e.dataset.ref + '→' + q); }}); }}''', ids)
+
+    def holgura(id_):
+        """Lo que queda entre las patas de la pieza y el pin o hueco ajeno más cercano, en px del mundo."""
+        propias = [donde(f'{id_}.{p}') for p in ['GND', 'SIG', 'VCC']]
+        ajenos = pg.evaluate(f'''() => [...{RAIZ}.querySelectorAll('.tc-pin[data-ref]')].map((e) => e.dataset.ref).filter((q) => !q.startsWith('{id_}.'))''')
+        return min(((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5 for a in propias for b in map(donde, ajenos))
+
+    # F03 (alta): resistencia enchufada en el SIG de un potenciómetro antiguo encajado en c10–c12 y LED con el cátodo en la
+    # resistencia y el ánodo en c16. Al apartar la resistencia se lleva el LED: se suelta de c16 con aviso, en vez de
+    # quedar unido a c16 a 4,8 px (y encendido). Nada de lo apartado queda sobre un hueco; reabrir no cambia nada.
+    cadena = {'formato': 1, 'placa': 'uno', 'protoboard': {'tipo': 'media', 'x': 300, 'y': 30}, 'cables': [],
+              'componentes': [{**pot_pb['componentes'][0]},
+                              {'id': 'r1', 'tipo': 'resistencia', 'x': 405.59, 'y': 79.4, 'rot': 0, 'props': {'ohmios': 220, 'vatios': 0.25}, 'en': {'1': 'pot1.SIG'}},
+                              {'id': 'led1', 'tipo': 'led', 'x': 439.19, 'y': 45.8, 'rot': 0, 'props': {'color': 'rojo'}, 'en': {'catodo': 'r1.2', 'anodo': 'protoboard.c16'}}]}
+    abrir(cadena)
+    aviso = pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')
+    revisar(not lejos() and pieza('led1').get('en') == {'catodo': 'r1.2'} and 'en' not in pieza('r1'),
+            f'F03: ningún enlace queda a la distancia y el LED sigue en la resistencia, ya no en c16: {lejos()}, {pieza("led1").get("en")}')
+    revisar(not sobre_ajenos(['pot1', 'r1', 'led1']), f'F03: nada de lo apartado queda sobre un hueco o un pin ajeno: {sobre_ajenos(["pot1", "r1", "led1"])}')
+    revisar('Se soltó la resistencia r1 del potenciómetro pot1: vuelve a ponerla.' in aviso and 'Se soltó el LED led1 de la protoboard: vuelve a ponerlo.' in aviso,
+            f'F03: el aviso nombra las dos piezas soltadas, con su artículo: «{aviso}»')
+    abierto = pg.evaluate('lienzo.circuito()')
+    abrir(abierto)
+    revisar(pg.evaluate('lienzo.circuito()')['componentes'] == abierto['componentes'] and not lejos(), 'F03: reabrir lo guardado no corre ni suelta nada')
+    # Un LED con el cátodo en el potenciómetro antiguo y el ánodo en c16: se suelta de los dos, y el aviso nombra los dos.
+    abrir({**cadena, 'componentes': [{**pot_pb['componentes'][0]},
+           {'id': 'led1', 'tipo': 'led', 'x': 439.19, 'y': 45.8, 'rot': 0, 'props': {'color': 'rojo'}, 'en': {'catodo': 'pot1.SIG', 'anodo': 'protoboard.c16'}}]})
+    aviso = pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')
+    revisar('en' not in pieza('led1') and 'Se soltó el LED led1 del potenciómetro pot1 y de la protoboard: vuelve a ponerlo.' in aviso
+            and not sobre_ajenos(['led1']), f'el aviso nombra todo aquello de lo que se soltó el LED: «{aviso}», {sobre_ajenos(["led1"])}')
+
+    # F02 (media): el mismo potenciómetro, guardado 2,4 px fuera de la rejilla y solo con GND en c10. Ninguno de los ocho
+    # medios pasos libra sus patas (quedaban a 3,4 px de d10/d12/d14): se corre como mucho medio paso por eje, a donde
+    # quedan más lejos de todo hueco, entre cuatro huecos (decisión de Efraín, 29 oct).
+    fase = {**pot_pb, 'cables': [], 'componentes': [{**pot_pb['componentes'][0], 'x': 373.8, 'y': 22.9, 'en': {'GND': 'protoboard.c10'}}]}
+    abrir(fase)
+    pot = pieza('pot1')
+    revisar('en' not in pot and not pegadas('pot1') and holgura('pot1') > 6.5,
+            f'F02: desfasado de la rejilla queda suelto y entre cuatro huecos: {pegadas("pot1")}, a {holgura("pot1"):.2f} px del más cercano')
+
+    # F01 (media): una pieza de una versión futura enchufada en el potenciómetro antiguo. Se suelta con un aviso que la
+    # nombra «la pieza», sin error, y conserva sus datos.
+    abrir({**pot_pb, 'cables': [], 'componentes': [{**pot_pb['componentes'][0]},
+           {'id': 'fut1', 'tipo': 'sensor_futuro', 'x': 400, 'y': 100, 'rot': 0, 'props': {}, 'en': {'SIG': 'pot1.SIG'}, 'dato_futuro': 'conservar'}]})
+    aviso = pg.evaluate(f'{RAIZ}.querySelector(".tc-aviso")?.textContent || ""')
+    fut = pieza('fut1')
+    revisar('Se soltó la pieza fut1 del potenciómetro pot1: vuelve a ponerla.' in aviso and fut and fut.get('dato_futuro') == 'conservar' and 'en' not in fut
+            and not [e for e in errores if 'nombre' in e],
+            f'F01: la pieza desconocida se suelta con aviso y sin error, y conserva sus datos: «{aviso}», {fut}')
+
     # Con `modelo` nulo o vacío en el archivo, se completa el del kit: reabrir no lo vuelve a correr (A3).
     for vacio in (None, ''):
         abrir({**VACIO, 'componentes': [{'id': 'pot1', 'tipo': 'potenciometro', 'x': 250, 'y': 215, 'rot': 0, 'props': {'ohmios': 10000, 'posicion': 0.5, 'modelo': vacio}}]})
