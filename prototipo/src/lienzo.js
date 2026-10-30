@@ -7,6 +7,7 @@ import { CATEGORIAS, FICHAS, buscarPiezas } from './biblioteca.js';
 import { TIPOS_PROTOBOARD, dibujarProtoboard, huecos, tiraDe, rotuloHueco, encajar } from './protoboard.js';
 import { esNano, perfilPlaca } from './placas.js';
 import { ALIASES_EXPANSION } from './piezas/shield_nano_io.js';
+import { luzFuera } from './piezas/vista_td.js';
 import { VERSION_EVENTOS } from './eventos.js';
 import { FIRMA_SVG, UNA_TINTA_SVG, CHIP_SERIGRAFIA_SVG, interiorSVG, medidaSVG } from './marca.js';
 
@@ -1909,7 +1910,8 @@ export function crearLienzo(elemento, opciones = {}) {
   }
 
   // Caja que rodea todas las piezas y los dobleces de los cables, en coordenadas del mundo.
-  function cajaDelCircuito() {
+  // `conLuz`: también la luz de los LED encendidos que sale de su pieza (la imagen exportada: si no, su marco la corta).
+  function cajaDelCircuito({ conLuz = false } = {}) {
     let x0 = Infinity;
     let y0 = Infinity;
     let x1 = -Infinity;
@@ -1928,6 +1930,16 @@ export function crearLienzo(elemento, opciones = {}) {
       const mh = (girado ? v.w : v.h) / 2;
       incluir(c.x + v.w / 2 - mw, c.y + v.h / 2 - mh);
       incluir(c.x + v.w / 2 + mw, c.y + v.h / 2 + mh);
+      const luz = conLuz && v.def && luzFuera(v.el);
+      if (luz) {
+        // Las cuatro esquinas de la luz, giradas como la pieza alrededor de su centro (el mismo giro de piezaSVG)
+        const a = ((c.rot || 0) * Math.PI) / 180;
+        for (const [x, y] of [[luz.x0, luz.y0], [luz.x1, luz.y0], [luz.x0, luz.y1], [luz.x1, luz.y1]]) {
+          const dx = x - v.w / 2;
+          const dy = y - v.h / 2;
+          incluir(c.x + v.w / 2 + dx * Math.cos(a) - dy * Math.sin(a), c.y + v.h / 2 + dx * Math.sin(a) + dy * Math.cos(a));
+        }
+      }
     }
     for (const cable of datos.cables) for (const [x, y] of cable.puntos || []) incluir(x, y);
     return isFinite(x0) ? { x0, y0, x1, y1 } : null;
@@ -1956,7 +1968,7 @@ export function crearLienzo(elemento, opciones = {}) {
   // Encima, el símbolo de TecnoCircuito como marca de agua; abajo a la derecha, la firma, en una franja propia para
   // no tapar nada. Las dos son trazados: se ven igual sin la fuente instalada.
   function exportarSVG() {
-    const caja = cajaDelCircuito() || { x0: 0, y0: 0, x1: 100, y1: 100 };
+    const caja = cajaDelCircuito({ conLuz: true }) || { x0: 0, y0: 0, x1: 100, y1: 100 };
     const margen = 12;
     const firmaAncho = FIRMA.ancho * ESCALA_FIRMA;
     const firmaAlto = FIRMA.alto * ESCALA_FIRMA;
