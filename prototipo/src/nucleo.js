@@ -984,6 +984,13 @@ function promediar(sols) {
       posicion: x.posicion,
       v: prom((m) => m.potenciometros[n].v),
       i: prom((m) => m.potenciometros[n].i),
+      tramos: x.tramos.map((t, k) => ({
+        pata: t.pata,
+        ohmios: t.ohmios,
+        aGND: t.aGND,
+        v: prom((m) => m.potenciometros[n].tramos[k].v),
+        i: prom((m) => m.potenciometros[n].tramos[k].i),
+      })),
     })),
   };
 }

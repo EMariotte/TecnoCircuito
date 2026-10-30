@@ -12,6 +12,27 @@ const miliamperios = (i) => num(i * 1000, Math.abs(i) < 0.01 ? 2 : 1) + ' mA';
 const ohmios = (r, dec) => (r >= 1000 ? num(r / 1000, dec) + ' k' : r + ' ') + 'Ω';
 const nombrePin = (pin) => 'Pin ' + pin.replace(/^D/, '');
 
+// El tramo del potenciómetro (MED-001, regla de Efraín del 29 oct): el que va a GND; si ninguna pata va a GND, el que
+// lleva corriente; si van las dos (o ninguno lleva corriente), los dos. Para hacer las cuentas de la ley de Ohm, con un
+// solo tramo la fila da su voltaje y su corriente (V / I = el tramo), aunque la pata a GND sea la que se llama VCC.
+const EN_USO = 1e-6; // A: menos que esto (lo que toma una entrada analógica) no cuenta como tramo en uso
+const valorTramo = (t) => (t.ohmios >= 1000 ? num(t.ohmios / 1000, 1) + ' kΩ' : Math.round(t.ohmios) + ' Ω');
+function filaPotenciometro(x, fila) {
+  const pieza = `${x.id} (${ohmios(x.ohmios, 0)})`;
+  const perilla = `perilla ${Math.round(x.posicion * 100)} %`;
+  const tramos = x.tramos || [];
+  if (!tramos.length) return fila(pieza, voltios(x.v), miliamperios(x.i), perilla);
+  const aGND = tramos.filter((t) => t.aGND);
+  const enUso = tramos.filter((t) => t.i > EN_USO);
+  const [elegidos, nombre] = aGND.length ? [aGND, 'a GND'] : enUso.length ? [enUso, 'en uso'] : [tramos, ''];
+  if (elegidos.length === 1) {
+    const t = elegidos[0];
+    return fila(pieza, voltios(t.v), miliamperios(t.i), `${perilla} · tramo ${nombre} (SIG–${t.pata}): ${valorTramo(t)}`);
+  }
+  const lista = elegidos.map((t) => `SIG–${t.pata} ${valorTramo(t)}`).join(' y ');
+  return fila(pieza, voltios(x.v), miliamperios(x.i), `${perilla} · tramos${nombre ? ' ' + nombre : ''}: ${lista}`);
+}
+
 export function filasDeMediciones(m) {
   if (!m || !m.leds) return [];
   const fila = (pieza, voltaje, corriente, detalle) => ({ pieza, voltaje: voltaje || '', corriente: corriente || '', detalle: detalle || '' });
@@ -36,7 +57,7 @@ export function filasDeMediciones(m) {
     ...Object.keys(m.entradas || {})
       .filter((pin) => !conPin.has(pin) && ('placa.' + pin) in m.voltajes)
       .map((pin) => fila(nombrePin(pin) + ' (entrada)', voltios(m.voltajes['placa.' + pin]), '', lee(pin))),
-    ...(m.potenciometros || []).map((x) => fila(`${x.id} (${ohmios(x.ohmios, 0)})`, voltios(x.v), miliamperios(x.i), `perilla ${Math.round(x.posicion * 100)} %`)),
+    ...(m.potenciometros || []).map((x) => filaPotenciometro(x, fila)),
     ...m.resistencias.map((r) => fila(`${r.id} (${ohmios(r.ohmios, 1)})`, voltios(r.v), miliamperios(r.i), num(r.w * 1000, 1) + ' mW')),
     ...m.leds.map((l) => fila(l.id, voltios(l.v), miliamperios(l.i), l.quemado ? 'quemado' : `brillo ${Math.round(l.brillo * 100)} %`)),
     ...servos.map((s) =>

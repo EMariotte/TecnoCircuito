@@ -165,7 +165,15 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
       const bajo = resistencia(gnd, sig, Math.max(POT.minimo, total * p));
       const alto = resistencia(sig, vcc, Math.max(POT.minimo, total * (1 - p)));
       for (const r of [bajo, alto]) if (r.a !== r.b) elementos.push(r);
-      potenciometros.push({ id: c.id, ohmios: total, posicion: p, bajo, alto });
+      // Los dos tramos de la pista (MED-001), cada uno nombrado por su pata de punta: SIG–GND y SIG–VCC. `aGND`: esa
+      // pata está en la tierra del circuito (un cable a GND, aunque se llame VCC). `nominal`: total × parte de la
+      // perilla, sin el mínimo del modelo, redondeado para que 10 kΩ al 30 % den 3000 Ω justos.
+      const nominal = (x) => Math.round(total * x * 1e6) / 1e6;
+      const tramos = [
+        { pata: 'GND', ohmios: nominal(p), aGND: gnd === -1, el: bajo },
+        { pata: 'VCC', ohmios: nominal(1 - p), aGND: vcc === -1, el: alto },
+      ];
+      potenciometros.push({ id: c.id, ohmios: total, posicion: p, bajo, alto, tramos });
     }
   }
   fuentes.forEach((f, i) => (f.fila = n + i));
@@ -261,6 +269,14 @@ export function armarRed(circuito, { quemados = new Set(), presionados = new Set
           v: resta(V(x.id + '.SIG'), V(x.id + '.GND')),
           // corriente que atraviesa la pista (de VCC a GND), sin signo: como la muestran las resistencias
           i: Math.abs(x.bajo.a !== x.bajo.b ? x.bajo.corriente(r.x) : x.alto.a !== x.alto.b ? x.alto.corriente(r.x) : 0),
+          // Cada tramo con lo que mediría un multímetro entre SIG y su pata: voltaje y corriente sin signo (MED-001)
+          tramos: x.tramos.map((t) => ({
+            pata: t.pata,
+            ohmios: t.ohmios,
+            aGND: t.aGND,
+            v: Math.abs(resta(V(x.id + '.SIG'), V(x.id + '.' + t.pata)) ?? 0),
+            i: t.el.a !== t.el.b ? Math.abs(t.el.corriente(r.x)) : 0,
+          })),
         })),
       };
     },
