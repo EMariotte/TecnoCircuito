@@ -685,6 +685,24 @@
   width: 100%;
 }
 
+/* Traer adelante y enviar atrás (LIENZO-002): uno al lado del otro; en un extremo, el que no sirve se apaga. */
+.tc-ficha-orden {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tc .tc-ficha-orden button {
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.tc .tc-ficha-orden button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  background: var(--boton);
+}
+
 .tc-ficha dl {
   display: grid;
   grid-template-columns: auto 1fr;

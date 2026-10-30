@@ -204,6 +204,10 @@ const casos = [
   ['un potenciómetro de un modelo que no existe', (c) => c.componentes.push({ id: 'p', tipo: 'potenciometro', x: 0, y: 0, props: { modelo: '9mm' } }), /modelo/],
   ['un botón del kit (modelo 6x6)', (c) => { c.componentes[2].props.modelo = '6x6'; }, null],
   ['un botón de un modelo que no existe', (c) => { c.componentes[2].props.modelo = '12x12'; }, /modelo/],
+  // LIENZO-002 (29 oct): `capa`, el puesto de la pieza en la pila del lienzo (solo del dibujo).
+  ['piezas con su capa', (c) => { c.componentes[0].capa = 1; c.componentes[1].capa = 0; }, null],
+  ['una capa negativa', (c) => { c.componentes[0].capa = -1; }, /capa/],
+  ['una capa con decimales', (c) => { c.componentes[0].capa = 1.5; }, /capa/],
   ['una pieza llamada «placa»', (c) => { c.componentes[0].id = 'placa'; }, /id/],
   ['un id con punto', (c) => { c.componentes[0].id = 'r.1'; }, /id/],
   ['un doblez con tres números', (c) => { c.cables[0].puntos = [[1, 2, 3]]; }, /puntos/],

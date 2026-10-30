@@ -173,9 +173,10 @@ export function crearLienzo(elemento, opciones = {}) {
     div.appendChild(el);
     // Una pieza montada (la shield) va justo encima de la placa: debajo de la protoboard y de las demás piezas.
     // La expansión del Nano (`debajo`) va justo debajo de la placa: el Nano está enchufado en sus zócalos.
+    // Las demás van en su puesto de la pila (LIENZO-002). Una vista rehecha vuelve a su lugar, no arriba de todo.
     const vPlaca = vistas.get('placa');
     if (def && def.montada && vPlaca) capaComp.insertBefore(div, def.debajo ? vPlaca.div : vPlaca.div.nextSibling);
-    else capaComp.appendChild(div);
+    else capaComp.insertBefore(div, id === 'placa' ? null : siguienteEnPila(id));
     const vista = { id, def, div, el, w: 64, h: 40, pines: new Map(), lista: false };
     vistas.set(id, vista);
     return Promise.resolve().then(() => {
@@ -196,6 +197,54 @@ export function crearLienzo(elemento, opciones = {}) {
       aplicarSim(vista);
       if (def && def.tapa) marcarOcupados(); // tapa pines de la placa
     });
+  }
+
+  // ---- Orden de las piezas (LIENZO-002): cuál queda encima cuando se tapan
+
+  // Es solo del dibujo (decisión de Efraín): `componentes` no se reordena, así la simulación, las Mediciones, la
+  // netlist de KiCad y el registro siguen igual. El puesto de cada pieza suelta se guarda en su `capa` (0 abajo).
+  // Sin `capa` (un circuito de antes, o una pieza agregada después) va encima de las que la tienen.
+  const capaDe = (k) => (Number.isInteger(k.capa) && k.capa >= 0 ? k.capa : Infinity);
+
+  // Las piezas sueltas (no montadas) en el orden en que se apilan: la primera abajo, la última encima. Por `capa` y,
+  // a igualdad, en el orden de `componentes`. La placa, lo montado en ella y la protoboard quedan siempre debajo; los
+  // cables, siempre encima (van en otra capa).
+  const pila = () =>
+    datos.componentes
+      .filter((k) => !montada(k))
+      .map((k, n) => [k, n])
+      .sort((a, b) => capaDe(a[0]) - capaDe(b[0]) || a[1] - b[1]) // sin capa las dos: Infinity − Infinity no es un número
+      .map(([k]) => k);
+
+  // El dibujo de la primera pieza que va encima de `id` y ya está en el lienzo: la vista de `id` va justo antes.
+  function siguienteEnPila(id) {
+    const lista = pila();
+    for (let i = lista.findIndex((k) => k.id === id) + 1; i > 0 && i < lista.length; i++) {
+      const v = vistas.get(lista[i].id);
+      if (v) return v.div;
+    }
+    return null;
+  }
+
+  // Sube (`paso` 1) o baja (−1) la pieza elegida un solo puesto en la pila (decisión de Efraín: más control): cambia
+  // de puesto con su vecina. Después todas las sueltas quedan con su `capa`, así el orden se guarda con el circuito
+  // sin cambiar el formato. En un extremo no hace nada.
+  function apilar(paso) {
+    if (soloLectura || !sel || sel.tipo !== 'comp') return;
+    const c = componente(sel.id);
+    if (!c || montada(c)) return;
+    const lista = pila();
+    const k = lista.indexOf(c);
+    const otra = lista[k + paso];
+    if (!otra) return;
+    lista[k] = otra;
+    lista[k + paso] = c;
+    lista.forEach((p, n) => (p.capa = n));
+    const v = vistas.get(c.id);
+    const w = vistas.get(otra.id);
+    if (v && w) capaComp.insertBefore(v.div, paso > 0 ? w.div.nextSibling : w.div);
+    pintarFicha(); // en un extremo, su botón queda apagado
+    cambio();
   }
 
   // La protoboard: su dibujo va debajo de las piezas y cada hueco es un punto de conexión (como un pin).
@@ -1109,6 +1158,18 @@ export function crearLienzo(elemento, opciones = {}) {
         props += `<label class="tc-check"><input type="checkbox" data-accion="encender"${encendido}> Ver encendido</label>`;
       }
     }
+    // Traer adelante o enviar atrás, un puesto por clic. Lo montado en la placa no se mueve en la pila.
+    if (c && !soloLectura && !montada(c)) {
+      const lista = pila();
+      const k = lista.indexOf(c);
+      const arriba = k === lista.length - 1;
+      const abajo = k === 0;
+      props +=
+        `<div class="tc-ficha-orden">` +
+        `<button type="button" data-accion="adelante"${arriba ? ' disabled' : ''} title="${arriba ? 'Ya está encima de las demás piezas' : 'Sube un puesto: tapa a la pieza que tenía encima'}">Traer adelante</button>` +
+        `<button type="button" data-accion="atras"${abajo ? ' disabled' : ''} title="${abajo ? 'Ya está debajo de las demás piezas' : 'Baja un puesto: queda debajo de la pieza que tenía abajo'}">Enviar atrás</button>` +
+        `</div>`;
+    }
     ficha.innerHTML =
       `<button type="button" class="tc-ficha-titulo" data-accion="ficha" aria-expanded="${abierta}" aria-label="Ficha de ${escapar(f.nombre)}: ${abierta ? 'ocultar los detalles' : 'ver los detalles'}">` +
       `<span>${escapar(f.nombre)}${c ? ` <small>${escapar(c.id)}</small>` : ''}</span><span class="tc-ficha-flecha">${abierta ? 'menos ▴' : 'detalles ▾'}</span></button>` +
@@ -1153,6 +1214,16 @@ export function crearLienzo(elemento, opciones = {}) {
   }
 
   ficha.addEventListener('click', (e) => {
+    const orden = e.target.closest('[data-accion="adelante"], [data-accion="atras"]');
+    if (orden) {
+      const accion = orden.dataset.accion;
+      apilar(accion === 'adelante' ? 1 : -1);
+      // La ficha se rehízo: el foco sigue en el mismo botón o, si quedó apagado en un extremo, en el otro.
+      const b = ficha.querySelector(`[data-accion="${accion}"]`);
+      const otro = ficha.querySelector(`[data-accion="${accion === 'adelante' ? 'atras' : 'adelante'}"]`);
+      (b && !b.disabled ? b : otro)?.focus();
+      return;
+    }
     if (!e.target.closest('[data-accion="ficha"]')) return;
     fichaAbierta = fichaAbierta === false;
     pintarFicha();

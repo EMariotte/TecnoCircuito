@@ -103,6 +103,7 @@
         "y": { "$ref": "#/$defs/numero" },
         "rot": { "enum": [0, 90, 180, 270], "description": "Gira el dibujo alrededor de su centro, en el sentido del reloj." },
         "props": { "type": "object" },
+        "capa": { "type": "integer", "minimum": 0, "description": "Solo del dibujo: el puesto de la pieza en la pila del lienzo (0 abajo; la de mayor capa se ve encima). Sin ella, la pieza va encima de las que la tienen, en el orden de componentes. No cambia la simulación, las mediciones ni la netlist. Las piezas montadas no la usan." },
         "en": { "$ref": "#/$defs/en" }
       },
       "allOf": [
