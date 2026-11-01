@@ -1959,3 +1959,11 @@ Decisión de Efraín (1 nov), con sus medidas: el Uno con 6 SG90 y 4 MG90S en el
 El reinicio por bajo voltaje sigue (desde unos 13 SG90). Mientras el 5V siga bajo 2,7 V, la placa queda en reinicio, como el brown-out del ATmega: un solo reinicio, y el programa no corre hasta que el voltaje vuelve. Antes contaba uno por milisegundo y el monitor se llenaba de «I».
 
 Pruebas: `probar_nucleo.js` (pico sin golpe, barrido 104 mA, 6 SG90 sin reinicio, 14 SG90 con reinicio, un arranque por reinicio), `probar_corte.js` (14 servos, los tres tamaños de paso) y `probar_servo.py` (6 sin reinicio; ejemplo nuevo «Catorce servos: reinicio» de la página de prueba). Textos de los ejemplos de servos en el USB corregidos aquí (`servos_cuatro.ino`) y en TecnoBloques. COMO-FUNCIONA 45 y 46.
+
+## 2026-11-01 — SERVO-002: la desviación propia de cada servo
+
+Idea de Efraín en LAB-001 (T3-6) y decisiones del 1 nov: cada servo tiene una desviación propia de −5° a +5° en el límite inferior y en el superior (interpreté su «+0- 5°» como ±5°), que se ve en la ficha de la pieza y se guarda con el proyecto. El lienzo la sortea al agregar el servo y, en los proyectos guardados sin ella, la primera vez que se abren. El ángulo se corre en proporción a la distancia al centro: nada en 90° y toda en cada límite. Contrato 1, aditivo: `props.desviacion` del servo en la sección 4 y en el esquema del circuito.
+
+Pruebas: `probar_nucleo.js` (los límites se corren, el centro no; una desviación fuera de rango no se usa), `probar_contrato.js` (una válida y dos mal formadas) y `probar_servo.py` (se sortea, se ve en la ficha, cada servo tiene la suya, se autorrellena al abrir y se conserva al abrir otra vez; el brazo a 180° con la desviación de ese servo). COMO-FUNCIONA 45.
+
+**1 nov, devolución de Codex (F01, media):** el núcleo comparaba la desviación como texto JSON, y la misma desviación con las claves en otro orden recreaba el servo (volvía a 90° y perdía su pulso). Ahora compara los valores. `probar_nucleo.js`: claves en otro orden no lo rehacen; un cambio real de desviación o de modelo, sí.

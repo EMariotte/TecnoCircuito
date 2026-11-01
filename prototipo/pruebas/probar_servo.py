@@ -49,7 +49,14 @@ with sync_playwright() as p:
     pg.get_by_role('button', name='Servo', exact=True).click()
     pg.wait_for_timeout(300)
     servo = next((c for c in pg.evaluate('lienzo.circuito()')['componentes'] if c['tipo'] == 'servo'), None)
-    revisar(servo is not None and servo['props'] == {'modelo': 'sg90'}, f'«+ Agregar → Servo» agrega {servo and servo["id"]} con el modelo SG90')
+    d = servo and servo['props'].get('desviacion')
+    revisar(servo is not None and servo['props'].get('modelo') == 'sg90' and set(servo['props']) == {'modelo', 'desviacion'},
+            f'«+ Agregar → Servo» agrega {servo and servo["id"]} con el modelo SG90 y su desviación propia')
+    revisar(isinstance(d, dict) and set(d) == {'inferior', 'superior'} and all(-5 <= d[k] <= 5 and round(d[k], 1) == d[k] for k in d),
+            f'SERVO-002: la desviación se sortea de −5° a +5° en cada límite, con un decimal ({d})')
+    propio = pg.evaluate(f'{RAIZ}.querySelector(".tc-ficha-propio")?.textContent || ""')
+    g = lambda x: ('+' if x > 0 else '−' if x < 0 else '') + f'{abs(x):.1f}'.replace('.', ',') + '°'
+    revisar(propio == f'Desviación propia: {g(d["inferior"])} en 0° · {g(d["superior"])} en 180°', f'la ficha la muestra: «{propio}»')
     pines = pg.evaluate(f'[...{RAIZ}.querySelectorAll(".tc-pin")].map(p => p.dataset.ref).filter(r => r.startsWith("{servo["id"]}."))')
     revisar(sorted(pines) == sorted([f'{servo["id"]}.GND', f'{servo["id"]}.VCC', f'{servo["id"]}.SIG']), f'tiene sus 3 pines para cablear: {pines}')
     textos = pg.evaluate(f'{RAIZ}.querySelector(\'[data-id="{servo["id"]}"] svg\').textContent')
@@ -68,6 +75,24 @@ with sync_playwright() as p:
             'la netlist de KiCad lleva el conector de 3 pines del servo')
     pg.locator('main').screenshot(path=str(SALIDA / 'servo_1_agregado.png'))
 
+    # SERVO-002: otro servo recibe otra desviación; un servo guardado sin ella la recibe al abrirse, y la conserva
+    pg.get_by_role('button', name='+ Agregar').click()
+    pg.get_by_role('button', name='Servo', exact=True).click()
+    pg.wait_for_timeout(300)
+    servos = [c for c in pg.evaluate('lienzo.circuito()')['componentes'] if c['tipo'] == 'servo']
+    revisar(len(servos) == 2 and servos[0]['props']['desviacion'] != servos[1]['props']['desviacion'], f'cada servo tiene la suya: {[x["props"]["desviacion"] for x in servos]}')
+    pg.get_by_text('Ejemplo con servo (T3)').click()
+    pg.wait_for_selector('.tc-pin[data-ref="servo1.SIG"]', state='attached')
+    abierto = next(c for c in pg.evaluate('lienzo.circuito()')['componentes'] if c['tipo'] == 'servo')['props']
+    revisar('desviacion' in abierto, f'el ejemplo, guardado sin desviación, la recibe al abrirse ({abierto.get("desviacion")})')
+    otra_vez = pg.evaluate('''() => {
+      const caja = document.createElement('div'); document.body.appendChild(caja);
+      const l = TecnoCircuito.crearLienzo(caja, { placa: 'uno', circuito: lienzo.circuito() });
+      const c = l.circuito(); caja.remove();
+      return c.componentes.find((k) => k.tipo === 'servo').props.desviacion;
+    }''')
+    revisar(otra_vez == abierto.get('desviacion'), f'al abrir otra vez el circuito guardado, la conserva ({otra_vez})')
+
     # Simular el ejemplo: el brazo sigue al programa (0°, 90°, 180°) y la tabla muestra el consumo
     pg.get_by_text('Ejemplo con servo (T3)').click()
     pg.wait_for_selector('.tc-pin[data-ref="servo1.SIG"]', state='attached')
@@ -83,7 +108,9 @@ with sync_playwright() as p:
     pg.wait_for_function('() => /90\\r?\\n180/.test(document.getElementById("serial").textContent)', timeout=15000)
     pg.wait_for_timeout(500)
     a180 = angulo(brazos()[0])
-    revisar(a180 is not None and abs(a180 - 175) < 2, f'con write(180) el brazo queda a {a180}° (el SG90 del kit llega a 175°)')
+    sup = next(c for c in pg.evaluate('lienzo.circuito()')['componentes'] if c['id'] == 'servo1')['props']['desviacion']['superior']
+    esperado = 175 + sup * 85 / 90  # el SG90 del kit llega a 175°; este servo se corre su desviación propia (SERVO-002)
+    revisar(a180 is not None and abs(a180 - esperado) < 1, f'con write(180) el brazo queda a {a180}° (175° del SG90 del kit con su desviación de {sup:+.1f}°: {esperado:.1f}°)')
     pg.locator('main').screenshot(path=str(SALIDA / 'servo_2_simulando.png'))
     pg.click('#detener')
     pg.wait_for_timeout(300)

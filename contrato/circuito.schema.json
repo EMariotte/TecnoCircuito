@@ -149,7 +149,14 @@
           "if": { "properties": { "tipo": { "const": "servo" } } },
           "then": {
             "properties": {
-              "props": { "properties": { "modelo": { "enum": ["sg90", "mg90s"], "description": "Cambia el dibujo, el consumo y la velocidad." } } },
+              "props": { "properties": {
+                "modelo": { "enum": ["sg90", "mg90s"], "description": "Cambia el dibujo, el consumo y la velocidad." },
+                "desviacion": {
+                  "description": "SERVO-002 (1 nov 2026): desviación propia de este servo, en grados, en el límite inferior (0°) y en el superior (180°). La sortea el lienzo al agregarlo o al abrir uno que no la tiene; se guarda con el proyecto.",
+                  "type": "object", "required": ["inferior", "superior"], "additionalProperties": false,
+                  "properties": { "inferior": { "type": "number", "minimum": -5, "maximum": 5 }, "superior": { "type": "number", "minimum": -5, "maximum": 5 } }
+                }
+              } },
               "en": { "propertyNames": { "$ref": "#/$defs/pines-servo" } }
             }
           }

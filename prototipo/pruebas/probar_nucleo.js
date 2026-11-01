@@ -277,10 +277,10 @@ const desviacion = (xs) => {
 
 // ---- Tarea T3: el servo (pieza Tecno, src/piezas/servo.js) con el programa real de la librería Servo
 {
-  const conServo = ({ modelo = 'sg90', vcc = 'placa.5V', gnd = 'placa.GND1', sig = 'placa.D9' } = {}) => ({
+  const conServo = ({ modelo = 'sg90', vcc = 'placa.5V', gnd = 'placa.GND1', sig = 'placa.D9', desviacion } = {}) => ({
     formato: 1,
     placa: 'uno',
-    componentes: [{ id: 'servo1', tipo: 'servo', x: 0, y: 0, rot: 0, props: { modelo } }],
+    componentes: [{ id: 'servo1', tipo: 'servo', x: 0, y: 0, rot: 0, props: desviacion ? { modelo, desviacion } : { modelo } }],
     cables: [{ de: 'servo1.GND', a: gnd }, { de: 'servo1.VCC', a: vcc }, { de: 'servo1.SIG', a: sig }].filter((k) => k.a),
   });
   // Corre `ms` y devuelve lo que pasó con el servo cada 16 ms (como las fotos del Worker).
@@ -300,6 +300,33 @@ const desviacion = (xs) => {
   revisar(en(900).pulso >= 543 && en(900).pulso <= 545 && Math.abs(en(900).angulo - 7) < 0.5, `write(0): pulso de ${en(900).pulso} µs → ${en(900).angulo}° (el SG90 del kit: 7°)`);
   revisar(Math.abs(en(1900).pulso - 1472) <= 1 && Math.abs(en(1900).angulo - 90) < 0.5, `write(90): pulso de ${en(1900).pulso} µs → ${en(1900).angulo}° (el SG90 del kit: 90°)`);
   revisar(en(2900).pulso >= 2399 && en(2900).pulso <= 2401 && Math.abs(en(2900).angulo - 175) < 0.5, `write(180): pulso de ${en(2900).pulso} µs → ${en(2900).angulo}° (el SG90 del kit: 175°)`);
+  // SERVO-002: la desviación propia corre los límites (en 0°, −2°; en 180°, +3°) y no el centro
+  {
+    const d = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ desviacion: { inferior: -2, superior: 3 } }), activas: ACTIVAS, semilla: 1 }), 3000);
+    const enD = (ms) => d.find((x) => x.t >= ms);
+    const [a0, a90, a180] = [enD(900).angulo, enD(1900).angulo, enD(2900).angulo];
+    revisar(Math.abs(a0 - (7 - 2 * 83 / 90)) < 0.3 && Math.abs(a90 - 90) < 0.5 && Math.abs(a180 - (175 + 3 * 85 / 90)) < 0.3,
+      `con su desviación propia (−2° y +3°), write(0) → ${a0}°, write(90) → ${a90}° y write(180) → ${a180}° (sin ella: 7°, 90° y 175°)`);
+    const mal = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ desviacion: { inferior: 40, superior: 'x' } }), activas: ACTIVAS, semilla: 1 }), 1000);
+    revisar(Math.abs(mal.find((x) => x.t >= 900).angulo - 7) < 0.5, 'una desviación fuera de rango no se usa: write(0) llega a 7°, como sin ella');
+    // F01 de Codex: la misma desviación con las claves en otro orden es el mismo servo (no vuelve a 90° ni pierde su pulso);
+    // un cambio real de desviación o de modelo sí lo rehace
+    const nd = crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ desviacion: { inferior: -2, superior: 3 } }), activas: ACTIVAS, semilla: 1 });
+    seguir(nd, 900);
+    const antes = nd.foto().servos.servo1;
+    const otroOrden = conServo();
+    otroOrden.componentes[0].props = { desviacion: { superior: 3, inferior: -2 }, modelo: 'sg90' };
+    nd.ponerCircuito(otroOrden);
+    const igual = nd.foto().servos.servo1;
+    revisar(Math.abs(igual.angulo - antes.angulo) < 0.01 && igual.pulso === antes.pulso && antes.pulso !== null,
+      `la misma desviación con las claves en otro orden no rehace el servo (${antes.angulo}° y ${antes.pulso} µs → ${igual.angulo}° y ${igual.pulso} µs)`);
+    nd.ponerCircuito(conServo({ desviacion: { inferior: -4, superior: 3 } }));
+    const cambiada = nd.foto().servos.servo1;
+    nd.ponerCircuito(conServo({ modelo: 'mg90s', desviacion: { inferior: -4, superior: 3 } }));
+    const otroModelo = nd.foto().servos.servo1;
+    revisar(cambiada.pulso === null && otroModelo.pulso === null && otroModelo.modelo === 'mg90s',
+      'un cambio real de desviación o de modelo sí lo rehace (empieza sin pulso, como un servo recién conectado)');
+  }
   // Velocidad: el SG90 gira 60° en 0,1 s a 4,8 V; a 5 V, 90° le toman unos 0,14 s
   const inicio = v.find((x) => x.t > 2000 && x.moviendo);
   const fin = v.find((x) => x.t > 2000 && !x.moviendo && x.angulo > 174);

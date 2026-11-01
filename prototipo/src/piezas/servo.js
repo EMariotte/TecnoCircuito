@@ -68,16 +68,32 @@ export const SERVO = {
 
 // ---- Lógica (la usa el núcleo, en el Worker)
 
-// Ángulo al que va el brazo con un pulso de `us` microsegundos, según lo medido en cada modelo. El tope mecánico
-// está en 0° y 180°.
-export function anguloDePulso(us, modelo = 'sg90') {
+// Desviación propia de cada servo (SERVO-002, idea de Efraín en LAB-001): cada servo real llega a ángulos un poco
+// distintos (cuatro MG90S: 0 a −1° en 0°, 180 a 184° en 180°). Cada servo del lienzo recibe, al agregarlo o la
+// primera vez que se abre un proyecto que no la tiene, una desviación al azar de −5° a +5° en cada límite, con un
+// decimal; se guarda en el proyecto (`props.desviacion`), así no cambia de una simulación a otra.
+export const DESVIACION_MAX = 5;
+export const desviacionValida = (d) =>
+  !!d && typeof d === 'object' && [d.inferior, d.superior].every((x) => typeof x === 'number' && Number.isFinite(x) && Math.abs(x) <= DESVIACION_MAX);
+export function desviacionNueva(azar = Math.random) {
+  const grados = () => Math.round((azar() * 2 - 1) * DESVIACION_MAX * 10) / 10 || 0; // sin −0
+  return { inferior: grados(), superior: grados() };
+}
+
+// Ángulo al que va el brazo con un pulso de `us` microsegundos, según lo medido en cada modelo. La desviación propia
+// corre el ángulo en proporción a la distancia al centro: nada en 90° (está calibrado) y toda en cada límite. El tope
+// mecánico está en 0° y 180°.
+export function anguloDePulso(us, modelo = 'sg90', desviacion = null) {
   const a = (MODELOS_SERVO[modelo] || MODELOS_SERVO.sg90).angulos;
-  const grados = us <= a.centroUs ? 90 - (a.centroUs - us) / a.usPorGradoBajo : 90 + (us - a.centroUs) / a.usPorGradoAlto;
+  let grados = us <= a.centroUs ? 90 - (a.centroUs - us) / a.usPorGradoBajo : 90 + (us - a.centroUs) / a.usPorGradoAlto;
+  if (desviacionValida(desviacion)) {
+    grados += grados < 90 ? (desviacion.inferior * (90 - grados)) / 90 : (desviacion.superior * (grados - 90)) / 90;
+  }
   return Math.max(0, Math.min(180, grados));
 }
 
 // Un servo que recibe pulsos y gira. Empieza a 90°, como queda al conectarlo.
-export function crearServo(modelo) {
+export function crearServo(modelo, desviacion = null) {
   const d = MODELOS_SERVO[modelo] || MODELOS_SERVO.sg90;
   let angulo = 90;
   let objetivo = 90;
@@ -91,7 +107,7 @@ export function crearServo(modelo) {
       if (us < SERVO.pulsoValidoMin || us > SERVO.pulsoValidoMax) return;
       if (pulso !== null && Math.abs(us - pulso) < SERVO.bandaMuerta) return;
       pulso = us;
-      objetivo = anguloDePulso(us, modelo);
+      objetivo = anguloDePulso(us, modelo, desviacion);
     },
     // Avanza `ms` milisegundos con el servo alimentado a `voltios` (0 = sin alimentación: no gira ni consume).
     avanzar(ms, voltios) {

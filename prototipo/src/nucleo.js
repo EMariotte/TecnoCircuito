@@ -10,7 +10,7 @@
 import { crearChip, FRECUENCIA, PinState } from './chip.js';
 import { armarRed, revisarFallas, LED } from './motor/red.js';
 import { calcularNodos } from './conexiones.js';
-import { crearServo, MODELOS_SERVO } from './piezas/servo.js';
+import { crearServo, MODELOS_SERVO, desviacionValida } from './piezas/servo.js';
 import { USB, crearFusible, voltajeConServos } from './energia.js';
 import { crearPotencia } from './potencia.js';
 import { perfilPlaca, esNano } from './placas.js';
@@ -258,8 +258,11 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     for (const c of circuitoActual.componentes) {
       if (c.tipo !== 'servo') continue;
       const modelo = MODELOS_SERVO[c.props && c.props.modelo] ? c.props.modelo : 'sg90';
+      const desviacion = desviacionValida(c.props && c.props.desviacion) ? c.props.desviacion : null; // SERVO-002
+      // Por los valores, no por el texto: la misma desviación con las claves en otro orden es el mismo servo (F01 de Codex)
+      const clave = desviacion ? `${modelo}|${desviacion.inferior}|${desviacion.superior}` : modelo;
       const antes = servos.get(c.id);
-      const s = antes && antes.modelo === modelo ? antes : { modelo, logico: crearServo(modelo), subida: null, sumaA: 0, picoA: 0, msVentana: 0 };
+      const s = antes && antes.clave === clave ? antes : { modelo, clave, logico: crearServo(modelo, desviacion), subida: null, sumaA: 0, picoA: 0, msVentana: 0 };
       s.senal = PINES_EN_ORDEN.find((pin) => mismo(c.id + '.SIG', 'placa.' + pin)) || null;
       const aTierra = mismo(c.id + '.GND', 'placa.GND1');
       const pinVcc = PINES_EN_ORDEN.find((pin) => mismo(c.id + '.VCC', 'placa.' + pin));

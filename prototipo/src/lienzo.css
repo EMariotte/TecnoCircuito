@@ -686,6 +686,10 @@
 }
 
 /* Traer adelante y enviar atrás (LIENZO-002): uno al lado del otro; en un extremo, el que no sirve se apaga. */
+.tc-ficha-propio {
+  margin: 4px 0;
+  font-size: 12px;
+}
 .tc-ficha-orden {
   display: grid;
   grid-template-columns: 1fr 1fr;

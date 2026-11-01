@@ -4,7 +4,7 @@
 // de @wokwi/elements, que ya no está en el paquete: PIEZA-003). Solo son medidas: al abrir, el lienzo pone el dibujo
 // medido con el centro de sus patas donde estaba el de las antiguas.
 
-import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo } from './piezas/servo.js';
+import { MODELOS_SERVO, TAMANO_SERVO, PINES_SERVO, dibujarServo, giroBrazo, desviacionNueva, desviacionValida } from './piezas/servo.js';
 import { TAMANO_SHIELD, PINES_SHIELD, ROTULOS_SHIELD, TAPA_SHIELD, dibujarShield, mostrarShield, aplicarShield } from './piezas/shield_l293d.js';
 import { vistaMotor, pinesMotor, dibujarMotor, mostrarMotor } from './piezas/motor_tt.js';
 import { CARGAS_LIPO, TAMANO_LIPO, PINES_LIPO, dibujarLipo, mostrarLipo } from './piezas/bateria_lipo.js';
@@ -186,6 +186,18 @@ export const TIPOS = {
       prop: 'modelo',
       etiqueta: 'Modelo',
       opciones: Object.entries(MODELOS_SERVO).map(([k, d]) => [k, `${d.nombre} (engranajes de ${d.engranajes})`]),
+    },
+    // Desviación propia (SERVO-002): se sortea al agregar el servo y al abrir uno guardado sin ella; queda en el proyecto.
+    completar: (props) => (desviacionValida(props.desviacion) ? props : { ...props, desviacion: desviacionNueva() }),
+    // En la ficha, solo para ver: a qué ángulo llega este servo en cada límite.
+    propio(props) {
+      if (!desviacionValida(props.desviacion)) return null;
+      const g = (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(1).replace('.', ',')}°`;
+      const { inferior, superior } = props.desviacion;
+      return {
+        texto: `Desviación propia: ${g(inferior)} en 0° · ${g(superior)} en 180°`,
+        ayuda: 'Cada servo real llega a ángulos un poco distintos. Este se corre así en los límites (en 90° no se corre). Se sorteó al ponerlo y se guarda con el proyecto.',
+      };
     },
     // Cambiar el modelo redibuja la pieza (el color y el rótulo cambian).
     aplicar(el, props) {

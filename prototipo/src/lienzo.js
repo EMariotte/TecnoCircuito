@@ -1140,6 +1140,8 @@ export function crearLienzo(elemento, opciones = {}) {
     const def = c && TIPOS[c.tipo];
     const v = c && vistas.get(c.id);
     let props = '';
+    const propio = c && def && def.propio && def.propio(c.props);
+    if (propio) props += `<p class="tc-ficha-propio" title="${escapar(propio.ayuda)}">${escapar(propio.texto)}</p>`;
     if (c && def && !soloLectura) {
       for (const campo of def.campos || (def.campo ? [def.campo] : [])) {
         const actual = String(c.props[campo.prop]);
@@ -1351,7 +1353,7 @@ export function crearLienzo(elemento, opciones = {}) {
       x: def.montada ? 0 : Math.round(cx - 20 + corrimiento),
       y: def.montada ? 0 : Math.round(cy - 20 + corrimiento),
       rot: 0,
-      props: copia(def.props),
+      props: def.completar ? def.completar(copia(def.props)) : copia(def.props),
     };
     datos.componentes.push(c);
     crearVista(id, tipo, c.props).then(() => {
@@ -2293,6 +2295,8 @@ function normalizar(circuito, placa, quitados = [], sueltas = { n: 0 }, renovada
     k.props = { ...base, ...(k.props && typeof k.props === 'object' ? k.props : {}) };
     // Un `modelo` vacío o nulo guardado no debe pisar el del kit: la pieza se renovaría (y correría) en cada apertura.
     if (def?.dibujoAnterior && !k.props.modelo) k.props.modelo = def.props.modelo;
+    // Lo propio de cada pieza que falte (la desviación de un servo guardado antes de SERVO-002) se sortea una vez.
+    if (def?.completar) k.props = def.completar(k.props);
     if (TIPOS[k.tipo]?.montada) {
       delete k.en; // va montada sobre la placa: no se encaja en la protoboard
       k.x = 0; k.y = 0; k.rot = 0;
