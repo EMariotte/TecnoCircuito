@@ -1967,3 +1967,11 @@ Idea de Efraín en LAB-001 (T3-6) y decisiones del 1 nov: cada servo tiene una d
 Pruebas: `probar_nucleo.js` (los límites se corren, el centro no; una desviación fuera de rango no se usa), `probar_contrato.js` (una válida y dos mal formadas) y `probar_servo.py` (se sortea, se ve en la ficha, cada servo tiene la suya, se autorrellena al abrir y se conserva al abrir otra vez; el brazo a 180° con la desviación de ese servo). COMO-FUNCIONA 45.
 
 **1 nov, devolución de Codex (F01, media):** el núcleo comparaba la desviación como texto JSON, y la misma desviación con las claves en otro orden recreaba el servo (volvía a 90° y perdía su pulso). Ahora compara los valores. `probar_nucleo.js`: claves en otro orden no lo rehacen; un cambio real de desviación o de modelo, sí.
+
+## 2026-11-01 — AUD-27: el fusible apaga la placa también con el 5V bajo
+
+Hallazgo de Codex en la revisión de SERVO-001, anterior a ese cambio. Con una carga de 2 Ω entre 5V y GND, el 5V baja de 2,7 V y la placa queda en reinicio; el fusible del USB se calentaba hasta abrirse, pero la placa nunca se apagaba ni avisaba, porque la caída de voltaje se revisaba antes y, durante el reinicio retenido, no se revisaba ningún corte. Ahora el fusible abierto corta primero, también en reinicio, y la retención lo atiende en la frontera del milisegundo, sin que el chip corra. La placa se apaga, avisa `fusible_usb` y vuelve cuando el fusible se enfría.
+
+Pruebas: `probar_corte.js` sección 4 (2 Ω y el control de 4,7 Ω, que abre el fusible sin bajar de 2,7 V; los tres tamaños de paso; sin instrucciones con la placa apagada ni en reinicio; vuelve al enfriarse). COMO-FUNCIONA 46.
+
+**1 nov, devolución de Codex (F01, media):** al enfriarse el fusible, la placa volvía a correr el programa sin revisar el voltaje: con los 2 Ω todavía puestos, ejecutaba casi un milisegundo con el 5V bajo 2,7 V antes de volver a quedar en reinicio (y escribía otra «I»). Ahora, al volver la energía, pasa por el reinicio retenido y el programa arranca solo si el 5V llega a 2,7 V. `probar_corte.js` cuenta también las instrucciones con el 5V bajo 2,7 V: 0 con 2 Ω (un solo arranque) y con 4,7 Ω (el programa arranca otra vez).

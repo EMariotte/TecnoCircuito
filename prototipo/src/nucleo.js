@@ -328,10 +328,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (porVin) amperios = 0; // la energía sale del VIN: el USB no entrega nada
     if (activas.limiteUSB) {
       fusible.avanzar(1, amperios);
-      if (!apagada && !retenida && !corteUSB) {
-        if (v5 < USB.bodV) corteUSB = { motivo: 'caida', amperios, voltios: v5 };
-        else if (amperios > USB.limitePuertoA) corteUSB = { motivo: 'puerto', amperios };
-        else if (fusible.abierto) corteUSB = { motivo: 'fusible', amperios };
+      // El fusible abierto corta primero, también con el 5V bajo y durante el reinicio retenido: si no, la caída se
+      // repetía y la placa nunca se apagaba (AUD-27).
+      if (!apagada && !corteUSB) {
+        if (fusible.abierto) corteUSB = { motivo: 'fusible', amperios };
+        else if (!retenida && v5 < USB.bodV) corteUSB = { motivo: 'caida', amperios, voltios: v5 };
+        else if (!retenida && amperios > USB.limitePuertoA) corteUSB = { motivo: 'puerto', amperios };
       }
     }
     usbSuma += amperios;
@@ -475,7 +477,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       if (ciclosApagada < porMs) break; // el pedazo terminó antes de completar el milisegundo
       ciclosApagada = 0;
       avanzarServos();
-      if (!nano && !fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
+      // Se enfrió: vuelve la energía. Pasa por el reinicio retenido, así el programa arranca solo si el 5V llega a 2,7 V
+      // (con la carga todavía puesta, sigue en reinicio hasta que el fusible se abra otra vez; F01 de AUD-27).
+      if (!nano && !fusible.abierto) {
+        apagada = false;
+        retenida = true;
+      }
     }
     return resto;
   }
@@ -492,7 +499,13 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       if (ciclosApagada < porMs) break;
       ciclosApagada = 0;
       avanzarServos();
-      if (apagada || v5 >= USB.bodV) retenida = false;
+      // El fusible se abrió durante el reinicio (AUD-27): se atiende aquí, en la frontera del ms, sin que el chip corra
+      if (corteUSB) {
+        retenida = false;
+        atenderCorte();
+        break;
+      }
+      if (v5 >= USB.bodV) retenida = false;
     }
     return resto;
   }

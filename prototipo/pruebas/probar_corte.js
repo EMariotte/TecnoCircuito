@@ -23,9 +23,14 @@ let codigo = fs.readFileSync(archivo, 'utf8');
 const INSTRUCCION = 'ejecutarInstruccion(cpu);';
 const CORTE = 'apagada = siguiente.apagada;';
 const ESTADO = 'let apagada = false;';
-if ([INSTRUCCION, CORTE, ESTADO].some((t) => codigo.split(t).length !== 2)) throw new Error('No encuentro dónde poner los contadores en nucleo.cjs');
-codigo = codigo.replace(INSTRUCCION, 'if (globalThis.__apagada && globalThis.__apagada()) globalThis.__instrSinEnergia++; ' + INSTRUCCION)
+const RETENIDA = 'let retenida = false;';
+const VOLTAJE = 'let v5 = USB.idealV;';
+if ([INSTRUCCION, CORTE, ESTADO, RETENIDA, VOLTAJE].some((t) => codigo.split(t).length !== 2)) throw new Error('No encuentro dónde poner los contadores en nucleo.cjs');
+// También cuenta lo que el chip ejecuta mientras la placa está en reinicio por bajo voltaje (SERVO-001): debe ser nada.
+codigo = codigo.replace(INSTRUCCION, 'if (globalThis.__apagada && globalThis.__apagada()) globalThis.__instrSinEnergia++; if (globalThis.__retenida && globalThis.__retenida()) globalThis.__instrRetenida++; if (globalThis.__v5 && globalThis.__v5() < 2.7 && !globalThis.__apagada() && !globalThis.__retenida()) globalThis.__instrBajo++; ' + INSTRUCCION)
   .replace(ESTADO, ESTADO + ' globalThis.__apagada = () => apagada;')
+  .replace(RETENIDA, RETENIDA + ' globalThis.__retenida = () => retenida;')
+  .replace(VOLTAJE, VOLTAJE + ' globalThis.__v5 = () => v5;') // instrucciones con el 5V bajo 2,7 V sin apagado ni reinicio (F01 de AUD-27)
   .replace(CORTE, CORTE + ' if (apagada && globalThis.__cicloCorte === null) globalThis.__cicloCorte = base + chip.ciclos;');
 const mod = new Module(archivo, module);
 mod.filename = archivo;
@@ -46,6 +51,7 @@ function correr(nucleo, ms, paso, cadaFotoMs = 16) {
   let proximaFoto = cadaFotoMs * CICLOS_MS;
   let serial = '';
   let fallas = [];
+  const apagadas = []; // si la placa estaba apagada en cada foto
   while (hecho < total) {
     nucleo.avanzar(Math.max(1, Math.min(paso, total - hecho, proximaFoto - hecho)));
     hecho = nucleo.ciclos - inicio;
@@ -53,11 +59,12 @@ function correr(nucleo, ms, paso, cadaFotoMs = 16) {
       const f = nucleo.foto();
       serial += f.serial;
       fallas = fallas.concat(f.fallas.map((x) => x.tipo));
+      apagadas.push(f.energia.apagada);
       proximaFoto += cadaFotoMs * CICLOS_MS;
     }
   }
   const f = nucleo.foto();
-  return { serial: serial + f.serial, fallas: fallas.concat(f.fallas.map((x) => x.tipo)), ciclos: nucleo.ciclos, ms: f.msSimulados, energia: f.energia };
+  return { serial: serial + f.serial, fallas: fallas.concat(f.fallas.map((x) => x.tipo)), ciclos: nucleo.ciclos, ms: f.msSimulados, energia: f.energia, apagadas };
 }
 const PASOS = [['16 ms', 16 * CICLOS_MS], ['1 ms', CICLOS_MS], ['pedazos de 7919 ciclos', 7919]];
 const iguales = (rs, clave) => rs.every((r) => JSON.stringify(r[clave]) === JSON.stringify(rs[0][clave]));
@@ -120,6 +127,42 @@ const NANO_SIN_CARGA = { ...NANO_CARGA, componentes: [NANO_CARGA.componentes[0]]
     'Uno con catorce servos: el mismo serial, tiempo, energía y fallas con los tres tamaños de paso');
 }
 
-for (const k of ['__apagada', '__instrSinEnergia', '__cicloCorte']) delete globalThis[k];
+// 4. AUD-27: una carga de 2 Ω entre 5V y GND hunde el 5V bajo 2,7 V (reinicio retenido) y calienta el fusible. Al
+//    abrirse, la placa se apaga y lo avisa, aunque esté en reinicio; sin energía no se ejecuta nada; al enfriarse vuelve.
+//    Control: 4,7 Ω abre el fusible sin bajar de 2,7 V (como antes).
+{
+  const carga = (ohmios) => ({ formato: 1, placa: 'uno', protoboard: null,
+    componentes: [{ id: 'r1', tipo: 'resistencia', x: 0, y: 0, rot: 0, props: { ohmios, vatios: 0.5 } }],
+    cables: [{ de: 'r1.1', a: 'placa.5V' }, { de: 'r1.2', a: 'placa.GND1' }] });
+  // Una vez apagada, cuándo volvió a encender (el fusible se enfrió)
+  const vuelve = (r) => { const k = r.apagadas.indexOf(true); return k >= 0 && r.apagadas.indexOf(false, k) > k; };
+  for (const [ohmios, segundos] of [[2, 12], [4.7, 25]]) { // con 0,8 A, el fusible tarda más en abrirse
+    const om = String(ohmios).replace('.', ',');
+    const rs = PASOS.map(([nombre, paso]) => {
+      globalThis.__instrSinEnergia = 0;
+      globalThis.__instrRetenida = 0;
+      globalThis.__instrBajo = 0;
+      const n = crearNucleo({ hex: hex('servos_cuatro'), circuito: carga(ohmios), activas: { limiteUSB: true }, semilla: 1 });
+      return { nombre, ...correr(n, segundos * 1000, paso), instr: globalThis.__instrSinEnergia, instrRet: globalThis.__instrRetenida, instrBajo: globalThis.__instrBajo };
+    });
+    const r = rs[0];
+    const fallas = [...new Set(r.fallas)];
+    revisar(rs.every((x) => x.apagadas.includes(true) && x.fallas.includes('fusible_usb')),
+      `${om} Ω: el fusible se abre y la placa se apaga y lo avisa (fallas: ${fallas.join(', ')})`);
+    revisar(ohmios === 2 ? r.fallas.includes('reinicio_usb') : !r.fallas.includes('reinicio_usb'),
+      ohmios === 2 ? '2 Ω: antes, el 5V bajó de 2,7 V (reinicio retenido): el fusible corta igual' : '4,7 Ω: el 5V no baja de 2,7 V: solo el fusible');
+    revisar(rs.every((x) => x.instr === 0 && x.instrRet === 0), `${om} Ω: sin energía y en reinicio el chip no ejecuta nada (${rs.map((x) => x.instr + x.instrRet).join(', ')} instrucciones)`);
+    revisar(rs.every(vuelve), `${om} Ω: al enfriarse el fusible, la placa vuelve a encender`);
+    // F01 de AUD-27: al volver la energía, el programa arranca solo si el 5V llega a 2,7 V. Con 2 Ω sigue bajo: el
+    // chip no corre (un solo arranque, el del principio). Con 4,7 Ω llega: el programa arranca otra vez.
+    const arranques = (r.serial.match(/I/g) || []).length;
+    revisar(rs.every((x) => x.instrBajo === 0) && (ohmios === 2 ? arranques === 1 : arranques >= 2),
+      `${om} Ω: al volver la energía no se ejecuta nada con el 5V bajo 2,7 V (${rs.map((x) => x.instrBajo).join(', ')} instrucciones) y ${ohmios === 2 ? 'el programa no vuelve a arrancar' : 'el programa arranca otra vez'} (${arranques} arranques)`);
+    revisar(iguales(rs, 'serial') && mismoTiempo(rs) && iguales(rs, 'energia') && iguales(rs, 'fallas') && iguales(rs, 'apagadas') && rs.every((x) => Math.abs(x.ms - segundos * 1000) < 20),
+      `${om} Ω: lo mismo con los tres tamaños de paso, y el reloj sigue (${Math.round(r.ms)} ms)`);
+  }
+}
+
+for (const k of ['__apagada', '__retenida', '__v5', '__instrSinEnergia', '__instrRetenida', '__instrBajo', '__cicloCorte']) delete globalThis[k];
 console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');
 process.exit(fallos ? 1 : 0);
