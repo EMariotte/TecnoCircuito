@@ -1975,3 +1975,7 @@ Hallazgo de Codex en la revisión de SERVO-001, anterior a ese cambio. Con una c
 Pruebas: `probar_corte.js` sección 4 (2 Ω y el control de 4,7 Ω, que abre el fusible sin bajar de 2,7 V; los tres tamaños de paso; sin instrucciones con la placa apagada ni en reinicio; vuelve al enfriarse). COMO-FUNCIONA 46.
 
 **1 nov, devolución de Codex (F01, media):** al enfriarse el fusible, la placa volvía a correr el programa sin revisar el voltaje: con los 2 Ω todavía puestos, ejecutaba casi un milisegundo con el 5V bajo 2,7 V antes de volver a quedar en reinicio (y escribía otra «I»). Ahora, al volver la energía, pasa por el reinicio retenido y el programa arranca solo si el 5V llega a 2,7 V. `probar_corte.js` cuenta también las instrucciones con el 5V bajo 2,7 V: 0 con 2 Ω (un solo arranque) y con 4,7 Ω (el programa arranca otra vez).
+
+## 2026-11-01 — v0.4.0 etiquetada (DIST-003)
+
+Con el sí de Efraín (1 nov). Lleva la tanda de la versión del estudio (LIENZO-001 a MED-002, con DOC-002) y lo que vino después (SERVO-001, SERVO-002 y AUD-27), todo verificado por Codex. Versión 0.4.0 (`ecfd738`), `npm run preparar-version` (contrato 1, 550 KB), suite completa con cargador 1627 OK/0 y el paquete sin cambios después de la suite, `dist/tecnocircuito.js` (`f1d2617`), etiqueta `v0.4.0` y push. La página de prueba dice 0.4.0-dev (`442a3c2`). TecnoBloques 0.5.0 depende de esta etiqueta.
