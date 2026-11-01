@@ -115,6 +115,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   // Shield L293D, motores TT y batería LiPo (tarea T3, src/potencia.js).
   const potencia = crearPotencia({ activas, avisar: (f) => avisar(f) });
   let motores5V = 0; // lo que piden al 5V los motores conectados directo (del milisegundo anterior)
+  // Lo que pidieron los motores conectados directo a cada salida de la placa desde la última foto (para su promedio)
+  let motoresSalidas = { suma: {}, ms: 0 };
+  function sumarMotores(porSalida) {
+    for (const [salida, a] of Object.entries(porSalida)) motoresSalidas.suma[salida] = (motoresSalidas.suma[salida] || 0) + a;
+    motoresSalidas.ms++;
+  }
   let porVin = false; // el Uno se alimenta de la batería por el VIN (y no del USB)
   let fuenteActualNano = null;
   let energiaNano = null;
@@ -295,7 +301,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (nano) return avanzarNano();
     // 0. La shield y los motores, con el 5V del milisegundo anterior. Si la batería llega al VIN con más de 6,6 V, el
     //    Uno se alimenta de ella (su regulador da 5 V) y el USB deja de entregar.
-    if (potencia.hay) ({ i5V: motores5V, porVin } = potencia.cadaMs(chip.ciclos, { v5, logica: !apagada && v5 > USB.bodV }));
+    if (potencia.hay) {
+      ({ i5V: motores5V, porVin } = potencia.cadaMs(chip.ciclos, { v5, logica: !apagada && v5 > USB.bodV }));
+      sumarMotores({ '5V': motores5V });
+    }
     // 1. Cada servo gira con el voltaje del milisegundo anterior (eso fija su velocidad).
     for (const s of servos.values()) s.logico.avanzar(1, voltiosServo(s));
     // 2. El 5V de este milisegundo, resuelto junto con lo que piden los servos del 5V (son como resistencias).
@@ -345,6 +354,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
         voltajesMotor: { '3V3': energiaNano.v33, ...(fuenteActualNano.expansion ? {
           [fuenteActualNano.expansion + '.OUT_3V3']: energiaNano.v33Expansion,
         } : {}) } }));
+      sumarMotores({ ...motoresAux, '5V': motores5V });
       const bateriaV = fuenteActualNano.bateria && potencia.voltajeBateria(fuenteActualNano.bateria);
       if (typeof bateriaV === 'number' && fuenteActualNano.voltiosJack > 0) fuenteActualNano.voltiosJack = bateriaV;
     }
@@ -713,11 +723,17 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (medicion) {
       medicion.usb = energia;
       medicion.servos = Object.entries(vistaServos).map(([id, s]) => ({ id, ...s }));
-      // Lo que entrega el pin 5V de la placa: lo del circuito más los servos que se alimentan de él.
-      const del5V = (medicion.fuentes.find((f) => f.pin === '5V') || { i: 0 }).i;
-      medicion.consumo5V = del5V + medicion.servos.filter((s) => s.fuente === '5V').reduce((t, s) => t + s.i, 0);
+      // Lo que entrega cada salida de la placa (5V, 3,3V y la 3,3V de la expansión del Nano): lo del circuito más los
+      // servos y los motores que se alimentan de ella.
+      const entrega = (pin) => (medicion.fuentes.find((f) => f.pin === pin) || { i: 0 }).i
+        + medicion.servos.filter((s) => s.fuente === pin).reduce((t, s) => t + s.i, 0)
+        + (motoresSalidas.ms ? (motoresSalidas.suma[pin] || 0) / motoresSalidas.ms : 0);
+      medicion.consumo5V = entrega('5V');
+      medicion.consumo3V3 = entrega('3V3');
+      if (nano && fuenteActualNano.expansion) medicion.consumo3V3Expansion = entrega(fuenteActualNano.expansion + '.OUT_3V3');
       Object.assign(medicion, pot.lista, { porVin });
     }
+    motoresSalidas = { suma: {}, ms: 0 };
     const fallasNuevas = nuevas;
     nuevas = [];
     return {
@@ -819,6 +835,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     fusible.reiniciar();
     v5 = USB.idealV;
     motores5V = 0;
+    motoresSalidas = { suma: {}, ms: 0 };
     porVin = false;
     corteNano = false;
     if (nano) {

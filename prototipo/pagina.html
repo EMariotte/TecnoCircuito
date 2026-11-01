@@ -58,6 +58,10 @@
   .serial { height: 110px; margin: 0; white-space: pre-wrap; }
   .fallas { list-style: none; margin: 0 0 8px; padding: 0; }
   .fallas li { margin-bottom: 6px; padding: 7px 10px; border-radius: 8px; color: var(--falla-texto); background: var(--falla-fondo); border: 1px solid var(--falla-borde); }
+  .pestanas { display: flex; gap: 4px; margin-top: 8px; border-bottom: 1px solid var(--borde); }
+  .pestanas button { font: 600 12px/1.4 system-ui, "Segoe UI", sans-serif; padding: 4px 10px; border: 1px solid var(--borde); border-bottom: none; border-radius: 6px 6px 0 0; background: transparent; cursor: pointer; }
+  .pestanas button[aria-selected="true"] { background: var(--sel, #e8f0fb); }
+  #grafica { margin-top: 8px; }
   .mediciones { width: 100%; margin-top: 8px; border-collapse: collapse; font: 12px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
   .mediciones th { text-align: left; font: 600 12px/1.4 system-ui, "Segoe UI", sans-serif; color: var(--suave); border-bottom: 1px solid var(--borde); padding: 3px 4px; }
   .mediciones td { padding: 3px 4px; border-bottom: 1px dashed var(--borde); white-space: nowrap; }
@@ -130,10 +134,17 @@
     <p id="estadoSim" class="estado">Detenida</p>
     <ul id="fallas" class="fallas"></ul>
     <pre id="serial" class="serial" aria-label="Monitor serial"></pre>
+    <div class="pestanas" role="tablist" aria-label="Mediciones">
+      <button type="button" role="tab" id="pestanaTabla" aria-selected="true" aria-controls="panelTabla">Tabla</button>
+      <button type="button" role="tab" id="pestanaGrafica" aria-selected="false" aria-controls="grafica">Gráfica</button>
+    </div>
+    <div id="panelTabla" role="tabpanel" aria-labelledby="pestanaTabla">
     <table id="mediciones" class="mediciones" hidden>
       <thead><tr><th>Pieza</th><th>Voltaje</th><th>Corriente</th><th>Otro</th></tr></thead>
       <tbody></tbody>
     </table>
+    </div>
+    <div id="grafica" role="tabpanel" aria-labelledby="pestanaGrafica" hidden></div>
   </section>
   <details open>
     <summary>Circuito <small>· formato 1 del contrato</small></summary>
@@ -344,6 +355,20 @@
   let sim = null;
   const SEMILLA = Number.parseInt(new URLSearchParams(location.search).get('semilla'), 10);
   const NOMBRES = { corriendo: 'Corriendo', pausado: 'En pausa', detenido: 'Detenida', reiniciado: 'Reiniciada' };
+  // Mediciones en dos pestañas: la tabla y la gráfica en el tiempo (la misma de TecnoBloques)
+  const grafica = TecnoCircuito.crearGrafica($('grafica'), { alEvento: anotar });
+  let graficaConectada = false;
+  window.grafica = grafica; // para las pruebas
+  function verPestana(cual) {
+    const esGrafica = cual === 'grafica';
+    $('pestanaTabla').setAttribute('aria-selected', String(!esGrafica));
+    $('pestanaGrafica').setAttribute('aria-selected', String(esGrafica));
+    $('panelTabla').hidden = esGrafica;
+    $('grafica').hidden = !esGrafica;
+    grafica.mostrar(esGrafica);
+  }
+  $('pestanaTabla').onclick = () => verPestana('tabla');
+  $('pestanaGrafica').onclick = () => verPestana('grafica');
   function crearSim() {
     if (sim) sim._destruir();
     try { localStorage.setItem(CLAVE + '-programa', $('programa').value); } catch { /* preferencias opcionales */ }
@@ -360,7 +385,13 @@
       s.textContent = (s.textContent + texto).slice(-4000);
       s.scrollTop = s.scrollHeight;
     });
-    sim.alEstado(pintarEstado);
+    // La gráfica (MED-002): empieza de cero con cada simulación y deja de tomar muestras al detener
+    sim.alEstado((estado) => {
+      if (estado === 'corriendo' && !graficaConectada) { grafica.conectar(sim); graficaConectada = true; }
+      if (estado === 'detenido' && graficaConectada) { grafica.desconectar(); graficaConectada = false; }
+      pintarEstado();
+    });
+    if (graficaConectada) { grafica.desconectar(); graficaConectada = false; }
     window.sim = sim;
     pintarEstado();
   }

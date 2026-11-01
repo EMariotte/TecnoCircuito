@@ -45,6 +45,14 @@
         { "if": { "properties": { "tipo": { "const": "cable_agregado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "$ref": "#/$defs/extremos" } } } },
         { "if": { "properties": { "tipo": { "const": "cable_quitado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "$ref": "#/$defs/extremos" } } } },
         { "if": { "properties": { "tipo": { "const": "boton_pulsado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": { "required": ["id", "ms"], "properties": { "id": { "type": "string" }, "ms": { "type": "integer", "minimum": 0, "description": "Cuánto tiempo estuvo presionado." } } } } } },
+        { "if": { "properties": { "tipo": { "const": "grafica_vista" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/circuito-con", "properties": { "datos": {
+          "description": "MED-002 (30 oct): el aprendiz abrió la gráfica de mediciones o cambió las medidas marcadas. Solo qué medidas, sin sus valores ni cuánto tiempo la tuvo abierta (decisión de Efraín).",
+          "required": ["medidas"],
+          "properties": {
+            "medidas": { "type": "array", "maxItems": 6, "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*\\.(voltaje|corriente|pwm|brillo|tramo_GND|tramo_VCC|pico|fusible)$" },
+              "description": "Las marcadas, en el orden en que se marcaron: la pieza o el pin y la magnitud («led1.corriente», «D9.pwm», «pot1.tramo_GND»). Vacía si abrió la gráfica sin marcar nada." },
+            "valores": false
+          } } } } },
 
         { "if": { "properties": { "tipo": { "const": "simulacion_iniciada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/simulador-con", "properties": { "datos": {
           "required": ["placa", "modo", "activas", "circuito"],

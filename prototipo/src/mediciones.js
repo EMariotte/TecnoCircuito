@@ -17,14 +17,19 @@ const nombrePin = (pin) => 'Pin ' + pin.replace(/^D/, '');
 // solo tramo la fila da su voltaje y su corriente (V / I = el tramo), aunque la pata a GND sea la que se llama VCC.
 const EN_USO = 1e-6; // A: menos que esto (lo que toma una entrada analógica) no cuenta como tramo en uso
 const valorTramo = (t) => (t.ohmios >= 1000 ? num(t.ohmios / 1000, 1) + ' kΩ' : Math.round(t.ohmios) + ' Ω');
-function filaPotenciometro(x, fila) {
-  const pieza = `${x.id} (${ohmios(x.ohmios, 0)})`;
-  const perilla = `perilla ${Math.round(x.posicion * 100)} %`;
-  const tramos = x.tramos || [];
-  if (!tramos.length) return fila(pieza, voltios(x.v), miliamperios(x.i), perilla);
+// Los tramos que se muestran y cómo se nombran (`a GND`, `en uso` o nada). La usan la fila y la gráfica (MED-002).
+export function tramosMostrados(x) {
+  const tramos = (x && x.tramos) || [];
   const aGND = tramos.filter((t) => t.aGND);
   const enUso = tramos.filter((t) => t.i > EN_USO);
   const [elegidos, nombre] = aGND.length ? [aGND, 'a GND'] : enUso.length ? [enUso, 'en uso'] : [tramos, ''];
+  return { elegidos, nombre };
+}
+function filaPotenciometro(x, fila) {
+  const pieza = `${x.id} (${ohmios(x.ohmios, 0)})`;
+  const perilla = `perilla ${Math.round(x.posicion * 100)} %`;
+  if (!(x.tramos || []).length) return fila(pieza, voltios(x.v), miliamperios(x.i), perilla);
+  const { elegidos, nombre } = tramosMostrados(x);
   if (elegidos.length === 1) {
     const t = elegidos[0];
     return fila(pieza, voltios(t.v), miliamperios(t.i), `${perilla} · tramo ${nombre} (SIG–${t.pata}): ${valorTramo(t)}`);

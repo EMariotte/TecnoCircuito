@@ -278,6 +278,9 @@ console.log('— Los eventos del registro cumplen el contrato');
     cable_agregado: circ('cable_agregado', { de: 'placa.D13', a: 'r1.1' }),
     cable_quitado: circ('cable_quitado', { de: 'placa.D13', a: 'r1.1' }),
     boton_pulsado: circ('boton_pulsado', { id: 'b1', ms: 340 }),
+    grafica_vista: circ('grafica_vista', { medidas: ['led1.corriente', 'D9.voltaje', 'D9.pwm', 'pot1.tramo_GND'] }),
+    'grafica_vista (abierta sin marcar)': circ('grafica_vista', { medidas: [] }),
+    'grafica_vista (la placa)': circ('grafica_vista', { medidas: ['placa_5V.corriente', 'placa_3V3.voltaje', 'alimentacion.pico', 'alimentacion.fusible', 'servo1.corriente'] }),
     simulacion_iniciada: sim('simulacion_iniciada', { placa: 'uno', modo: 'realista', activas, circuito: ejemplos.EJEMPLO_PB }, 0),
     simulacion_pausada: sim('simulacion_pausada', {}),
     simulacion_reanudada: sim('simulacion_reanudada', {}),
@@ -307,7 +310,7 @@ console.log('— Los eventos del registro cumplen el contrato');
   }
   const tiposConEjemplo = new Set(Object.values(EVENTOS).map((ev) => ev.tipo));
   const delContrato6 = [...new Set([...contrato.split('## 6. Eventos')[1].split('## 7.')[0].matchAll(/`([a-z]+_[a-z_]+)`/g)].map((m) => m[1]))]
-    .filter((x) => /^(componente|cable|boton|simulacion|reinicio|sesion|proyecto|ejemplo|placa|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
+    .filter((x) => /^(componente|cable|boton|grafica|simulacion|reinicio|sesion|proyecto|ejemplo|placa|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
   const sinEjemplo = delContrato6.filter((x) => !tiposConEjemplo.has(x));
   revisar(!sinEjemplo.length, `cada tipo de evento de la sección 6 tiene su ejemplo aquí (${tiposConEjemplo.size})${sinEjemplo.length ? ': faltan ' + sinEjemplo : ''}`);
 
@@ -341,6 +344,12 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['un cable sin su punta «a»', () => circ('cable_agregado', { de: 'placa.D13' }), /a/],
     ['un cable a «D13» sin la pieza', () => circ('cable_agregado', { de: 'D13', a: 'r1.1' }), /de/],
     ['un giro de 45°', () => circ('componente_cambiado', { id: 'r1', rot: 45 }), /rot/],
+    ['grafica_vista con los valores medidos', () => circ('grafica_vista', { medidas: ['led1.corriente'], valores: [12.5] }), /valores/],
+    ['grafica_vista con siete medidas', () => circ('grafica_vista', { medidas: ['a.voltaje', 'b.voltaje', 'c.voltaje', 'd.voltaje', 'e.voltaje', 'f.voltaje', 'g.voltaje'] }), /medidas/],
+    ['grafica_vista con una medida repetida', () => circ('grafica_vista', { medidas: ['led1.brillo', 'led1.brillo'] }), /medidas/],
+    ['grafica_vista con una medida que no es pieza.magnitud', () => circ('grafica_vista', { medidas: ['lo que escribió el aprendiz'] }), /medidas/],
+    ['grafica_vista sin la lista', () => circ('grafica_vista', {}), /medidas/],
+    ['grafica_vista que dice venir del simulador', () => ({ ...circ('grafica_vista', { medidas: [] }), origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
     ['proyecto_abierto con el nombre que escribió el aprendiz', () => edi('proyecto_abierto', { placa: 'uno', nombre: 'LED de Sofía' }), /nombre/],
     ['codigo_compilado sin el código', () => edi('codigo_compilado', { ok: true }), /codigo/],
     ['sesion_iniciada en la placa «leonardo»', () => edi('sesion_iniciada', { placa: 'leonardo', nivel: 1 }), /placa/],

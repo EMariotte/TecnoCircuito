@@ -3,6 +3,7 @@ import { crearLienzo } from './lienzo.js';
 import { crearSimulador } from './simulador.js';
 import { PLACAS } from './catalogo.js';
 import { filasDeMediciones } from './mediciones.js';
+import { crearGrafica } from './grafica.js';
 import { MARCA } from './marca.js';
 
 window.TecnoCircuito = Object.freeze({
@@ -13,4 +14,5 @@ window.TecnoCircuito = Object.freeze({
   crearLienzo,
   crearSimulador,
   filasDeMediciones,
+  crearGrafica, // MED-002: la gráfica de mediciones en el tiempo (aditivo)
 });
