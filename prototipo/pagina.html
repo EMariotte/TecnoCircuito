@@ -88,6 +88,7 @@
     <button type="button" id="ejemploServo">Ejemplo con servo (T3)</button>
     <button type="button" id="ejemploServos">Cuatro servos en el USB (T3)</button>
     <button type="button" id="ejemploSeis">Seis servos en el USB (T3)</button>
+    <button type="button" id="ejemploCatorce">Catorce servos: reinicio (T3)</button>
     <button type="button" id="ejemploCarro">Carro con la shield L293D (T3)</button>
     <button type="button" id="ejemploProbador">Probador de celdas (T3)</button>
     <button type="button" id="ejemploNano">Nano + expansión: A6 y A7</button>
@@ -232,8 +233,9 @@
     ],
     protoboard: null,
   };
-  // Tarea T3: servos SG90 encadenados al 5V y al GND de la placa, todos alimentados por el USB. Con 4 (medido en la
-  // placa real el 9 oct 2026) no se reinicia; con 6, como un Otto completo, el 5V se hunde y se reinicia.
+  // Tarea T3: servos SG90 encadenados al 5V y al GND de la placa, todos alimentados por el USB. Con 6, como un Otto
+  // completo, el 5V baja pero la placa no se reinicia (el Uno real tampoco con 6 SG90 y 4 MG90S, LAB-001); sin golpe de
+  // arranque (SERVO-001), el reinicio llega desde unos 13 a la vez: el ejemplo de 14 lo muestra.
   // Los pines se repiten si hay más servos que señales (el programa servos_cuatro maneja 3, 5, 6 y 9).
   const servosEnUSB = (pines) => {
     const xs = { D9: 163, D6: 198.5, D5: 208, D3: 227 };
@@ -259,6 +261,7 @@
   };
   const EJEMPLO_SERVOS = servosEnUSB(['D9', 'D6', 'D5', 'D3']);
   const EJEMPLO_SEIS = servosEnUSB(['D9', 'D6', 'D5', 'D3', 'D9', 'D6']);
+  const EJEMPLO_CATORCE = servosEnUSB(Array.from({ length: 14 }, (_, k) => ['D9', 'D6', 'D5', 'D3'][k % 4]));
   // Tarea T3: el carro del kit. Shield L293D sobre el Uno, motor izquierdo en M1, derecho en M4 (cableados igual) y la
   // LiPo 2S en EXT_PWR, con el puente PWR puesto. Al avanzar, la rueda derecha va al revés: hay que invertir sus cables.
   const EJEMPLO_CARRO = {
@@ -441,6 +444,7 @@
   $('ejemploServo').onclick = () => { $('programa').value = 'servo_barrido'; abrir(EJEMPLO_SERVO); };
   $('ejemploServos').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SERVOS); };
   $('ejemploSeis').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_SEIS); };
+  $('ejemploCatorce').onclick = () => { $('programa').value = 'servos_cuatro'; abrir(EJEMPLO_CATORCE); };
   $('ejemploCarro').onclick = () => { $('programa').value = 'carro_motores'; abrir(EJEMPLO_CARRO); };
   $('ejemploProbador').onclick = () => { $('programa').value = 'parpadeo13'; abrir(EJEMPLO_PROBADOR); };
   $('ejemploT1').onclick = () => { $('programa').value = 'boton_pulldown'; abrir(EJEMPLO_T1); };

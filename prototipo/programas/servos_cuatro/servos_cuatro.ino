@@ -1,6 +1,7 @@
 // Cuatro servos alimentados por el USB se mueven a la vez de un extremo al otro: juntos piden mucha corriente y el
-// 5V baja (tarea T3). Medido el 9 oct 2026: con cuatro SG90 la placa NO se reinicia (el 5V llega a 4,30 V moviéndose
-// y el modelo da 2,8 V en el arranque, apenas sobre los 2,7 V del reinicio). Con 5 o 6 el simulador predice reinicio.
+// 5V baja (tarea T3). Medido el 9 oct 2026: con cuatro SG90 la placa NO se reinicia (el 5V llega a 4,30 V moviéndose).
+// El 28 oct (LAB-001), tampoco con 6 SG90 y 4 MG90S. Sin golpe de arranque (SERVO-001), el simulador reinicia desde
+// unos 13 SG90 a la vez.
 #include <Servo.h>
 
 Servo servos[4];

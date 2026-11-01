@@ -308,7 +308,8 @@ const desviacion = (xs) => {
   const quieto = en(1900).i * 1000;
   const moviendo = Math.max(...v.filter((x) => x.t > 2060 && x.t < 2120).map((x) => x.i * 1000));
   const pico = Math.max(...v.map((x) => x.pico * 1000));
-  revisar(quieto < 15 && moviendo > 150 && pico > 600, `consumo del SG90: ${quieto.toFixed(0)} mA quieto, ${moviendo.toFixed(0)} mA moviéndose y ${pico.toFixed(0)} mA de pico al arrancar`);
+  // Sin golpe de arranque (SERVO-001, LAB-001): el pico es la corriente de movimiento, no la de bloqueo (590 mA)
+  revisar(quieto < 15 && moviendo > 150 && pico <= moviendo + 5, `consumo del SG90: ${quieto.toFixed(0)} mA quieto, ${moviendo.toFixed(0)} mA moviéndose y ${pico.toFixed(0)} mA de pico (sin golpe de arranque)`);
   revisar(Math.abs(en(1900).consumo5V * 1000 - quieto) < 1, `el 5V de la placa entrega lo que pide el servo (${(en(1900).consumo5V * 1000).toFixed(1)} mA)`);
   // El pin de señal en la tabla: un multímetro promedia el pulso (1,47 ms de cada 20 ms a 90°) y marca ~0,37 V.
   // Cada foto (16 ms) es más corta que el período del servo: sin el promedio de la vista, la tabla saltaba (y decía 1,84 V).
@@ -362,8 +363,9 @@ const desviacion = (xs) => {
 
   // ---- Energía del USB (no idealidad «limiteUSB», src/energia.js): con cuántos servos se reinicia la placa
   // Medido en la placa real (9 oct 2026, validacion/2026-10-09-usb-5v.md): con 1 a 4 SG90 desde el USB no se reinicia,
-  // y el 5V (multímetro) baja a 4,55 V con 3 y a 4,30 V con 4. Con 6, como un Otto, el simulador predice el reinicio.
-  const PINES_SERVOS = ['D9', 'D6', 'D5', 'D3', 'D9', 'D6']; // servos_cuatro maneja 4 señales; los extra las comparten
+  // y el 5V (multímetro) baja a 4,55 V con 3 y a 4,30 V con 4. LAB-001 (28 oct): tampoco con 6 SG90 y 4 MG90S. Sin
+  // golpe de arranque (SERVO-001), el reinicio llega desde unos 13 SG90 a la vez.
+  const PINES_SERVOS = Array.from({ length: 14 }, (_, k) => ['D9', 'D6', 'D5', 'D3'][k % 4]); // servos_cuatro maneja 4 señales; los demás las comparten
   const conN = (k) => ({
     formato: 1,
     placa: 'uno',
@@ -399,13 +401,16 @@ const desviacion = (xs) => {
   revisar(Math.abs(v3 / 4.55 - 1) < 0.05 && Math.abs(v4 / 4.3 - 1) < 0.05,
     `el 5V promedio baja como en el multímetro: ${v3.toFixed(2).replace('.', ',')} V con 3 (real 4,55) y ${v4.toFixed(2).replace('.', ',')} V con 4 (real 4,30)`);
   const seis = usb(6, { limiteUSB: true });
-  const aviso6 = seis.fallas.find((x) => x.tipo === 'reinicio_usb');
-  // Desde AUD-05 el corte es en su milisegundo exacto, como ya lo veía la app (el Worker avanza de a ≤ 1 ms): la placa se
-  // reinicia cada pocas decenas de ms. Exagera lo medido el 16 oct (el Uno real no se reinició con 5 ni 6 SG90): LAB-001.
-  revisar(seis.reinicios > 3 && seis.arranques === seis.reinicios + 1 && aviso6 && /bajó a/.test(aviso6.mensaje),
-    `con 6 SG90, como un Otto, la placa se reinicia una y otra vez (${seis.reinicios} veces en 8 s, ${seis.arranques} arranques): «${aviso6 && aviso6.mensaje}»`);
-  revisar(seis.fallas.filter((x) => x.tipo === 'reinicio_usb').length === 1, 'el aviso sale una sola vez, aunque se reinicie muchas');
-  revisar(!seis.retrocede && Math.abs(seis.ms - 8000) < 20, `el tiempo simulado no retrocede con los reinicios (${Math.round(seis.ms)} ms)`);
+  revisar(seis.reinicios === 0 && seis.inicios === 1, `con 6 SG90, como un Otto, la placa no se reinicia, como el Uno real en LAB-001 (5V promedio ${seis.vProm.toFixed(2).replace('.', ',')} V)`);
+  const catorce = usb(14, { limiteUSB: true });
+  const aviso14 = catorce.fallas.find((x) => x.tipo === 'reinicio_usb');
+  // Desde AUD-05 el corte es en su milisegundo exacto. Mientras el 5V sigue bajo 2,7 V, la placa queda en reinicio: cuenta
+  // uno solo, no uno por milisegundo (SERVO-001).
+  // El programa mueve los servos cada 0,7 s: en reinicio no se mueven, así que hay como mucho un reinicio por movimiento
+  revisar(catorce.reinicios >= 1 && catorce.reinicios <= 12 && catorce.arranques === catorce.reinicios + 1 && aviso14 && /bajó a/.test(aviso14.mensaje),
+    `con 14 SG90 la placa se reinicia (${catorce.reinicios} veces en 8 s) y queda en reinicio mientras el 5V sigue bajo: cada reinicio arranca el programa una vez (${catorce.arranques} arranques): «${aviso14 && aviso14.mensaje}»`);
+  revisar(catorce.fallas.filter((x) => x.tipo === 'reinicio_usb').length === 1, 'el aviso sale una sola vez, aunque se reinicie varias');
+  revisar(!catorce.retrocede && Math.abs(catorce.ms - 8000) < 20, `el tiempo simulado no retrocede con los reinicios (${Math.round(catorce.ms)} ms)`);
   const ideal = usb(6, {});
   revisar(ideal.reinicios === 0 && ideal.inicios === 1, 'en modo ideal (USB sin límite), los seis servos no reinician la placa');
   // El fusible: más de 500 mA sostenidos lo calientan hasta que se abre; la placa se apaga y vuelve al enfriarse

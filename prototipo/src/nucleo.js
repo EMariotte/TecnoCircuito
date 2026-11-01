@@ -108,6 +108,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
   let iCircuito = 0; // lo que el circuito le pide al USB: el 5V, el 3,3V y lo que entregan los pines (de la última foto)
   let v5 = USB.idealV;
   let reinicios = 0;
+  let retenida = false; // el 5V sigue bajo 2,7 V después de un reinicio: el chip espera en reinicio (SERVO-001)
   let usbSuma = 0;
   let usbPico = 0;
   let usbMs = 0;
@@ -324,7 +325,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     if (porVin) amperios = 0; // la energía sale del VIN: el USB no entrega nada
     if (activas.limiteUSB) {
       fusible.avanzar(1, amperios);
-      if (!apagada && !corteUSB) {
+      if (!apagada && !retenida && !corteUSB) {
         if (v5 < USB.bodV) corteUSB = { motivo: 'caida', amperios, voltios: v5 };
         else if (amperios > USB.limitePuertoA) corteUSB = { motivo: 'puerto', amperios };
         else if (fusible.abierto) corteUSB = { motivo: 'fusible', amperios };
@@ -444,6 +445,12 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       ciclosApagada = 0;
     }
     reinicios++;
+    // Por bajo voltaje, la placa real se queda en reinicio mientras el 5V siga bajo 2,7 V: es un solo reinicio y el
+    // programa no corre hasta que el voltaje vuelve (SERVO-001). Los servos, el fusible y el tiempo siguen.
+    if (motivo === 'caida') {
+      retenida = true;
+      ciclosApagada = 0;
+    }
     // Chip nuevo: el programa empieza otra vez (si quedó apagada, empieza cuando vuelva la energía).
     base += chip.ciclos;
     nuevoChip();
@@ -466,6 +473,23 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       ciclosApagada = 0;
       avanzarServos();
       if (!nano && !fusible.abierto) apagada = false; // se enfrió: vuelve la energía y el programa arranca
+    }
+    return resto;
+  }
+  // En reinicio por bajo voltaje (Uno): como seguirApagada, pero la placa tiene energía; el chip arranca cuando el 5V
+  // vuelve a 2,7 V.
+  function seguirRetenida(ciclos) {
+    const porMs = FRECUENCIA / 1000;
+    let resto = ciclos;
+    while (resto > 0 && retenida) {
+      const paso = Math.min(resto, porMs - ciclosApagada);
+      base += paso;
+      resto -= paso;
+      ciclosApagada += paso;
+      if (ciclosApagada < porMs) break;
+      ciclosApagada = 0;
+      avanzarServos();
+      if (apagada || v5 >= USB.bodV) retenida = false;
     }
     return resto;
   }
@@ -831,6 +855,7 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
     apagada = false;
     ciclosApagada = 0;
     corteUSB = null;
+    retenida = false;
     picos = [];
     fusible.reiniciar();
     v5 = USB.idealV;
@@ -864,6 +889,10 @@ export function crearNucleo({ hex, circuito, activas = {}, semilla = Math.floor(
       while (resto > 0) {
         if (apagada) {
           resto = seguirApagada(resto);
+          continue;
+        }
+        if (retenida) {
+          resto = seguirRetenida(resto);
           continue;
         }
         const antes = chip.ciclos;

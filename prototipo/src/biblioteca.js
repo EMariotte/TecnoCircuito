@@ -120,7 +120,7 @@ export const FICHAS = {
         ['Modelo', `${m.nombre} (engranajes de ${p.modelo === 'mg90s' ? 'metal' : 'plástico'})`],
         ['Ángulo', '0° a 180° con write()'],
         ['Torque', `${coma(m.torque_kgcm)} kg·cm a 4,8 V`],
-        ['Corriente', `quieto ${m.mA.reposo} mA · moviéndose ~${p.modelo === 'mg90s' ? m.mA.movimiento : 100} mA · bloqueado ${m.mA.arranque} mA`],
+        ['Corriente', `quieto ${m.mA.reposo} mA · moviéndose ~${p.modelo === 'mg90s' ? m.mA.movimiento : 100} mA · bloqueado ${m.mA.bloqueado} mA`],
         ['Alimentación', 'el 5V de la placa (un pin da solo 40 mA)'],
       ];
     },

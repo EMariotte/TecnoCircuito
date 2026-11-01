@@ -100,9 +100,10 @@ const NANO_SIN_CARGA = { ...NANO_CARGA, componentes: [NANO_CARGA.componentes[0]]
     `Nano, vuelve la energía: el mismo serial (${vuelta[0].serial.split('\n').filter(Boolean).length} líneas), tiempo y energía con los tres tamaños de paso`);
 }
 
-// 3. Uno con seis SG90 desde el USB: el 5V cae y la placa se reinicia una y otra vez
+// 3. Uno con catorce SG90 desde el USB: el 5V cae y la placa se reinicia una y otra vez. Con seis ya no (SERVO-001: sin
+//    golpe de arranque, como el Uno real en LAB-001); mientras el 5V sigue bajo 2,7 V, la placa queda en reinicio.
 {
-  const PINES = ['D9', 'D6', 'D5', 'D3', 'D9', 'D6'];
+  const PINES = Array.from({ length: 14 }, (_, k) => ['D9', 'D6', 'D5', 'D3'][k % 4]);
   const SEIS = { formato: 1, placa: 'uno', protoboard: null,
     componentes: PINES.map((pin, k) => ({ id: 's' + k, tipo: 'servo', x: 0, y: 0, rot: 0, props: { modelo: 'sg90' } })),
     cables: PINES.flatMap((pin, k) => [{ de: `s${k}.GND`, a: 'placa.GND1' }, { de: `s${k}.VCC`, a: 'placa.5V' }, { de: `s${k}.SIG`, a: 'placa.' + pin }]) };
@@ -110,13 +111,13 @@ const NANO_SIN_CARGA = { ...NANO_CARGA, componentes: [NANO_CARGA.componentes[0]]
     const n = crearNucleo({ hex: hex('servos_cuatro'), circuito: SEIS, activas: { limiteUSB: true }, semilla: 1 });
     return { nombre, ...correr(n, 3000, paso) };
   });
-  // El programa imprime «Inicio» al arrancar. Con reinicios tan seguidos, muchas veces alcanza a salir solo la «I»
-  // antes del siguiente: cada arranque se cuenta por su «I».
+  // El programa imprime «Inicio» al arrancar; cada arranque se cuenta por su «I». Si al terminar la placa sigue en
+  // reinicio (el 5V todavía bajo), el último arranque aún no ocurrió.
   const arranques = (r) => (r.serial.match(/I/g) || []).length;
-  revisar(rs.every((r) => r.energia.reinicios > 1 && arranques(r) === r.energia.reinicios + 1),
-    `Uno con seis servos: cada reinicio arranca el programa una vez (${rs.map((r) => `${r.nombre}: ${r.energia.reinicios} reinicios, ${arranques(r)} arranques`).join('; ')})`);
+  revisar(rs.every((r) => r.energia.reinicios > 1 && [r.energia.reinicios, r.energia.reinicios + 1].includes(arranques(r))),
+    `Uno con catorce servos: cada reinicio arranca el programa una vez (${rs.map((r) => `${r.nombre}: ${r.energia.reinicios} reinicios, ${arranques(r)} arranques`).join('; ')})`);
   revisar(iguales(rs, 'serial') && mismoTiempo(rs) && iguales(rs, 'energia') && iguales(rs, 'fallas'),
-    'Uno con seis servos: el mismo serial, tiempo, energía y fallas con los tres tamaños de paso');
+    'Uno con catorce servos: el mismo serial, tiempo, energía y fallas con los tres tamaños de paso');
 }
 
 for (const k of ['__apagada', '__instrSinEnergia', '__cicloCorte']) delete globalThis[k];

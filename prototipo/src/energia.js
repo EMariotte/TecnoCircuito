@@ -4,16 +4,17 @@
 //   USB del PC (5,11 V) ──[cable, puerto, fusible y transistor ≈ 1,66 Ω]── 5V de la placa ── circuito y servos
 //
 //   1. Caída: el 5V baja con la corriente. Los servos giran más lento y empujan menos.
-//   2. Reinicio: si varios servos arrancan a la vez, el 5V se hunde; por debajo de 2,7 V el ATmega se reinicia por
-//      bajo voltaje (brown-out). Un servo arrancando se comporta como una resistencia (pide menos si el voltaje
-//      baja), así que el 5V se calcula junto con los servos en cada milisegundo (voltajeConServos).
+//   2. Reinicio: si muchos servos giran a la vez, el 5V se hunde; por debajo de 2,7 V el ATmega se reinicia por
+//      bajo voltaje (brown-out). Un servo que gira se comporta como una resistencia (pide menos si el voltaje
+//      baja), así que el 5V se calcula junto con los servos en cada milisegundo (voltajeConServos). Sin golpe de
+//      arranque (SERVO-001): el Uno aguanta 10 servos, como en LAB-001; se reinicia desde unos 13 SG90 a la vez.
 //   3. Golpe al puerto: si aun así se piden más de 1,5 A, el puerto del PC corta (valor de partida, sin medir).
 //   4. Fusible: el del Uno (MF-MSMF050-2) sostiene 500 mA y se dispara desde 1 A (0,15 s a 8 A). Si se le pide
 //      más de 500 mA por un rato, se calienta, se abre y la placa se apaga hasta que se enfría.
 //
 // Medido el 9 oct 2026 en un PC del aula (HP ProBook 450 G7) con el cable del kit (validacion/2026-10-09-usb-5v.md):
 // 5,06 V sin servos y 4,80, 4,68, 4,55 y 4,30 V con 1 a 4 SG90 moviéndose: la recta es 5,11 V − 1,66 Ω × corriente.
-// Con 4 SG90 moviéndose a la vez la placa NO se reinició: el modelo da 2,8 V en el arranque, apenas sobre 2,7 V.
+// Con 4 SG90 moviéndose a la vez la placa NO se reinició. El 28 oct (LAB-001), tampoco con 6 SG90 y 4 MG90S.
 export const USB = {
   voltios: 5.11,
   ohmios: 1.66,

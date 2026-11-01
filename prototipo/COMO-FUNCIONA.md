@@ -899,6 +899,8 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
 
 ## 45. El servo (pieza Tecno: SG90 y MG90S)
 
+> **Actualizado el 1 de noviembre de 2026 (SERVO-001, con LAB-001):** ya no hay golpe de arranque. Hasta ese día, en los primeros 30 ms de cada movimiento el servo pedía la corriente de bloqueo (590 mA), y el Uno se reiniciaba desde 5 SG90; el Uno real no se reinicia con 6 SG90 y 4 MG90S, ni el Nano con 6. Ahora, en los 30 ms que siguen a cada orden, el servo pide **por lo menos** la corriente de «asentar» (100 mA el SG90, 125 el MG90S): así un barrido lento sigue pidiendo ~100 mA y un salto grande pide la de movimiento, que es mayor. La de bloqueo queda como dato de la pieza (`mA.bloqueado`, en la biblioteca). Ver la sección 46.
+
 > **Actualizado el 9 de octubre de 2026, con medidas de un SG90 del kit:** `write(0/90/180)` llega a 7°, 90° y 175° (`angulos`); la corriente es de 6 mA en reposo y 590 mA bloqueado; y el control empuja **en proporción a lo que falta** (`bandaGrados` = 8), así que un barrido lento pide ~100 mA y no la corriente de arranque en cada paso. Registros: `validacion/2026-10-09-servo-angulos.md` y `2026-10-09-servo-corriente.md`.
 
 > Hecho el 8 de octubre de 2026. Es la segunda pieza Tecno y la primera con las tres partes: dibujo, modelo eléctrico y modelo lógico. Todo está en [src/piezas/servo.js](src/piezas/servo.js).
@@ -913,7 +915,7 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
                                                │ avanzarServos() cada 1 ms:      │   foto.servos   ┌──────────────┐
                                                │  gira a 600 °/s · V/4,8         │ ──────────────► │ brazo girado │
                                                │  corriente: reposo / movimiento │   {angulo, i}   │ (transform)  │
-                                               │  / arranque                     │                 └──────────────┘
+                                               │  / asentar                      │                 └──────────────┘
                                                └────────────────────────────────┘
 ```
 
@@ -924,7 +926,7 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
 | Dibujo | SVG a escala (1 mm = 3,78 px) desde las medidas del SG90. El brazo es un grupo `data-brazo` que se gira con `transform`. El conector tiene los pines a 0,1": encaja en la protoboard | `dibujarServo()`, `giroBrazo()` |
 | Modelo lógico | Mide el ancho de cada pulso con el ciclo exacto del cambio de pin. Con la librería Servo, 544 µs = 0° y 2400 µs = 180°. Ignora pulsos fuera de 400–2700 µs y cambios menores que la banda muerta (5 µs) | `crearServo().pulso()` |
 | Movimiento | Gira hacia el objetivo a la velocidad de la hoja de datos (0,1 s por 60° a 4,8 V), proporcional al voltaje: a 3,3 V va más lento | `crearServo().avanzar()` |
-| Modelo eléctrico | Pide corriente según lo que hace: quieto, moviéndose, o arrancando (los primeros 30 ms de cada movimiento, casi la corriente de bloqueo). Escala con el voltaje | `crearServo().corriente()` |
+| Modelo eléctrico | Pide corriente según lo que hace: quieto o moviéndose (en proporción a lo que falta); en los 30 ms que siguen a cada orden, por lo menos la de «asentar». Escala con el voltaje | `crearServo().corriente()` |
 
 ### Los datos de cada modelo (por validar con el multímetro)
 
@@ -933,7 +935,7 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
 | Engranajes | plástico | metal |
 | Torque (4,8 V) | 1,8 kg·cm | 1,8 kg·cm (2,2 a 6 V) |
 | Velocidad (4,8 V) | 0,1 s / 60° | 0,1 s / 60° |
-| Quieto / moviéndose / arranque | 10 / 200 / 650 mA | 10 / 250 / 700 mA |
+| Quieto / moviéndose / asentar / bloqueado | 6 / 200 / 100 / 590 mA | 10 / 250 / 125 / 700 mA |
 
 Los consumos cambian mucho entre fabricantes y clones: el SG90 bloqueado va de unos 360 a 750 mA según la fuente. Por eso son valores de partida, y la validación con los servos del kit los ajusta (LEEME, «Validar el servo y la energía del USB»).
 
@@ -950,6 +952,17 @@ Los consumos cambian mucho entre fabricantes y clones: el SG90 bloqueado va de u
 En la placa, el servo es un conector macho de 3 pines (`PinHeader_1x03`) con el símbolo `Motor:Motor_Servo`: 1 = señal, 2 = + y 3 = −. Es el mismo orden que el conector del servo (naranja, rojo, marrón).
 
 ## 46. La energía del USB (no idealidad `limiteUSB`)
+
+> **Actualizado el 1 de noviembre de 2026 (SERVO-001, con LAB-001):** sin golpe de arranque, la misma recta del USB (5,11 V − 1,66 Ω) y los servos como resistencias reproducen lo que Efraín midió en el Uno el 28 oct (multímetro, 5V más bajo), y **la placa no se reinicia con 10 servos**, como la real:
+>
+> | Servos en el Uno | Medido | Modelo |
+> |---|---|---|
+> | 1 SG90 | 4,77 V | 4,70 V |
+> | 4 SG90 | 3,87 V | 3,94 V |
+> | 6 SG90 | 3,67 V | 3,55 V |
+> | 6 SG90 + 4 MG90S | 3,05 V, sin reinicio | 2,85 V, sin reinicio |
+>
+> El reinicio por bajo voltaje sigue: llega desde unos 13 SG90 a la vez (ejemplo «Catorce servos: reinicio» de la página de prueba). **Mientras el 5V siga bajo 2,7 V, la placa queda en reinicio** (`retenida`, `seguirRetenida`): es un solo reinicio y el programa no corre hasta que el voltaje vuelve, como el brown-out del ATmega; los servos, el fusible y el tiempo siguen. Antes se contaba un reinicio por milisegundo y el monitor se llenaba de «I». Las tablas de abajo son de versiones anteriores. Registros: `validacion/2026-10-28-lab001.md` y `2026-10-29-lab001.md`.
 
 > **Actualizado el 9 de octubre de 2026, con medidas en un PC del aula:** el camino del USB es **5,11 V − 1,66 Ω** (no 0,4 Ω). El 5V se resuelve **junto con los servos** en cada milisegundo (un servo arrancando es como una resistencia), y el reinicio lo dispara el **bajo voltaje** (< 2,7 V). Con 4 SG90 no se reinicia (como la placa real); desde 5, sí. Las tablas de abajo son de la primera versión. Registro: `validacion/2026-10-09-usb-5v.md`.
 

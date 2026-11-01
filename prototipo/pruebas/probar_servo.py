@@ -89,25 +89,45 @@ with sync_playwright() as p:
     pg.wait_for_timeout(300)
     revisar(angulo(brazos()[0]) == 90, 'al detener, el dibujo vuelve a 90° (lo que se guarda no cambia)')
 
-    # Seis servos en el USB (como un Otto): el 5V se hunde al arrancar y la placa se reinicia (con 4 no: medido)
+    def pico_usb(segundos=3):
+        maximo = 0
+        for _ in range(segundos * 10):
+            pg.wait_for_timeout(100)
+            m = re.search(r'pico ([\d.]+),(\d+) mA', fila('USB (placa y circuito)').replace('.', ''))
+            if m:
+                maximo = max(maximo, float(m.group(1) + '.' + m.group(2)))
+        return maximo
+
+    # Seis servos en el USB (como un Otto): el 5V baja, pero la placa no se reinicia, como el Uno real en LAB-001
+    # (sin golpe de arranque, SERVO-001)
     pg.get_by_text('Seis servos en el USB (T3)').click()
     pg.wait_for_selector('.tc-pin[data-ref="servo6.SIG"]', state='attached')
     pg.click('#iniciar')
     pg.wait_for_function('() => /Inicio/.test(document.getElementById("serial").textContent)', timeout=15000)
-    maximo = 0
-    for _ in range(30):
-        pg.wait_for_timeout(100)
-        m = re.search(r'pico ([\d.]+),(\d+) mA', fila('USB (placa y circuito)').replace('.', ''))
-        if m:
-            maximo = max(maximo, float(m.group(1) + '.' + m.group(2)))
-    revisar(maximo > 1000, f'con los seis arrancando a la vez, el USB llega a un pico de {maximo:.0f} mA')
+    maximo = pico_usb()
+    revisar(700 < maximo < 1500, f'con los seis moviéndose a la vez, el USB llega a un pico de {maximo:.0f} mA')
     aviso = pg.evaluate('document.getElementById("fallas").textContent')
-    revisar('se reinició' in aviso and 'fuente aparte' in aviso, f'en modo realista la placa se reinicia y lo explica: «{aviso[:120]}…»')
+    usb = fila('USB (placa y circuito)')
+    revisar('se reinició' not in aviso and 'reinicios' not in usb, f'y la placa no se reinicia, como el Uno real en LAB-001: «{usb}»')
+    pg.locator('main').screenshot(path=str(SALIDA / 'servo_3_seis.png'))
+    pg.click('#detener')
+    pg.wait_for_timeout(300)
+
+    # Catorce servos: el 5V baja de 2,7 V y la placa se reinicia
+    pg.get_by_text('Catorce servos: reinicio (T3)').click()
+    pg.wait_for_selector('.tc-pin[data-ref="servo14.SIG"]', state='attached')
+    pg.click('#iniciar')
+    pg.wait_for_function('() => /Inicio/.test(document.getElementById("serial").textContent)', timeout=15000)
+    maximo = pico_usb()
+    aviso = pg.evaluate('document.getElementById("fallas").textContent')
+    revisar('se reinició' in aviso and 'fuente aparte' in aviso, f'con catorce, en modo realista la placa se reinicia y lo explica (pico {maximo:.0f} mA): «{aviso[:120]}…»')
     usb = fila('USB (placa y circuito)')
     revisar('reinicios' in usb, f'la tabla cuenta los reinicios: «{usb}»')
     eventos = pg.evaluate('[...document.querySelectorAll("#eventos li")].map(li => li.textContent)')
     revisar(any('reinicio_placa' in e and 'energia_usb' in e for e in eventos), 'los reinicios quedan en los eventos (reinicio_placa, motivo energia_usb)')
-    pg.locator('main').screenshot(path=str(SALIDA / 'servo_3_cuatro.png'))
+    serial = pg.evaluate('document.getElementById("serial").textContent')
+    revisar('IIII' not in serial, 'mientras el 5V sigue bajo, la placa queda en reinicio: el monitor no se llena de arranques a medias')
+    pg.locator('main').screenshot(path=str(SALIDA / 'servo_4_catorce.png'))
     pg.click('#detener')
 
     revisar_eventos(eventos_tc, revisar, 'servo')
