@@ -360,6 +360,24 @@ const desviacion = (xs) => {
   const mg = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ modelo: 'mg90s' }), activas: ACTIVAS, semilla: 1 }), 2200);
   const mgMoviendo = Math.max(...mg.filter((x) => x.t > 2060 && x.t < 2120).map((x) => x.i * 1000));
   revisar(mgMoviendo > moviendo, `el MG90S pide más al moverse que el SG90 (${mgMoviendo.toFixed(0)} frente a ${moviendo.toFixed(0)} mA)`);
+  // SERVO-003 (5 nov 2026, USB del Acer): en barrido continuo el MG90S del kit baja el 5V de 2 a 4 veces lo que baja
+  // un SG90, y 2 min 15 s de barrido no reinician el Uno ni lo apagan (fusible)
+  {
+    const mgLento = seguir(crearNucleo({ hex: hex('servo_continuo'), circuito: conServo({ modelo: 'mg90s' }), activas: ACTIVAS, semilla: 1 }), 6000).filter((x) => x.t > 1000);
+    const mgPromedio = (mgLento.reduce((t, x) => t + x.i, 0) / mgLento.length) * 1000;
+    revisar(mgPromedio > 2 * promedio && mgPromedio < 4 * promedio,
+      `barrido continuo del MG90S: ${mgPromedio.toFixed(0)} mA en promedio, ${(mgPromedio / promedio).toFixed(1).replace('.', ',')} veces el SG90 (la placa: de 2 a 4 veces)`);
+    const largo = crearNucleo({ hex: hex('servo_continuo'), circuito: conServo({ modelo: 'mg90s' }), activas: { ...ACTIVAS, limiteUSB: true }, semilla: 1 });
+    let fl = null;
+    let apagada = false;
+    for (let t = 0; t < 135000; t += 16) {
+      largo.avanzar(CUADRO);
+      fl = largo.foto();
+      if (fl.energia.apagada) apagada = true;
+    }
+    revisar(fl.energia.reinicios === 0 && !apagada,
+      `un MG90S en barrido 2 min 15 s por el USB: sin reinicio y sin que el fusible apague la placa (5V ${fl.energia.voltios.toFixed(2).replace('.', ',')} V), como la placa real`);
+  }
   // Errores del aula: sin GND o sin 5V no se mueve; alimentado desde un pin, avisa; a 3,3 V va más lento
   const sinGnd = seguir(crearNucleo({ hex: hex('servo_barrido'), circuito: conServo({ gnd: null }), activas: ACTIVAS, semilla: 1 }), 1000);
   revisar(sinGnd.every((x) => x.angulo === 90 && x.i === 0), 'sin el cable de GND el servo no se mueve ni consume');
@@ -427,6 +445,17 @@ const desviacion = (xs) => {
   const [v3, v4] = [hasta4[2].vProm, hasta4[3].vProm];
   revisar(Math.abs(v3 / 4.55 - 1) < 0.05 && Math.abs(v4 / 4.3 - 1) < 0.05,
     `el 5V promedio baja como en el multímetro: ${v3.toFixed(2).replace('.', ',')} V con 3 (real 4,55) y ${v4.toFixed(2).replace('.', ',')} V con 4 (real 4,30)`);
+  // SERVO-003: el caso del 28 oct con los MG90S de verdad (6 SG90 y 4 MG90S, servos_cuatro): la placa real no se reinició
+  {
+    const mezcla = conN(10);
+    mezcla.componentes.slice(6).forEach((c) => (c.props = { modelo: 'mg90s' }));
+    const m10 = crearNucleo({ hex: hex('servos_cuatro'), circuito: mezcla, activas: { limiteUSB: true }, semilla: 1 });
+    let f10 = null;
+    let serial10 = '';
+    for (let t = 0; t < 10000; t += 16) m10.avanzar(CUADRO), (f10 = m10.foto()), (serial10 += f10.serial);
+    revisar(f10.energia.reinicios === 0 && (serial10.match(/Inicio/g) || []).length === 1,
+      'con 6 SG90 y 4 MG90S moviéndose desde el USB, la placa no se reinicia (como el Uno real el 28 oct)');
+  }
   const seis = usb(6, { limiteUSB: true });
   revisar(seis.reinicios === 0 && seis.inicios === 1, `con 6 SG90, como un Otto, la placa no se reinicia, como el Uno real en LAB-001 (5V promedio ${seis.vProm.toFixed(2).replace('.', ',')} V)`);
   const catorce = usb(14, { limiteUSB: true });

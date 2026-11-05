@@ -45,7 +45,13 @@ export const MODELOS_SERVO = {
     engranajes: 'metal',
     torque_kgcm: 1.8, // a 4,8 V (2,2 kg·cm a 6 V)
     seg60: 0.1,
-    mA: { reposo: 10, movimiento: 250, asentar: 125, bloqueado: 700 }, // asentar: como el SG90, por medir
+    // Medido en cuatro MG90S del kit (5 nov 2026, validacion/2026-11-05-lab001.md y SERVO-003), USB del Acer:
+    // bloqueado, 1,0 a 1,2 A con el 5V en 4,0 V. En barrido continuo la corriente va a pulsos (uno cada 20 ms): el
+    // amperímetro salta entre 0,6 y 0,9 A, pero el 5V medido por la placa (referencia de 1,1 V) y el multímetro
+    // bajan de 2 a 4 veces lo que baja con un SG90 (0,11 V frente a 0,03 V). «asentar» 250 da ~240 mA en barrido.
+    // «movimiento» queda: el 28 oct, con saltos (servos_cuatro), cada MG90S bajaba el 5V menos que un SG90, y con
+    // más el Uno con 6 SG90 y 4 MG90S se reiniciaba (la placa real no). Quieto: menos de 200 mA (escala de 10 A).
+    mA: { reposo: 10, movimiento: 250, asentar: 250, bloqueado: 1100 },
     angulos: { centroUs: 1472, usPorGradoBajo: 928 / 83, usPorGradoAlto: 928 / 85 }, // como el SG90: por medir
     cuerpo: '#2b2b2b', // negro
     borde: '#111111',

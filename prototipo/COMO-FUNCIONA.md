@@ -899,6 +899,8 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
 
 ## 45. El servo (pieza Tecno: SG90 y MG90S)
 
+> **5 de noviembre de 2026 (SERVO-003, decisión de Efraín):** corriente del MG90S medida en cuatro servos del kit, USB del Acer: **asentar 250 mA** (antes 125) y **bloqueado 1100 mA** (antes 700); quieto (10) y movimiento (250) no cambian. Bloqueado, el amperímetro marcó 1,0 a 1,2 A con el 5V en 4,0 V. En barrido continuo la corriente va a pulsos, uno cada 20 ms: el amperímetro saltaba entre 0,6 y 0,9 A, que son picos. Por eso el promedio se midió por el 5V: con el programa que lee la referencia interna de 1,1 V (la placa mide su propio 5V) y con el multímetro, el MG90S baja el 5V de 2 a 4 veces lo que baja un SG90 (0,11 V frente a 0,03 V), y 2 min 15 s de barrido no reinician el Uno. Con asentar 250, el barrido continuo da ~260 mA (2,5 veces el SG90). Movimiento no sube: el 28 oct, con saltos, cada MG90S bajaba el 5V menos que un SG90, y con más corriente de movimiento el Uno con 6 SG90 y 4 MG90S se reiniciaba en el modelo, cuando el real no. Los ángulos del MG90S siguen siendo los del SG90 (por medir). Registro: `validacion/2026-11-05-lab001.md`.
+
 > **1 de noviembre de 2026 (SERVO-002, idea y decisiones de Efraín):** cada servo tiene su **desviación propia** (`props.desviacion = { inferior, superior }`, grados de −5 a +5 con un decimal). El lienzo la sortea al agregar el servo (`completar` del catálogo) y, en un proyecto guardado sin ella, la primera vez que se abre (`normalizar`, como el `modelo` de PIEZA-003); se guarda con el proyecto, así no cambia de una simulación a otra. El núcleo la pasa a `crearServo(modelo, desviacion)` y `anguloDePulso` corre el ángulo en proporción a la distancia al centro: nada en 90° (está calibrado) y toda en cada límite. Ejemplo: con −2° y +3°, write(0) llega a 5,2° y write(180) a 177,8°. La ficha de la pieza la muestra («Desviación propia: −2,0° en 0° · +3,0° en 180°»), solo para ver. Una desviación fuera de rango o mal formada no se usa (y el esquema la rechaza). Viene de las medidas de LAB-001: cuatro MG90S llegan a 0 a −1° en 0° y a 180 a 184° en 180°.
 
 > **Actualizado el 1 de noviembre de 2026 (SERVO-001, con LAB-001):** ya no hay golpe de arranque. Hasta ese día, en los primeros 30 ms de cada movimiento el servo pedía la corriente de bloqueo (590 mA), y el Uno se reiniciaba desde 5 SG90; el Uno real no se reinicia con 6 SG90 y 4 MG90S, ni el Nano con 6. Ahora, en los 30 ms que siguen a cada orden, el servo pide **por lo menos** la corriente de «asentar» (100 mA el SG90, 125 el MG90S): así un barrido lento sigue pidiendo ~100 mA y un salto grande pide la de movimiento, que es mayor. La de bloqueo queda como dato de la pieza (`mA.bloqueado`, en la biblioteca). Ver la sección 46.
@@ -937,7 +939,7 @@ Hoy son 16 casos de la 0.2.5, y **ninguno trae circuito**, porque se generaron a
 | Engranajes | plástico | metal |
 | Torque (4,8 V) | 1,8 kg·cm | 1,8 kg·cm (2,2 a 6 V) |
 | Velocidad (4,8 V) | 0,1 s / 60° | 0,1 s / 60° |
-| Quieto / moviéndose / asentar / bloqueado | 6 / 200 / 100 / 590 mA | 10 / 250 / 125 / 700 mA |
+| Quieto / moviéndose / asentar / bloqueado | 6 / 200 / 100 / 590 mA | 10 / 250 / 250 / 1100 mA (asentar y bloqueado medidos el 5 nov) |
 
 Los consumos cambian mucho entre fabricantes y clones: el SG90 bloqueado va de unos 360 a 750 mA según la fuente. Por eso son valores de partida, y la validación con los servos del kit los ajusta (LEEME, «Validar el servo y la energía del USB»).
 

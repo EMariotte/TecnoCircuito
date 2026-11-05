@@ -118,7 +118,8 @@ with sync_playwright() as p:
     pg.locator('main .tc-ficha select[data-prop="modelo"]').select_option('mg90s')
     pg.wait_for_timeout(200)
     texto = pg.evaluate(f'{RAIZ}.querySelector(".tc-ficha").textContent')
-    revisar('MG90S' in texto and 'Por probar con la placa real' in texto and '700 mA' in texto, 'con el MG90S la ficha cambia sus datos y avisa «◐ Por probar con la placa real»')
+    revisar('MG90S' in texto and 'Por probar con la placa real' in texto and '1100 mA' in texto and 'falta medir el MG90S' not in texto,
+            'con el MG90S la ficha cambia sus datos (bloqueado 1100 mA, medido el 5 nov) y avisa «◐ Por probar con la placa real» por los ángulos')
     pg.locator('main').screenshot(path=str(SALIDA / 'biblioteca_3_ficha.png'))
     # Va del lado contrario a la pieza
     lado = pg.evaluate(f'''(() => {{

@@ -126,7 +126,7 @@ export const FICHAS = {
     },
     validacion: (p) =>
       p.modelo === 'mg90s'
-        ? porValidar('Valores de la hoja de datos: falta medir el MG90S del kit (corriente y ángulos).')
+        ? porValidar('Corriente medida en el MG90S del kit el 5 nov 2026: en barrido continuo, de 2 a 4 veces la del SG90 (por cuánto baja el 5V; el multímetro muestra picos de 0,6 a 0,9 A), y bloqueado, de 1,0 a 1,2 A. Falta medir los ángulos: usa los del SG90.')
         : validado('SG90 medido con la placa real el 9 oct 2026: ángulos (7°, 90° y 175°) y corriente (quieto menos de 10 mA, lo mínimo que muestra el multímetro; ~100 mA moviéndose; 590 mA bloqueado). Los 6 mA quieto son de la hoja de datos.'),
   },
   motor_tt: {
