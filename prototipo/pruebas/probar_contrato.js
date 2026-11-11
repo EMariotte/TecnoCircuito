@@ -304,6 +304,13 @@ console.log('— Los eventos del registro cumplen el contrato');
     registro_interrumpido: edi('registro_interrumpido', { desde: t - 120000, hasta: t, recuperados: 7, perdidos: 0, motivo: 'ENOSPC' }),
     evento_descartado: edi('evento_descartado', { motivo: 'tamano', tipo: 'simulacion_iniciada', origen: 'simulador', corrida: 3, largo: 2097153, limite: 2097152 }),
     'evento_descartado (de la página, solo el motivo)': edi('evento_descartado', { motivo: 'no_serializable' }),
+    // El panel de misiones de TecnoBloques (EST-003, 10 nov)
+    mision_abierta: edi('mision_abierta', { id: 'estudio_x1' }),
+    mision_respuesta: edi('mision_respuesta', { id: 'estudio_x1', paso: 1, pregunta: 'vuelta', valor: 3, tras_simular: false }),
+    'mision_respuesta (una opción, después de simular)': edi('mision_respuesta', { id: 'estudio_x1', paso: 2, pregunta: 'acierto', valor: 'si', tras_simular: true }),
+    'mision_respuesta (una explicación de 200 caracteres)': edi('mision_respuesta', { id: 'estudio_x2', paso: 5, pregunta: 'porque', valor: 'ñ'.repeat(200), tras_simular: true }),
+    mision_paso: edi('mision_paso', { id: 'estudio_x1', paso: 1 }),
+    mision_terminada: edi('mision_terminada', { id: 'estudio_x1' }),
   };
   const SOBRE = { equipo: 'A7', sesion: '5f2c9a', version_tb: '0.4.0', version_tc: '0.2.0' };
   for (const [nombre, ev] of Object.entries(EVENTOS)) {
@@ -313,7 +320,7 @@ console.log('— Los eventos del registro cumplen el contrato');
   }
   const tiposConEjemplo = new Set(Object.values(EVENTOS).map((ev) => ev.tipo));
   const delContrato6 = [...new Set([...contrato.split('## 6. Eventos')[1].split('## 7.')[0].matchAll(/`([a-z]+_[a-z_]+)`/g)].map((m) => m[1]))]
-    .filter((x) => /^(componente|cable|boton|grafica|simulacion|reinicio|sesion|proyecto|ejemplo|placa|bloques|codigo|programa|registro)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
+    .filter((x) => /^(componente|cable|boton|grafica|simulacion|reinicio|sesion|proyecto|ejemplo|placa|bloques|codigo|programa|registro|mision)_/.test(x) && !/_(mA|tb|tc)$/.test(x) && !E['fallas-conocidas'].enum.includes(x));
   const sinEjemplo = delContrato6.filter((x) => !tiposConEjemplo.has(x));
   revisar(!sinEjemplo.length, `cada tipo de evento de la sección 6 tiene su ejemplo aquí (${tiposConEjemplo.size})${sinEjemplo.length ? ': faltan ' + sinEjemplo : ''}`);
 
@@ -329,6 +336,12 @@ console.log('— Los eventos del registro cumplen el contrato');
     ['registro_interrumpido sin «perdidos»', () => edi('registro_interrumpido', { desde: 1, hasta: 2, recuperados: 3, motivo: 'EPERM' }), /perdidos/],
     ['registro_interrumpido con «perdidos» negativo', () => edi('registro_interrumpido', { ...EVENTOS.registro_interrumpido.datos, perdidos: -1 }), /perdidos/],
     ['registro_interrumpido que dice venir del simulador', () => ({ ...EVENTOS.registro_interrumpido, origen: 'simulador', corrida: 1, ms_sim: 0 }), /origen/],
+    ['mision_respuesta con un texto de 201 caracteres', () => edi('mision_respuesta', { ...EVENTOS.mision_respuesta.datos, valor: 'a'.repeat(201) }), /valor/],
+    ['mision_respuesta sin «tras_simular»', () => { const d = { ...EVENTOS.mision_respuesta.datos }; delete d.tras_simular; return edi('mision_respuesta', d); }, /tras_simular/],
+    ['mision_respuesta con un valor que no es número ni texto', () => edi('mision_respuesta', { ...EVENTOS.mision_respuesta.datos, valor: ['3'] }), /valor/],
+    ['mision_paso en el paso 0', () => edi('mision_paso', { id: 'estudio_x1', paso: 0 }), /paso/],
+    ['mision_abierta sin la tarea', () => edi('mision_abierta', {}), /id/],
+    ['mision_terminada que dice venir del lienzo', () => ({ ...EVENTOS.mision_terminada, origen: 'circuito' }), /origen/],
     ['un evento del simulador sin «corrida»', () => { const e = { ...EVENTOS.falla }; delete e.corrida; return e; }, /corrida/],
     ['la corrida 0', () => ({ ...EVENTOS.falla, corrida: 0 }), /corrida/],
     ['una falla con su tramo del reloj (21 oct)', () => ({ ...EVENTOS.falla, tramo: 1 }), null],

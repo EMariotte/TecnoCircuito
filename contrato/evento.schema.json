@@ -96,6 +96,25 @@
           "required": ["placa"],
           "properties": { "placa": { "$ref": "#/$defs/placa" }, "nombre": false } } } } },
         { "if": { "properties": { "tipo": { "const": "ejemplo_cargado" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": { "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } } } } },
+        { "if": { "properties": { "tipo": { "const": "mision_abierta" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "La misión de una tarea del estudio se abrió en el panel de misiones (EST-003, 10 nov). id: el de la tarea, que es nuestro.",
+          "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } } } } },
+        { "if": { "properties": { "tipo": { "const": "mision_respuesta" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "Una respuesta del equipo en un paso de la misión. valor: un número, una opción o un texto corto (explicación o comentario), hasta 200 caracteres; decisión de Efraín del 10 nov, con la autorización de los acudientes. tras_simular: si llegó después de la primera simulación de la misión.",
+          "required": ["id", "paso", "pregunta", "valor", "tras_simular"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "paso": { "type": "integer", "minimum": 1 },
+            "pregunta": { "type": "string", "minLength": 1, "description": "El nombre de la pregunta en la misión (por ejemplo, primero, vuelta, acierto, porque, dificultad o comentario)." },
+            "valor": { "type": ["number", "string"], "maxLength": 200 },
+            "tras_simular": { "type": "boolean" }
+          } } } } },
+        { "if": { "properties": { "tipo": { "const": "mision_paso" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "El equipo terminó un paso de la misión («Seguir» o «Listo»).",
+          "required": ["id", "paso"], "properties": { "id": { "type": "string", "minLength": 1 }, "paso": { "type": "integer", "minimum": 1 } } } } } },
+        { "if": { "properties": { "tipo": { "const": "mision_terminada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
+          "description": "El equipo pulsó «Terminar misión».",
+          "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } } } } },
         { "if": { "properties": { "tipo": { "const": "placa_cambiada" } }, "required": ["tipo"] }, "then": { "$ref": "#/$defs/editor-con", "properties": { "datos": {
           "description": "La placa elegida cambió (REG-004, 20 oct): con el selector, al aceptar la que detectó la subida, al abrir un proyecto o al cargar un ejemplo. Va antes de lo que el cambio provoca.",
           "required": ["de", "a"],
