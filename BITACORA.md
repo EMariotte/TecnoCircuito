@@ -1990,3 +1990,18 @@ Efraín aceptó el 10 nov un panel de misiones en TecnoBloques para el estudio A
 
 - `mision_respuesta` lleva `id`, `paso`, `pregunta`, `valor` y `tras_simular`. `valor` es un número, una opción o un texto de hasta 200 caracteres. Es el primer evento que guarda texto escrito por el equipo (explicaciones y comentarios): decisión de Efraín, con la autorización de los acudientes. `tras_simular` dice si la respuesta llegó después de la primera simulación de la misión, así se sabe si la predicción fue antes de ver el resultado.
 - `prototipo/pruebas/probar_contrato.js`: un ejemplo válido de cada evento (también un texto de 200 «ñ») y seis mal formados (201 caracteres, sin `tras_simular`, un valor que es una lista, el paso 0, sin la tarea y uno que dice venir del lienzo). La revisión de que cada tipo de la sección 6 tenga su ejemplo ahora incluye los `mision_`.
+
+## 2026-11-11 — EST-004: el archivo de respuestas de una misión
+
+Efraín aceptó el 11 nov que el panel de misiones de TecnoBloques deje descargar las respuestas del equipo en un JSON, al terminar la misión, para entregarlas y, más adelante, subirlas a TecnoRuta (`TecnoSuite/EstrategíaTecno/DISENO-RESPUESTAS-JSON.md`). El formato es parte del contrato porque comparte los nombres de las preguntas con el registro.
+
+- `contrato/respuestas.schema.json` (nuevo, formato 1): el equipo y la sesión del registro (o `null` sin registro), la tarea, las horas, si simuló, y los pasos con sus respuestas (pregunta, texto, tipo, valor, `tras_simular` y hora; `unidad` en los números y `rotulo` en las opciones). Las opciones aceptan número o texto, porque la dificultad del panel vale de 1 a 5. Rechaza un archivo con la variante del estudio. Lo guardado antes de EST-004 sale con horas y `tras_simular` en `null`.
+- `prototipo/pruebas/contrato_respuestas.js` (nuevo): el revisor del archivo, para TecnoBloques y para TecnoRuta; además del esquema, revisa que los pasos vayan en orden y que ninguna pregunta se repita.
+- `prototipo/pruebas/probar_contrato.js`: sección 5, con 4 archivos que se aceptan y 14 que se rechazan. `CONTRATO.md`: sección 6.2 e historial.
+
+## 2026-11-11 — EST-004, r1: las sesiones del archivo de respuestas (COD-20261111-006)
+
+F01 de Codex: la `sesion` única del archivo era la del momento de descargar y no identificaba las respuestas de una misión retomada. Decisión de Efraín (11 nov), antes de publicar el formato 1:
+- `contrato/respuestas.schema.json`: `sesiones` (lista sin repetir) en lugar de `sesion`, que se rechaza; `sesion` (texto o `null`) en cada paso y respuesta. `simulo` cubre solo la misión.
+- `prototipo/pruebas/contrato_respuestas.js`: una respuesta va en la sesión de su paso, cada sesión anotada está en `sesiones`, y sin equipo no hay sesiones.
+- `prototipo/pruebas/probar_contrato.js`: diez casos nuevos de sesiones (antes 253/14, después 267/0). `CONTRATO.md`: 6.2 e historial.

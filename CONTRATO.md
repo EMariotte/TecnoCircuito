@@ -366,6 +366,22 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 
 **Reglas:** agregar un tipo o un campo no rompe nada y el análisis ignora lo que no conoce. Cambiar o quitar uno sube `v`. El paquete sigue sin guardar nada.
 
+### 6.2 El archivo de respuestas de una misión (aceptado por Efraín el 11 nov 2026, EST-004)
+
+> Diseño: `TecnoSuite/EstrategíaTecno/DISENO-RESPUESTAS-JSON.md`. La forma exacta está en `contrato/respuestas.schema.json`; el revisor, en `prototipo/pruebas/contrato_respuestas.js`.
+
+**Para qué.** Al terminar una misión del estudio, el equipo descarga sus respuestas en un archivo JSON y lo entrega (la hoja impresa queda de respaldo). Más adelante se podrá subir a TecnoRuta como la evidencia de esa misión. El registro (6.1) sigue guardando todo; este archivo es la entrega del equipo, uno por misión, y se lee solo, sin reconstruir eventos.
+
+**Qué lleva** (formato 1): `formato`, `tipo: "respuestas_mision"`, `app`, `version_tb`, `version_tc`, `equipo` (el del registro, o `null` si estaba apagado), `sesiones`, `tarea` (`id` y `nombre`), `abierta` y `terminada` (ms desde 1970), `simulo` y `pasos`. Cada paso lleva `paso`, `titulo`, `t`, `sesion` y sus `respuestas`; cada respuesta, `pregunta` (el mismo nombre que en `mision_respuesta`), `texto` (la pregunta como la vio el equipo), `tipo` (`numero`, `opcion` o `texto`), `valor`, `tras_simular`, `t` y `sesion`, más `unidad` en los números que la tienen y `rotulo` en las opciones. `simulo` dice si la simulación arrancó durante la misión, hasta «Terminar misión»: simular después no la cambia.
+
+**Las sesiones** (r1, decisión de Efraín del 11 nov): una misión puede empezar en una sesión del registro y terminar en otra (al cerrar y abrir la app o al cambiar de equipo y volver). Por eso cada paso y cada respuesta llevan la `sesion` en que se respondieron, la misma de su `mision_paso` y su `mision_respuesta`, y `sesiones` lista las de la misión, sin repetir y en orden (primero la de abrirla). Una respuesta va en la sesión de su paso. Sin registro, `sesiones` va vacía y cada `sesion` en `null`. El archivo ya no lleva la sesión del momento de descargar: no identificaba las respuestas y cambiaba al descargar otra vez.
+
+**Lo que no lleva:** nombres (solo el código del equipo; los textos siguen con 200 caracteres y «No escribas nombres») ni la variante del estudio: el esquema rechaza un archivo con `variante`. La variante se une después con el registro del instructor, por el equipo y la sesión de cada respuesta.
+
+**Lo guardado antes de EST-004** no tenía horas ni `tras_simular` por respuesta: esos campos van en `null`. Lo guardado antes de su r1 no tenía la sesión: va en `null`, y `sesiones` vacía. No se inventa.
+
+**Reglas:** agregar un campo no rompe nada. Cambiar o quitar uno sube `formato`.
+
 ## 7. Modo y no idealidades
 
 - `modo: 'realista'` enciende todas las no idealidades. `modo: 'ideal'` las apaga todas.
@@ -448,3 +464,5 @@ El paquete emite eventos por `alEvento`. **No guarda nada.** TecnoBloques los co
 | 1 (borrador) | 1 nov 2026 | Sección 4 (SERVO-002, decisión de Efraín): el servo gana `props.desviacion` `{ inferior, superior }` (−5 a 5 grados), su desviación propia en cada límite. La sortea el lienzo al agregarlo o al abrir un servo guardado sin ella. Esquema del circuito actualizado. Aditivo: un proyecto sin `desviacion` abre igual y la recibe. |
 | 1 (borrador) | 30 oct 2026 | Sección 2 y 6 (MED-002, decisión de Efraín): entra `TecnoCircuito.crearGrafica(contenedor, { alEvento })`, la gráfica de mediciones en el tiempo (lista de chequeo, hasta 6 medidas y 2 unidades, ventana de 10 s, pausa, borrar y CSV), y el evento `grafica_vista` (origen `circuito`): al abrir la pestaña y al cambiar las marcadas, solo con los ids de las medidas, sin valores ni tiempos. Esquema de eventos actualizado. Aditivo: no cambian los tipos ni los campos que había. 1 nov (pedido de Efraín, antes de la entrega): la gráfica suma las medidas de la placa (5V, 3,3V y alimentación, con su pico y el fusible), de los servos, los motores y las baterías; el esquema acepta las magnitudes `pico` y `fusible`. Tras la verificación de Codex (F01): al dejar de verla, el cambio pendiente sale ya, y entra `publicarPendiente()` para quien cierra la sesión. |
 | 1 (borrador) | 10 nov 2026 | Sección 6.1 (EST-003, decisión de Efraín): entran los eventos del editor `mision_abierta`, `mision_respuesta`, `mision_paso` y `mision_terminada`, del panel de misiones de TecnoBloques para el estudio A/B. `mision_respuesta` guarda explicaciones y comentarios de hasta 200 caracteres, con la autorización de los acudientes. Agregar tipos no rompe nada. Esquema y revisor actualizados. Sin cambios en la API, el formato del circuito ni los demás eventos. |
+| 1 (borrador) | 11 nov 2026 | Sección 6.2 nueva (EST-004, decisión de Efraín): el archivo de respuestas de una misión que descarga el equipo, con `contrato/respuestas.schema.json` y su revisor. Sin cambios en los eventos, la API ni el formato del circuito. |
+| 1 (borrador) | 11 nov 2026 | Sección 6.2, r1 de EST-004 (COD-20261111-006, decisión de Efraín), antes de publicar el formato: la `sesion` única del archivo (la de descargar) se cambia por `sesion` en cada paso y respuesta y la lista `sesiones`, para cruzar cada respuesta con su evento aunque la misión se retome en otra sesión; `simulo` cubre solo la misión. El revisor comprueba que cada respuesta va en la sesión de su paso y que sin equipo no hay sesiones. Sin cambios en los eventos, la API ni el formato del circuito. |

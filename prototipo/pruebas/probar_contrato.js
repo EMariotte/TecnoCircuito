@@ -2,12 +2,14 @@
 //   1. el código está de acuerdo con el contrato (pines, colores, huecos de la protoboard, tabla de KiCad);
 //   2. los ejemplos del contrato y de la página de prueba cumplen el esquema;
 //   3. los circuitos con errores se rechazan con un mensaje que dice qué está mal;
-//   4. los eventos del registro (contrato/evento.schema.json): uno de cada tipo se acepta y los mal formados no.
+//   4. los eventos del registro (contrato/evento.schema.json): uno de cada tipo se acepta y los mal formados no;
+//   5. el archivo de respuestas de una misión (contrato/respuestas.schema.json, EST-004): el bueno pasa y el malo no.
 // Lo que guarda el lienzo se revisa en Chromium (probar_protoboard.py). Uso: npm run probar:contrato
 const fs = require('fs');
 const path = require('path');
 const { revisarCircuito, ESQUEMA, PINES, PINES_PLACA, HUECO } = require('./contrato.js');
 const { revisarEvento, ESQUEMA: ESQUEMA_EVENTO } = require('./contrato_eventos.js');
+const { revisarRespuestas } = require('./contrato_respuestas.js');
 const { COLORES_CABLE, TIPOS, PLACAS, huecos, PIEZAS_KICAD, CONECTORES_SHIELD, CATEGORIAS, FICHAS, leerHex, ALIASES_EXPANSION, CLAVES_NO_IDEALIDADES } = require('./codigo.cjs');
 
 let fallos = 0;
@@ -392,6 +394,72 @@ console.log('— Los eventos del registro cumplen el contrato');
     revisar(p.some((x) => x.includes(campo)), `se rechaza una línea del archivo sin «${campo}»: ${p[0] || '(no se rechazó)'}`);
   }
   revisar(revisarEvento({ ...EVENTOS.falla, ...SOBRE, equipo: '' }).length > 0, 'se rechaza una línea con el código de equipo vacío');
+}
+
+// 5. El archivo de respuestas de una misión (contrato/respuestas.schema.json, EST-004, 11 nov)
+console.log('— El archivo de respuestas de una misión cumple el contrato');
+{
+  // La dificultad es una opción con valores numéricos (1 a 5) en el panel: su valor es un número y su rótulo, texto.
+  // La r1 (COD-20261111-006, F01; decisión de Efraín del 11 nov): cada paso y cada respuesta llevan la sesión del registro
+  // en que se respondieron, y arriba `sesiones` las lista en orden. Así se cruzan con su mision_respuesta aunque la misión
+  // se haya retomado en otra sesión.
+  const S1 = '5f2c1a9e-0000-4000-8000-000000000001', S2 = '5f2c1a9e-0000-4000-8000-000000000002';
+  const RESPUESTAS = {
+    formato: 1, tipo: 'respuestas_mision', app: 'TecnoBloques', version_tb: '0.5.0', version_tc: '0.4.0',
+    equipo: 'A7', sesiones: [S1],
+    tarea: { id: 'estudio_x1', nombre: 'X1 · Luces en secuencia' }, abierta: 1764168123000, terminada: 1764169320000, simulo: true,
+    pasos: [
+      { paso: 1, titulo: 'Predecir', t: 1764168250000, sesion: S1, respuestas: [
+        { pregunta: 'primero', texto: '¿Qué pin se enciende primero?', tipo: 'numero', valor: 11, tras_simular: false, t: 1764168250000, sesion: S1 },
+        { pregunta: 'duracion', texto: '¿Cuántos segundos tarda una vuelta completa?', tipo: 'numero', unidad: 's', valor: 3, tras_simular: false, t: 1764168250000, sesion: S1 }] },
+      { paso: 2, titulo: 'Simular', t: 1764168400000, sesion: S1, respuestas: [
+        { pregunta: 'acierto', texto: '¿Acertaste?', tipo: 'opcion', valor: 'si', rotulo: 'Sí', tras_simular: true, t: 1764168400000, sesion: S1 }] },
+      { paso: 3, titulo: 'Organizar la pantalla', t: 1764168500000, sesion: S1, respuestas: [] },
+      { paso: 4, titulo: 'Cambiar el programa', t: 1764169000000, sesion: S1, respuestas: [] },
+      { paso: 5, titulo: 'Para terminar', t: 1764169320000, sesion: S1, respuestas: [
+        { pregunta: 'duracion_nueva', texto: '¿Cuántos segundos tarda ahora una vuelta?', tipo: 'numero', unidad: 's', valor: 4, tras_simular: true, t: 1764169320000, sesion: S1 },
+        { pregunta: 'porque', texto: '¿Por qué?', tipo: 'texto', valor: 'ñ'.repeat(200), tras_simular: true, t: 1764169320000, sesion: S1 },
+        { pregunta: 'dificultad', texto: '¿Qué tan difícil fue?', tipo: 'opcion', valor: 2, rotulo: '2', tras_simular: true, t: 1764169320000, sesion: S1 }] }],
+  };
+  const resp = (d, i, k, cambio) => ({ ...d, pasos: d.pasos.map((p, j) => (j !== i ? p : { ...p, respuestas: p.respuestas.map((r, m) => (m !== k ? r : { ...r, ...cambio })) })) });
+  const enSesion = (d, s, desde = 0) => ({ ...d, pasos: d.pasos.map((p, j) => (j < desde ? p : { ...p, sesion: s, respuestas: p.respuestas.map((r) => ({ ...r, sesion: s })) })) });
+  const casosR = [
+    ['un archivo completo de X1', (d) => d, null],
+    ['una misión retomada en otra sesión: el paso 1 en la primera y el resto en la segunda', (d) => ({ ...enSesion(d, S2, 1), sesiones: [S1, S2] }), null],
+    ['abierta en una sesión y respondida toda en otra', (d) => ({ ...enSesion(d, S2), sesiones: [S1, S2] }), null],
+    ['sin registro: equipo en null, sin sesiones y cada sesión en null (D2)', (d) => ({ ...enSesion(d, null), equipo: null, sesiones: [] }), null],
+    ['una misión guardada antes de EST-004: horas, «tras simular» y sesiones en null', (d) => ({ ...d, abierta: null, terminada: null, sesiones: [],
+      pasos: d.pasos.map((p) => ({ ...p, t: null, sesion: null, respuestas: p.respuestas.map((r) => ({ ...r, t: null, tras_simular: null, sesion: null })) })) }), null],
+    ['con la sesión única de la entrega anterior (la del momento de descargar)', (d) => ({ ...d, sesion: S2 }), /sesion/],
+    ['sin la lista de sesiones', (d) => { const x = { ...d }; delete x.sesiones; return x; }, /sesiones/],
+    ['una sesión repetida en la lista', (d) => ({ ...d, sesiones: [S1, S1] }), /duplicate|sesiones/],
+    ['un paso sin su sesión (ni null)', (d) => ({ ...d, pasos: [(({ sesion, ...p }) => p)(d.pasos[0]), ...d.pasos.slice(1)] }), /sesion/],
+    ['una respuesta sin su sesión (ni null)', (d) => resp(d, 0, 0, { sesion: undefined }), /sesion/],
+    ['una respuesta en otra sesión que su paso', (d) => ({ ...resp(d, 0, 0, { sesion: S2 }), sesiones: [S1, S2] }), /sesión de su paso/],
+    ['un paso en una sesión que no está en la lista', (d) => enSesion(d, S2, 4), /no está en «sesiones»/],
+    ['sin equipo, pero con sesiones', (d) => ({ ...d, equipo: null }), /equipo/],
+    ['un campo que esta versión no conoce', (d) => ({ ...d, nota: 'nueva' }), null],
+    ['con la variante del estudio (D5)', (d) => ({ ...d, variante: 'B' }), /must NOT be valid/],
+    ['formato 2', (d) => ({ ...d, formato: 2 }), /formato/],
+    ['otro tipo de archivo', (d) => ({ ...d, tipo: 'proyecto' }), /tipo/],
+    ['sin el código del equipo (ni null)', (d) => { const x = { ...d }; delete x.equipo; return x; }, /equipo/],
+    ['el código del equipo vacío', (d) => ({ ...d, equipo: '' }), /equipo/],
+    ['sin pasos', (d) => ({ ...d, pasos: [] }), /pasos/],
+    ['un número que llegó como texto', (d) => resp(d, 0, 0, { valor: '11' }), /valor/],
+    ['una explicación de 201 caracteres', (d) => resp(d, 4, 1, { valor: 'a'.repeat(201) }), /valor/],
+    ['una explicación vacía', (d) => resp(d, 4, 1, { valor: '' }), /valor/],
+    ['una opción sin su rótulo', (d) => resp(d, 1, 0, { rotulo: undefined }), /rotulo/],
+    ['la hora como texto', (d) => ({ ...d, abierta: '2026-11-26' }), /abierta/],
+    ['«tras simular» como texto', (d) => resp(d, 0, 0, { tras_simular: 'no' }), /tras_simular/],
+    ['los pasos fuera de orden', (d) => ({ ...d, pasos: [d.pasos[1], d.pasos[0], ...d.pasos.slice(2)] }), /paso/],
+    ['una pregunta repetida', (d) => ({ ...d, pasos: [{ ...d.pasos[0], respuestas: [d.pasos[0].respuestas[0], d.pasos[0].respuestas[0]] }, ...d.pasos.slice(1)] }), /dos veces/],
+  ];
+  for (const [texto, armar, espera] of casosR) {
+    const doc = JSON.parse(JSON.stringify(armar(JSON.parse(JSON.stringify(RESPUESTAS))))); // sin undefined, como al guardar
+    const p = revisarRespuestas(doc);
+    if (espera === null) revisar(!p.length, `se acepta ${texto}` + (p.length ? ': ' + p.join(' | ') : ''));
+    else revisar(p.length > 0 && p.some((x) => espera.test(x)), `se rechaza ${texto}: ${p[0] || '(no se rechazó)'}`);
+  }
 }
 
 console.log(fallos ? `\n${fallos} FALLA(S)` : '\nTODO BIEN');

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/EMariotte/TecnoCircuito/blob/main/contrato/respuestas.schema.json",
+  "title": "Respuestas de una misión de TecnoBloques, formato 1",
+  "description": "El archivo que descarga un equipo al terminar una misión del estudio (EST-004; diseño aceptado por Efraín el 11 nov: TecnoSuite/EstrategíaTecno/DISENO-RESPUESTAS-JSON.md). Uno por misión. Los nombres de las preguntas son los de los eventos mision_respuesta del registro (CONTRATO 6.1), así el archivo se cruza con el registro. Las horas, en ms desde 1970, como en el registro. Cada paso y cada respuesta llevan la sesión del registro en que se respondieron, y «sesiones» las lista (r1, decisión de Efraín del 11 nov): una misión puede retomarse en otra sesión, y cada respuesta se une con su evento por equipo, sesión y pregunta. Va sin nombres (solo el código del equipo) y sin la variante del estudio. Es tolerante con lo nuevo: un campo que no conoce no lo invalida. Cambiar o quitar uno sube «formato».",
+  "type": "object",
+  "required": ["formato", "tipo", "app", "version_tb", "version_tc", "equipo", "sesiones", "tarea", "abierta", "terminada", "simulo", "pasos"],
+  "not": { "anyOf": [{ "required": ["variante"] }, { "required": ["varianteEstudio"] }] },
+  "properties": {
+    "formato": { "const": 1 },
+    "tipo": { "const": "respuestas_mision" },
+    "app": { "const": "TecnoBloques" },
+    "version_tb": { "type": "string", "minLength": 1 },
+    "version_tc": { "type": "string", "minLength": 1 },
+    "equipo": { "type": ["string", "null"], "minLength": 1, "description": "El código del equipo, como en el registro. null si el registro estaba apagado (D2): el equipo no pierde su entrega." },
+    "sesiones": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 }, "description": "Las sesiones del registro de la misión, sin repetir y en orden: la de abrirla y las de sus pasos. Vacía sin registro o en lo guardado antes de la r1 de EST-004." },
+    "sesion": false,
+    "tarea": {
+      "type": "object",
+      "required": ["id", "nombre"],
+      "properties": { "id": { "type": "string", "minLength": 1 }, "nombre": { "type": "string", "minLength": 1 } }
+    },
+    "abierta": { "$ref": "#/$defs/hora", "description": "Cuándo se abrió la misión por primera vez." },
+    "terminada": { "$ref": "#/$defs/hora", "description": "Cuándo se pulsó «Terminar misión»." },
+    "simulo": { "type": "boolean", "description": "Si la simulación arrancó al menos una vez durante la misión: desde que se abrió hasta «Terminar misión». Simular después no la cambia (r1 de EST-004)." },
+    "pasos": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/paso" } }
+  },
+  "$defs": {
+    "hora": { "type": ["integer", "null"], "minimum": 0, "description": "ms desde 1970. null en lo guardado antes de EST-004, cuando el panel no guardaba la hora." },
+    "sesion": { "type": ["string", "null"], "minLength": 1, "description": "La sesión del registro en que se respondió, como en su evento. null sin registro o en lo guardado antes de la r1 de EST-004, cuando no se anotaba: no se inventa." },
+    "paso": {
+      "type": "object",
+      "required": ["paso", "titulo", "t", "sesion", "respuestas"],
+      "properties": {
+        "paso": { "type": "integer", "minimum": 1 },
+        "titulo": { "type": "string", "minLength": 1 },
+        "t": { "$ref": "#/$defs/hora", "description": "Cuándo se terminó el paso." },
+        "sesion": { "$ref": "#/$defs/sesion", "description": "La sesión en que se terminó el paso (la de su mision_paso)." },
+        "respuestas": { "type": "array", "items": { "$ref": "#/$defs/respuesta" }, "description": "Vacía en un paso sin preguntas («Listo»)." }
+      }
+    },
+    "respuesta": {
+      "type": "object",
+      "required": ["pregunta", "texto", "tipo", "valor", "tras_simular", "t", "sesion"],
+      "properties": {
+        "pregunta": { "type": "string", "minLength": 1, "description": "El nombre de la pregunta, el mismo de mision_respuesta." },
+        "texto": { "type": "string", "minLength": 1, "description": "La pregunta como la vio el equipo." },
+        "tipo": { "enum": ["numero", "opcion", "texto"] },
+        "valor": { "type": ["number", "string"] },
+        "unidad": { "type": "string", "minLength": 1, "description": "Solo en los números que la tienen (s, °)." },
+        "rotulo": { "type": "string", "minLength": 1, "description": "En las opciones: lo que decía la opción elegida." },
+        "tras_simular": { "type": ["boolean", "null"], "description": "Si llegó después de que la simulación arrancó en la misión, como en el registro. null en lo guardado antes de EST-004." },
+        "t": { "$ref": "#/$defs/hora" },
+        "sesion": { "$ref": "#/$defs/sesion", "description": "La de su mision_respuesta; es la misma de su paso." }
+      },
+      "allOf": [
+        { "if": { "properties": { "tipo": { "const": "numero" } }, "required": ["tipo"] }, "then": { "properties": { "valor": { "type": "number" } } } },
+        { "if": { "properties": { "tipo": { "const": "opcion" } }, "required": ["tipo"] }, "then": { "required": ["rotulo"], "properties": { "valor": { "type": ["string", "number"], "minLength": 1, "description": "El valor de la opción: un texto (si, no) o un número (la dificultad, de 1 a 5)." } } } },
+        { "if": { "properties": { "tipo": { "const": "texto" } }, "required": ["tipo"] }, "then": { "properties": { "valor": { "type": "string", "minLength": 1, "maxLength": 200 } } } }
+      ]
+    }
+  }
+}
